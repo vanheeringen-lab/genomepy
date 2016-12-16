@@ -1,4 +1,6 @@
-# Python module genomepy
+# genomepy
+
+[![PyPI version](https://badge.fury.io/py/genomepy.svg)](https://badge.fury.io/py/genomepy)
 
 Easily install and use genomes in Python and elsewhere!
 
@@ -74,6 +76,7 @@ fasta: /data/genomes/hg38/hg38.fa
 
 ## Todo
 
+* Tests!
 * Ensembl bacteria
 * Automatic indexing (such as bwa)
 * Caching of UCSC/Ensembl genome listings
