@@ -32,7 +32,7 @@ see the [documentation](https://github.com/mdshw5/pyfaidx) for more examples.
 
 ### Command line 
 
-``` 
+```python 
 $ genomepy
 
 Usage: genomepy [OPTIONS] COMMAND [ARGS]...
@@ -64,7 +64,9 @@ Install a genome.
 ```
 $ genomepy  install hg38 UCSC /data/genomes/
 downloading...
-
+done...
+name: hg38
+fasta: /data/genomes/hg38/hg38.fa
 ```
 
 ## License
