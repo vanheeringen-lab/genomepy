@@ -89,6 +89,10 @@ fasta: /data/genomes/hg38/hg38.fa
 * Caching of UCSC/Ensembl genome listings
 * Configurable default genome installation directory
 
+## Contributing
+
+Contributions welcome! Send me a pull request or get in touch.
+
 ## License
 
 This module is licensed under the terms of the [MIT license](https://opensource.org/licenses/MIT).
