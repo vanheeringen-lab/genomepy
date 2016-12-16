@@ -72,6 +72,13 @@ name: hg38
 fasta: /data/genomes/hg38/hg38.fa
 ```
 
+## Todo
+
+* Ensembl bacteria
+* Automatic indexing (such as bwa)
+* Caching of UCSC/Ensembl genome listings
+* Configurable default genome installation directory
+
 ## License
 
 This module is licensed under the terms of the [MIT license](https://opensource.org/licenses/MIT).
