@@ -2,7 +2,7 @@ import os
 import glob
 from pyfaidx import Fasta
 from genomepy.provider import ProviderBase
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 __author__ = "Simon van Heeringen"
 
 def list_available_genomes(provider=None):
