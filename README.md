@@ -5,7 +5,7 @@ Easily install and use genomes in Python and elsewhere!
 
 ## Usage
 
-```
+```python
 >>> import genomepy
 >>> for row in genomepy.search("human"):
 UCSC	hg38	Human Dec. 2013 (GRCh38/hg38) Genome at UCSC
@@ -32,7 +32,7 @@ see the [documentation](https://github.com/mdshw5/pyfaidx) for more examples.
 
 ### Command line 
 
-```python 
+```
 $ genomepy
 
 Usage: genomepy [OPTIONS] COMMAND [ARGS]...
