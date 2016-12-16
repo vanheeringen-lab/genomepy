@@ -1,0 +1,13 @@
+# Files
+*.pyc
+*.so
+*.swp
+*egg-info
+*egg
+
+# Directories
+build
+dist
+eggs
+tmp
+docs/_build

@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+import click
+import os
+import sys
+import genomepy
+
+@click.group()
+def cli():
+    """ Genomes for Python (and others)!
+    
+    Version: {}""".format(genomepy.__version__)
+    pass
+
+@click.command('search', short_help="search for genomes")
+@click.argument("term")
+@click.option("-p", "--provider", help="provider")
+def search(term, provider=None):
+    """Search for genomes that contain TERM in their name or description."""
+    for row in genomepy.search(term, provider):
+        print "\t".join(row)
+
+@click.command('install', short_help="install genome")
+@click.argument("name")
+@click.argument("provider")
+@click.argument("genome_dir")
+def install(name, provider, genome_dir):
+    """Install genome NAME from provider PROVIDER in directory GENOME_DIR."""
+    genomepy.install_genome(name, provider, genome_dir)
+
+@click.command('genomes', short_help="list available genomes")
+@click.option("-p", "--provider", help="provider")
+def genomes(provider=None):
+    """List all available genomes."""
+    for row in genomepy.list_available_genomes(provider):
+        print "\t".join(row)
+
+@click.command('providers', short_help="list available providers")
+def providers():
+    """List all available providers."""
+    for p in genomepy.list_available_providers():
+        print p
+
+
+cli.add_command(search)
+cli.add_command(install)
+cli.add_command(genomes)
+cli.add_command(providers)
+
+if __name__ == "__main__":
+    cli()

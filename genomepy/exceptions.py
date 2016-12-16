@@ -1,0 +1,2 @@
+class GenomeDownloadError(Exception):
+    pass
