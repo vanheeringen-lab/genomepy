@@ -8,6 +8,8 @@ Easily install and use genomes in Python and elsewhere!
 ```python
 >>> import genomepy
 >>> for row in genomepy.search("human"):
+...     print "\t".join(row)
+...
 UCSC	hg38	Human Dec. 2013 (GRCh38/hg38) Genome at UCSC
 UCSC	hg19	Human Feb. 2009 (GRCh37/hg19) Genome at UCSC
 UCSC	hg18	Human Mar. 2006 (NCBI36/hg18) Genome at UCSC
@@ -20,6 +22,7 @@ Ensembl	homo_sapiens_core_86_38	Human
 Ensembl	pediculus_humanus_core_34_87_2	Pediculus humanus
 >>> genomepy.install_genome("hg38", "UCSC", "/data/genomes")
 downloading...
+done...
 name: hg38
 fasta: /data/genomes/hg38/hg38.fa
 >>> g = genomepy.genome("hg38", "/data/genomes")
