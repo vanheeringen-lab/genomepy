@@ -4,6 +4,13 @@
 
 Easily install and use genomes in Python and elsewhere!
 
+## Installation
+
+Via pip, for now.
+
+```
+$ pip install genomepy
+```
 
 ## Usage
 
