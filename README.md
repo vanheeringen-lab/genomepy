@@ -91,7 +91,7 @@ fasta: /data/genomes/hg38/hg38.fa
 
 ## Contributing
 
-Contributions welcome! Send me a pull request or get in touch.
+Contributions welcome! Send me a pull request or get in [touch](simon.vanheeringen@gmail.com).
 
 ## License
 
