@@ -28,6 +28,11 @@ package_data = {
 }
 
 requires = [
+    'nose',
+    'click',
+    'pyfaidx',
+    'norns>0.01',
+    'xmltodict',
 ]
 
 scripts = [
