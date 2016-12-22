@@ -6,6 +6,7 @@ import ftplib
 import urllib2
 import zlib
 import xmltodict
+import shutil
 
 from genomepy import exceptions
 
@@ -74,6 +75,8 @@ class ProviderBase(object):
         sys.stderr.write("name: {}\n".format(dbname))
         sys.stderr.write("fasta: {}\n".format(fname))
         
+        if hasattr(self, '_post_process_download'):
+            self._post_process_download(name, genome_dir)
 
 register_provider = ProviderBase.register_provider
 
@@ -191,7 +194,6 @@ class UcscProvider(ProviderBase):
             for genome in d['DASDSN']['DSN']:
                 self.genomes.append([genome['SOURCE']['@id'], genome['DESCRIPTION']])
         return self.genomes
-
     
     def search(self, term):
         term = term.lower()
@@ -224,3 +226,130 @@ class UcscProvider(ProviderBase):
 
         raise exceptions.GenomeDownloadError(
                 "Could not download genome {} from UCSC".format(name))
+
+@register_provider('NCBI')
+class NCBIProvider(ProviderBase):
+    assembly_url = "ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"
+
+    def __init__(self):
+        self.genomes = None
+
+    def _get_genomes(self):
+        genomes = []
+        
+        names = [
+                "assembly_summary_refseq.txt", 
+                "assembly_summary_refseq_historical.txt",
+                ]
+        
+        for fname in names:
+            response = urllib2.urlopen(self.assembly_url + "/" + fname)
+            lines = response.read().splitlines()
+            header = lines[1].strip("# ").split("\t")
+            for line in lines[2:]:
+                vals = line.strip("# ").split("\t")
+                genomes.append(dict(zip(header, vals)))
+        
+        return genomes
+
+    def list_available_genomes(self, cache=True, as_dict=False):
+        if not cache or not self.genomes:
+            self.genomes = self._get_genomes()
+        
+        for genome in self.genomes:
+            if as_dict:
+                yield genome
+            else:
+                yield (
+                        genome.get("asm_name", ""), 
+                        "; ".join((
+                            genome.get("organism_name", ""),
+                            genome.get("submitter", ""),
+                        ))
+                    )
+   
+    def search(self, term):
+        term = term.lower()
+        for genome in self.list_available_genomes(as_dict=True):
+            term_str = ";".join([repr(x) for x in genome.values()])
+
+            if term in term_str.lower():
+                yield (
+                        genome.get("asm_name", ""), 
+                        "; ".join((
+                            genome.get("organism_name", ""),
+                            genome.get("submitter", ""),
+                        ))
+                    )
+
+    def get_genome_download_link(self, name, mask="soft"):
+        """
+        Return NCBI ftp link to toplevel genome sequence
+
+        Parameters
+        ----------
+        name : str 
+            Genome name. Current implementation will fail if exact
+            name is not found.
+        
+        Returns
+        ------
+        tuple (name, link) where name is the NCBI asm_name identifier
+        and link is a str with the ftp download link.
+        """
+        
+        if not self.genomes:
+            self.genomes = self._get_genomes()
+        
+        for genome in self.genomes:
+            if genome["asm_name"] == name:
+                #ftp_path': 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/004/195/GCF_000004195.3_Xenopus_tropicalis_v9.1'
+                url = genome["ftp_path"]
+                url += "/" + url.split("/")[-1] + "_genomic.fna.gz"
+                return name, url
+    
+    def _post_process_download(self, name, genome_dir):
+        
+        for genome in self.genomes:
+            if genome["asm_name"] == name:
+                url = genome["ftp_path"]
+                url += "/" + url.split("/")[-1] + "_assembly_report.txt"
+                break
+   
+        tr = {}
+        response = urllib2.urlopen(url)
+        for line in response.read().splitlines():
+            if line.startswith("#"):
+                continue
+            vals = line.strip().split("\t")
+            tr[vals[6]] = vals[0]
+    
+        fa = os.path.join(genome_dir, name, "{}.fa".format(name))
+        if not os.path.exists(fa):
+            raise Exception("Genome fasta file not found, {}".format(fa))
+        
+        new_fa = os.path.join(
+                genome_dir, name,
+                ".process.{}.fa".format(name)
+                )
+
+        with open(fa) as old:
+            with open(new_fa, "w") as new:
+                for line in old:
+                    if line.startswith(">"):
+                        desc = line.strip()[1:]
+                        name = desc.split(" ")[0]
+                        new.write(">{} {}\n".format(
+                            tr.get(name, name),
+                            desc
+                            ))
+                    
+                    else:
+                        new.write(line)
+        
+        shutil.move(new_fa, fa)
+
+if __name__ == "__main__":
+    p = ProviderBase.create("NCBI")
+    p.download_genome("dyak_caf1", "/data/genomes")
+
