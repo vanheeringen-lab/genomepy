@@ -1,0 +1,2 @@
+# Directory were downloaded genomes will be stored
+genome_dir: /data/genomes

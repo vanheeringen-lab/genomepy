@@ -24,6 +24,7 @@ packages = [
 ]
 
 package_data = {
+    'genomepy': ['cfg/*.yaml'],
 }
 
 requires = [
