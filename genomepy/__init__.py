@@ -2,8 +2,11 @@ import os
 import glob
 from pyfaidx import Fasta
 from genomepy.provider import ProviderBase
-__version__ = '0.0.2'
+import norns
+__version__ = '0.1.0'
 __author__ = "Simon van Heeringen"
+
+config = norns.config("genomepy", default="cfg/default.yaml")
 
 def list_available_genomes(provider=None):
     """
@@ -56,7 +59,7 @@ def _is_genome_dir(dirname):
     """
     return len(glob.glob("{}/*.fa".format(dirname))) > 0
 
-def list_installed_genomes(genome_dir):
+def list_installed_genomes(genome_dir=None):
     """
     List all available genomes.
 
@@ -69,6 +72,11 @@ def list_installed_genomes(genome_dir):
     -------
     list with genome names
     """
+
+    if not genome_dir:
+        genome_dir = config.get("genome_dir", None)
+    if not genome_dir:
+        raise ConfigError("Please provide or configure a genome_dir")
 
     return [f for f in os.listdir(genome_dir) if 
             _is_genome_dir(genome_dir + "/" + f)]
@@ -100,7 +108,7 @@ def search(term, provider=None):
         for row in p.search(term):
             yield [p._name] + list(row)
 
-def install_genome(name, provider, genome_dir):
+def install_genome(name, provider, genome_dir=None):
     """
     Install a genome.
 
@@ -116,10 +124,15 @@ def install_genome(name, provider, genome_dir):
         Where to store the fasta files
     """
     
+    if not genome_dir:
+        genome_dir = config.get("genome_dir", None)
+    if not genome_dir:
+        raise ConfigError("Please provide or configure a genome_dir")
+    
     p = ProviderBase.create(provider)
     p.download_genome(name, genome_dir)
 
-def genome(name, genome_dir):
+def genome(name, genome_dir=None):
     """
     Get pyfaidx Fasta object of genome
 
@@ -136,5 +149,10 @@ def genome(name, genome_dir):
     pyfaidx.Fasta object
     """
 
+    if not genome_dir:
+        genome_dir = config.get("genome_dir", None)
+    if not genome_dir:
+        raise ConfigError("Please provide or configure a genome_dir")
+    
     fa = glob.glob("{}/{}/*.fa".format(genome_dir, name))[0]
     return Fasta(fa)

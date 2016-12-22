@@ -1,3 +1,5 @@
 nose
 click
 pyfaidx
+norns
+xmltodict

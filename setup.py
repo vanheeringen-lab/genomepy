@@ -24,9 +24,15 @@ packages = [
 ]
 
 package_data = {
+    'genomepy': ['cfg/*.yaml'],
 }
 
 requires = [
+    'nose',
+    'click',
+    'pyfaidx',
+    'norns>0.01',
+    'xmltodict',
 ]
 
 scripts = [
