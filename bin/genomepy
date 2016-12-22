@@ -22,7 +22,7 @@ def search(term, provider=None):
 @click.command('install', short_help="install genome")
 @click.argument("name")
 @click.argument("provider")
-@click.argument("genome_dir")
+@click.option("-g", "--genome_dir", help="genome directory", default=None)
 def install(name, provider, genome_dir):
     """Install genome NAME from provider PROVIDER in directory GENOME_DIR."""
     genomepy.install_genome(name, provider, genome_dir)

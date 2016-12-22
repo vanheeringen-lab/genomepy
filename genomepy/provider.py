@@ -49,6 +49,8 @@ class ProviderBase(object):
 
         """
 
+        genome_dir = os.path.expanduser(genome_dir)
+        
         if not os.path.exists(genome_dir):
             os.makedirs(genome_dir)
         
