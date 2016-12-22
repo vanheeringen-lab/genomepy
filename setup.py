@@ -31,7 +31,7 @@ requires = [
     'nose',
     'click',
     'pyfaidx',
-    'norns>0.01',
+    'norns>0.0.1',
     'xmltodict',
 ]
 
