@@ -336,8 +336,8 @@ class UcscProvider(ProviderBase):
         tuple (name, link) where name is the genome build identifier
         and link is a str with the http download link.
         """
-        if mask:
-            sys.stderr.write("Ignoring mask parameters for UCSC\n")
+        if mask == "hard":
+            sys.stderr.write("Ignoring mask parameter for UCSC\n")
 
         for genome_url in [self.ucsc_url, self.alt_ucsc_url]:
             remote = genome_url.format(name)
@@ -383,7 +383,7 @@ class NCBIProvider(ProviderBase):
         return genomes
 
     def list_available_genomes(self, cache=True, as_dict=False):
-        """
+         == "hard""""
         List all available genomes.
         
         Parameters
@@ -458,8 +458,8 @@ class NCBIProvider(ProviderBase):
         tuple (name, link) where name is the NCBI asm_name identifier
         and link is a str with the ftp download link.
         """
-        if mask:
-            sys.stderr.write("Ignoring mask parameters for NCBI\n")
+        if mask == "hard":
+            sys.stderr.write("Ignoring mask parameter for NCBI\n")
 
         if not self.genomes:
             self.genomes = self._get_genomes()
