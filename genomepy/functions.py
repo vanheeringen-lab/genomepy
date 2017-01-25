@@ -2,6 +2,9 @@ import os
 import glob
 from pyfaidx import Fasta
 from genomepy.provider import ProviderBase
+import norns
+
+config = norns.config("genomepy", default="cfg/default.yaml")
 
 def list_available_genomes(provider=None):
     """

@@ -10,6 +10,7 @@ except ImportError:
 import zlib
 import xmltodict
 import shutil
+import time
 
 from genomepy import exceptions
 
@@ -258,11 +259,10 @@ class UcscProvider(ProviderBase):
         tuple (name, link) where name is the genome build identifier
         and link is a str with the http download link.
         """
-        
         for genome_url in [self.ucsc_url, self.alt_ucsc_url]:
             remote = genome_url.format(name)
             ret = requests.head(remote)
- 
+            
             if ret.status_code == 200:
                 return name, remote
 
@@ -364,6 +364,7 @@ class NCBIProvider(ProviderBase):
                 url = genome["ftp_path"]
                 url += "/" + url.split("/")[-1] + "_genomic.fna.gz"
                 return name, url
+        raise exceptions.GenomeDownloadError("Could not download genome from NCBI")
     
     def _post_process_download(self, name, genome_dir):
         """ 
