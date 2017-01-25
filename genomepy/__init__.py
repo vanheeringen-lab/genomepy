@@ -1,3 +1,4 @@
+"""Search, download and use genome FASTA files."""
 import genomepy.functions
 __version__ = '0.2.0'
 __author__ = "Simon van Heeringen"
