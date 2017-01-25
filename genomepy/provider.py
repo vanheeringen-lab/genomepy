@@ -24,6 +24,7 @@ class ProviderBase(object):
     ...     print(desc)
     Human Dec. 2013 (GRCh38/hg38) Genome at UCSC
     """
+    
     _providers = {}
     name = None
 
@@ -75,9 +76,7 @@ class ProviderBase(object):
 
         mask: str , optional
             Masking, soft, hard or none (all other strings)
-
         """
-
         genome_dir = os.path.expanduser(genome_dir)
         
         if not os.path.exists(genome_dir):
