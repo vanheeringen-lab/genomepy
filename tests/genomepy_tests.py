@@ -2,10 +2,10 @@ from nose.tools import *
 import genomepy
 
 def setup():
-    print "SETUP!"
+    print("SETUP!")
 
 def teardown():
-    print "TEAR DOWN!"
+    print("TEAR DOWN!")
 
 def test_basic():
     cfg = genomepy.config

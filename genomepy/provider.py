@@ -3,7 +3,10 @@ import requests
 import re
 import os
 import ftplib
-import urllib2
+try: 
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
 import zlib
 import xmltodict
 import shutil
@@ -63,7 +66,7 @@ class ProviderBase(object):
 
         if not os.path.exists(os.path.join(genome_dir, dbname)):
             os.makedirs(os.path.join(genome_dir, dbname))
-        response = urllib2.urlopen(link)
+        response = urlopen(link)
         
         sys.stderr.write("downloading...\n")
         with open(fname, "w") as f:
@@ -77,6 +80,15 @@ class ProviderBase(object):
         
         if hasattr(self, '_post_process_download'):
             self._post_process_download(name, genome_dir)
+
+        # Create readme with information
+        readme = os.path.join(genome_dir, dbname, "README.txt")
+        with open(readme, "w") as f:
+            f.write("name: {}\n".format(dbname))
+            f.write("original name: {}\n".format(os.path.split(link)[-1]))
+            f.write("url: {}\n".format(link))
+            f.write("date: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S")))
+
 
 register_provider = ProviderBase.register_provider
 
@@ -109,6 +121,21 @@ class EnsemblProvider(ProviderBase):
                 yield genome.get("dbname", ""), genome.get("name", "")
    
     def search(self, term):
+        """
+        Search for term in genome names and descriptions. 
+
+        The search is case-insensitive.
+
+        Parameters
+        ----------
+        term : str
+            search term
+        
+        Yields
+        ------
+        tuples with two items, name and description
+        """
+
         term = term.lower()
         for genome in self.list_available_genomes(as_dict=True):
             if term in ",".join([str(v) for v in genome.values()]).lower():
@@ -189,13 +216,28 @@ class UcscProvider(ProviderBase):
     def list_available_genomes(self, cache=True):
         if not cache or len(self.genomes) == 0:
 
-            response = urllib2.urlopen(self.das_url)
+            response = urlopen(self.das_url)
             d = xmltodict.parse(response.read())
             for genome in d['DASDSN']['DSN']:
                 self.genomes.append([genome['SOURCE']['@id'], genome['DESCRIPTION']])
         return self.genomes
     
     def search(self, term):
+        """
+        Search for term in genome names and descriptions. 
+
+        The search is case-insensitive.
+
+        Parameters
+        ----------
+        term : str
+            search term
+        
+        Yields
+        ------
+        tuples with two items, name and description
+        """
+  
         term = term.lower()
         for name,description in self.list_available_genomes():
             if term in name.lower() or term in description.lower():
@@ -243,8 +285,8 @@ class NCBIProvider(ProviderBase):
                 ]
         
         for fname in names:
-            response = urllib2.urlopen(self.assembly_url + "/" + fname)
-            lines = response.read().splitlines()
+            response = urlopen(self.assembly_url + "/" + fname)
+            lines = response.read().decode('utf-8').splitlines()
             header = lines[1].strip("# ").split("\t")
             for line in lines[2:]:
                 vals = line.strip("# ").split("\t")
@@ -269,6 +311,21 @@ class NCBIProvider(ProviderBase):
                     )
    
     def search(self, term):
+        """
+        Search for term in genome names and descriptions. 
+
+        The search is case-insensitive.
+
+        Parameters
+        ----------
+        term : str
+            search term
+        
+        Yields
+        ------
+        tuples with two items, name and description
+        """
+        
         term = term.lower()
         for genome in self.list_available_genomes(as_dict=True):
             term_str = ";".join([repr(x) for x in genome.values()])
@@ -309,25 +366,41 @@ class NCBIProvider(ProviderBase):
                 return name, url
     
     def _post_process_download(self, name, genome_dir):
+        """ 
+        Replace accessions with sequence names in fasta file.
         
+        Parameters
+        ----------
+        name : str
+            NCBI genome name
+
+        genome_dir : str
+            Genome directory
+        """
+        
+        # Get the FTP url for this specific genome and download
+        # the assembly report
         for genome in self.genomes:
             if genome["asm_name"] == name:
                 url = genome["ftp_path"]
                 url += "/" + url.split("/")[-1] + "_assembly_report.txt"
                 break
    
+        # Create mapping of accessions to names
         tr = {}
-        response = urllib2.urlopen(url)
-        for line in response.read().splitlines():
+        response = urlopen(url)
+        for line in response.read().decode('utf-8').splitlines():
             if line.startswith("#"):
                 continue
             vals = line.strip().split("\t")
             tr[vals[6]] = vals[0]
     
+        # Check of the original genome fasta exists
         fa = os.path.join(genome_dir, name, "{}.fa".format(name))
         if not os.path.exists(fa):
             raise Exception("Genome fasta file not found, {}".format(fa))
         
+        # Use a tmp file and replace the names
         new_fa = os.path.join(
                 genome_dir, name,
                 ".process.{}.fa".format(name)
@@ -347,6 +420,7 @@ class NCBIProvider(ProviderBase):
                     else:
                         new.write(line)
         
+        # Rename tmp file to real genome file
         shutil.move(new_fa, fa)
 
 if __name__ == "__main__":
