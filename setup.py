@@ -13,10 +13,11 @@ if sys.argv[-1] == 'publish':
 
 # trick to get rst file for PyPi, see:
 # http://stackoverflow.com/questions/26737222/pypi-description-markdown-doesnt-work/26737672#26737672
+# For the recent versions of pandoc, pypandoc >=1.3.3 is needed.
 try:
     import pypandoc
     long_description = pypandoc.convert('README.md', 'rst')
-except(IOError, ImportError):
+except(IOError, ImportError, RuntimeError):
     long_description = open('README.md').read()
 
 packages = [
