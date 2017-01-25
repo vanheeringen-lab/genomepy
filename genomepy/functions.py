@@ -70,7 +70,6 @@ def list_installed_genomes(genome_dir=None):
     -------
     list with genome names
     """
-
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
