@@ -8,5 +8,5 @@ def teardown():
     print("TEAR DOWN!")
 
 def test_basic():
-    cfg = genomepy.config
+    cfg = genomepy.functions.config
     assert 1 == len(cfg.keys())

@@ -383,7 +383,7 @@ class NCBIProvider(ProviderBase):
         return genomes
 
     def list_available_genomes(self, cache=True, as_dict=False):
-         == "hard""""
+        """"
         List all available genomes.
         
         Parameters
