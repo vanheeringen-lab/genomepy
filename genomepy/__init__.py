@@ -31,7 +31,7 @@ def list_available_genomes(provider=None):
 
     for p in providers:
         for row in p.list_available_genomes():
-            yield [p._name] + list(row)
+            yield [p.name] + list(row)
 
 def list_available_providers():
     """
@@ -76,7 +76,7 @@ def list_installed_genomes(genome_dir=None):
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
-        raise ConfigError("Please provide or configure a genome_dir")
+        raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
 
     return [f for f in os.listdir(genome_dir) if 
             _is_genome_dir(genome_dir + "/" + f)]
@@ -106,7 +106,7 @@ def search(term, provider=None):
 
     for p in providers:
         for row in p.search(term):
-            yield [p._name] + list(row)
+            yield [p.name] + list(row)
 
 def install_genome(name, provider, genome_dir=None):
     """
@@ -127,7 +127,7 @@ def install_genome(name, provider, genome_dir=None):
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
-        raise ConfigError("Please provide or configure a genome_dir")
+        raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
     
     p = ProviderBase.create(provider)
     p.download_genome(name, genome_dir)
@@ -152,7 +152,7 @@ def genome(name, genome_dir=None):
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
-        raise ConfigError("Please provide or configure a genome_dir")
+        raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
     
     fa = glob.glob("{}/{}/*.fa".format(genome_dir, name))[0]
     return Fasta(fa)

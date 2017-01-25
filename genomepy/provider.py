@@ -11,7 +11,7 @@ from genomepy import exceptions
 
 class ProviderBase(object):
     _providers = {}
-    _name = None
+    name = None
 
     @classmethod
     def create(cls, provider):
@@ -24,7 +24,7 @@ class ProviderBase(object):
     def register_provider(cls, provider):
         def decorator(subclass):
             cls._providers[provider] = subclass
-            subclass._name = provider
+            subclass.name = provider
             return subclass
         return decorator
     
