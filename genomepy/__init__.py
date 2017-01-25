@@ -83,11 +83,17 @@ def list_installed_genomes(genome_dir=None):
 
 def search(term, provider=None):
     """
-    Search for a genome. If provider is specified, search that 
-    specific provider, else search all providers."
+    Search for a genome. 
+    
+    If provider is specified, search only that specific provider, else 
+    search all providers. Both the name and description are used for the 
+    search. Seacrch term is case-insensitive.
 
     Parameters
     ----------
+    term : str
+        Search term, case-insensitive.
+
     provider : str , optional
         Provider name
 
