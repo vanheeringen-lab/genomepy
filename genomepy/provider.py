@@ -107,12 +107,21 @@ register_provider = ProviderBase.register_provider
 
 @register_provider('Ensembl')
 class EnsemblProvider(ProviderBase):
+    
+    """
+    Ensembl genome provider.
+
+    Will search both ensembl.org as well as ensemblgenomes.org.
+    The bacteria division is not yet supported.
+    """
+    
     rest_url = "http://rest.ensemblgenomes.org/"
     
     def __init__(self):
         self.genomes = None
 
     def request_json(self, ext):
+        """Make a REST request and return as json."""
         r = requests.get(self.rest_url + ext, 
             headers={ "Content-Type" : "application/json"})
 
@@ -122,6 +131,21 @@ class EnsemblProvider(ProviderBase):
         return r.json()
     
     def list_available_genomes(self, cache=True, as_dict=False):
+        """List all available genomes.
+        
+        Parameters
+        ----------
+        cache : bool, optional
+            By default this method will use cached results. If cache is False,
+            the information will be downloaded again.
+
+        as_dict : bool, optional
+            Return a dictionary of results.
+        
+        Yields
+        ------
+        genomes : dictionary or tuple
+        """
         ext = "/info/genomes?"
         if not cache or not self.genomes:
              
