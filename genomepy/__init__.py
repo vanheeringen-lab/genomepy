@@ -1,3 +1,4 @@
+"""Locate and download genome fasta files."""
 import os
 import glob
 from pyfaidx import Fasta
@@ -72,7 +73,6 @@ def list_installed_genomes(genome_dir=None):
     -------
     list with genome names
     """
-
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
@@ -96,7 +96,6 @@ def search(term, provider=None):
     tuple
         genome information (name/identfier and description)
     """
-
     if provider:
         providers = [ProviderBase.create(provider)]
     else:
@@ -123,7 +122,6 @@ def install_genome(name, provider, genome_dir=None):
     genome_dir : str
         Where to store the fasta files
     """
-    
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
@@ -148,7 +146,6 @@ def genome(name, genome_dir=None):
     -------
     pyfaidx.Fasta object
     """
-
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
