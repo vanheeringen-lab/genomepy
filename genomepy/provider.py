@@ -63,7 +63,7 @@ class ProviderBase(object):
         return self._providers.keys()
 
     def download_genome(self, name, genome_dir, mask="soft"):
-        """ 
+        """
         Download a (gzipped) genome file to a specific directory
 
         Parameters
@@ -159,7 +159,7 @@ class EnsemblProvider(ProviderBase):
                 yield genome.get("dbname", ""), genome.get("name", "")
    
     def search(self, term):
-   		"""
+        """
         Search for a genome at Ensembl. 
         
         Both the name and description are used for the 
@@ -175,10 +175,21 @@ class EnsemblProvider(ProviderBase):
         tuple
             genome information (name/identifier and description)
         """
-		term = term.lower()
+        term = term.lower()
         for genome in self.list_available_genomes(as_dict=True):
             if term in ",".join([str(v) for v in genome.values()]).lower():
                 yield genome.get("dbname", ""), genome.get("name", "")
+
+    def _get_genome_info(self, name):
+        """Get genome_info from json request."""
+        try:
+            ext = "/info/genomes/" + name + "/?"
+            genome_info = self.request_json(ext)
+        except requests.exceptions.HTTPError as e:
+            sys.stderr.write("Species not found: {}".format(e))
+            raise exceptions.GenomeDownloadError(
+                "Could not download genome {} from Ensembl".format(name))
+        return genome_info
 
     def get_genome_download_link(self, name, mask="soft"):
         """
@@ -195,16 +206,8 @@ class EnsemblProvider(ProviderBase):
         tuple (name, link) where name is the Ensembl dbname identifier
         and link is a str with the ftp download link.
         """
+        genome_info = self._get_genome_info(self, name)
 
-        # get the genome information
-        try:
-            ext = "/info/genomes/" + name + "/?"
-            genome_info = self.request_json(ext)
-        except requests.exceptions.HTTPError as e:
-            sys.stderr.write("Species not found: {}".format(e))
-            raise exceptions.GenomeDownloadError(
-                "Could not download genome {} from Ensembl".format(name))
-        
         # parse the division
         division = genome_info["division"].lower().replace("ensembl","")
         if division == "bacteria":
@@ -212,11 +215,9 @@ class EnsemblProvider(ProviderBase):
         
         # get version info from the dbname string
         p = re.compile(r'core_(\d+)')
-        dbname = genome_info["dbname"]
-        m = p.search(dbname)
+        m = p.search(genome_info["dbname"])
         if m:
             version = m.group(1)
-        species = genome_info["species"]
         
         ftp_site = "ftp.ensemblgenomes.org"
         if not division:
@@ -224,10 +225,10 @@ class EnsemblProvider(ProviderBase):
 
         if division:
             base_url = "/pub/{}/release-{}/fasta/{}/dna/"
-            ftp_dir = base_url.format(division, version, species)
+            ftp_dir = base_url.format(division, version, genome_info["species"])
         else:
             base_url = "/pub/release-{}/fasta/{}/dna/"
-            ftp_dir = base_url.format(version, species)
+            ftp_dir = base_url.format(version, genome_info["species"])
         
         ftp = ftplib.FTP(ftp_site)
         ftp.login("anonymous", "s.vanheeringen@science.ru.nl")
@@ -241,7 +242,7 @@ class EnsemblProvider(ProviderBase):
 
         for fname in fnames:
             if pattern in fname:
-                return dbname, "ftp://" + ftp_site + fname
+                return genome_info["dbname"], "ftp://" + ftp_site + fname
 
 @register_provider('UCSC')
 class UcscProvider(ProviderBase):
@@ -284,7 +285,7 @@ class UcscProvider(ProviderBase):
         tuple
             genome information (name/identifier and description)
         """
-		term = term.lower()
+        term = term.lower()
         for name,description in self.list_available_genomes():
             if term in name.lower() or term in description.lower():
                 yield name,description
