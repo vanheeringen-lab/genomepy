@@ -1,3 +1,4 @@
+"""Genome providers."""
 import sys
 import requests
 import re
@@ -10,19 +11,46 @@ import xmltodict
 from genomepy import exceptions
 
 class ProviderBase(object):
+    
+    """Provider base class.
+
+    Use to get a list of available providers:
+    >>> ProviderBase.list_providers()
+    ['UCSC', 'NCBI', 'Ensembl']
+
+    Create a provider:
+    >>> p = ProviderBase.create("UCSC")
+    >>> for name, desc in p.search("hg38"):
+    ...     print(desc)
+    Human Dec. 2013 (GRCh38/hg38) Genome at UCSC
+    """
     _providers = {}
     name = None
 
     @classmethod
-    def create(cls, provider):
+    def create(cls, name):
+        """Create a provider based on the provider name.
+
+        Parameters
+        ----------
+        name : str
+            Name of the provider (eg. UCSC, Ensembl, ...)
+        
+        Returns
+        -------
+        provider : Provider instance
+            Provider instance.
+        """
         try:
-            return cls._providers[provider]()
+            return cls._providers[name]()
         except KeyError:
             raise Exception("Unknown provider")
 
     @classmethod
     def register_provider(cls, provider):
+        """Register method to keep list of providers."""
         def decorator(subclass):
+            """Register as decorator function."""¨
             cls._providers[provider] = subclass
             subclass.name = provider
             return subclass
@@ -30,6 +58,7 @@ class ProviderBase(object):
     
     @classmethod
     def list_providers(self):
+        """List 
         return self._providers.keys()
 
     def download_genome(self, name, genome_dir, mask="soft"):
