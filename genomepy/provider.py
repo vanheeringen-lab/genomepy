@@ -138,6 +138,9 @@ class EnsemblProvider(ProviderBase):
 
     def request_json(self, ext):
         """Make a REST request and return as json."""
+        if self.rest_url.endswith("/") and ext.startswith("/"):
+            ext = ext[1:]
+        
         r = requests.get(self.rest_url + ext, 
             headers={ "Content-Type" : "application/json"})
 
@@ -172,7 +175,7 @@ class EnsemblProvider(ProviderBase):
             if as_dict:
                 yield genome
             else:
-                yield genome.get("dbname", ""), genome.get("name", "")
+                yield genome.get("assembly_name", ""), genome.get("name", "")
    
     def search(self, term):
         """
@@ -194,13 +197,22 @@ class EnsemblProvider(ProviderBase):
         term = term.lower()
         for genome in self.list_available_genomes(as_dict=True):
             if term in ",".join([str(v) for v in genome.values()]).lower():
-                yield genome.get("dbname", ""), genome.get("name", "")
+                yield genome.get("assembly_name", ""), genome.get("name", "")
 
     def _get_genome_info(self, name):
         """Get genome_info from json request."""
         try:
-            ext = "/info/genomes/" + name + "/?"
-            genome_info = self.request_json(ext)
+            assembly_id = ""
+            for genome in self.list_available_genomes(as_dict=True):
+                if genome.get("assembly_name", "") == name:
+                    assembly_id = genome.get("assembly_id", "")
+                    break
+            if assembly_id:
+                ext = "info/genomes/assembly/" + assembly_id + "/?"
+                genome_info = self.request_json(ext)
+            else:
+                raise exceptions.GenomeDownloadError(
+                    "Could not download genome {} from Ensembl".format(name))
         except requests.exceptions.HTTPError as e:
             sys.stderr.write("Species not found: {}".format(e))
             raise exceptions.GenomeDownloadError(
@@ -258,7 +270,7 @@ class EnsemblProvider(ProviderBase):
 
         for fname in fnames:
             if pattern in fname:
-                return genome_info["dbname"], "ftp://" + ftp_site + fname
+                return genome_info["assembly_name"], "ftp://" + ftp_site + fname
 
 @register_provider('UCSC')
 class UcscProvider(ProviderBase):
@@ -429,7 +441,6 @@ class NCBIProvider(ProviderBase):
         ------
         tuples with two items, name and description
         """
-        
         term = term.lower()
         for genome in self.list_available_genomes(as_dict=True):
             term_str = ";".join([repr(x) for x in genome.values()])
