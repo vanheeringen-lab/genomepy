@@ -206,7 +206,7 @@ class EnsemblProvider(ProviderBase):
         tuple (name, link) where name is the Ensembl dbname identifier
         and link is a str with the ftp download link.
         """
-        genome_info = self._get_genome_info(self, name)
+        genome_info = self._get_genome_info(name)
 
         # parse the division
         division = genome_info["division"].lower().replace("ensembl","")
@@ -249,6 +249,8 @@ class UcscProvider(ProviderBase):
      
     """
     UCSC genome provider.
+    
+    The UCSC DAS server is used to search and list genomes. 
     """
     
     ucsc_url = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/chromFa.tar.gz"
@@ -257,16 +259,29 @@ class UcscProvider(ProviderBase):
     
     def __init__(self):
         self.genomes = []
-    
+   
     def list_available_genomes(self, cache=True):
-        if not cache or len(self.genomes) == 0:
+        """
+        List all available genomes.
+        
+        Parameters
+        ----------
+        cache : bool, optional
+            By default this method will use cached results. If cache is False,
+            the information will be downloaded again.
 
+        Returns
+        -------
+        genomes : list
+        """
+        if not cache or len(self.genomes) == 0:
             response = urllib2.urlopen(self.das_url)
             d = xmltodict.parse(response.read())
             for genome in d['DASDSN']['DSN']:
-                self.genomes.append([genome['SOURCE']['@id'], genome['DESCRIPTION']])
+                self.genomes.append([
+                    genome['SOURCE']['@id'], genome['DESCRIPTION']
+                    ])
         return self.genomes
-
     
     def search(self, term):
         """
@@ -305,7 +320,9 @@ class UcscProvider(ProviderBase):
         tuple (name, link) where name is the genome build identifier
         and link is a str with the http download link.
         """
-        
+        if mask:
+            sys.stderr.write("Ignoring mask parameters for UCSC\n")
+
         for genome_url in [self.ucsc_url, self.alt_ucsc_url]:
             remote = genome_url.format(name)
             ret = requests.head(remote)
