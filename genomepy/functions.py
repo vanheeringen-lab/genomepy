@@ -1,3 +1,4 @@
+"""Module-level functions."""
 import os
 import glob
 from pyfaidx import Fasta
@@ -14,7 +15,7 @@ def list_available_genomes(provider=None):
     ----------
     provider : str, optional
         List genomes from specific provider. Genomes from all
-        provider will be returned if not specified.
+        providers will be returned if not specified.
 
     Returns
     -------
@@ -29,7 +30,7 @@ def list_available_genomes(provider=None):
 
     for p in providers:
         for row in p.list_available_genomes():
-            yield [p._name] + list(row)
+            yield [p.name] + list(row)
 
 def list_available_providers():
     """
@@ -49,7 +50,6 @@ def _is_genome_dir(dirname):
     ----------
     dirname : str
         Directory name
-
 
     Returns
     ------
@@ -74,18 +74,24 @@ def list_installed_genomes(genome_dir=None):
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
-        raise ConfigError("Please provide or configure a genome_dir")
+        raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
 
     return [f for f in os.listdir(genome_dir) if 
             _is_genome_dir(genome_dir + "/" + f)]
 
 def search(term, provider=None):
     """
-    Search for a genome. If provider is specified, search that 
-    specific provider, else search all providers."
+    Search for a genome.
+
+     If provider is specified, search only that specific provider, else 
+     search all providers. Both the name and description are used for the 
+     search. Seacrch term is case-insensitive.
 
     Parameters
     ----------
+    term : str
+        Search term, case-insensitive.
+    
     provider : str , optional
         Provider name
 
@@ -94,7 +100,6 @@ def search(term, provider=None):
     tuple
         genome information (name/identfier and description)
     """
-
     if provider:
         providers = [ProviderBase.create(provider)]
     else:
@@ -104,7 +109,7 @@ def search(term, provider=None):
 
     for p in providers:
         for row in p.search(term):
-            yield [p._name] + list(row)
+            yield [p.name] + list(row)
 
 def install_genome(name, provider, genome_dir=None):
     """
@@ -121,11 +126,10 @@ def install_genome(name, provider, genome_dir=None):
     genome_dir : str
         Where to store the fasta files
     """
-    
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
-        raise ConfigError("Please provide or configure a genome_dir")
+        raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
     
     p = ProviderBase.create(provider)
     p.download_genome(name, genome_dir)
@@ -146,11 +150,10 @@ def genome(name, genome_dir=None):
     -------
     pyfaidx.Fasta object
     """
-
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
-        raise ConfigError("Please provide or configure a genome_dir")
+        raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
     
     fa = glob.glob("{}/{}/*.fa".format(genome_dir, name))[0]
     return Fasta(fa)
