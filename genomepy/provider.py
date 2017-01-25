@@ -131,7 +131,8 @@ class EnsemblProvider(ProviderBase):
         return r.json()
     
     def list_available_genomes(self, cache=True, as_dict=False):
-        """List all available genomes.
+        """
+        List all available genomes.
         
         Parameters
         ----------
@@ -158,7 +159,23 @@ class EnsemblProvider(ProviderBase):
                 yield genome.get("dbname", ""), genome.get("name", "")
    
     def search(self, term):
-        term = term.lower()
+   		"""
+        Search for a genome at Ensembl. 
+        
+        Both the name and description are used for the 
+        search. Seacrch term is case-insensitive.
+    
+        Parameters
+        ----------
+        term : str
+            Search term, case-insensitive.
+    
+        Yields
+        ------
+        tuple
+            genome information (name/identifier and description)
+        """
+		term = term.lower()
         for genome in self.list_available_genomes(as_dict=True):
             if term in ",".join([str(v) for v in genome.values()]).lower():
                 yield genome.get("dbname", ""), genome.get("name", "")
@@ -228,6 +245,11 @@ class EnsemblProvider(ProviderBase):
 
 @register_provider('UCSC')
 class UcscProvider(ProviderBase):
+     
+    """
+    UCSC genome provider.
+    """
+    
     ucsc_url = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/chromFa.tar.gz"
     alt_ucsc_url = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/{0}.fa.gz"
     das_url = "http://genome.ucsc.edu/cgi-bin/das/dsn"
@@ -246,7 +268,23 @@ class UcscProvider(ProviderBase):
 
     
     def search(self, term):
-        term = term.lower()
+        """
+        Search for a genome at UCSC. 
+        
+        Both the name and description are used for the 
+        search. Seacrch term is case-insensitive.
+    
+        Parameters
+        ----------
+        term : str
+            Search term, case-insensitive.
+    
+        Yields
+        ------
+        tuple
+            genome information (name/identifier and description)
+        """
+		term = term.lower()
         for name,description in self.list_available_genomes():
             if term in name.lower() or term in description.lower():
                 yield name,description
