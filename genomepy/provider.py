@@ -395,7 +395,7 @@ class NCBIProvider(ProviderBase):
         return genomes
 
     def list_available_genomes(self, cache=True, as_dict=False):
-        """"
+        """
         List all available genomes.
         
         Parameters
@@ -484,7 +484,7 @@ class NCBIProvider(ProviderBase):
         raise exceptions.GenomeDownloadError("Could not download genome from NCBI")
     
     def _post_process_download(self, name, genome_dir):
-        """ 
+        """
         Replace accessions with sequence names in fasta file.
         
         Parameters
