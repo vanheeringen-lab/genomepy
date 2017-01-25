@@ -50,7 +50,7 @@ class ProviderBase(object):
     def register_provider(cls, provider):
         """Register method to keep list of providers."""
         def decorator(subclass):
-            """Register as decorator function."""¨
+            """Register as decorator function."""
             cls._providers[provider] = subclass
             subclass.name = provider
             return subclass
@@ -58,7 +58,7 @@ class ProviderBase(object):
     
     @classmethod
     def list_providers(self):
-        """List 
+        """List available providers.""" 
         return self._providers.keys()
 
     def download_genome(self, name, genome_dir, mask="soft"):
