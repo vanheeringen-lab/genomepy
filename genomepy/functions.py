@@ -3,6 +3,7 @@ import os
 import glob
 from pyfaidx import Fasta
 from genomepy.provider import ProviderBase
+from genomepy.utils import generate_sizes
 import norns
 
 config = norns.config("genomepy", default="cfg/default.yaml")
@@ -132,6 +133,7 @@ def install_genome(name, provider, genome_dir=None):
     
     p = ProviderBase.create(provider)
     p.download_genome(name, genome_dir)
+    generate_sizes(name, genome_dir)
 
 def genome(name, genome_dir=None):
     """
@@ -154,5 +156,13 @@ def genome(name, genome_dir=None):
     if not genome_dir:
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
     
-    fa = glob.glob("{}/{}/*.fa".format(genome_dir, name))[0]
-    return Fasta(fa)
+    pattern = os.path.join(genome_dir, name, "*.fa")
+    fnames = glob.glob(pattern)
+    if len(fnames) > 1:
+        fname = os.path.join(genome_dir, name, "{}.fa".format(name))
+        if not fname in fnames:
+            raise Exception("More than one FASTA file found, no {}.fa!".format(name))
+    else:
+        fname = fnames[0]
+
+    return Fasta(fname)

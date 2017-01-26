@@ -11,6 +11,7 @@ except ImportError:
 import zlib
 import xmltodict
 import shutil
+import tarfile
 import time
 
 from genomepy import exceptions
@@ -67,6 +68,21 @@ class ProviderBase(object):
         """List available providers.""" 
         return self._providers.keys()
 
+    def tar_to_bigfile(self, fname, outdir):
+        """Convert tar of multiple FASTAs to one file."""
+        fnames = []
+        with tarfile.open(fname) as tar:
+            for info in tar:
+                if info.path != os.path.basename(info.path):
+                    raise Exception("Cannot extract this file.")
+                fnames.append(os.path.join(outdir, info.path))
+            tar.extractall(path=outdir)
+        with open(fname, "w") as out:
+            for infile in fnames:
+                for line in open(infile):
+                    out.write(line)
+                os.unlink(infile)
+
     def download_genome(self, name, genome_dir, mask="soft"):
         """
         Download a (gzipped) genome file to a specific directory
@@ -97,13 +113,16 @@ class ProviderBase(object):
             os.makedirs(os.path.join(genome_dir, dbname))
         response = urlopen(link)
         
-        sys.stderr.write("downloading...\n")
+        sys.stderr.write("downloading from {}...\n".format(link))
         with open(fname, "w") as f:
             if gzipped:
                 f.write(zlib.decompress(response.read(), zlib.MAX_WBITS | 16))
             else:
                 f.write(response.read())
         sys.stderr.write("done...\n")
+        
+        if link.endswith("tar.gz"):
+            self.tar_to_bigfile(fname, os.path.join(genome_dir, dbname)) 
         sys.stderr.write("name: {}\n".format(dbname))
         sys.stderr.write("fasta: {}\n".format(fname))
         
@@ -447,10 +466,10 @@ class NCBIProvider(ProviderBase):
 
             if term in term_str.lower():
                 yield (
-                        genome.get("asm_name", ""), 
+                        genome.get("asm_name", "").encode('utf-8'), 
                         "; ".join((
-                            genome.get("organism_name", ""),
-                            genome.get("submitter", ""),
+                            genome.get("organism_name", "").encode('utf-8'),
+                            genome.get("submitter", "").encode('utf-8'),
                         ))
                     )
 
