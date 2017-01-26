@@ -16,7 +16,7 @@ python:
 #  # install miniconda for Python dependencies
 
 install:
-  - pip install nose xdg coverage pyyaml pyfaidx requests
+  - pip install nose xdg coverage pyyaml pyfaidx requests xmltodict
   - pip install git+https://github.com/simonvh/norns.git
   - python setup.py develop
   - python setup.py build
