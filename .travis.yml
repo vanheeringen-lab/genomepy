@@ -17,7 +17,7 @@ python:
 
 install:
   - pip install nose xdg coverage pyyaml
-  - pip install https://github.com/simonvh/norns.git
+  - pip install git+https://github.com/simonvh/norns.git
   - python setup.py develop
   - python setup.py build
   - pip install coveralls
