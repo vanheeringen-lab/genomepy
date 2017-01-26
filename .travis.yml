@@ -24,6 +24,6 @@ install:
 # # command to run tests, e.g. python setup.py test
 script:  
   - nosetests
- 
+  - genomepy providers 
 #after_sucess:
 #  coveralls
