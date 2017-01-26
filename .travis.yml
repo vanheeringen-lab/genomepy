@@ -17,7 +17,7 @@ python:
 
 install:
   - pip install nose xdg coverage pyyaml pyfaidx requests xmltodict
-  - pip install git+https://github.com/simonvh/norns.git
+  - pip install git+https://github.com/simonvh/norns.git@develop
   - python setup.py develop
   - python setup.py build
   - pip install coveralls
