@@ -121,7 +121,7 @@ class ProviderBase(object):
         response = urlopen(link)
         
         sys.stderr.write("downloading from {}...\n".format(link))
-        with open(fname, "w") as f:
+        with open(fname, "wb") as f:
             if gzipped:
                 f.write(zlib.decompress(response.read(), zlib.MAX_WBITS | 16))
             else:
