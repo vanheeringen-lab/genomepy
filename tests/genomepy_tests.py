@@ -1,6 +1,12 @@
 from nose.tools import *
 import genomepy
 
+# Python 2
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
 def setup():
     print("SETUP!")
 

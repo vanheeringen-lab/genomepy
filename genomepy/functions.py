@@ -8,6 +8,12 @@ import norns
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
+# Python 2
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
 def list_available_genomes(provider=None):
     """
     List all available genomes.
