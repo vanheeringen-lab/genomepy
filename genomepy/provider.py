@@ -473,10 +473,10 @@ class NCBIProvider(ProviderBase):
 
             if term in term_str.lower():
                 yield (
-                        genome.get("asm_name", "").encode('utf-8'), 
+                        genome.get("asm_name", ""), 
                         "; ".join((
-                            genome.get("organism_name", "").encode('utf-8'),
-                            genome.get("submitter", "").encode('utf-8'),
+                            genome.get("organism_name", ""),
+                            genome.get("submitter", ""),
                         ))
                     )
 
