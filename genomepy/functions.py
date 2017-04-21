@@ -155,10 +155,21 @@ def genome(name, genome_dir=None):
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
-    
+
+    if not os.path.exists(genome_dir):
+        raise FileNotFoundError(
+                "genome_dir {} does not exist".format(genome_dir)
+                )
+
     pattern = os.path.join(genome_dir, name, "*.fa")
     fnames = glob.glob(pattern)
-    if len(fnames) > 1:
+    if len(fnames) == 0:
+        raise FileNotFoundError(
+                "no *.fa files found in genome_dir {}".format(
+                    os.path.join(genome_dir, name)
+                    )
+                )
+    elif len(fnames) > 1:
         fname = os.path.join(genome_dir, name, "{}.fa".format(name))
         if not fname in fnames:
             raise Exception("More than one FASTA file found, no {}.fa!".format(name))
