@@ -4,13 +4,33 @@
 
 Easily install and use genomes in Python and elsewhere!
 
-## Installation
+## Installation 
+
+### Python 2
 
 Via pip, for now.
 
 ```
 $ pip install genomepy
 ```
+
+### Python 3
+
+Please note, this version of genomepy currently does not work for Python 3 due to a bug in my code. 
+For now, you can either use Python 2 or install the development version:
+
+Installation of (unstable) development branch:
+```
+$ pip install git+https://github.com/simonvh/norns.git@develop
+$ pip install git+https://github.com/simonvh/genomepy.git@develop
+```
+
+Please note: there is a small change in this version, which is where the genome files will be stored. Instead of providing this at the command line it's specified in the config file  `~/.config/genomepy/genomepy.yaml`:
+
+```
+genome_path: ~/genomes
+```
+
 
 ## Usage
 
