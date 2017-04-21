@@ -1,6 +1,6 @@
 """Search, download and use genome FASTA files."""
 import genomepy.functions
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 __author__ = "Simon van Heeringen"
 
 list_available_providers = genomepy.functions.list_available_providers
