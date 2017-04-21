@@ -13,6 +13,7 @@ import xmltodict
 import shutil
 import tarfile
 import time
+from tempfile import mkdtemp
 
 from genomepy import exceptions
 
@@ -68,20 +69,26 @@ class ProviderBase(object):
         """List available providers.""" 
         return self._providers.keys()
 
-    def tar_to_bigfile(self, fname, outdir):
+    def tar_to_bigfile(self, fname, outfile):
         """Convert tar of multiple FASTAs to one file."""
         fnames = []
+        tmpdir = mkdtemp()
+        
+        # Extract files to temporary directory
         with tarfile.open(fname) as tar:
-            for info in tar:
-                if info.path != os.path.basename(info.path):
-                    raise Exception("Cannot extract this file.")
-                fnames.append(os.path.join(outdir, info.path))
-            tar.extractall(path=outdir)
-        with open(fname, "w") as out:
+            tar.extractall(path=tmpdir)
+        for root, dirs, files in os.walk(tmpdir):
+            fnames += [os.path.join(root, fname) for fname in files]
+        
+        # Concatenate
+        with open(outfile, "w") as out:
             for infile in fnames:
                 for line in open(infile):
                     out.write(line)
                 os.unlink(infile)
+        
+        # Remove temp dir
+        shutil.rmtree(tmpdir)
 
     def download_genome(self, name, genome_dir, mask="soft"):
         """
@@ -122,7 +129,7 @@ class ProviderBase(object):
         sys.stderr.write("done...\n")
         
         if link.endswith("tar.gz"):
-            self.tar_to_bigfile(fname, os.path.join(genome_dir, dbname)) 
+            self.tar_to_bigfile(fname, fname) 
         sys.stderr.write("name: {}\n".format(dbname))
         sys.stderr.write("fasta: {}\n".format(fname))
         
