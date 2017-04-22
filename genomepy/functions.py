@@ -138,8 +138,8 @@ def install_genome(name, provider, genome_dir=None):
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
     
     p = ProviderBase.create(provider)
-    p.download_genome(name, genome_dir)
-    generate_sizes(name, genome_dir)
+    local_name = p.download_genome(name, genome_dir)
+    generate_sizes(local_name, genome_dir)
 
 def genome(name, genome_dir=None):
     """

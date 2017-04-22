@@ -3,12 +3,13 @@ import sys
 import requests
 import re
 import os
+import io
 import ftplib
 try: 
     from urllib.request import urlopen
 except ImportError:
     from urllib2 import urlopen
-import zlib
+import gzip
 import xmltodict
 import shutil
 import tarfile
@@ -111,6 +112,8 @@ class ProviderBase(object):
             os.makedirs(genome_dir)
         
         dbname, link = self.get_genome_download_link(name, mask)
+        dbname = dbname.replace(" ", "_")
+
         fname = os.path.join(genome_dir, dbname, dbname + ".fa") 
         gzipped = False
         if link.endswith(".gz"):
@@ -123,7 +126,9 @@ class ProviderBase(object):
         sys.stderr.write("downloading from {}...\n".format(link))
         with open(fname, "wb") as f:
             if gzipped:
-                f.write(zlib.decompress(response.read(), zlib.MAX_WBITS | 16))
+                # Supports both Python 2.7 as well as 3
+                with gzip.GzipFile(fileobj=io.BytesIO(response.read())) as f_in:
+                    f.write(f_in.read())
             else:
                 f.write(response.read())
         sys.stderr.write("done...\n")
@@ -143,7 +148,8 @@ class ProviderBase(object):
             f.write("original name: {}\n".format(os.path.split(link)[-1]))
             f.write("url: {}\n".format(link))
             f.write("date: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S")))
-
+        
+        return dbname
 
 register_provider = ProviderBase.register_provider
 
@@ -538,6 +544,7 @@ class NCBIProvider(ProviderBase):
             vals = line.strip().split("\t")
             tr[vals[6]] = vals[0]
     
+        name = name.replace(" ", "_")
         # Check of the original genome fasta exists
         fa = os.path.join(genome_dir, name, "{}.fa".format(name))
         if not os.path.exists(fa):
