@@ -33,3 +33,16 @@ def test_ucsc_genome():
     seq = g["chrIV"][1337000:1337020] 
     assert str(seq) == "TTTGGTTGTTCCTCTTCCTT"
     shutil.rmtree(tmp)
+
+def test_Ensembl_genome(): 
+    """Test Ensembl.
+    
+    Download Drosophila genome from Ensembl and retrieve a 
+    specific sequence.
+    """
+    tmp = mkdtemp()
+    genomepy.install_genome("BDGP6", "Ensembl", genome_dir=tmp)
+    g = genomepy.genome("BDGP6", genome_dir=tmp)
+    seq = g["3L"][10637840:10637875] 
+    assert str(seq).upper() == "TTTGCAACAGCTGCCGCAGTGTGACCGTTGTACTG"
+    shutil.rmtree(tmp)
