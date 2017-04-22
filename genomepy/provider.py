@@ -3,12 +3,13 @@ import sys
 import requests
 import re
 import os
+import io
 import ftplib
 try: 
     from urllib.request import urlopen
 except ImportError:
     from urllib2 import urlopen
-import zlib
+import gzip
 import xmltodict
 import shutil
 import tarfile
@@ -123,7 +124,9 @@ class ProviderBase(object):
         sys.stderr.write("downloading from {}...\n".format(link))
         with open(fname, "wb") as f:
             if gzipped:
-                f.write(zlib.decompress(response.read(), zlib.MAX_WBITS | 16))
+                # Supports both Python 2.7 as well as 3
+                with gzip.GzipFile(fileobj=io.BytesIO(response.read())) as f_in:
+                    f.write(f_in.read())
             else:
                 f.write(response.read())
         sys.stderr.write("done...\n")
