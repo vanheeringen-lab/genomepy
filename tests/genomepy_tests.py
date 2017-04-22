@@ -34,7 +34,7 @@ def test_ucsc_genome():
     assert str(seq) == "TTTGGTTGTTCCTCTTCCTT"
     shutil.rmtree(tmp)
 
-def test_Ensembl_genome(): 
+def test_ensembl_genome(): 
     """Test Ensembl.
     
     Download Drosophila genome from Ensembl and retrieve a 
@@ -46,3 +46,59 @@ def test_Ensembl_genome():
     seq = g["3L"][10637840:10637875] 
     assert str(seq).upper() == "TTTGCAACAGCTGCCGCAGTGTGACCGTTGTACTG"
     shutil.rmtree(tmp)
+
+def test_ncbi_genome(): 
+    """Test NCBI.
+    
+    Download Drosophila genome from NCBI and retrieve a 
+    specific sequence.
+    """
+    tmp = mkdtemp()
+    genomepy.install_genome("Release 6 plus ISO1 MT", "NCBI", genome_dir=tmp)
+    g = genomepy.genome("Release_6_plus_ISO1_MT", genome_dir=tmp)
+    seq = g["3L"][10637840:10637875] 
+    assert str(seq).upper() == "TTTGCAACAGCTGCCGCAGTGTGACCGTTGTACTG"
+    shutil.rmtree(tmp)
+
+def test_ucsc_human(): 
+    """Test UCSC.
+    
+    Download human genome from UCSC and retrieve a 
+    specific sequence.
+    """
+    tmp = mkdtemp()
+    genomepy.install_genome("hg38", "UCSC", genome_dir=tmp)
+    g = genomepy.genome("hg38", genome_dir=tmp)
+    seq = g["chr6"][166168664-166168679] 
+    assert str(seq) == "GTCCTCCTCGCTCTCTT"
+    shutil.rmtree(tmp)
+
+def test_ensembl_human(): 
+    """Test Ensembl.
+    
+    Download human genome from Ensembl and retrieve a 
+    specific sequence.
+    """
+    tmp = mkdtemp()
+    genomepy.install_genome("homo_sapiens_core_88_38", "Ensembl", genome_dir=tmp)
+    g = genomepy.genome("homo_sapiens_core_88_38", genome_dir=tmp)
+    seq = g["chr6"][166168664-166168679] 
+    assert str(seq) == "GTCCTCCTCGCTCTCTT"
+    shutil.rmtree(tmp)
+
+def test_ncbi_human(): 
+    """Test NCBI.
+    
+    Download human genome from NCBI and retrieve a 
+    specific sequence.
+    """
+    tmp = mkdtemp()
+    genomepy.install_genome("GRCh38.p9", "NCBI", genome_dir=tmp)
+    g = genomepy.genome("GRCh38.p9", genome_dir=tmp)
+    seq = g["chr6"][166168664-166168679] 
+    assert str(seq) == "GTCCTCCTCGCTCTCTT"
+    shutil.rmtree(tmp)
+
+test_ncbi_human.slow = 1
+test_ensembl_human.slow = 1
+test_ucsc_human.slow = 1

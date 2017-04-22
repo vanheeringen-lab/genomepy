@@ -112,6 +112,8 @@ class ProviderBase(object):
             os.makedirs(genome_dir)
         
         dbname, link = self.get_genome_download_link(name, mask)
+        dbname = dbname.replace(" ", "_")
+
         fname = os.path.join(genome_dir, dbname, dbname + ".fa") 
         gzipped = False
         if link.endswith(".gz"):
@@ -146,7 +148,8 @@ class ProviderBase(object):
             f.write("original name: {}\n".format(os.path.split(link)[-1]))
             f.write("url: {}\n".format(link))
             f.write("date: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S")))
-
+        
+        return dbname
 
 register_provider = ProviderBase.register_provider
 
@@ -541,6 +544,7 @@ class NCBIProvider(ProviderBase):
             vals = line.strip().split("\t")
             tr[vals[6]] = vals[0]
     
+        name = name.replace(" ", "_")
         # Check of the original genome fasta exists
         fa = os.path.join(genome_dir, name, "{}.fa".format(name))
         if not os.path.exists(fa):
