@@ -124,13 +124,13 @@ class ProviderBase(object):
         response = urlopen(link)
         
         sys.stderr.write("downloading from {}...\n".format(link))
-        with open(fname, "wb") as f:
+        with open(fname, "wb") as f_out:
             if gzipped:
                 # Supports both Python 2.7 as well as 3
                 with gzip.GzipFile(fileobj=io.BytesIO(response.read())) as f_in:
-                    f.write(f_in.read())
+                    shutil.copyfileobj(f_in, f_out)
             else:
-                f.write(response.read())
+                f_out.write(response.read())
         sys.stderr.write("done...\n")
         
         if link.endswith("tar.gz"):

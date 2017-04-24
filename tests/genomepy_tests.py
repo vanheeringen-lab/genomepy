@@ -68,7 +68,7 @@ def test_ncbi_genome():
 
 def test_ucsc_human(): 
     """Test UCSC.
-    
+   
     Download human genome from UCSC and retrieve a 
     specific sequence.
     """
