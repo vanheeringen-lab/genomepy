@@ -36,7 +36,7 @@ The genome directory can also be explicitly specified in both the Python API as 
 ```python
 >>> import genomepy
 >>> for row in genomepy.search("GRCh38"):
-...     print "\t".join(row)
+...     print("\t".join(row))
 ...
 UCSC	hg38	Human Dec. 2013 (GRCh38/hg38) Genome at UCSC
 NCBI	GRCh38.p10	Homo sapiens; Genome Reference Consortium
