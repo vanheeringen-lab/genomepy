@@ -75,8 +75,8 @@ def test_ucsc_human():
     tmp = mkdtemp()
     genomepy.install_genome("hg38", "UCSC", genome_dir=tmp)
     g = genomepy.genome("hg38", genome_dir=tmp)
-    seq = g["chr6"][166168664-166168679] 
-    assert str(seq) == "GTCCTCCTCGCTCTCTT"
+    seq = g["chr6"][166168664:166168679] 
+    assert str(seq) == "CCTCCTCGCTCTCTT"
     shutil.rmtree(tmp)
 
 def test_ensembl_human(): 
@@ -86,10 +86,11 @@ def test_ensembl_human():
     specific sequence.
     """
     tmp = mkdtemp()
-    genomepy.install_genome("homo_sapiens_core_88_38", "Ensembl", genome_dir=tmp)
-    g = genomepy.genome("homo_sapiens_core_88_38", genome_dir=tmp)
-    seq = g["chr6"][166168664-166168679] 
-    assert str(seq) == "GTCCTCCTCGCTCTCTT"
+    genomepy.install_genome("GRCh38.p10", "Ensembl", genome_dir=tmp)
+    g = genomepy.genome("GRCh38.p10", genome_dir=tmp)
+    seq = g["6"][166168664:166168679] 
+    print seq
+    assert str(seq) == "CCTCCTCGCTCTCTT"
     shutil.rmtree(tmp)
 
 def test_ncbi_human(): 
@@ -101,8 +102,9 @@ def test_ncbi_human():
     tmp = mkdtemp()
     genomepy.install_genome("GRCh38.p9", "NCBI", genome_dir=tmp)
     g = genomepy.genome("GRCh38.p9", genome_dir=tmp)
-    seq = g["chr6"][166168664-166168679] 
-    assert str(seq) == "GTCCTCCTCGCTCTCTT"
+    seq = g["6"][166168664:166168679] 
+    print seq
+    assert str(seq) == "CCTCCTCGCTCTCTT"
     shutil.rmtree(tmp)
 
 test_ncbi_human.slow = 1
