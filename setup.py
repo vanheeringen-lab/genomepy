@@ -7,7 +7,7 @@ except ImportError:
     from distutils.core import setup
 
 # https://packaging.python.org/single_source_version/
-execfile("genomepy/__about__.py")
+exec(open("genomepy/__about__.py").read())
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
