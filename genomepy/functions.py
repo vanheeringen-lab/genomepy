@@ -163,7 +163,7 @@ def genome(name, genome_dir=None):
     if not genome_dir:
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
     
-    genome_dir = os.path.expanduser(path)
+    genome_dir = os.path.expanduser(genome_dir)
     if not os.path.exists(genome_dir):
         raise FileNotFoundError(
                 "genome_dir {} does not exist".format(genome_dir)
