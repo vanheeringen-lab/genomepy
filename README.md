@@ -6,6 +6,9 @@
 
 Easily install and use genomes in Python and elsewhere!
 
+The goal is to have a `simple` and `straightforward` way to download and use genomic sequences. 
+Currently, genomepy supports UCSC, Ensembl and NCBI. 
+
 ## Installation
 
 Via pip, for now.
@@ -24,7 +27,7 @@ For instance, to set the default genome directory to `/data/genomes`, edit `~/.c
 genome_dir: /data/genomes
 ```
 
-The default genome directory can also be explicitly specified in both the Python API as well as on the command-line.
+The genome directory can also be explicitly specified in both the Python API as well as on the command-line.
 
 ## Usage
 
@@ -99,6 +102,12 @@ done...
 name: hg38
 fasta: /data/genomes/hg38/hg38.fa
 ```
+
+## Known issues
+
+There might be issues with specific genome sequences.
+Sadly, not everything (naming, structure, filenames) is consistent. 
+Let me know if you encounter issues with certain downloads.
 
 ## Todo
 
