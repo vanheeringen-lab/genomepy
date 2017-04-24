@@ -106,19 +106,19 @@ fasta: /data/genomes/hg38/hg38.fa
 ## Known issues
 
 There might be issues with specific genome sequences.
-Sadly, not everything (naming, structure, filenames) is consistent. 
+Sadly, not everything (naming, structure, filenames) is always consistent on the provider end. 
 Let me know if you encounter issues with certain downloads.
 
 ## Todo
 
 * More tests!
-* Caching of UCSC/Ensembl genome listings
+* Caching of genome listings
 * Automatic indexing (such as bwa)
 * Ensembl bacteria
 
 ## Contributing
 
-Contributions welcome! Send me a pull request or get in [touch](simon.vanheeringen@gmail.com).
+Contributions welcome! Send me a pull request or get in [touch](mailto:simon.vanheeringen@gmail.com).
 
 ## License
 
