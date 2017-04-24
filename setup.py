@@ -1,11 +1,13 @@
 import os
 import sys
-import genomepy
 
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
+
+# https://packaging.python.org/single_source_version/
+execfile("genomepy/__about__.py")
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
@@ -59,14 +61,14 @@ classifiers = [
 
 setup(
     name='genomepy',
-    version=genomepy.__version__,
+    version=__version__,
     description='Genomes in Python',
     long_description=long_description,
     packages=packages,
     package_data=package_data,
     scripts=scripts,
     install_requires=requires,
-    author=genomepy.__author__,
+    author=__author__,
     author_email='simon.vanheeringen@gmail.com',
     url='https://github.com/simonvh/genomepy',
     license='MIT',
