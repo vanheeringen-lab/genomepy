@@ -14,29 +14,46 @@ Via pip, for now.
 $ pip install genomepy
 ```
 
+## Configuration
+
+By default genomes will be saved in `~/.local/share/genomes`. 
+This default can be changed by creating a configuration file called `~/.config/genomepy/genomepy.yaml`. 
+For instance, to set the default genome directory to `/data/genomes`, edit `~/.config/genomepy/genomepy.yaml` and add the following line:
+
+```
+genome_dir: /data/genomes
+```
+
+The default genome directory can also be explicitly specified in both the Python API as well as on the command-line.
+
 ## Usage
+
+### From Python
 
 ```python
 >>> import genomepy
->>> for row in genomepy.search("human"):
+>>> for row in genomepy.search("GRCh38"):
 ...     print "\t".join(row)
 ...
 UCSC	hg38	Human Dec. 2013 (GRCh38/hg38) Genome at UCSC
-UCSC	hg19	Human Feb. 2009 (GRCh37/hg19) Genome at UCSC
-UCSC	hg18	Human Mar. 2006 (NCBI36/hg18) Genome at UCSC
-UCSC	hg17	Human May 2004 (NCBI35/hg17) Genome at UCSC
-UCSC	hg16	Human July 2003 (NCBI34/hg16) Genome at UCSC
-Ensembl	bacteria_102_collection_core_34_87_1	Brucella melitensis (GCA_000988815)
-Ensembl	bacteria_94_collection_core_34_87_1	Brucella suis (GCA_000875695)
-Ensembl	bacteria_131_collection_core_34_87_1	Candidatus Paraburkholderia schumannianae
-Ensembl	homo_sapiens_core_86_38	Human
-Ensembl	pediculus_humanus_core_34_87_2	Pediculus humanus
->>> genomepy.install_genome("hg38", "UCSC", "/data/genomes")
+NCBI	GRCh38.p10	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p1	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p2	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p3	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p4	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p5	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p6	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p7	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p8	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p9	Homo sapiens; Genome Reference Consortium
+Ensembl	GRCh38.p10	Human
+>>> genomepy.install_genome("hg38", "UCSC", genome_dir="/data/genomes")
 downloading...
 done...
 name: hg38
 fasta: /data/genomes/hg38/hg38.fa
->>> g = genomepy.genome("hg38", "/data/genomes")
+>>> g = genomepy.genome("hg38", genome_dir="/data/genomes")
 >>> g["chr6"][166502000:166503000]
 tgtatggtccctagaggggccagagtcacagagatggaaagtggatggcgggtgccgggggctggggagctactgtgcagggggacagagctttagttctgcaagatgaaacagttctggagatggacggtggggatgggggcccagcaatgggaacgtgcttaatgccactgaactgggcacttaaacgtggtgaaaactgtaaaagtcatgtgtatttttctacaattaaaaaaaATCTGCCACAGAGTTAAAAAAATAACCACTATTTTCTGGAAATGGGAAGGAAAAGTTACAGCATGTAATTAAGATGACAATTTATAATGAACAAGGCAAATCTTTTCATCTTTGCCTTTTGGGCATATTCAATCTTTGCCCAGAATTAAGCACCTTTCAAGATTAATTCTCTAATAATTCTAGTTGAACAACACAACCTTTTCCTTCAAGCTTGCAATTAAATAAGGCTATTTTTAGCTGTAAGGATCACGCTGACCTTCAGGAGCAATGAGAACCGGCACTCCCGGCCTGAGTGGATGCACGGGGAGTGTGTCTAACACACAGGCGTCAACAGCCAGGGCCGCACGAGGAGGAGGAGTGGCAACGTCCACACAGACTCACAACACGGCACTCCGACTTGGAGGGTAATTAATACCAGGTTAACTTCTGGGATGACCTTGGCAACGACCCAAGGTGACAGGCCAGGCTCTGCAATCACCTCCCAATTAAGGAGAGGCGAAAGGGGACTCCCAGGGCTCAGAGCACCACGGGGTTCTAGGTCAGACCCACTTTGAAATGGAAATCTGGCCTTGTGCTGCTGCTCTTGTGGGGAGACAGCAGCTGCGGAGGCTGCTCTCTTCATGGGATTACTCTGGATAAAGTCTTTTTTGATTCTACgttgagcatcccttatctgaaatgcctgaaaccggaagtgtttaggatttggggattttgcaatatttacttatatataatgagatatcttggagatgggccacaa
 ```
@@ -76,7 +93,7 @@ UCSC	danRer3	Zebrafish May 2005 (Zv5/danRer3) Genome at UCSC
 Install a genome.
 
 ```
-$ genomepy  install hg38 UCSC /data/genomes/
+$ genomepy  install hg38 UCSC -g /data/genomes
 downloading...
 done...
 name: hg38
@@ -85,11 +102,10 @@ fasta: /data/genomes/hg38/hg38.fa
 
 ## Todo
 
-* Tests!
-* Ensembl bacteria
-* Automatic indexing (such as bwa)
+* More tests!
 * Caching of UCSC/Ensembl genome listings
-* Configurable default genome installation directory
+* Automatic indexing (such as bwa)
+* Ensembl bacteria
 
 ## Contributing
 
