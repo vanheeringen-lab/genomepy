@@ -115,7 +115,7 @@ def search(term, provider=None):
 
     for p in providers:
         for row in p.search(term):
-            yield [p.name] + list(row)
+            yield [x.encode('utf-8') for x in [p.name] + list(row)]
 
 def install_genome(name, provider, genome_dir=None):
     """
@@ -136,7 +136,8 @@ def install_genome(name, provider, genome_dir=None):
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
-    
+   
+    genome_dir = os.path.expanduser(genome_dir)
     p = ProviderBase.create(provider)
     local_name = p.download_genome(name, genome_dir)
     generate_sizes(local_name, genome_dir)
@@ -161,7 +162,8 @@ def genome(name, genome_dir=None):
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
-
+    
+    genome_dir = os.path.expanduser(path)
     if not os.path.exists(genome_dir):
         raise FileNotFoundError(
                 "genome_dir {} does not exist".format(genome_dir)
