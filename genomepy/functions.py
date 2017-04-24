@@ -12,6 +12,7 @@ config = norns.config("genomepy", default="cfg/default.yaml")
 try:
     FileNotFoundError
 except NameError:
+    # pylint: disable=redefined-builtin
     FileNotFoundError = IOError
 
 def list_available_genomes(provider=None):
@@ -115,7 +116,7 @@ def search(term, provider=None):
 
     for p in providers:
         for row in p.search(term):
-            yield [p.name] + list(row)
+            yield [x.encode('utf-8') for x in [p.name] + list(row)]
 
 def install_genome(name, provider, genome_dir=None):
     """
@@ -136,7 +137,8 @@ def install_genome(name, provider, genome_dir=None):
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
-    
+   
+    genome_dir = os.path.expanduser(genome_dir)
     p = ProviderBase.create(provider)
     local_name = p.download_genome(name, genome_dir)
     generate_sizes(local_name, genome_dir)
@@ -161,7 +163,8 @@ def genome(name, genome_dir=None):
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
-
+    
+    genome_dir = os.path.expanduser(genome_dir)
     if not os.path.exists(genome_dir):
         raise FileNotFoundError(
                 "genome_dir {} does not exist".format(genome_dir)
@@ -177,7 +180,7 @@ def genome(name, genome_dir=None):
                 )
     elif len(fnames) > 1:
         fname = os.path.join(genome_dir, name, "{}.fa".format(name))
-        if not fname in fnames:
+        if fname not in fnames:
             raise Exception("More than one FASTA file found, no {}.fa!".format(name))
     else:
         fname = fnames[0]
