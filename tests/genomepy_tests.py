@@ -89,7 +89,6 @@ def test_ensembl_human():
     genomepy.install_genome("GRCh38.p10", "Ensembl", genome_dir=tmp)
     g = genomepy.genome("GRCh38.p10", genome_dir=tmp)
     seq = g["6"][166168664:166168679] 
-    print seq
     assert str(seq) == "CCTCCTCGCTCTCTT"
     shutil.rmtree(tmp)
 
@@ -103,7 +102,6 @@ def test_ncbi_human():
     genomepy.install_genome("GRCh38.p9", "NCBI", genome_dir=tmp)
     g = genomepy.genome("GRCh38.p9", genome_dir=tmp)
     seq = g["6"][166168664:166168679] 
-    print seq
     assert str(seq) == "CCTCCTCGCTCTCTT"
     shutil.rmtree(tmp)
 
