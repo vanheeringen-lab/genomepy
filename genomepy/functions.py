@@ -12,6 +12,7 @@ config = norns.config("genomepy", default="cfg/default.yaml")
 try:
     FileNotFoundError
 except NameError:
+    # pylint: disable=redefined-builtin
     FileNotFoundError = IOError
 
 def list_available_genomes(provider=None):
@@ -179,7 +180,7 @@ def genome(name, genome_dir=None):
                 )
     elif len(fnames) > 1:
         fname = os.path.join(genome_dir, name, "{}.fa".format(name))
-        if not fname in fnames:
+        if fname not in fnames:
             raise Exception("More than one FASTA file found, no {}.fa!".format(name))
     else:
         fname = fnames[0]

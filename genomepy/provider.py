@@ -78,7 +78,7 @@ class ProviderBase(object):
         # Extract files to temporary directory
         with tarfile.open(fname) as tar:
             tar.extractall(path=tmpdir)
-        for root, dirs, files in os.walk(tmpdir):
+        for root, _, files in os.walk(tmpdir):
             fnames += [os.path.join(root, fname) for fname in files]
         
         # Concatenate
