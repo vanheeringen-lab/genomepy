@@ -1,0 +1,29 @@
+language: python
+
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+#cache:
+#  apt: true
+#  directories:
+#    - $HOME/miniconda
+
+#before_install:
+#  # install miniconda for Python dependencies
+
+install:
+  - pip install nose xdg coverage pyyaml pyfaidx requests xmltodict
+  - pip install git+https://github.com/simonvh/norns.git@develop
+  - python setup.py develop
+  - python setup.py build
+  - pip install coveralls
+
+# # command to run tests, e.g. python setup.py test
+script:  
+  - nosetests
+  - genomepy providers 
+#after_sucess:
+#  coveralls

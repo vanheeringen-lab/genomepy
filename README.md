@@ -1,12 +1,15 @@
 # genomepy
 
 [![PyPI version](https://badge.fury.io/py/genomepy.svg)](https://badge.fury.io/py/genomepy)
+[![Build Status](https://travis-ci.org/simonvh/genomepy.svg?branch=master)](https://travis-ci.org/simonvh/genomepy)
+[![Code Health](https://landscape.io/github/simonvh/genomepy/master/landscape.svg?style=flat)](https://landscape.io/github/simonvh/genomepy/master)
 
 Easily install and use genomes in Python and elsewhere!
 
-## Installation 
+The goal is to have a _simple_ and _straightforward_ way to download and use genomic sequences. 
+Currently, genomepy supports UCSC, Ensembl and NCBI. 
 
-### Python 2
+## Installation
 
 Via pip, for now.
 
@@ -14,47 +17,46 @@ Via pip, for now.
 $ pip install genomepy
 ```
 
-### Python 3
+## Configuration
 
-Please note, this version of genomepy currently does not work for Python 3 due to a bug in my code. 
-For now, you can either use Python 2 or install the development version:
-
-Installation of (unstable) development branch:
-```
-$ pip install git+https://github.com/simonvh/norns.git@develop
-$ pip install git+https://github.com/simonvh/genomepy.git@develop
-```
-
-Please note: there is a small change in this version, which is where the genome files will be stored. Instead of providing this at the command line it's specified in the config file  `~/.config/genomepy/genomepy.yaml`:
+By default genomes will be saved in `~/.local/share/genomes`. 
+This default can be changed by creating a configuration file called `~/.config/genomepy/genomepy.yaml`. 
+For instance, to set the default genome directory to `/data/genomes`, edit `~/.config/genomepy/genomepy.yaml` and add the following line:
 
 ```
-genome_path: ~/genomes
+genome_dir: /data/genomes
 ```
 
+The genome directory can also be explicitly specified in both the Python API as well as on the command-line.
 
 ## Usage
 
+### From Python
+
 ```python
 >>> import genomepy
->>> for row in genomepy.search("human"):
-...     print "\t".join(row)
+>>> for row in genomepy.search("GRCh38"):
+...     print("\t".join(row))
 ...
 UCSC	hg38	Human Dec. 2013 (GRCh38/hg38) Genome at UCSC
-UCSC	hg19	Human Feb. 2009 (GRCh37/hg19) Genome at UCSC
-UCSC	hg18	Human Mar. 2006 (NCBI36/hg18) Genome at UCSC
-UCSC	hg17	Human May 2004 (NCBI35/hg17) Genome at UCSC
-UCSC	hg16	Human July 2003 (NCBI34/hg16) Genome at UCSC
-Ensembl	bacteria_102_collection_core_34_87_1	Brucella melitensis (GCA_000988815)
-Ensembl	bacteria_94_collection_core_34_87_1	Brucella suis (GCA_000875695)
-Ensembl	bacteria_131_collection_core_34_87_1	Candidatus Paraburkholderia schumannianae
-Ensembl	homo_sapiens_core_86_38	Human
-Ensembl	pediculus_humanus_core_34_87_2	Pediculus humanus
->>> genomepy.install_genome("hg38", "UCSC", "/data/genomes")
+NCBI	GRCh38.p10	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p1	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p2	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p3	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p4	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p5	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p6	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p7	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p8	Homo sapiens; Genome Reference Consortium
+NCBI	GRCh38.p9	Homo sapiens; Genome Reference Consortium
+Ensembl	GRCh38.p10	Human
+>>> genomepy.install_genome("hg38", "UCSC", genome_dir="/data/genomes")
 downloading...
 done...
 name: hg38
 fasta: /data/genomes/hg38/hg38.fa
->>> g = genomepy.genome("hg38", "/data/genomes")
+>>> g = genomepy.genome("hg38", genome_dir="/data/genomes")
 >>> g["chr6"][166502000:166503000]
 tgtatggtccctagaggggccagagtcacagagatggaaagtggatggcgggtgccgggggctggggagctactgtgcagggggacagagctttagttctgcaagatgaaacagttctggagatggacggtggggatgggggcccagcaatgggaacgtgcttaatgccactgaactgggcacttaaacgtggtgaaaactgtaaaagtcatgtgtatttttctacaattaaaaaaaATCTGCCACAGAGTTAAAAAAATAACCACTATTTTCTGGAAATGGGAAGGAAAAGTTACAGCATGTAATTAAGATGACAATTTATAATGAACAAGGCAAATCTTTTCATCTTTGCCTTTTGGGCATATTCAATCTTTGCCCAGAATTAAGCACCTTTCAAGATTAATTCTCTAATAATTCTAGTTGAACAACACAACCTTTTCCTTCAAGCTTGCAATTAAATAAGGCTATTTTTAGCTGTAAGGATCACGCTGACCTTCAGGAGCAATGAGAACCGGCACTCCCGGCCTGAGTGGATGCACGGGGAGTGTGTCTAACACACAGGCGTCAACAGCCAGGGCCGCACGAGGAGGAGGAGTGGCAACGTCCACACAGACTCACAACACGGCACTCCGACTTGGAGGGTAATTAATACCAGGTTAACTTCTGGGATGACCTTGGCAACGACCCAAGGTGACAGGCCAGGCTCTGCAATCACCTCCCAATTAAGGAGAGGCGAAAGGGGACTCCCAGGGCTCAGAGCACCACGGGGTTCTAGGTCAGACCCACTTTGAAATGGAAATCTGGCCTTGTGCTGCTGCTCTTGTGGGGAGACAGCAGCTGCGGAGGCTGCTCTCTTCATGGGATTACTCTGGATAAAGTCTTTTTTGATTCTACgttgagcatcccttatctgaaatgcctgaaaccggaagtgtttaggatttggggattttgcaatatttacttatatataatgagatatcttggagatgggccacaa
 ```
@@ -94,24 +96,29 @@ UCSC	danRer3	Zebrafish May 2005 (Zv5/danRer3) Genome at UCSC
 Install a genome.
 
 ```
-$ genomepy  install hg38 UCSC /data/genomes/
+$ genomepy  install hg38 UCSC -g /data/genomes
 downloading...
 done...
 name: hg38
 fasta: /data/genomes/hg38/hg38.fa
 ```
 
+## Known issues
+
+There might be issues with specific genome sequences.
+Sadly, not everything (naming, structure, filenames) is always consistent on the provider end. 
+Let me know if you encounter issues with certain downloads.
+
 ## Todo
 
-* Tests!
-* Ensembl bacteria
+* More tests!
+* Caching of genome listings
 * Automatic indexing (such as bwa)
-* Caching of UCSC/Ensembl genome listings
-* Configurable default genome installation directory
+* Ensembl bacteria
 
 ## Contributing
 
-Contributions welcome! Send me a pull request or get in [touch](simon.vanheeringen@gmail.com).
+Contributions welcome! Send me a pull request or get in [touch](mailto:simon.vanheeringen@gmail.com).
 
 ## License
 

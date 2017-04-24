@@ -17,12 +17,12 @@ def cli():
 def search(term, provider=None):
     """Search for genomes that contain TERM in their name or description."""
     for row in genomepy.search(term, provider):
-        print "\t".join(row)
+        print("\t".join(map(str, row)))
 
 @click.command('install', short_help="install genome")
 @click.argument("name")
 @click.argument("provider")
-@click.argument("genome_dir")
+@click.option("-g", "--genome_dir", help="genome directory", default=None)
 def install(name, provider, genome_dir):
     """Install genome NAME from provider PROVIDER in directory GENOME_DIR."""
     genomepy.install_genome(name, provider, genome_dir)
@@ -32,13 +32,13 @@ def install(name, provider, genome_dir):
 def genomes(provider=None):
     """List all available genomes."""
     for row in genomepy.list_available_genomes(provider):
-        print "\t".join(row)
+        print("\t".join(map(str, row)))
 
 @click.command('providers', short_help="list available providers")
 def providers():
     """List all available providers."""
     for p in genomepy.list_available_providers():
-        print p
+        print(p)
 
 
 cli.add_command(search)
