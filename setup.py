@@ -36,6 +36,7 @@ requires = [
     'pyfaidx',
     'norns>0.0.1',
     'xmltodict',
+    'xdg'
 ]
 
 scripts = [
