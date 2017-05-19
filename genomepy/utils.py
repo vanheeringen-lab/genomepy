@@ -56,7 +56,10 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
         original_fa = Fasta(infa)
         seqs = [s for s in original_fa.keys() if s not in seqs]
         fa = original_fa
-    print(outfa)
+    
+    if len(seqs) == 0:
+        raise ValueError("No sequences left after filtering!")
+
     with open(outfa, "w") as out:
         for chrom in seqs:
             out.write(">{}\n".format(fa[chrom].name))

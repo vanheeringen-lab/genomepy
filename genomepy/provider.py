@@ -66,7 +66,6 @@ class ProviderBase(object):
         def decorator(subclass):
             """Register as decorator function."""
             cls._providers[provider] = subclass
-            cls._providers[provider.encode('latin-1')] = subclass
             subclass.name = provider
             return subclass
         return decorator
@@ -148,7 +147,7 @@ class ProviderBase(object):
         sys.stderr.write("fasta: {}\n".format(fname))
         
         if hasattr(self, '_post_process_download'):
-            self._post_process_download(name, genome_dir)
+            self._post_process_download(name, genome_dir, mask)
 
         # Create readme with information
         readme = os.path.join(genome_dir, dbname, "README.txt")
@@ -156,6 +155,7 @@ class ProviderBase(object):
             f.write("name: {}\n".format(dbname))
             f.write("original name: {}\n".format(os.path.split(link)[-1]))
             f.write("url: {}\n".format(link))
+            f.write("mask: {}\n".format(mask))
             f.write("date: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S")))
         
         return dbname
@@ -320,7 +320,9 @@ class UcscProvider(ProviderBase):
     """
     
     ucsc_url = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/chromFa.tar.gz"
+    ucsc_url_masked = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/chromFaMasked.tar.gz"
     alt_ucsc_url = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/{0}.fa.gz"
+    alt_ucsc_url_masked = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/{0}.fa.masked.gz"
     das_url = "http://genome.ucsc.edu/cgi-bin/das/dsn"
     
     def __init__(self):
@@ -387,10 +389,11 @@ class UcscProvider(ProviderBase):
         tuple (name, link) where name is the genome build identifier
         and link is a str with the http download link.
         """
+        urls = [self.ucsc_url, self.alt_ucsc_url]
         if mask == "hard":
-            sys.stderr.write("Ignoring mask parameter for UCSC\n")
+            urls = [self.ucsc_url_masked, self.alt_ucsc_url_masked]
 
-        for genome_url in [self.ucsc_url, self.alt_ucsc_url]:
+        for genome_url in urls:
             remote = genome_url.format(name)
             ret = requests.head(remote)
             
@@ -507,7 +510,7 @@ class NCBIProvider(ProviderBase):
         and link is a str with the ftp download link.
         """
         if mask == "hard":
-            sys.stderr.write("Ignoring mask parameter for NCBI\n")
+            sys.stderr.write("ignoring mask parameter for NCBI at download.\n")
 
         if not self.genomes:
             self.genomes = self._get_genomes()
@@ -520,7 +523,7 @@ class NCBIProvider(ProviderBase):
                 return name, url
         raise exceptions.GenomeDownloadError("Could not download genome from NCBI")
     
-    def _post_process_download(self, name, genome_dir):
+    def _post_process_download(self, name, genome_dir, mask="soft"):
         """
         Replace accessions with sequence names in fasta file.
         
@@ -560,6 +563,8 @@ class NCBIProvider(ProviderBase):
                 genome_dir, name,
                 ".process.{}.fa".format(name)
                 )
+        if mask == "hard":
+            sys.stderr.write("masking lower-case.\n")
 
         with open(fa) as old:
             with open(new_fa, "w") as new:
@@ -571,7 +576,8 @@ class NCBIProvider(ProviderBase):
                             tr.get(name, name),
                             desc
                             ))
-                    
+                    elif mask == "hard":
+                        new.write(re.sub('[actg]', 'N', line))
                     else:
                         new.write(line)
         
