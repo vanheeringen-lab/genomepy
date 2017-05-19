@@ -3,3 +3,4 @@ click
 pyfaidx
 norns
 xmltodict
+diskcache
