@@ -15,10 +15,14 @@ import xmltodict
 import shutil
 import tarfile
 import time
-import xdg
 from tempfile import mkdtemp
+
 from bucketcache import Bucket,JSONBackend,MessagePackBackend
+from pyfaidx import Fasta
+import xdg
+
 from genomepy import exceptions
+from genomepy.utils import filter_fasta
 
 cache_dir = os.path.join(xdg.XDG_CACHE_HOME, "genomepy")
 cached = Bucket(cache_dir, days=7, backend=MessagePackBackend)
@@ -99,7 +103,7 @@ class ProviderBase(object):
         # Remove temp dir
         shutil.rmtree(tmpdir)
 
-    def download_genome(self, name, genome_dir, mask="soft"):
+    def download_genome(self, name, genome_dir, mask="soft", regex=None, invert_match=False):
         """
         Download a (gzipped) genome file to a specific directory
 
@@ -122,7 +126,6 @@ class ProviderBase(object):
         dbname, link = self.get_genome_download_link(name, mask)
         dbname = dbname.replace(" ", "_")
 
-        fname = os.path.join(genome_dir, dbname, dbname + ".fa") 
         gzipped = False
         if link.endswith(".gz"):
             gzipped = True
@@ -132,6 +135,11 @@ class ProviderBase(object):
         response = urlopen(link)
         
         sys.stderr.write("downloading from {}...\n".format(link))
+        down_dir = genome_dir
+        fname = os.path.join(genome_dir, dbname, dbname + ".fa")
+        if regex:
+            down_dir = mkdtemp()
+            fname = os.path.join(down_dir, dbname + ".fa") 
         with open(fname, "wb") as f_out:
             if gzipped:
                 # Supports both Python 2.7 as well as 3
@@ -143,11 +151,27 @@ class ProviderBase(object):
         
         if link.endswith("tar.gz"):
             self.tar_to_bigfile(fname, fname) 
-        sys.stderr.write("name: {}\n".format(dbname))
-        sys.stderr.write("fasta: {}\n".format(fname))
         
         if hasattr(self, '_post_process_download'):
-            self._post_process_download(name, genome_dir, mask)
+            self._post_process_download(name, down_dir, mask)
+        
+        if regex:
+            infa = fname
+            outfa = os.path.join(genome_dir, dbname, dbname + ".fa") 
+            filter_fasta(
+                infa,
+                outfa,
+                regex=regex,
+                v=invert_match,
+                force=True
+                )
+
+            not_included = [k for k in Fasta(infa).keys() if k not in Fasta(outfa).keys()]
+            shutil.rmtree(down_dir)
+            fname = outfa
+        
+        sys.stderr.write("name: {}\n".format(dbname))
+        sys.stderr.write("fasta: {}\n".format(fname))
 
         # Create readme with information
         readme = os.path.join(genome_dir, dbname, "README.txt")
@@ -157,7 +181,16 @@ class ProviderBase(object):
             f.write("url: {}\n".format(link))
             f.write("mask: {}\n".format(mask))
             f.write("date: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S")))
-        
+            if regex:
+                if invert_match:
+                    f.write("regex: {} (inverted match)\n".format(regex))
+                else:
+                    f.write("regex: {}\n".format(regex))
+                f.write("sequences that were excluded:\n")
+                for seq in not_included:
+                    f.write("\t{}\n".format(seq))
+#
+       
         return dbname
 
 register_provider = ProviderBase.register_provider

@@ -3,7 +3,7 @@ import os
 import glob
 from pyfaidx import Fasta
 from genomepy.provider import ProviderBase
-from genomepy.utils import generate_sizes, filter_fasta
+from genomepy.utils import generate_sizes
 import norns
 from tempfile import mkdtemp
 import shutil
@@ -142,36 +142,7 @@ def install_genome(name, provider, genome_dir=None, mask="soft", regex=None, inv
    
     genome_dir = os.path.expanduser(genome_dir)
     p = ProviderBase.create(provider)
-    
-    if regex:
-        tmpdir = mkdtemp()
-        local_name = p.download_genome(name, tmpdir, mask=mask)
-        infa = os.path.join(tmpdir, local_name, "{}.fa".format(local_name))
-        outfa = os.path.join(genome_dir, local_name, "{}.fa".format(local_name))
-        filter_fasta(
-                infa, 
-                outfa,
-                regex=regex,
-                v=invert_match,
-                force=True
-                )
-        
-        with open(os.path.join(tmpdir, local_name, "README.txt")) as f_in:
-            with open(os.path.join(genome_dir, local_name, "README.txt"), "w") as f_out:
-                f_out.write(f_in.read())
-                if invert_match:
-                    f_out.write("regex: {} (inverted match)\n".format(regex))
-                else:
-                    f_out.write("regex: {}\n".format(regex))
-                not_included = [k for k in Fasta(infa).keys() if k not in Fasta(outfa).keys()]
-                f_out.write("sequences that were excluded:\n")
-                for seq in not_included:
-                    f_out.write("\t{}\n".format(seq))
-                
-        shutil.rmtree(tmpdir)
-    else:
-        local_name = p.download_genome(name, genome_dir, mask=mask)
-    
+    local_name = p.download_genome(name, genome_dir, mask=mask, regex=regex, invert_match=invert_match)
     generate_sizes(local_name, genome_dir)
 
 def genome(name, genome_dir=None):
