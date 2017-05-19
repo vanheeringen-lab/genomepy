@@ -136,10 +136,10 @@ class ProviderBase(object):
         
         sys.stderr.write("downloading from {}...\n".format(link))
         down_dir = genome_dir
+        fname = os.path.join(genome_dir, dbname, dbname + ".fa")
         if regex:
             down_dir = mkdtemp()
-
-        fname = os.path.join(down_dir, dbname + ".fa") 
+            fname = os.path.join(down_dir, dbname + ".fa") 
         with open(fname, "wb") as f_out:
             if gzipped:
                 # Supports both Python 2.7 as well as 3
@@ -186,9 +186,9 @@ class ProviderBase(object):
                     f.write("regex: {} (inverted match)\n".format(regex))
                 else:
                     f.write("regex: {}\n".format(regex))
-                f_out.write("sequences that were excluded:\n")
+                f.write("sequences that were excluded:\n")
                 for seq in not_included:
-                    f_out.write("\t{}\n".format(seq))
+                    f.write("\t{}\n".format(seq))
 #
        
         return dbname
