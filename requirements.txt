@@ -4,3 +4,4 @@ pyfaidx
 norns
 xmltodict
 bucketcache
+msgpack-python
