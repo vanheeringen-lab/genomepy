@@ -17,26 +17,27 @@ def cli():
 def search(term, provider=None):
     """Search for genomes that contain TERM in their name or description."""
     for row in genomepy.search(term, provider):
-        print("\t".join(map(str, row)))
+        print("\t".join([x.decode('utf-8') for x in row]))
 
 @click.command('install', short_help="install genome")
 @click.argument("name")
 @click.argument("provider")
 @click.option("-g", "--genome_dir", help="genome directory", default=None)
 @click.option("-r", "--regex", help="regex to filter sequences", default=None)
+@click.option("-m", "--mask", help="mask (hard or soft)", default="soft")
 @click.option("--match", "--no-match", help="set no-match to select sequences that *don't*  match regex")
-def install(name, provider, genome_dir, regex, invert):
+def install(name, provider, genome_dir, mask, regex, no_match):
     """Install genome NAME from provider PROVIDER in directory GENOME_DIR."""
     genomepy.install_genome(
-            name, provider, genome_dir, 
-            regex=regex, invert_match=invert)
+            name, provider, genome_dir, mask=mask, 
+            regex=regex, invert_match=no_match)
 
 @click.command('genomes', short_help="list available genomes")
 @click.option("-p", "--provider", help="provider")
 def genomes(provider=None):
     """List all available genomes."""
     for row in genomepy.list_available_genomes(provider):
-        print("\t".join(map(str, row)))
+        print("\t".join(row))
 
 @click.command('providers', short_help="list available providers")
 def providers():

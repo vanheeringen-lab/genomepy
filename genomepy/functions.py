@@ -118,9 +118,9 @@ def search(term, provider=None):
 
     for p in providers:
         for row in p.search(term):
-            yield [x.encode('utf-8') for x in [p.name] + list(row)]
+            yield [x.encode('latin-1') for x in [p.name] + list(row)]
 
-def install_genome(name, provider, genome_dir=None, regex=None, invert_match=False):
+def install_genome(name, provider, genome_dir=None, mask="soft", regex=None, invert_match=False):
     """
     Install a genome.
 
@@ -145,7 +145,7 @@ def install_genome(name, provider, genome_dir=None, regex=None, invert_match=Fal
     
     if regex:
         tmpdir = mkdtemp()
-        local_name = p.download_genome(name, tmpdir)
+        local_name = p.download_genome(name, tmpdir, mask=mask)
         infa = os.path.join(tmpdir, local_name, "{}.fa".format(local_name))
         outfa = os.path.join(genome_dir, local_name, "{}.fa".format(local_name))
         filter_fasta(
@@ -170,7 +170,7 @@ def install_genome(name, provider, genome_dir=None, regex=None, invert_match=Fal
                 
         shutil.rmtree(tmpdir)
     else:
-        local_name = p.download_genome(name, genome_dir)
+        local_name = p.download_genome(name, genome_dir, mask=mask)
     
     generate_sizes(local_name, genome_dir)
 
