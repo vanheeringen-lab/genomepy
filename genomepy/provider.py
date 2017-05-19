@@ -5,6 +5,7 @@ import re
 import os
 import io
 import ftplib
+import time
 try: 
     from urllib.request import urlopen
 except ImportError:
@@ -14,9 +15,13 @@ import xmltodict
 import shutil
 import tarfile
 import time
+import xdg
 from tempfile import mkdtemp
-
+from bucketcache import Bucket,JSONBackend,MessagePackBackend
 from genomepy import exceptions
+
+cache_dir = os.path.join(xdg.XDG_CACHE_HOME, "genomepy")
+cached = Bucket(cache_dir, days=7, backend=MessagePackBackend)
 
 class ProviderBase(object):
     
@@ -61,6 +66,7 @@ class ProviderBase(object):
         def decorator(subclass):
             """Register as decorator function."""
             cls._providers[provider] = subclass
+            cls._providers[provider.encode('latin-1')] = subclass
             subclass.name = provider
             return subclass
         return decorator
@@ -70,6 +76,9 @@ class ProviderBase(object):
         """List available providers.""" 
         return self._providers.keys()
 
+    def __hash__(self):
+        return hash(str(self.__class__))
+    
     def tar_to_bigfile(self, fname, outfile):
         """Convert tar of multiple FASTAs to one file."""
         fnames = []
@@ -168,6 +177,7 @@ class EnsemblProvider(ProviderBase):
     def __init__(self):
         self.genomes = None
 
+    @cached(method=True)
     def request_json(self, ext):
         """Make a REST request and return as json."""
         if self.rest_url.endswith("/") and ext.startswith("/"):
@@ -181,16 +191,12 @@ class EnsemblProvider(ProviderBase):
         
         return r.json()
     
-    def list_available_genomes(self, cache=True, as_dict=False):
+    def list_available_genomes(self, as_dict=False):
         """
         List all available genomes.
         
         Parameters
         ----------
-        cache : bool, optional
-            By default this method will use cached results. If cache is False,
-            the information will be downloaded again.
-
         as_dict : bool, optional
             Return a dictionary of results.
         
@@ -199,8 +205,8 @@ class EnsemblProvider(ProviderBase):
         genomes : dictionary or tuple
         """
         ext = "/info/genomes?"
-        if not cache or not self.genomes:
-             
+        
+        if not self.genomes:
             self.genomes = self.request_json(ext)
         
         for genome in self.genomes:
@@ -320,29 +326,30 @@ class UcscProvider(ProviderBase):
     def __init__(self):
         self.genomes = []
    
-    def list_available_genomes(self, cache=True):
+    def list_available_genomes(self):
         """
         List all available genomes.
         
-        Parameters
-        ----------
-        cache : bool, optional
-            By default this method will use cached results. If cache is False,
-            the information will be downloaded again.
-
         Returns
         -------
         genomes : list
         """
-        if not cache or len(self.genomes) == 0:
-            response = urlopen(self.das_url)
-            d = xmltodict.parse(response.read())
-            for genome in d['DASDSN']['DSN']:
-                self.genomes.append([
-                    genome['SOURCE']['@id'], genome['DESCRIPTION']
-                    ])
+        self.genomes = self._get_genomes()
+        
         return self.genomes
     
+    @cached(method=True) 
+    def _get_genomes(self):
+        response = urlopen(self.das_url)
+        d = xmltodict.parse(response.read())
+        genomes = []
+        for genome in d['DASDSN']['DSN']:
+                genomes.append([
+                    genome['SOURCE']['@id'], genome['DESCRIPTION']
+                    ])
+        return genomes
+
+
     def search(self, term):
         """
         Search for a genome at UCSC. 
@@ -407,6 +414,7 @@ class NCBIProvider(ProviderBase):
     def __init__(self):
         self.genomes = None
 
+    @cached(method=True)
     def _get_genomes(self):
         """Parse genomes from assembly summary txt files."""
         genomes = []
@@ -426,16 +434,12 @@ class NCBIProvider(ProviderBase):
         
         return genomes
 
-    def list_available_genomes(self, cache=True, as_dict=False):
+    def list_available_genomes(self, as_dict=False):
         """
         List all available genomes.
         
         Parameters
         ----------
-        cache : bool, optional
-            By default this method will use cached results. If cache is False,
-            the information will be downloaded again.
-        
         as_dict : bool, optional
             Return a dictionary of results.
         
@@ -443,9 +447,9 @@ class NCBIProvider(ProviderBase):
         ------
         genomes : dictionary or tuple
         """
-        if not cache or not self.genomes:
+        if not self.genomes:
             self.genomes = self._get_genomes()
-        
+
         for genome in self.genomes:
             if as_dict:
                 yield genome
@@ -474,6 +478,7 @@ class NCBIProvider(ProviderBase):
         tuples with two items, name and description
         """
         term = term.lower()
+
         for genome in self.list_available_genomes(as_dict=True):
             term_str = ";".join([repr(x) for x in genome.values()])
 
