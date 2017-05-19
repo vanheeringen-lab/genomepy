@@ -66,7 +66,6 @@ class ProviderBase(object):
         def decorator(subclass):
             """Register as decorator function."""
             cls._providers[provider] = subclass
-            cls._providers[provider.encode('latin-1')] = subclass
             subclass.name = provider
             return subclass
         return decorator
@@ -511,7 +510,7 @@ class NCBIProvider(ProviderBase):
         and link is a str with the ftp download link.
         """
         if mask == "hard":
-            sys.stderr.write("Ignoring mask parameter for NCBI at download.\n")
+            sys.stderr.write("ignoring mask parameter for NCBI at download.\n")
 
         if not self.genomes:
             self.genomes = self._get_genomes()
@@ -565,7 +564,7 @@ class NCBIProvider(ProviderBase):
                 ".process.{}.fa".format(name)
                 )
         if mask == "hard":
-            sys.stderr.write("Masking lower-case.\n")
+            sys.stderr.write("masking lower-case.\n")
 
         with open(fa) as old:
             with open(new_fa, "w") as new:
