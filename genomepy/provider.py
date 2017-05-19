@@ -447,10 +447,8 @@ class NCBIProvider(ProviderBase):
         ------
         genomes : dictionary or tuple
         """
-        print time.time()
         if not self.genomes:
             self.genomes = self._get_genomes()
-        print time.time()
 
         for genome in self.genomes:
             if as_dict:
