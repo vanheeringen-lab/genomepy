@@ -3,8 +3,10 @@ import os
 import glob
 from pyfaidx import Fasta
 from genomepy.provider import ProviderBase
-from genomepy.utils import generate_sizes
+from genomepy.utils import generate_sizes, filter_fasta
 import norns
+from tempfile import mkdtemp
+import shutil
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -118,7 +120,7 @@ def search(term, provider=None):
         for row in p.search(term):
             yield [x.encode('utf-8') for x in [p.name] + list(row)]
 
-def install_genome(name, provider, genome_dir=None):
+def install_genome(name, provider, genome_dir=None, regex=None, invert_match=False):
     """
     Install a genome.
 
@@ -140,7 +142,36 @@ def install_genome(name, provider, genome_dir=None):
    
     genome_dir = os.path.expanduser(genome_dir)
     p = ProviderBase.create(provider)
-    local_name = p.download_genome(name, genome_dir)
+    
+    if regex:
+        tmpdir = mkdtemp()
+        local_name = p.download_genome(name, tmpdir)
+        infa = os.path.join(tmpdir, local_name, "{}.fa".format(local_name))
+        outfa = os.path.join(genome_dir, local_name, "{}.fa".format(local_name))
+        filter_fasta(
+                infa, 
+                outfa,
+                regex=regex,
+                v=invert_match,
+                force=True
+                )
+        
+        with open(os.path.join(tmpdir, local_name, "README.txt")) as f_in:
+            with open(os.path.join(genome_dir, local_name, "README.txt"), "w") as f_out:
+                f_out.write(f_in.read())
+                if invert_match:
+                    f_out.write("regex: {} (inverted match)\n".format(regex))
+                else:
+                    f_out.write("regex: {}\n".format(regex))
+                not_included = [k for k in Fasta(infa).keys() if k not in Fasta(outfa).keys()]
+                f_out.write("sequences that were excluded:\n")
+                for seq in not_included:
+                    f_out.write("\t{}\n".format(seq))
+                
+        shutil.rmtree(tmpdir)
+    else:
+        local_name = p.download_genome(name, genome_dir)
+    
     generate_sizes(local_name, genome_dir)
 
 def genome(name, genome_dir=None):

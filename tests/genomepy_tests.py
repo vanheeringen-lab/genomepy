@@ -1,5 +1,5 @@
 from nose.tools import *
-from tempfile import mkdtemp
+from tempfile import mkdtemp, NamedTemporaryFile
 import genomepy
 import shutil
 
@@ -104,6 +104,26 @@ def test_ncbi_human():
     seq = g["6"][166168664:166168679] 
     assert str(seq) == "CCTCCTCGCTCTCTT"
     shutil.rmtree(tmp)
+
+def test_regexp_filter():
+    fname = "tests/data/regexp/regexp.fa"
+
+    regexps = [
+        ('Chr.*', 2, 15),
+        ('Scaffold.*', 1, 16),
+        ('scaffold_.*', 3, 14),
+        ('^\d+$', 4, 13),
+        ('chr.*', 4, 13),
+        ]
+
+    tmpfa = NamedTemporaryFile(suffix=".fa").name
+    for regex, match, no_match in regexps:
+        fa = genomepy.utils.filter_fasta(
+                fname, tmpfa, regex=regex, v=False, force=True)
+        assert len(fa.keys()) == match
+        fa = genomepy.utils.filter_fasta(
+                fname, tmpfa, regex=regex, v=True, force=True)
+        assert len(fa.keys()) == no_match
 
 test_ncbi_human.slow = 1
 test_ensembl_human.slow = 1
