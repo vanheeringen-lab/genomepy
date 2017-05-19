@@ -25,12 +25,12 @@ def search(term, provider=None):
 @click.option("-g", "--genome_dir", help="genome directory", default=None)
 @click.option("-r", "--regex", help="regex to filter sequences", default=None)
 @click.option("-m", "--mask", help="mask (hard or soft)", default="soft")
-@click.option("--match", "--no-match", help="set no-match to select sequences that *don't*  match regex")
-def install(name, provider, genome_dir, mask, regex, no_match):
+@click.option("--match/--no-match", help="set no-match to select sequences that *don't*  match regex")
+def install(name, provider, genome_dir, mask, regex, match):
     """Install genome NAME from provider PROVIDER in directory GENOME_DIR."""
     genomepy.install_genome(
             name, provider, genome_dir, mask=mask, 
-            regex=regex, invert_match=no_match)
+            regex=regex, invert_match=not(match))
 
 @click.command('genomes', short_help="list available genomes")
 @click.option("-p", "--provider", help="provider")
