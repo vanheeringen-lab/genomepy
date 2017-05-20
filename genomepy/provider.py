@@ -103,7 +103,7 @@ class ProviderBase(object):
         # Remove temp dir
         shutil.rmtree(tmpdir)
 
-    def download_genome(self, name, genome_dir, mask="soft", regex=None, invert_match=False):
+    def download_genome(self, name, genome_dir, localname=None, mask="soft", regex=None, invert_match=False):
         """
         Download a (gzipped) genome file to a specific directory
 
@@ -124,22 +124,26 @@ class ProviderBase(object):
             os.makedirs(genome_dir)
         
         dbname, link = self.get_genome_download_link(name, mask)
-        dbname = dbname.replace(" ", "_")
+        myname = dbname 
+        if localname:
+            myname = localname
+        
+        myname = myname.replace(" ", "_")
 
         gzipped = False
         if link.endswith(".gz"):
             gzipped = True
 
-        if not os.path.exists(os.path.join(genome_dir, dbname)):
-            os.makedirs(os.path.join(genome_dir, dbname))
+        if not os.path.exists(os.path.join(genome_dir, myname)):
+            os.makedirs(os.path.join(genome_dir, myname))
         response = urlopen(link)
-        
+         
         sys.stderr.write("downloading from {}...\n".format(link))
         down_dir = genome_dir
-        fname = os.path.join(genome_dir, dbname, dbname + ".fa")
+        fname = os.path.join(genome_dir, myname, myname + ".fa")
         if regex:
             down_dir = mkdtemp()
-            fname = os.path.join(down_dir, dbname + ".fa") 
+            fname = os.path.join(down_dir, myname + ".fa") 
         with open(fname, "wb") as f_out:
             if gzipped:
                 # Supports both Python 2.7 as well as 3
@@ -157,7 +161,7 @@ class ProviderBase(object):
         
         if regex:
             infa = fname
-            outfa = os.path.join(genome_dir, dbname, dbname + ".fa") 
+            outfa = os.path.join(genome_dir, myname, myname + ".fa") 
             filter_fasta(
                 infa,
                 outfa,
@@ -171,13 +175,15 @@ class ProviderBase(object):
             fname = outfa
         
         sys.stderr.write("name: {}\n".format(dbname))
+        sys.stderr.write("local name: {}\n".format(myname))
         sys.stderr.write("fasta: {}\n".format(fname))
 
         # Create readme with information
-        readme = os.path.join(genome_dir, dbname, "README.txt")
+        readme = os.path.join(genome_dir, myname, "README.txt")
         with open(readme, "w") as f:
-            f.write("name: {}\n".format(dbname))
-            f.write("original name: {}\n".format(os.path.split(link)[-1]))
+            f.write("name: {}\n".format(myname))
+            f.write("original name: {}\n".format(dbname))
+            f.write("original filename: {}\n".format(os.path.split(link)[-1]))
             f.write("url: {}\n".format(link))
             f.write("mask: {}\n".format(mask))
             f.write("date: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S")))
@@ -191,7 +197,7 @@ class ProviderBase(object):
                     f.write("\t{}\n".format(seq))
 #
        
-        return dbname
+        return myname
 
 register_provider = ProviderBase.register_provider
 
