@@ -5,6 +5,7 @@ import re
 import os
 import io
 import ftplib
+import time
 try: 
     from urllib.request import urlopen
 except ImportError:
@@ -16,7 +17,15 @@ import tarfile
 import time
 from tempfile import mkdtemp
 
+from bucketcache import Bucket,JSONBackend,MessagePackBackend
+from pyfaidx import Fasta
+import xdg
+
 from genomepy import exceptions
+from genomepy.utils import filter_fasta
+
+cache_dir = os.path.join(xdg.XDG_CACHE_HOME, "genomepy")
+cached = Bucket(cache_dir, days=7, backend=MessagePackBackend)
 
 class ProviderBase(object):
     
@@ -70,6 +79,9 @@ class ProviderBase(object):
         """List available providers.""" 
         return self._providers.keys()
 
+    def __hash__(self):
+        return hash(str(self.__class__))
+    
     def tar_to_bigfile(self, fname, outfile):
         """Convert tar of multiple FASTAs to one file."""
         fnames = []
@@ -91,7 +103,7 @@ class ProviderBase(object):
         # Remove temp dir
         shutil.rmtree(tmpdir)
 
-    def download_genome(self, name, genome_dir, mask="soft"):
+    def download_genome(self, name, genome_dir, localname=None, mask="soft", regex=None, invert_match=False):
         """
         Download a (gzipped) genome file to a specific directory
 
@@ -112,18 +124,26 @@ class ProviderBase(object):
             os.makedirs(genome_dir)
         
         dbname, link = self.get_genome_download_link(name, mask)
-        dbname = dbname.replace(" ", "_")
+        myname = dbname 
+        if localname:
+            myname = localname
+        
+        myname = myname.replace(" ", "_")
 
-        fname = os.path.join(genome_dir, dbname, dbname + ".fa") 
         gzipped = False
         if link.endswith(".gz"):
             gzipped = True
 
-        if not os.path.exists(os.path.join(genome_dir, dbname)):
-            os.makedirs(os.path.join(genome_dir, dbname))
+        if not os.path.exists(os.path.join(genome_dir, myname)):
+            os.makedirs(os.path.join(genome_dir, myname))
         response = urlopen(link)
-        
+         
         sys.stderr.write("downloading from {}...\n".format(link))
+        down_dir = genome_dir
+        fname = os.path.join(genome_dir, myname, myname + ".fa")
+        if regex:
+            down_dir = mkdtemp()
+            fname = os.path.join(down_dir, myname + ".fa") 
         with open(fname, "wb") as f_out:
             if gzipped:
                 # Supports both Python 2.7 as well as 3
@@ -135,21 +155,49 @@ class ProviderBase(object):
         
         if link.endswith("tar.gz"):
             self.tar_to_bigfile(fname, fname) 
-        sys.stderr.write("name: {}\n".format(dbname))
-        sys.stderr.write("fasta: {}\n".format(fname))
         
         if hasattr(self, '_post_process_download'):
-            self._post_process_download(name, genome_dir)
+            self._post_process_download(name, down_dir, mask)
+        
+        if regex:
+            infa = fname
+            outfa = os.path.join(genome_dir, myname, myname + ".fa") 
+            filter_fasta(
+                infa,
+                outfa,
+                regex=regex,
+                v=invert_match,
+                force=True
+                )
+
+            not_included = [k for k in Fasta(infa).keys() if k not in Fasta(outfa).keys()]
+            shutil.rmtree(down_dir)
+            fname = outfa
+        
+        sys.stderr.write("name: {}\n".format(dbname))
+        sys.stderr.write("local name: {}\n".format(myname))
+        sys.stderr.write("fasta: {}\n".format(fname))
 
         # Create readme with information
-        readme = os.path.join(genome_dir, dbname, "README.txt")
+        readme = os.path.join(genome_dir, myname, "README.txt")
         with open(readme, "w") as f:
-            f.write("name: {}\n".format(dbname))
-            f.write("original name: {}\n".format(os.path.split(link)[-1]))
+            f.write("name: {}\n".format(myname))
+            f.write("original name: {}\n".format(dbname))
+            f.write("original filename: {}\n".format(os.path.split(link)[-1]))
             f.write("url: {}\n".format(link))
+            f.write("mask: {}\n".format(mask))
             f.write("date: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S")))
-        
-        return dbname
+            if regex:
+                if invert_match:
+                    f.write("regex: {} (inverted match)\n".format(regex))
+                else:
+                    f.write("regex: {}\n".format(regex))
+                f.write("sequences that were excluded:\n")
+                for seq in not_included:
+                    f.write("\t{}\n".format(seq))
+#
+       
+        return myname
 
 register_provider = ProviderBase.register_provider
 
@@ -168,6 +216,7 @@ class EnsemblProvider(ProviderBase):
     def __init__(self):
         self.genomes = None
 
+    @cached(method=True)
     def request_json(self, ext):
         """Make a REST request and return as json."""
         if self.rest_url.endswith("/") and ext.startswith("/"):
@@ -181,16 +230,12 @@ class EnsemblProvider(ProviderBase):
         
         return r.json()
     
-    def list_available_genomes(self, cache=True, as_dict=False):
+    def list_available_genomes(self, as_dict=False):
         """
         List all available genomes.
         
         Parameters
         ----------
-        cache : bool, optional
-            By default this method will use cached results. If cache is False,
-            the information will be downloaded again.
-
         as_dict : bool, optional
             Return a dictionary of results.
         
@@ -199,8 +244,8 @@ class EnsemblProvider(ProviderBase):
         genomes : dictionary or tuple
         """
         ext = "/info/genomes?"
-        if not cache or not self.genomes:
-             
+        
+        if not self.genomes:
             self.genomes = self.request_json(ext)
         
         for genome in self.genomes:
@@ -314,35 +359,38 @@ class UcscProvider(ProviderBase):
     """
     
     ucsc_url = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/chromFa.tar.gz"
+    ucsc_url_masked = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/chromFaMasked.tar.gz"
     alt_ucsc_url = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/{0}.fa.gz"
+    alt_ucsc_url_masked = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/{0}.fa.masked.gz"
     das_url = "http://genome.ucsc.edu/cgi-bin/das/dsn"
     
     def __init__(self):
         self.genomes = []
    
-    def list_available_genomes(self, cache=True):
+    def list_available_genomes(self):
         """
         List all available genomes.
         
-        Parameters
-        ----------
-        cache : bool, optional
-            By default this method will use cached results. If cache is False,
-            the information will be downloaded again.
-
         Returns
         -------
         genomes : list
         """
-        if not cache or len(self.genomes) == 0:
-            response = urlopen(self.das_url)
-            d = xmltodict.parse(response.read())
-            for genome in d['DASDSN']['DSN']:
-                self.genomes.append([
-                    genome['SOURCE']['@id'], genome['DESCRIPTION']
-                    ])
+        self.genomes = self._get_genomes()
+        
         return self.genomes
     
+    @cached(method=True) 
+    def _get_genomes(self):
+        response = urlopen(self.das_url)
+        d = xmltodict.parse(response.read())
+        genomes = []
+        for genome in d['DASDSN']['DSN']:
+                genomes.append([
+                    genome['SOURCE']['@id'], genome['DESCRIPTION']
+                    ])
+        return genomes
+
+
     def search(self, term):
         """
         Search for a genome at UCSC. 
@@ -380,10 +428,11 @@ class UcscProvider(ProviderBase):
         tuple (name, link) where name is the genome build identifier
         and link is a str with the http download link.
         """
+        urls = [self.ucsc_url, self.alt_ucsc_url]
         if mask == "hard":
-            sys.stderr.write("Ignoring mask parameter for UCSC\n")
+            urls = [self.ucsc_url_masked, self.alt_ucsc_url_masked]
 
-        for genome_url in [self.ucsc_url, self.alt_ucsc_url]:
+        for genome_url in urls:
             remote = genome_url.format(name)
             ret = requests.head(remote)
             
@@ -407,6 +456,7 @@ class NCBIProvider(ProviderBase):
     def __init__(self):
         self.genomes = None
 
+    @cached(method=True)
     def _get_genomes(self):
         """Parse genomes from assembly summary txt files."""
         genomes = []
@@ -426,16 +476,12 @@ class NCBIProvider(ProviderBase):
         
         return genomes
 
-    def list_available_genomes(self, cache=True, as_dict=False):
+    def list_available_genomes(self, as_dict=False):
         """
         List all available genomes.
         
         Parameters
         ----------
-        cache : bool, optional
-            By default this method will use cached results. If cache is False,
-            the information will be downloaded again.
-        
         as_dict : bool, optional
             Return a dictionary of results.
         
@@ -443,9 +489,9 @@ class NCBIProvider(ProviderBase):
         ------
         genomes : dictionary or tuple
         """
-        if not cache or not self.genomes:
+        if not self.genomes:
             self.genomes = self._get_genomes()
-        
+
         for genome in self.genomes:
             if as_dict:
                 yield genome
@@ -474,6 +520,7 @@ class NCBIProvider(ProviderBase):
         tuples with two items, name and description
         """
         term = term.lower()
+
         for genome in self.list_available_genomes(as_dict=True):
             term_str = ";".join([repr(x) for x in genome.values()])
 
@@ -502,7 +549,7 @@ class NCBIProvider(ProviderBase):
         and link is a str with the ftp download link.
         """
         if mask == "hard":
-            sys.stderr.write("Ignoring mask parameter for NCBI\n")
+            sys.stderr.write("ignoring mask parameter for NCBI at download.\n")
 
         if not self.genomes:
             self.genomes = self._get_genomes()
@@ -515,7 +562,7 @@ class NCBIProvider(ProviderBase):
                 return name, url
         raise exceptions.GenomeDownloadError("Could not download genome from NCBI")
     
-    def _post_process_download(self, name, genome_dir):
+    def _post_process_download(self, name, genome_dir, mask="soft"):
         """
         Replace accessions with sequence names in fasta file.
         
@@ -555,6 +602,8 @@ class NCBIProvider(ProviderBase):
                 genome_dir, name,
                 ".process.{}.fa".format(name)
                 )
+        if mask == "hard":
+            sys.stderr.write("masking lower-case.\n")
 
         with open(fa) as old:
             with open(new_fa, "w") as new:
@@ -566,7 +615,8 @@ class NCBIProvider(ProviderBase):
                             tr.get(name, name),
                             desc
                             ))
-                    
+                    elif mask == "hard":
+                        new.write(re.sub('[actg]', 'N', line))
                     else:
                         new.write(line)
         

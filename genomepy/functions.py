@@ -5,6 +5,8 @@ from pyfaidx import Fasta
 from genomepy.provider import ProviderBase
 from genomepy.utils import generate_sizes
 import norns
+from tempfile import mkdtemp
+import shutil
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -116,9 +118,9 @@ def search(term, provider=None):
 
     for p in providers:
         for row in p.search(term):
-            yield [x.encode('utf-8') for x in [p.name] + list(row)]
+            yield [x.encode('latin-1') for x in [p.name] + list(row)]
 
-def install_genome(name, provider, genome_dir=None):
+def install_genome(name, provider, genome_dir=None, localname=None, mask="soft", regex=None, invert_match=False):
     """
     Install a genome.
 
@@ -140,8 +142,8 @@ def install_genome(name, provider, genome_dir=None):
    
     genome_dir = os.path.expanduser(genome_dir)
     p = ProviderBase.create(provider)
-    local_name = p.download_genome(name, genome_dir)
-    generate_sizes(local_name, genome_dir)
+    name = p.download_genome(name, genome_dir, mask=mask, localname=localname, regex=regex, invert_match=invert_match)
+    generate_sizes(name, genome_dir)
 
 def genome(name, genome_dir=None):
     """
