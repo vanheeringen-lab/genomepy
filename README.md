@@ -129,14 +129,22 @@ You can use a regular expression to filter for matching sequences
 the following command downloads hg38 and saves only the major chromosomes:
 
 ```
-$ genomepy  install hg38 UCSC -g 
+$ genomepy  install hg38 UCSC -r 'chr[0-9XY]+$'
+downloading from http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz...
+done...
+name: hg38
+local name: hg38
+fasta: /data/genomes/hg38/hg38.fa
+$ grep ">" /data/genomes/hg38/hg38.fa
+
 ```
 
-By default, sequences are soft-masked. Use '-m hard' for hard masking.
+By default, sequences are soft-masked. Use `-m hard` for hard masking.
 
-Finally, in the spirit of reproducibilty all options are stored in a `README.txt`. 
-This includes the original name and download location.
+The chromosome sizes are saved in file called `<genome_name>.fa.sizes`.
 
+Finally, in the spirit of reproducibilty all selected options are stored in a `README.txt`. 
+This includes the original name and download location. 
 
 #### Local cache. 
 
