@@ -38,6 +38,7 @@ requires = [
     'xmltodict',
     'bucketcache',
     'msgpack-python',
+    'appdirs',
 ]
 
 scripts = [
