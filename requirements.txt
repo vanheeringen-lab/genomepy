@@ -1,7 +1,7 @@
 nose
 click
 pyfaidx
-norns
+norns>0.1.1
 xmltodict
 bucketcache
 msgpack-python
