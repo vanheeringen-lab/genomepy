@@ -5,3 +5,4 @@ norns
 xmltodict
 bucketcache
 msgpack-python
+appdirs
