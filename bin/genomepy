@@ -17,7 +17,7 @@ def cli():
 def search(term, provider=None):
     """Search for genomes that contain TERM in their name or description."""
     for row in genomepy.search(term, provider):
-        print("\t".join([x.decode('utf-8') for x in row]))
+        print("\t".join([x.decode('utf-8', 'ignore') for x in row]))
 
 @click.command('install', short_help="install genome")
 @click.argument("name")
