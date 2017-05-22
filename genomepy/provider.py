@@ -19,13 +19,16 @@ from tempfile import mkdtemp
 
 from bucketcache import Bucket,JSONBackend,MessagePackBackend
 from pyfaidx import Fasta
-import xdg
+from appdirs import user_cache_dir
 
 from genomepy import exceptions
 from genomepy.utils import filter_fasta
 
-cache_dir = os.path.join(xdg.XDG_CACHE_HOME, "genomepy")
-cached = Bucket(cache_dir, days=7, backend=MessagePackBackend)
+# Create .cache dir if it does not exist
+if not os.path.exists(user_cache_dir("genomepy")):
+    os.makedirs(user_cache_dir("genomepy"))
+
+cached = Bucket(user_cache_dir("genomepy"), days=7, backend=MessagePackBackend)
 
 class ProviderBase(object):
     
