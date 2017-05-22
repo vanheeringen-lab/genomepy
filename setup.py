@@ -34,10 +34,11 @@ requires = [
     'nose',
     'click',
     'pyfaidx',
-    'norns>0.0.1',
+    'norns>0.1.1',
     'xmltodict',
     'bucketcache',
     'msgpack-python',
+    'requests',
     'appdirs',
 ]
 

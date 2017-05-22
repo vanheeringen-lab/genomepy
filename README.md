@@ -1,5 +1,6 @@
 # genomepy
 
+[![bioconda-badge](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io)
 [![PyPI version](https://badge.fury.io/py/genomepy.svg)](https://badge.fury.io/py/genomepy)
 [![Build Status](https://travis-ci.org/simonvh/genomepy.svg?branch=master)](https://travis-ci.org/simonvh/genomepy)
 [![Code Health](https://landscape.io/github/simonvh/genomepy/master/landscape.svg?style=flat)](https://landscape.io/github/simonvh/genomepy/master)
@@ -11,7 +12,13 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 
 ## Installation
 
-Via pip, for now.
+Via [bioconda]((https://bioconda.github.io/):
+
+```
+$ conda install genomepy
+``` 
+
+Or via pip:
 
 ```
 $ pip install genomepy
