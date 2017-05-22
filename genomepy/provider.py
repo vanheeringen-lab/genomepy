@@ -24,6 +24,10 @@ from appdirs import user_cache_dir
 from genomepy import exceptions
 from genomepy.utils import filter_fasta
 
+# Create .cache dir if it does not exist
+if not os.path.exists(user_cache_dir("genomepy")):
+    os.makedirs(user_cache_dir("genomepy"))
+
 cached = Bucket(user_cache_dir("genomepy"), days=7, backend=MessagePackBackend)
 
 class ProviderBase(object):
