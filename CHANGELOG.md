@@ -2,6 +2,12 @@
 
 Here, the changes to `genomepy` will be summarized.
 
+## Version 0.3.1
+
+* Added requests dependency
+* Removed dependency on xdg, as it didn't support OSX
+* Fixed string decoding bug
+
 ## Version 0.3.0
 
 * Started CHANGELOG.
