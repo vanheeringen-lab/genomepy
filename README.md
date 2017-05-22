@@ -12,7 +12,7 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 
 ## Installation
 
-Via [bioconda]((https://bioconda.github.io/):
+Via [bioconda](https://bioconda.github.io/):
 
 ```
 $ conda install genomepy
