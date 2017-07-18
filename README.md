@@ -225,9 +225,9 @@ Let me know if you encounter issues with certain downloads.
 
 ## Todo
 
-* More tests!
-* Automatic indexing (such as bwa)
-* Ensembl bacteria
+* Linking genomes to NCBI taxonomy ID
+* Optionally: automatic indexing for aligners (such as bwa)
+* Optionally: Ensembl bacteria (although there might be better options specifically for bacterial sequences)
 
 ## Contributing
 
