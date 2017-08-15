@@ -232,6 +232,10 @@ Let me know if you encounter issues with certain downloads.
 * Optionally: automatic indexing for aligners (such as bwa)
 * Optionally: Ensembl bacteria (although there might be better options specifically for bacterial sequences)
 
+## Citation
+
+If you use genomepy in your research, please consider citing it: [10.21105/joss.00320](http://dx.doi.org/10.21105/joss.00320).
+
 
 ## Getting help
 
