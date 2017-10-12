@@ -14,9 +14,9 @@ import tarfile
 import time
 from tempfile import mkdtemp,NamedTemporaryFile
 try:
-        from urllib.request import urlopen, urlretrieve
+        from urllib.request import urlopen, urlretrieve, urlcleanup
 except:
-        from urllib import urlopen, urlretrieve
+        from urllib import urlopen, urlretrieve, urlcleanup
 
 from bucketcache import Bucket,JSONBackend,MessagePackBackend
 from pyfaidx import Fasta
@@ -617,6 +617,7 @@ class NCBIProvider(ProviderBase):
                 ]
         
         for fname in names:
+            urlcleanup() 
             response = urlopen(self.assembly_url + "/" + fname)
             lines = response.read().decode('utf-8').splitlines()
             header = lines[1].strip("# ").split("\t")
