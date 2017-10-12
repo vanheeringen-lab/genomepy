@@ -124,7 +124,7 @@ def search(term, provider=None):
         for row in p.search(term):
             yield [x.encode('latin-1') for x in [p.name] + list(row)]
 
-def install_genome(name, provider, genome_dir=None, localname=None, mask="soft", regex=None, invert_match=False):
+def install_genome(name, provider, version=None, genome_dir=None, localname=None, mask="soft", regex=None, invert_match=False, annotation=False):
     """
     Install a genome.
 
@@ -136,8 +136,26 @@ def install_genome(name, provider, genome_dir=None, localname=None, mask="soft",
     provider : str
         Provider name
 
-    genome_dir : str
+    version : str
+        Version (only for Ensembl)
+
+    genome_dir : str , optional
         Where to store the fasta files
+    
+    localname : str , optional
+        Custom name for this genome.
+
+    mask : str , optional
+        Default is 'soft', specify 'hard' for hard masking.
+
+    regex : str , optional
+        Regular expression to select specific chromosome / scaffold names.
+
+    invert_match : bool , optional
+        Set to True to select all chromosomes that don't match the regex.
+
+    annotation : bool , optional
+        If set to True, download gene annotation in BED and GTF format.
     """
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
@@ -145,10 +163,24 @@ def install_genome(name, provider, genome_dir=None, localname=None, mask="soft",
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
    
     genome_dir = os.path.expanduser(genome_dir)
+    
+    # Download genome from provider
     p = ProviderBase.create(provider)
-    name = p.download_genome(name, genome_dir, mask=mask, localname=localname, regex=regex, invert_match=invert_match)
-    generate_sizes(name, genome_dir)
+    name = p.download_genome(
+            name, 
+            genome_dir, 
+            mask=mask, 
+            localname=localname, 
+            regex=regex, 
+            invert_match=invert_match)
 
+    if annotatation:
+        # Download annotation from provider
+        p.download_annotation(name, genome_dir)
+
+    # Create chromosome sizes
+    generate_sizes(name, genome_dir)
+    
 def get_track_type(track):
     region_p = re.compile(r'^(.+):(\d+)-(\d+)$')
     if type(track) == type([]):

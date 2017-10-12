@@ -6,16 +6,17 @@ import os
 import io
 import ftplib
 import time
-try: 
-    from urllib.request import urlopen
-except ImportError:
-    from urllib2 import urlopen
 import gzip
 import xmltodict
 import shutil
+import subprocess as sp
 import tarfile
 import time
-from tempfile import mkdtemp
+from tempfile import mkdtemp,NamedTemporaryFile
+try:
+        from urllib.request import urlopen, urlretrieve
+except:
+        from urllib import urlopen, urlretrieve
 
 from bucketcache import Bucket,JSONBackend,MessagePackBackend
 from pyfaidx import Fasta
@@ -106,7 +107,7 @@ class ProviderBase(object):
         # Remove temp dir
         shutil.rmtree(tmpdir)
 
-    def download_genome(self, name, genome_dir, localname=None, mask="soft", regex=None, invert_match=False):
+    def download_genome(self, name, genome_dir, localname=None, mask="soft", regex=None, invert_match=False, version=None):
         """
         Download a (gzipped) genome file to a specific directory
 
@@ -126,7 +127,7 @@ class ProviderBase(object):
         if not os.path.exists(genome_dir):
             os.makedirs(genome_dir)
         
-        dbname, link = self.get_genome_download_link(name, mask)
+        dbname, link = self.get_genome_download_link(name, mask=mask, version=version)
         myname = dbname 
         if localname:
             myname = localname
@@ -201,6 +202,20 @@ class ProviderBase(object):
 #
        
         return myname
+    
+    def download_annotation(self, name, genome_dir, version=None):
+        """
+        Download annotation file to to a specific directory
+
+        Parameters
+        ----------
+        name : str
+            Genome / species name
+        
+        genome_dir : str
+            Directory to install annotation
+        """
+        raise NotImplementedError()
 
 register_provider = ProviderBase.register_provider
 
@@ -299,7 +314,7 @@ class EnsemblProvider(ProviderBase):
                 "Could not download genome {} from Ensembl".format(name))
         return genome_info
 
-    def get_genome_download_link(self, name, mask="soft"):
+    def get_genome_download_link(self, name, version=None, mask="soft"):
         """
         Return Ensembl ftp link to toplevel genome sequence
 
@@ -321,11 +336,12 @@ class EnsemblProvider(ProviderBase):
         if division == "bacteria":
             raise NotImplementedError("bacteria from ensembl not yet supported")
         
-        # get version info from the dbname string
-        p = re.compile(r'core_(\d+)')
-        m = p.search(genome_info["dbname"])
-        if m:
-            version = m.group(1)
+        if not version:
+            # get version info from the dbname string
+            p = re.compile(r'core_(\d+)')
+            m = p.search(genome_info["dbname"])
+            if m:
+                version = m.group(1)
         
         ftp_site = "ftp.ensemblgenomes.org"
         if not division:
@@ -351,6 +367,68 @@ class EnsemblProvider(ProviderBase):
         for fname in fnames:
             if pattern in fname:
                 return genome_info["assembly_name"], "ftp://" + ftp_site + fname
+
+    def download_annotation(self, name, genome_dir, version=None):
+        """
+        Download gene annotation from Ensembl based on genome name.
+    
+        Parameters
+        ----------
+        name : str
+            Ensembl genome name.
+        genome_dir : str
+            Genome directory.
+        version : str , optional
+            Ensembl version. By default the latest version is used.
+        """
+        genome_info = self._get_genome_info(name)
+
+        # parse the division
+        division = genome_info["division"].lower().replace("ensembl","")
+        if division == "bacteria":
+            raise NotImplementedError("bacteria from ensembl not yet supported")
+        
+        if not version:
+            # get version info from the dbname string
+            p = re.compile(r'core_(\d+)')
+            m = p.search(genome_info["dbname"])
+            if m:
+                version = m.group(1)
+        
+        # Get the base link depending on division
+        ftp_site = "ftp://ftp.ensemblgenomes.org/pub/{}".format(division)
+        if not division:
+            ftp_site = "ftp://ftp.ensembl.org/pub"
+
+        # Get the GTF URL
+        base_url = ftp_site + "/release-{}/gtf/{}/{}.{}.{}.gtf.gz"
+        safe_name = name.replace(" ", "_")
+        safe_name = re.sub('\.p\d+$', '', safe_name)
+
+        ftp_link = base_url.format(version, genome_info["species"], genome_info["species"].capitalize(), safe_name, version)
+
+        out_dir = os.path.join(genome_dir, name)
+        if not os.path.exists(out_dir):
+            os.mkdir(out_dir)
+        # Download the file
+        try:
+            response = urlopen(ftp_link)
+            gtf_file = out_dir + "/"+ name + ".annotation.gtf.gz"
+            with open(gtf_file, "wb") as f:
+                f.write(response.read())
+        
+            bed_file = gtf_file.replace("gtf.gz", "bed")
+            cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1} && gzip {1}"
+            ret = sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
+            print(ret)
+            readme_file = os.path.join(genome_dir, name, "annotation.README")
+            with open(readme_file, "w") as readme:
+                readme.write("annotation url: {}\n".format(ftp_link))
+        except Exception:
+            sys.stderr.write("\nCould not download {}\n".format(ftp_link))
+            raise
+
+        return out_dir
 
 @register_provider('UCSC')
 class UcscProvider(ProviderBase):
@@ -416,7 +494,7 @@ class UcscProvider(ProviderBase):
             if term in name.lower() or term in description.lower():
                 yield name,description
     
-    def get_genome_download_link(self, name, mask="soft"):
+    def get_genome_download_link(self, name, mask="soft", version=None):
         """
         Return UCSC http link to genome sequence
 
@@ -444,6 +522,75 @@ class UcscProvider(ProviderBase):
 
         raise exceptions.GenomeDownloadError(
                 "Could not download genome {} from UCSC".format(name))
+
+
+    def download_annotation(self, name, genome_dir, version=None):
+        """
+        Download gene annotation from UCSC based on genomebuild.
+    
+        Will check UCSC, Ensembl and RefSeq annotation.
+    
+        Parameters
+        ----------
+        genomebuild : str
+            UCSC genome name.
+        genome_dir : str
+            Genome directory.
+        """
+        UCSC_GENE_URL = "http://hgdownload.cse.ucsc.edu/goldenPath/{}/database/"
+        ANNOS = ["knownGene.txt.gz", "ensGene.txt.gz", "refGene.txt.gz"]
+        pred = "genePredToBed"
+    
+        tmp = NamedTemporaryFile(delete=False, suffix=".gz")
+    
+        anno = []
+        f = urlopen(UCSC_GENE_URL.format(name))
+        p = re.compile(r'\w+.Gene.txt.gz')
+        for line in f.readlines():
+            m = p.search(line.decode())
+            if m:
+                anno.append(m.group(0))
+        sys.stderr.write("Retrieving gene annotation for {}\n".format(name))
+        url = ""
+        for a in ANNOS:
+            if a in anno:
+                url = UCSC_GENE_URL.format(name) + a
+                break
+        if url:
+            sys.stderr.write("Using {}\n".format(url))
+            urlretrieve(
+                    url,
+                    tmp.name
+                    )
+             
+            with gzip.open(tmp.name) as f:
+                cols = f.readline().decode(errors='ignore').split("\t")
+    
+            start_col = 1
+            for i,col in enumerate(cols):
+                if col == "+" or col == "-":
+                    start_col = i - 1
+                    break
+            end_col = start_col + 10
+           
+            path = os.path.join(genome_dir, name)
+            if not os.path.exists(path):
+                os.mkdir(path)
+            bed_file = os.path.join(genome_dir, name, name + ".annotation.bed")
+            cmd = "zcat {} | cut -f{}-{} | {} /dev/stdin {} && gzip {}"
+            sp.call(cmd.format(
+                tmp.name, start_col, end_col, pred, bed_file, bed_file), 
+                shell=True)
+            
+            gtf_file = bed_file.replace(".bed", ".gtf")
+            cmd = "bedToGenePred {0}.gz /dev/stdout | genePredToGtf file /dev/stdin /dev/stdout -utr -honorCdsStat | sed 's/.dev.stdin/UCSC/' > {1} && gzip {1}"
+            ret = sp.check_call(cmd.format(bed_file, gtf_file), shell=True)
+        
+            readme_file = os.path.join(genome_dir, name, "annotation.README")
+            with open(readme_file, "w") as readme:
+                readme.write("annotation url: {}\n".format(url))
+        else:
+            sys.stderr.write("No annotation found!")
 
 @register_provider('NCBI')
 class NCBIProvider(ProviderBase):
@@ -536,7 +683,7 @@ class NCBIProvider(ProviderBase):
                         ))
                     )
 
-    def get_genome_download_link(self, name, mask="soft"):
+    def get_genome_download_link(self, name, mask="soft", version=None):
         """
         Return NCBI ftp link to toplevel genome sequence
 
