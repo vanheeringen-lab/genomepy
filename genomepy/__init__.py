@@ -9,4 +9,4 @@ list_available_genomes = genomepy.functions.list_available_genomes
 list_installed_genomes = genomepy.functions.list_installed_genomes
 search = genomepy.functions.search
 install_genome = genomepy.functions.install_genome
-genome = genomepy.functions.genome
+Genome = genomepy.functions.Genome
