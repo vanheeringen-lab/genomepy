@@ -169,14 +169,15 @@ def install_genome(name, provider, version=None, genome_dir=None, localname=None
     name = p.download_genome(
             name, 
             genome_dir, 
+            version=version,
             mask=mask, 
             localname=localname, 
             regex=regex, 
             invert_match=invert_match)
 
-    if annotatation:
+    if annotation:
         # Download annotation from provider
-        p.download_annotation(name, genome_dir)
+        p.download_annotation(name, genome_dir, version=version)
 
     # Create chromosome sizes
     generate_sizes(name, genome_dir)
