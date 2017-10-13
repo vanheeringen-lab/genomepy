@@ -3,6 +3,23 @@ import os
 import re
 from pyfaidx import Fasta
 
+def generate_gap_bed(fname, outname):
+    """ Generate a BED file with gap locations.
+
+    Parameters
+    ----------
+    fname : str
+        Filename of input FASTA file.
+
+    outname : str
+        Filename of output BED file.
+    """ 
+    f = Fasta(fname)
+    with open(outname, "w") as bed:
+        for chrom in f.keys():
+            for m in re.finditer(r'N+', f[chrom][:].seq):
+                bed.write("{}\t{}\t{}\n".format(chrom, m.start(0), m.end(0)))
+
 def generate_sizes(name, genome_dir):
     """Generate a sizes file with length of sequences in FASTA file."""
     fa = os.path.join(genome_dir, name, "{}.fa".format(name))
