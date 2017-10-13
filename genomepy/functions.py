@@ -9,7 +9,7 @@ from tempfile import mkdtemp
 
 from pyfaidx import Fasta,Sequence
 from genomepy.provider import ProviderBase
-from genomepy.utils import generate_sizes
+from genomepy.utils import generate_sizes, generate_gap_bed
 import norns
 
 config = norns.config("genomepy", default="cfg/default.yaml")
@@ -181,7 +181,12 @@ def install_genome(name, provider, version=None, genome_dir=None, localname=None
 
     # Create chromosome sizes
     generate_sizes(name, genome_dir)
-    
+
+    fa = os.path.join(genome_dir, name, "{}.fa".format(name))
+    bed = os.path.join(genome_dir, name, "{}.gaps.bed".format(name))
+    generate_gap_bed(fa, bed)
+
+
 def get_track_type(track):
     region_p = re.compile(r'^(.+):(\d+)-(\d+)$')
     if type(track) == type([]):
