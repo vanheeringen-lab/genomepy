@@ -12,7 +12,8 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 
 ## Installation
 
-Via [bioconda]((https://bioconda.github.io/):
+Genomepy works with Python 2.7 and Python 3.4+. 
+You can install it via [bioconda](https://bioconda.github.io/):
 
 ```
 $ conda install genomepy
@@ -23,6 +24,18 @@ Or via pip:
 ```
 $ pip install genomepy
 ```
+
+If you install via pip, you will have to install some dependencies, only if 
+you want to use the annotation download feature. 
+You will have to install the following
+utilities and make sure they are in your PATH:
+
+* `genePredToBed`
+* `genePredToGtf`
+* `bedToGenePred`
+* `gtfToGenePred`
+
+You can find the binaries [here](http://hgdownload.cse.ucsc.edu/admin/exe/).
 
 ## Configuration
 
@@ -172,6 +185,14 @@ $ grep ">" /data/genomes/hg38/hg38.fa
 By default, sequences are soft-masked. Use `-m hard` for hard masking.
 
 The chromosome sizes are saved in file called `<genome_name>.fa.sizes`.
+
+For genomes from UCSC and Ensembl, you can choose to download gene annotation
+files with the `--annotation` option. 
+These will be saved in BED and GTF format. 
+
+```
+$ genomepy  install hg38 UCSC --annotation
+```
 
 Finally, in the spirit of reproducibility all selected options are stored in a `README.txt`. 
 This includes the original name and download location. 
