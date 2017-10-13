@@ -421,7 +421,7 @@ class EnsemblProvider(ProviderBase):
             cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1} && gzip {1}"
             ret = sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
             readme = os.path.join(genome_dir, name, "README.txt")
-            with open(readme, "wa") as f:
+            with open(readme, "a") as f:
                 f.write("annotation url: {}\n".format(ftp_link))
         except Exception:
             sys.stderr.write("\nCould not download {}\n".format(ftp_link))
@@ -586,7 +586,7 @@ class UcscProvider(ProviderBase):
             ret = sp.check_call(cmd.format(bed_file, gtf_file), shell=True)
         
             readme = os.path.join(genome_dir, name, "README.txt")
-            with open(readme, "wa") as f:
+            with open(readme, "a") as f:
                 f.write("annotation url: {}\n".format(url))
         else:
             sys.stderr.write("No annotation found!")
