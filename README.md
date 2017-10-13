@@ -12,7 +12,8 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 
 ## Installation
 
-Via [bioconda](https://bioconda.github.io/):
+Genomepy works with Python 2.7 and Python 3.4+. 
+You can install it via [bioconda](https://bioconda.github.io/):
 
 ```
 $ conda install genomepy
