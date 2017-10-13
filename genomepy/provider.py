@@ -140,6 +140,7 @@ class ProviderBase(object):
 
         if not os.path.exists(os.path.join(genome_dir, myname)):
             os.makedirs(os.path.join(genome_dir, myname))
+        urlcleanup()
         response = urlopen(link)
          
         sys.stderr.write("downloading from {}...\n".format(link))
@@ -734,6 +735,7 @@ class NCBIProvider(ProviderBase):
    
         # Create mapping of accessions to names
         tr = {}
+        urlcleanup()
         response = urlopen(url)
         for line in response.read().decode('utf-8').splitlines():
             if line.startswith("#"):
