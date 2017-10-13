@@ -5,6 +5,9 @@
 [![Build Status](https://travis-ci.org/simonvh/genomepy.svg?branch=master)](https://travis-ci.org/simonvh/genomepy)
 [![Code Health](https://landscape.io/github/simonvh/genomepy/master/landscape.svg?style=flat)](https://landscape.io/github/simonvh/genomepy/master)
 
+ [![status](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd/status.svg)](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.831969.svg)](https://doi.org/10.5281/zenodo.831969)
+
 Easily install and use genomes in Python and elsewhere!
 
 The goal is to have a _simple_ and _straightforward_ way to download and use genomic sequences. 
@@ -247,9 +250,18 @@ Let me know if you encounter issues with certain downloads.
 
 ## Todo
 
-* More tests!
-* Automatic indexing (such as bwa)
-* Ensembl bacteria
+* Linking genomes to NCBI taxonomy ID
+* Optionally: automatic indexing for aligners (such as bwa)
+* Optionally: Ensembl bacteria (although there might be better options specifically for bacterial sequences)
+
+## Citation
+
+If you use genomepy in your research, please consider citing it: [10.21105/joss.00320](http://dx.doi.org/10.21105/joss.00320).
+
+
+## Getting help
+
+If you want to report a bug or issue, or have problems with installing or running the software please create [a new issue](https://github.com/simonvh/genomepy/issues). This is the preferred way of getting support. Alternatively, you can [mail me](mailto:simon.vanheeringen@gmail.com).
 
 ## Contributing
 
