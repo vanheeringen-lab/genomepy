@@ -420,10 +420,9 @@ class EnsemblProvider(ProviderBase):
             bed_file = gtf_file.replace("gtf.gz", "bed")
             cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1} && gzip {1}"
             ret = sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
-            print(ret)
-            readme_file = os.path.join(genome_dir, name, "annotation.README")
-            with open(readme_file, "w") as readme:
-                readme.write("annotation url: {}\n".format(ftp_link))
+            readme = os.path.join(genome_dir, name, "README.txt")
+            with open(readme, "wa") as f:
+                f.write("annotation url: {}\n".format(ftp_link))
         except Exception:
             sys.stderr.write("\nCould not download {}\n".format(ftp_link))
             raise
@@ -586,9 +585,9 @@ class UcscProvider(ProviderBase):
             cmd = "bedToGenePred {0}.gz /dev/stdout | genePredToGtf file /dev/stdin /dev/stdout -utr -honorCdsStat | sed 's/.dev.stdin/UCSC/' > {1} && gzip {1}"
             ret = sp.check_call(cmd.format(bed_file, gtf_file), shell=True)
         
-            readme_file = os.path.join(genome_dir, name, "annotation.README")
-            with open(readme_file, "w") as readme:
-                readme.write("annotation url: {}\n".format(url))
+            readme = os.path.join(genome_dir, name, "README.txt")
+            with open(readme, "wa") as f:
+                f.write("annotation url: {}\n".format(url))
         else:
             sys.stderr.write("No annotation found!")
 

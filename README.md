@@ -12,7 +12,7 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 
 ## Installation
 
-Via [bioconda]((https://bioconda.github.io/):
+Via [bioconda](https://bioconda.github.io/):
 
 ```
 $ conda install genomepy
@@ -29,10 +29,10 @@ you want to use the annotation download feature.
 You will have to install the following
 utilities and make sure they are in your PATH:
 
-* genePredToBed
-* genePredToGtf
-* bedToGenePred
-* gtfToGenePred
+* `genePredToBed`
+* `genePredToGtf`
+* `bedToGenePred`
+* `gtfToGenePred`
 
 You can find the binaries [here](http://hgdownload.cse.ucsc.edu/admin/exe/).
 
