@@ -2,6 +2,10 @@ import os
 import sys
 import re
 
+import norns
+
+config = norns.config("genomepy", default="cfg/default.yaml")
+
 class Plugin(object):
     active = False
 
@@ -49,8 +53,14 @@ def convert(name):
 def init_plugins():
     find_plugins()
     d = {}
+    print("I", config.config_file)
+    print(config.get("plugin" , []))
     for c in Plugin.__subclasses__():
         ins = c()
+    
+        if ins.name() in config.get("plugin", []):
+            ins.activate()
+        
         d[ins.name()] = ins
     
     return d
@@ -68,6 +78,8 @@ def deactivate(name):
         raise Exception("plugin {} not found".format(name))
 
 def get_active_plugins():
+    for p,v in plugins.items():
+        print(p, v.active)
     return [inst for name, inst in plugins.items() if inst.active]
 
 plugins = init_plugins()

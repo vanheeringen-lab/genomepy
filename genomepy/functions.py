@@ -9,7 +9,7 @@ from tempfile import mkdtemp
 
 from pyfaidx import Fasta,Sequence
 from genomepy.provider import ProviderBase
-from genomepy.base import get_active_plugins
+from genomepy.base import get_active_plugins, init_plugins, activate
 import norns
 
 config = norns.config("genomepy", default="cfg/default.yaml")
@@ -421,3 +421,24 @@ class Genome(Fasta):
             coords.append([chrom, start, end])
 
         return coords
+
+def manage_plugins(command, name):
+    active_plugins = config.get("plugin", [])
+    print ("M", config.config_file)
+    plugins = init_plugins()
+    if command == "activate":
+        if name not in plugins:
+            raise ValueError("Unknown plugin: {}".format(name))
+        if name not in active_plugins:
+            active_plugins.append(name)
+    elif command == "deactivate":
+        if name in active_plugins:
+            active_plugins.remove(name)
+    elif command == "list":
+        for plugin in plugins:
+            print("{}\t{}".format(plugin, plugin in active_plugins))
+    else:
+        raise ValueError("Invalid plugin command")
+    config["plugins"] = active_plugins
+    config.save()
+

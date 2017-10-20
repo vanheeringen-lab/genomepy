@@ -47,11 +47,18 @@ def providers():
     for p in genomepy.list_available_providers():
         print(p)
 
+@click.command('plugin', short_help="manage plugins")
+@click.argument("command")
+@click.argument("name")
+def plugin(command, name):
+    """Activate or deactivate plugins"""
+    genomepy.functions.manage_plugins(command, name)
 
 cli.add_command(search)
 cli.add_command(install)
 cli.add_command(genomes)
 cli.add_command(providers)
+cli.add_command(plugin)
 
 if __name__ == "__main__":
     cli()
