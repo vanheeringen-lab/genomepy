@@ -9,7 +9,7 @@ from tempfile import mkdtemp
 
 from pyfaidx import Fasta,Sequence
 from genomepy.provider import ProviderBase
-from genomepy.utils import generate_sizes, generate_gap_bed
+from genomepy.base import get_active_plugins
 import norns
 
 config = norns.config("genomepy", default="cfg/default.yaml")
@@ -179,13 +179,9 @@ def install_genome(name, provider, version=None, genome_dir=None, localname=None
         # Download annotation from provider
         p.download_annotation(name, genome_dir, version=version)
 
-    # Create chromosome sizes
-    generate_sizes(name, genome_dir)
-
-    fa = os.path.join(genome_dir, name, "{}.fa".format(name))
-    bed = os.path.join(genome_dir, name, "{}.gaps.bed".format(name))
-    generate_gap_bed(fa, bed)
-
+    g = Genome(name, genome_dir=genome_dir)
+    for plugin in get_active_plugins():
+        plugin.after_genome_download(g)
 
 def get_track_type(track):
     region_p = re.compile(r'^(.+):(\d+)-(\d+)$')
@@ -263,7 +259,15 @@ class Genome(Fasta):
         else:
             fname = fnames[0]
 
-        return super(Genome, self).__init__(fname)
+        inst = super(Genome, self).__init__(fname)
+        
+        self.name = name
+        
+        self.props = {}
+        for plugin in get_active_plugins():
+            self.props[plugin.name()] = plugin.get_properties(self)
+
+        return 
 
     def get_spliced_seq(self, name, intervals, rc=False):
         """Return a sequence by record name and list of intervals 

@@ -24,6 +24,7 @@ except(IOError, ImportError, RuntimeError):
 
 packages = [
     'genomepy',
+    'genomepy/plugins',
 ]
 
 package_data = {
