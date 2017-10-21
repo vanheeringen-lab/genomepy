@@ -17,7 +17,7 @@ def teardown():
 
 def test_basic():
     cfg = genomepy.functions.config
-    assert 1 == len(cfg.keys())
+    assert 2 == len(cfg.keys())
 
 @raises(FileNotFoundError)
 def test_genome_dir_not_found():
