@@ -4,7 +4,7 @@ import subprocess as sp
 
 from genomepy.base import Plugin
 
-class Minimap2IndexPlugin(Plugin):
+class Minimap2Plugin(Plugin):
     def after_genome_download(self, genome):
         try: 
             sp.check_call("minimap2", stderr=sp.PIPE)
@@ -16,8 +16,8 @@ class Minimap2IndexPlugin(Plugin):
             return
         
         # Create index dir
-        index_dir = genome.props["minimap2_index"]["index_dir"]
-        index_name =  genome.props["minimap2_index"]["index_name"] 
+        index_dir = genome.props["minimap2"]["index_dir"]
+        index_name =  genome.props["minimap2"]["index_name"] 
         if not os.path.exists(index_dir):
             os.mkdir(index_dir)
 

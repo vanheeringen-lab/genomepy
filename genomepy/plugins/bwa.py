@@ -4,7 +4,7 @@ import subprocess as sp
 
 from genomepy.base import Plugin
 
-class BwaIndexPlugin(Plugin):
+class BwaPlugin(Plugin):
     def after_genome_download(self, genome):
         try: 
             sp.check_call("bwa", stderr=sp.PIPE)
@@ -16,8 +16,8 @@ class BwaIndexPlugin(Plugin):
             return
         
         # Create index dir
-        index_dir = genome.props["bwa_index"]["index_dir"]
-        index_fa =  genome.props["bwa_index"]["index_name"] 
+        index_dir = genome.props["bwa"]["index_dir"]
+        index_fa =  genome.props["bwa"]["index_name"] 
         if not os.path.exists(index_dir):
             os.mkdir(index_dir)
         if not os.path.exists(index_fa):
