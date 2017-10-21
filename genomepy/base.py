@@ -76,7 +76,6 @@ def deactivate(name):
         raise Exception("plugin {} not found".format(name))
 
 def get_active_plugins():
-    for p,v in plugins.items():
     return [inst for name, inst in plugins.items() if inst.active]
 
 plugins = init_plugins()

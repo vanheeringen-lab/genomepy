@@ -424,7 +424,6 @@ class Genome(Fasta):
 
 def manage_plugins(command, name):
     active_plugins = config.get("plugin", [])
-    print ("M", config.config_file)
     plugins = init_plugins()
     if command == "activate":
         if name not in plugins:
