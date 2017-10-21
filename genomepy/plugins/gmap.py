@@ -3,6 +3,7 @@ import sys
 import subprocess as sp
 
 from genomepy.base import Plugin
+from genomepy.utils import mkdir_p
 
 class GmapPlugin(Plugin):
     def after_genome_download(self, genome):
@@ -18,8 +19,7 @@ class GmapPlugin(Plugin):
         # Create index dir
         index_dir = genome.props["gmap"]["index_dir"]
         index_name =  genome.props["gmap"]["index_name"] 
-        if not os.path.exists(index_dir):
-            os.mkdir(index_dir)
+        mkdir_p(index_dir)
 
         # Create index
         ret = sp.check_call("gmap_build -D {} -d {} {}".format(index_dir, genome.name, genome.filename), shell=True)
@@ -28,7 +28,7 @@ class GmapPlugin(Plugin):
                 
     def get_properties(self, genome):
         props = {
-            "index_dir": os.path.join(os.path.dirname(genome.filename), "gmap_index"),
-            "index_name": os.path.join(os.path.dirname(genome.filename), "gmap_index", genome.name),
+            "index_dir": os.path.join(os.path.dirname(genome.filename), "index" , "gmap"),
+            "index_name": os.path.join(os.path.dirname(genome.filename), "index", "gmap", genome.name),
             }
         return props

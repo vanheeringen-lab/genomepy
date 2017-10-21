@@ -434,8 +434,9 @@ def manage_plugins(command, name):
         if name in active_plugins:
             active_plugins.remove(name)
     elif command == "list":
-        for plugin in plugins:
-            print("{}\t{}".format(plugin, plugin in active_plugins))
+        print("{:20}{}".format("plugin", "enabled"))
+        for plugin in sorted(plugins):
+            print("{:20}{}".format(plugin, {False:"", True:"*"}[plugin in active_plugins]))
     else:
         raise ValueError("Invalid plugin command")
     config["plugins"] = active_plugins

@@ -3,6 +3,7 @@ import sys
 import subprocess as sp
 
 from genomepy.base import Plugin
+from genomepy.utils import mkdir_p
 
 class BwaPlugin(Plugin):
     def after_genome_download(self, genome):
@@ -18,8 +19,8 @@ class BwaPlugin(Plugin):
         # Create index dir
         index_dir = genome.props["bwa"]["index_dir"]
         index_fa =  genome.props["bwa"]["index_name"] 
-        if not os.path.exists(index_dir):
-            os.mkdir(index_dir)
+        os.mkdir_p(index_dir)
+
         if not os.path.exists(index_fa):
             os.symlink(genome.filename, index_fa)
 
@@ -30,7 +31,7 @@ class BwaPlugin(Plugin):
                 
     def get_properties(self, genome):
         props = {
-            "index_dir": os.path.join(os.path.dirname(genome.filename), "bwa_index"),
-            "index_name": os.path.join(os.path.dirname(genome.filename), "bwa_index", "{}.fa".format(genome.name)),
+            "index_dir": os.path.join(os.path.dirname(genome.filename), "index", "bwa"),
+            "index_name": os.path.join(os.path.dirname(genome.filename), "index","bwa", "{}.fa".format(genome.name)),
             }
         return props
