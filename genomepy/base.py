@@ -53,8 +53,6 @@ def convert(name):
 def init_plugins():
     find_plugins()
     d = {}
-    print("I", config.config_file)
-    print(config.get("plugin" , []))
     for c in Plugin.__subclasses__():
         ins = c()
     
@@ -79,7 +77,6 @@ def deactivate(name):
 
 def get_active_plugins():
     for p,v in plugins.items():
-        print(p, v.active)
     return [inst for name, inst in plugins.items() if inst.active]
 
 plugins = init_plugins()
