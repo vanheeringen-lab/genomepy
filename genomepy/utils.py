@@ -2,6 +2,9 @@
 import errno
 import os
 import re
+import sys
+import subprocess as sp
+
 from pyfaidx import Fasta
 
 def generate_gap_bed(fname, outname):
@@ -94,3 +97,17 @@ def mkdir_p(path):
             pass
         else:
             raise
+
+def cmd_ok(cmd):
+    """Returns True if cmd can be run.
+    """ 
+    try:
+        sp.check_call(cmd, stderr=sp.PIPE)
+    except sp.CalledProcessError:
+        # bwa gives return code of 1 with no argument
+        pass
+    except:
+        sys.stderr.write("bwa not found, skipping\n")
+        return False
+    return True
+

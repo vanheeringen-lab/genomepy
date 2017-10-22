@@ -3,17 +3,11 @@ import sys
 import subprocess as sp
 
 from genomepy.base import Plugin
-from genomepy.utils import mkdir_p
+from genomepy.utils import mkdir_p, cmd_ok
 
 class BwaPlugin(Plugin):
     def after_genome_download(self, genome):
-        try: 
-            sp.check_call("bwa", stderr=sp.PIPE)
-        except sp.CalledProcessError:
-            # bwa gives return code of 1 with no argument
-            pass
-        except:
-            sys.stderr.write("bwa not found, skipping\n")
+        if not cmd_ok("bwa"):
             return
         
         # Create index dir

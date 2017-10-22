@@ -423,14 +423,16 @@ class Genome(Fasta):
         return coords
 
 def manage_plugins(command, name):
+    """Enable or disable plugins.
+    """ 
     active_plugins = config.get("plugin", [])
     plugins = init_plugins()
-    if command == "activate":
+    if command == "enable":
         if name not in plugins:
             raise ValueError("Unknown plugin: {}".format(name))
         if name not in active_plugins:
             active_plugins.append(name)
-    elif command == "deactivate":
+    elif command == "disable":
         if name in active_plugins:
             active_plugins.remove(name)
     elif command == "list":

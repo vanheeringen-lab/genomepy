@@ -51,7 +51,7 @@ def providers():
 @click.argument("command")
 @click.argument("name")
 def plugin(command, name):
-    """Activate or deactivate plugins"""
+    """Enable or disable plugins"""
     genomepy.functions.manage_plugins(command, name)
 
 cli.add_command(search)
