@@ -10,7 +10,7 @@ class GmapPlugin(Plugin):
         try: 
             sp.check_call("gmap_build", stdout=sp.PIPE)
         except sp.CalledProcessError:
-            # bwa gives return code of 1 with no argument
+            # return code of 9 with no argument
             pass
         except:
             sys.stderr.write("gmap_build not found, skipping\n")

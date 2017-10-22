@@ -19,15 +19,20 @@ class BwaPlugin(Plugin):
         # Create index dir
         index_dir = genome.props["bwa"]["index_dir"]
         index_fa =  genome.props["bwa"]["index_name"] 
-        os.mkdir_p(index_dir)
+        mkdir_p(index_dir)
 
         if not os.path.exists(index_fa):
             os.symlink(genome.filename, index_fa)
 
+        sys.stderr.write("Creating bwa index...\n")
         # Create index
-        ret = sp.check_call("bwa index {}".format(index_fa), shell=True)
-        if ret != 0:
-            sys.stderr.write("bwa index return non-zero")
+        p = sp.Popen("bwa index {}".format(index_fa), 
+                shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
+        stdout, stderr = p.communicate()
+        if p.returncode != 0: 
+            sys.stderr.write("bwa index returned non-zero\n")
+            sys.stderr.write(stdout)
+            sys.stderr.write(stderr)
                 
     def get_properties(self, genome):
         props = {

@@ -35,7 +35,7 @@ def find_plugins():
     plugin_files = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
     sys.path.insert(0, plugin_dir)
     for plugin in plugin_files:
-        bla = __import__(plugin)
+        __import__(plugin)
 
 def convert(name):
     """Convert CamelCase to underscore

@@ -10,7 +10,7 @@ class Bowtie2Plugin(Plugin):
         try: 
             sp.check_call("bowtie2-build", stderr=sp.PIPE)
         except sp.CalledProcessError:
-            # bwa gives return code of 1 with no argument
+            # return code of 1 with no argument
             pass
         except:
             sys.stderr.write("bowtie2-build not found, skipping\n")
