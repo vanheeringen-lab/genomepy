@@ -1,7 +1,7 @@
-from nose.tools import *
 from tempfile import mkdtemp, NamedTemporaryFile
 import genomepy
 import shutil
+import pytest
 
 # Python 2
 try:
@@ -9,23 +9,18 @@ try:
 except NameError:
     FileNotFoundError = IOError
 
-def setup():
-    print("SETUP!")
-
-def teardown():
-    print("TEAR DOWN!")
-
 def test_basic():
     cfg = genomepy.functions.config
+    print(cfg)
     assert 2 == len(cfg.keys())
 
-@raises(FileNotFoundError)
 def test_genome_dir_not_found():
-    genomepy.Genome("unknown", "unknown")
+    with pytest.raises(FileNotFoundError):
+        genomepy.Genome("unknown", "unknown")
 
-@raises(FileNotFoundError)
 def test_no_fasta_files():
-    genomepy.Genome("empty", "tests/data/genome")
+    with pytest.raises(FileNotFoundError):
+        genomepy.Genome("empty", "tests/data/genome")
 
 def test_ucsc_genome(): 
     """Test UCSC.
@@ -66,6 +61,7 @@ def test_ncbi_genome():
     assert str(seq).upper() == "TTTGCAACAGCTGCCGCAGTGTGACCGTTGTACTG"
     shutil.rmtree(tmp)
 
+@pytest.mark.slow
 def test_ucsc_human(): 
     """Test UCSC.
    
@@ -79,6 +75,7 @@ def test_ucsc_human():
     assert str(seq) == "CCTCCTCGCTCTCTT"
     shutil.rmtree(tmp)
 
+@pytest.mark.slow
 def test_ensembl_human(): 
     """Test Ensembl.
     
@@ -92,6 +89,7 @@ def test_ensembl_human():
     assert str(seq) == "CCTCCTCGCTCTCTT"
     shutil.rmtree(tmp)
 
+@pytest.mark.slow
 def test_ncbi_human(): 
     """Test NCBI.
     
@@ -124,7 +122,3 @@ def test_regexp_filter():
         fa = genomepy.utils.filter_fasta(
                 fname, tmpfa, regex=regex, v=True, force=True)
         assert len(fa.keys()) == no_match
-
-test_ncbi_human.slow = 1
-test_ensembl_human.slow = 1
-test_ucsc_human.slow = 1

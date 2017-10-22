@@ -32,7 +32,7 @@ package_data = {
 }
 
 requires = [
-    'nose',
+    'pytest',
     'click',
     'pyfaidx',
     'norns>0.1.1',
