@@ -229,45 +229,42 @@ class Genome(Fasta):
     def __init__(self, name, genome_dir=None):
         
         try:
-            return super(Genome, self).__init__(name)
+            super(Genome, self).__init__(name)
+            self.name = os.path.basename(name)
         except:
-            pass
-
-        if not genome_dir:
-            genome_dir = config.get("genome_dir", None)
-        if not genome_dir:
-            raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
-    
-        genome_dir = os.path.expanduser(genome_dir)
-        if not os.path.exists(genome_dir):
-            raise FileNotFoundError(
-                    "genome_dir {} does not exist".format(genome_dir)
-                    )
-
-        pattern = os.path.join(genome_dir, name, "*.fa")
-        fnames = glob.glob(pattern)
-        if len(fnames) == 0:
-            raise FileNotFoundError(
-                    "no *.fa files found in genome_dir {}".format(
-                        os.path.join(genome_dir, name)
-                        )
-                    )
-        elif len(fnames) > 1:
-            fname = os.path.join(genome_dir, name, "{}.fa".format(name))
-            if fname not in fnames:
-                raise Exception("More than one FASTA file found, no {}.fa!".format(name))
-        else:
-            fname = fnames[0]
-
-        inst = super(Genome, self).__init__(fname)
+            if not genome_dir:
+                genome_dir = config.get("genome_dir", None)
+            if not genome_dir:
+                raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
         
-        self.name = name
+            genome_dir = os.path.expanduser(genome_dir)
+            if not os.path.exists(genome_dir):
+                raise FileNotFoundError(
+                        "genome_dir {} does not exist".format(genome_dir)
+                        )
+    
+            pattern = os.path.join(genome_dir, name, "*.fa")
+            fnames = glob.glob(pattern)
+            if len(fnames) == 0:
+                raise FileNotFoundError(
+                        "no *.fa files found in genome_dir {}".format(
+                            os.path.join(genome_dir, name)
+                            )
+                        )
+            elif len(fnames) > 1:
+                fname = os.path.join(genome_dir, name, "{}.fa".format(name))
+                if fname not in fnames:
+                    raise Exception("More than one FASTA file found, no {}.fa!".format(name))
+            else:
+                fname = fnames[0]
+    
+            super(Genome, self).__init__(fname)
+        
+            self.name = name
         
         self.props = {}
         for plugin in get_active_plugins():
-            self.props[plugin.name()] = plugin.get_properties(self)
-
-        return 
+            self.props[plugin.name()] = plugin.get_properties(self) 
 
     def get_spliced_seq(self, name, intervals, rc=False):
         """Return a sequence by record name and list of intervals 
