@@ -22,6 +22,18 @@ def test_no_fasta_files():
     with pytest.raises(FileNotFoundError):
         genomepy.Genome("empty", "tests/data/genome")
 
+def test_illumina_genome():
+    """Test Illumina iGenome provider.
+
+    Download PhiX and retrieve a specific sequence.
+    """ 
+    tmp = mkdtemp()
+    genomepy.install_genome("PhiX_Illumina_RTA", "Illumina", genome_dir=tmp)
+    g = genomepy.Genome("PhiX_Illumina_RTA", genome_dir=tmp)
+    seq = g["phix"][10:20] 
+    assert str(seq) == "GCTTCCATGA"
+    shutil.rmtree(tmp)
+
 def test_ucsc_genome(): 
     """Test UCSC.
     

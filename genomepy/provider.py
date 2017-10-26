@@ -1,4 +1,5 @@
 """Genome providers."""
+import glob
 import sys
 import requests
 import re
@@ -13,6 +14,7 @@ import subprocess as sp
 import tarfile
 import time
 from tempfile import mkdtemp,NamedTemporaryFile
+import requests
 try:
         from urllib.request import urlopen, urlretrieve, urlcleanup
 except:
@@ -21,6 +23,7 @@ except:
 from bucketcache import Bucket,JSONBackend,MessagePackBackend
 from pyfaidx import Fasta
 from appdirs import user_cache_dir
+import lxml.html
 
 from genomepy import exceptions
 from genomepy.utils import filter_fasta
@@ -158,11 +161,9 @@ class ProviderBase(object):
                 f_out.write(response.read())
         sys.stderr.write("done...\n")
         
-        if link.endswith("tar.gz"):
-            self.tar_to_bigfile(fname, fname) 
-        
         if hasattr(self, '_post_process_download'):
-            self._post_process_download(name, down_dir, mask)
+            self._post_process_download(name, down_dir, link, mask=mask)
+        
         
         if regex:
             infa = fname
@@ -592,6 +593,12 @@ class UcscProvider(ProviderBase):
         else:
             sys.stderr.write("No annotation found!")
 
+    def _post_process_download(self, name, genome_dir, url, mask="soft"):
+        # Todo: move to UCSC provider
+        fname = os.path.join(genome_dir, name, name + ".fa")
+        if link.endswith("tar.gz"):
+            self.tar_to_bigfile(fname, fname) 
+
 @register_provider('NCBI')
 class NCBIProvider(ProviderBase):
         
@@ -713,7 +720,7 @@ class NCBIProvider(ProviderBase):
                 return name, url
         raise exceptions.GenomeDownloadError("Could not download genome from NCBI")
     
-    def _post_process_download(self, name, genome_dir, mask="soft"):
+    def _post_process_download(self, name, genome_dir, url, mask="soft"):
         """
         Replace accessions with sequence names in fasta file.
         
@@ -774,3 +781,126 @@ class NCBIProvider(ProviderBase):
         
         # Rename tmp file to real genome file
         shutil.move(new_fa, fa)
+
+@register_provider('Illumina')
+class IlluminaProvider(ProviderBase):
+        
+    """
+    Illumina genome provider.
+    
+    Uses https://support.illumina.com/sequencing/sequencing_software/igenome.html 
+    to search for genomes.
+    """
+    
+    igenomes_url = "https://support.illumina.com/sequencing/sequencing_software/igenome.html"
+    ftp_base = "ftp://igenome:G3nom3s4u@ussd-ftp.illumina.com" 
+
+    def __init__(self):
+        self.genomes = None
+
+    @cached(method=True)
+    def _get_igenomes(self):
+        """Parse genomes from igenomes_url."""
+        genomes = []
+        
+        page = requests.get(self.igenomes_url)
+        tree = lxml.html.fromstring(page.content)
+        elements = tree.xpath('//div[@class="text parbase section"]/table/tbody/tr/td/a')
+
+        for el in elements:
+            url = el.values()[0]
+            genomes.append(url.split("/")[3:])
+
+        return genomes
+
+    def list_available_genomes(self, as_dict=False):
+        """
+        List all available genomes.
+        
+        Parameters
+        ----------
+        as_dict : bool, optional
+            Return a dictionary of results.
+        
+        Yields
+        ------
+        genomes : dictionary or tuple
+        """
+        if not self.genomes:
+            self.genomes = self._get_igenomes()
+
+        for genome in self.genomes:
+            yield "_" .join(genome[:3])
+
+    def search(self, term):
+        """
+        Search for term in genome names and descriptions. 
+
+        The search is case-insensitive.
+
+        Parameters
+        ----------
+        term : str
+            search term
+        
+        Yields
+        ------
+        tuples with two items, name and description
+        """
+        term = term.lower()
+
+        for genome in self.list_available_genomes(as_dict=True):
+            if term in genome.lower():
+                yield [genome]
+
+    def get_genome_download_link(self, name, mask="soft", version=None):
+        """
+        Return Illumina ftp link
+
+        Parameters
+        ----------
+        name : str 
+            Genome name. Current implementation will fail if exact
+            name is not found.
+        
+        Returns
+        ------
+        tuple (name, link) where name is the Illumina iGenomes identifier
+        and link is a str with the ftp download link.
+        """
+        if mask == "hard":
+            sys.stderr.write("ignoring mask parameter for Illumina at download.\n")
+
+        if not self.genomes:
+            self.genomes = self._get_igenomes()
+        
+        for genome in self.genomes:
+            if len(genome) > 0 and name in genome[-1]:
+                return name, "/".join([self.ftp_base] + genome)
+        raise exceptions.GenomeDownloadError("Could not download genome from Illumina")
+    
+    def _post_process_download(self, name, genome_dir, url, mask="soft"):
+        """
+        Replace accessions with sequence names in fasta file.
+        
+        Parameters
+        ----------
+        name : str
+            NCBI genome name
+
+        genome_dir : str
+            Genome directory
+        """
+        
+        fname = os.path.join(genome_dir, name, name + ".fa")
+
+        # Extract files to temporary directory
+        with tarfile.open(fname) as tar:
+            tar.extractall(path=os.path.join(genome_dir, name))
+        
+        genome_fname = glob.glob(os.path.join(genome_dir, name, "*/*/*/Sequence/WholeGenomeFasta/genome.fa"))[0]
+
+        # remove tar.gz file
+        os.unlink(fname)
+        
+        os.symlink(genome_fname, fname)
