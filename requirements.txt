@@ -7,3 +7,4 @@ bucketcache
 msgpack-python
 requests
 appdirs
+lxml

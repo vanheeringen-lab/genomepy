@@ -41,6 +41,7 @@ requires = [
     'msgpack-python',
     'requests',
     'appdirs',
+    'lxml',
 ]
 
 scripts = [
