@@ -4,7 +4,7 @@ from subprocess import check_call
 from tempfile import mkdtemp
 from shutil import rmtree, copyfile
 
-from genomepy.base import init_plugins, activate
+from genomepy.plugin import init_plugins, activate
 from genomepy.functions import Genome
 from genomepy.plugins.bwa import BwaPlugin
 from genomepy.plugins.gmap import GmapPlugin
