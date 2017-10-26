@@ -24,6 +24,7 @@ except(IOError, ImportError, RuntimeError):
 
 packages = [
     'genomepy',
+    'genomepy/plugins',
 ]
 
 package_data = {
@@ -31,7 +32,7 @@ package_data = {
 }
 
 requires = [
-    'nose',
+    'pytest',
     'click',
     'pyfaidx',
     'norns>0.1.1',

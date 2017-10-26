@@ -5,6 +5,9 @@
 [![Build Status](https://travis-ci.org/simonvh/genomepy.svg?branch=master)](https://travis-ci.org/simonvh/genomepy)
 [![Code Health](https://landscape.io/github/simonvh/genomepy/master/landscape.svg?style=flat)](https://landscape.io/github/simonvh/genomepy/master)
 
+ [![status](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd/status.svg)](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.831969.svg)](https://doi.org/10.5281/zenodo.831969)
+
 Easily install and use genomes in Python and elsewhere!
 
 The goal is to have a _simple_ and _straightforward_ way to download and use genomic sequences. 
@@ -12,7 +15,8 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 
 ## Installation
 
-Via [bioconda]((https://bioconda.github.io/):
+Genomepy works with Python 2.7 and Python 3.4+. 
+You can install it via [bioconda](https://bioconda.github.io/):
 
 ```
 $ conda install genomepy
@@ -23,6 +27,18 @@ Or via pip:
 ```
 $ pip install genomepy
 ```
+
+If you install via pip, you will have to install some dependencies, only if 
+you want to use the annotation download feature. 
+You will have to install the following
+utilities and make sure they are in your PATH:
+
+* `genePredToBed`
+* `genePredToGtf`
+* `bedToGenePred`
+* `gtfToGenePred`
+
+You can find the binaries [here](http://hgdownload.cse.ucsc.edu/admin/exe/).
 
 ## Configuration
 
@@ -173,6 +189,14 @@ By default, sequences are soft-masked. Use `-m hard` for hard masking.
 
 The chromosome sizes are saved in file called `<genome_name>.fa.sizes`.
 
+For genomes from UCSC and Ensembl, you can choose to download gene annotation
+files with the `--annotation` option. 
+These will be saved in BED and GTF format. 
+
+```
+$ genomepy  install hg38 UCSC --annotation
+```
+
 Finally, in the spirit of reproducibility all selected options are stored in a `README.txt`. 
 This includes the original name and download location. 
 
@@ -214,7 +238,8 @@ fasta: /data/genomes/hg38/hg38.fa
 tgtatggtccctagaggggccagagtcacagagatggaaagtggatggcgggtgccgggggctggggagctactgtgcagggggacagagctttagttctgcaagatgaaacagttctggagatggacggtggggatgggggcccagcaatgggaacgtgcttaatgccactgaactgggcacttaaacgtggtgaaaactgtaaaagtcatgtgtatttttctacaattaaaaaaaATCTGCCACAGAGTTAAAAAAATAACCACTATTTTCTGGAAATGGGAAGGAAAAGTTACAGCATGTAATTAAGATGACAATTTATAATGAACAAGGCAAATCTTTTCATCTTTGCCTTTTGGGCATATTCAATCTTTGCCCAGAATTAAGCACCTTTCAAGATTAATTCTCTAATAATTCTAGTTGAACAACACAACCTTTTCCTTCAAGCTTGCAATTAAATAAGGCTATTTTTAGCTGTAAGGATCACGCTGACCTTCAGGAGCAATGAGAACCGGCACTCCCGGCCTGAGTGGATGCACGGGGAGTGTGTCTAACACACAGGCGTCAACAGCCAGGGCCGCACGAGGAGGAGGAGTGGCAACGTCCACACAGACTCACAACACGGCACTCCGACTTGGAGGGTAATTAATACCAGGTTAACTTCTGGGATGACCTTGGCAACGACCCAAGGTGACAGGCCAGGCTCTGCAATCACCTCCCAATTAAGGAGAGGCGAAAGGGGACTCCCAGGGCTCAGAGCACCACGGGGTTCTAGGTCAGACCCACTTTGAAATGGAAATCTGGCCTTGTGCTGCTGCTCTTGTGGGGAGACAGCAGCTGCGGAGGCTGCTCTCTTCATGGGATTACTCTGGATAAAGTCTTTTTTGATTCTACgttgagcatcccttatctgaaatgcctgaaaccggaagtgtttaggatttggggattttgcaatatttacttatatataatgagatatcttggagatgggccacaa
 ```
 
-The `genomepy.genome()` method returns a `pyfaidx.Fasta` object, 
+The `genomepy.genome()` method returns a Genome object. This has all the
+functionality of a `pyfaidx.Fasta` object, 
 see the [documentation](https://github.com/mdshw5/pyfaidx) for more examples on how to use this.
 
 ## Known issues
@@ -225,9 +250,18 @@ Let me know if you encounter issues with certain downloads.
 
 ## Todo
 
-* More tests!
-* Automatic indexing (such as bwa)
-* Ensembl bacteria
+* Linking genomes to NCBI taxonomy ID
+* Optionally: automatic indexing for aligners (such as bwa)
+* Optionally: Ensembl bacteria (although there might be better options specifically for bacterial sequences)
+
+## Citation
+
+If you use genomepy in your research, please consider citing it: [10.21105/joss.00320](http://dx.doi.org/10.21105/joss.00320).
+
+
+## Getting help
+
+If you want to report a bug or issue, or have problems with installing or running the software please create [a new issue](https://github.com/simonvh/genomepy/issues). This is the preferred way of getting support. Alternatively, you can [mail me](mailto:simon.vanheeringen@gmail.com).
 
 ## Contributing
 

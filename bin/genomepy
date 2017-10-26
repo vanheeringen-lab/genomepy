@@ -27,11 +27,12 @@ def search(term, provider=None):
 @click.option("-m", "--mask", help="mask (hard or soft)", default="soft")
 @click.option("-r", "--regex", help="regex to filter sequences", default=None)
 @click.option("--match/--no-match", help="set no-match to select sequences that *don't*  match regex", default=True)
-def install(name, provider, genome_dir, localname, mask, regex, match):
+@click.option("--annotation/--no-annotation", help="download annotation", default=False)
+def install(name, provider, genome_dir, localname, mask, regex, match, annotation):
     """Install genome NAME from provider PROVIDER in directory GENOME_DIR."""
     genomepy.install_genome(
             name, provider, genome_dir, localname=localname, mask=mask, 
-            regex=regex, invert_match=not(match))
+            regex=regex, invert_match=not(match), annotation=annotation)
 
 @click.command('genomes', short_help="list available genomes")
 @click.option("-p", "--provider", help="provider")
@@ -46,11 +47,18 @@ def providers():
     for p in genomepy.list_available_providers():
         print(p)
 
+@click.command('plugin', short_help="manage plugins")
+@click.argument("command")
+@click.argument("name")
+def plugin(command, name):
+    """Enable or disable plugins"""
+    genomepy.functions.manage_plugins(command, name)
 
 cli.add_command(search)
 cli.add_command(install)
 cli.add_command(genomes)
 cli.add_command(providers)
+cli.add_command(plugin)
 
 if __name__ == "__main__":
     cli()

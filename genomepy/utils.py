@@ -1,7 +1,28 @@
 """Utility functions."""
+import errno
 import os
 import re
+import sys
+import subprocess as sp
+
 from pyfaidx import Fasta
+
+def generate_gap_bed(fname, outname):
+    """ Generate a BED file with gap locations.
+
+    Parameters
+    ----------
+    fname : str
+        Filename of input FASTA file.
+
+    outname : str
+        Filename of output BED file.
+    """ 
+    f = Fasta(fname)
+    with open(outname, "w") as bed:
+        for chrom in f.keys():
+            for m in re.finditer(r'N+', f[chrom][:].seq):
+                bed.write("{}\t{}\t{}\n".format(chrom, m.start(0), m.end(0)))
 
 def generate_sizes(name, genome_dir):
     """Generate a sizes file with length of sequences in FASTA file."""
@@ -66,4 +87,27 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
             out.write("{}\n".format(fa[chrom][:].seq))
 
     return Fasta(outfa)
+
+def mkdir_p(path):
+    """ 'mkdir -p' in Python """
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
+
+def cmd_ok(cmd):
+    """Returns True if cmd can be run.
+    """ 
+    try:
+        sp.check_call(cmd, stderr=sp.PIPE)
+    except sp.CalledProcessError:
+        # bwa gives return code of 1 with no argument
+        pass
+    except:
+        sys.stderr.write("bwa not found, skipping\n")
+        return False
+    return True
 

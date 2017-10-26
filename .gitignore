@@ -4,6 +4,7 @@
 *.swp
 *egg-info
 *egg
+.cache
 
 # Directories
 build
