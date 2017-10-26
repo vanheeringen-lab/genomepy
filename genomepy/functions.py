@@ -9,7 +9,7 @@ from tempfile import mkdtemp
 
 from pyfaidx import Fasta,Sequence
 from genomepy.provider import ProviderBase
-from genomepy.base import get_active_plugins, init_plugins, activate
+from genomepy.plugin import get_active_plugins, init_plugins, activate
 import norns
 
 config = norns.config("genomepy", default="cfg/default.yaml")

@@ -1,6 +1,6 @@
 import re
 
-from genomepy.base import Plugin
+from genomepy.plugin import Plugin
 
 class GapsPlugin(Plugin):
 

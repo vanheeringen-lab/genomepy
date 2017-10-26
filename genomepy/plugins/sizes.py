@@ -1,4 +1,4 @@
-from genomepy.base import Plugin
+from genomepy.plugin import Plugin
 
 class SizesPlugin(Plugin):
 

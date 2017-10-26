@@ -2,7 +2,7 @@ import os
 import sys
 import subprocess as sp
 
-from genomepy.base import Plugin
+from genomepy.plugin import Plugin
 from genomepy.utils import mkdir_p
 
 class Minimap2Plugin(Plugin):
