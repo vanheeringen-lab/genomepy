@@ -596,7 +596,7 @@ class UcscProvider(ProviderBase):
     def _post_process_download(self, name, genome_dir, url, mask="soft"):
         # Todo: move to UCSC provider
         fname = os.path.join(genome_dir, name, name + ".fa")
-        if link.endswith("tar.gz"):
+        if url.endswith("tar.gz"):
             self.tar_to_bigfile(fname, fname) 
 
 @register_provider('NCBI')
