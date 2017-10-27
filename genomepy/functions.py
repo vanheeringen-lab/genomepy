@@ -262,7 +262,9 @@ class Genome(Fasta):
         
             self.name = name
         
+        self._gap_sizes = None
         self.props = {}
+
         for plugin in get_active_plugins():
             self.props[plugin.name()] = plugin.get_properties(self) 
 
@@ -393,18 +395,67 @@ class Genome(Fasta):
         else:
             return [seq for seq in seqqer]
 
-
+    def gap_sizes(self):
+        """Return gap sizes per chromosome.
+        
+        Returns
+        -------
+        gap_sizes : dict
+            a dictionary with chromosomes as key and the total number of
+            Ns as values
+        """ 
+        if not self._gap_sizes:
+            gap_file = self.props["gaps"]["gaps"]
+            self._gap_sizes = {}
+            with open(gap_file) as f:
+                for line in f:
+                    chrom, start, end = line.strip().split("\t")
+                    start, end = int(start), int(end)
+                    self._gap_sizes[chrom] = self._gap_sizes.get(chrom, 0) + end - start
+        return self._gap_sizes
+    
     def get_random_sequences(self, n=10, length=200, chroms=None, max_n=0.1):
-        retries = 50
+        """Return random genomic sequences.
+
+        Parameters
+        ----------
+        n : int , optional
+            Number of sequences to return.
+
+        length : int , optional
+            Length of sequences to return.
+
+        chroms : list , optional
+            Return sequences only from these chromosomes.
+
+        max_n : float , optional
+            Maximum fraction of Ns.
+
+        Returns
+        -------
+        coords : list
+            List with [chrom, start, end] genomic coordinates.
+        """ 
+        retries = 100
         cutoff = length * max_n
         if not chroms:
             chroms = self.keys()
-    
-        sizes = dict([(chrom, len(self[chrom])) for chrom in chroms])
-    
-        l = [(sizes[x], x) for x in chroms if sizes[x] > length]
+   
+        gap_sizes = self.gap_sizes()
+        sizes = dict([(chrom, len(self[chrom]) - gap_sizes.get(chrom, 0)) for chrom in chroms])
+   
+        l = [(sizes[x], x) for x in chroms if 
+                sizes[x] / len(self[x]) > 0.1 and sizes[x] > 10 * length]
         chroms = _weighted_selection(l, n)
         coords = []
+        
+        count = {}
+        for chrom in chroms:
+            if chrom in count:
+                count[chrom] += 1
+            else:
+                count[chrom] = 1
+
         for chrom in chroms:
             for i in range(retries):
                 start = int(random.random() * (sizes[chrom] - length))
@@ -413,7 +464,7 @@ class Genome(Fasta):
                 if count_n <= cutoff:
                     break
             if count_n > cutoff:
-                raise ValueError("Failed to find suitable non-N sequence")
+                raise ValueError("Failed to find suitable non-N sequence for {}".format(chrom))
             
             coords.append([chrom, start, end])
 
