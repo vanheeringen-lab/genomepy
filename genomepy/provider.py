@@ -686,7 +686,7 @@ class NCBIProvider(ProviderBase):
 
     def get_genome_download_link(self, name, mask="soft", version=None):
         """
-        Return NCBI ftp link to toplevel genome sequence
+        Return NCBI ftp link to top-level genome sequence
 
         Parameters
         ----------
