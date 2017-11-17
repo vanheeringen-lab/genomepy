@@ -286,26 +286,6 @@ class Genome(Fasta):
         for plugin in get_active_plugins():
             self.props[plugin.name()] = plugin.get_properties(self) 
 
-    def get_spliced_seq(self, name, intervals, rc=False):
-        """Return a sequence by record name and list of intervals 
-        
-        Interval list is an iterable of [start, end].
-        Coordinates are 0-based, end-exclusive.
-        """
-        # Get sequence for all intervals
-        chunks = [self.faidx.fetch(name, s, e) for s,e in intervals]
-        start = chunks[0].start
-        end = chunks[-1].end
-
-        # reverce complement
-        if rc:
-            seq = "".join([(-chunk).seq for chunk in chunks[::-1]])
-        else:
-            seq = "".join([chunk.seq for chunk in chunks])
-
-        return Sequence(name=name, seq=seq, start=start, end=end)
- 
-
     def _bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
         BUFSIZE = 10000
         with open(track) as fin:
