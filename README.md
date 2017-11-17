@@ -52,6 +52,9 @@ some widely using aligners. Currently, genomepy supports:
 * [hisat2](https://ccb.jhu.edu/software/hisat2/index.shtml)
 * [minimap2](https://github.com/lh3/minimap2)
 
+Please note: these programs are not installed by genomepy and need to be
+installed seperately for the indexing to work.
+
 You can configure the index creation using the `genomepy plugin` command (see below)
 
 ## Configuration
