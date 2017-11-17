@@ -3,7 +3,7 @@ import sys
 import subprocess as sp
 
 from genomepy.plugin import Plugin
-from genomepy.utils import mkdir_p, cmd_ok
+from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
 
 class BwaPlugin(Plugin):
     def after_genome_download(self, genome):
@@ -18,19 +18,17 @@ class BwaPlugin(Plugin):
         if not os.path.exists(index_fa):
             os.symlink(genome.filename, index_fa)
 
-        sys.stderr.write("Creating bwa index...\n")
-        # Create index
-        p = sp.Popen("bwa index {}".format(index_fa), 
-                shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
-        stdout, stderr = p.communicate()
-        if p.returncode != 0: 
-            sys.stderr.write("bwa index returned non-zero\n")
-            sys.stderr.write(stdout)
-            sys.stderr.write(stderr)
-                
+        cmd = "bwa index {}".format(index_fa)
+        run_index_cmd("bwa", cmd)
+               
     def get_properties(self, genome):
         props = {
-            "index_dir": os.path.join(os.path.dirname(genome.filename), "index", "bwa"),
-            "index_name": os.path.join(os.path.dirname(genome.filename), "index","bwa", "{}.fa".format(genome.name)),
+            "index_dir": os.path.join(
+                os.path.dirname(genome.filename), "index", "bwa"
+                ),
+            "index_name": os.path.join(
+                os.path.dirname(genome.filename), 
+                "index","bwa", "{}.fa".format(genome.name)
+                ),
             }
         return props
