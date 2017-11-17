@@ -40,7 +40,7 @@ utilities and make sure they are in your PATH:
 
 You can find the binaries [here](http://hgdownload.cse.ucsc.edu/admin/exe/).
 
-## Plugins
+## Plugins and indexing
 
 By default `genomepy` generates a file with chromosome sizes and a BED file with
 gap locations (Ns in the sequence). However, you can also create indices for
@@ -52,8 +52,11 @@ some widely using aligners. Currently, genomepy supports:
 * [hisat2](https://ccb.jhu.edu/software/hisat2/index.shtml)
 * [minimap2](https://github.com/lh3/minimap2)
 
-Please note: these programs are not installed by genomepy and need to be
+Note 1: these programs are not installed by genomepy and need to be
 installed seperately for the indexing to work.
+
+Note 2: the index is based on the genome, annotation (splice sites) is currently
+not taken into account.
 
 You can configure the index creation using the `genomepy plugin` command (see below)
 
