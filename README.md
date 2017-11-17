@@ -40,11 +40,38 @@ utilities and make sure they are in your PATH:
 
 You can find the binaries [here](http://hgdownload.cse.ucsc.edu/admin/exe/).
 
+## Plugins
+
+By default `genomepy` generates a file with chromosome sizes and a BED file with
+gap locations (Ns in the sequence). However, you can also create indices for
+some widely using aligners. Currently, genomepy supports:
+
+* [bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml)
+* [bwa](http://bio-bwa.sourceforge.net/) 
+* [gmap](http://research-pub.gene.com/gmap/)
+* [hisat2](https://ccb.jhu.edu/software/hisat2/index.shtml)
+* [minimap2](https://github.com/lh3/minimap2)
+
+You can configure the index creation using the `genomepy plugin` command (see below)
+
 ## Configuration
 
 By default genomes will be saved in `~/.local/share/genomes`. 
-This default can be changed by creating a configuration file called `~/.config/genomepy/genomepy.yaml`. 
-For instance, to set the default genome directory to `/data/genomes`, edit `~/.config/genomepy/genomepy.yaml` and add the following line:
+
+To change the configuration, generate a personal config file:
+
+```
+$ genomepy config generate
+Created config file /home/simon/.config/genomepy/genomepy.yaml
+```
+
+To set the default genome directory to `/data/genomes` for instance, edit `~/.config/genomepy/genomepy.yaml` and change the following line:
+
+```
+genome_dir: ~/.local/share/genomes/
+```
+
+to:
 
 ```
 genome_dir: /data/genomes
@@ -57,71 +84,20 @@ The genome directory can also be explicitly specified in both the Python API as 
 ### Command line 
 
 ```
-$ genomepy
-
 Usage: genomepy [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  --help  Show this message and exit.
+  --version   Show the version and exit.
+  -h, --help  Show this message and exit.
 
 Commands:
+  config     manage configuration
   genomes    list available genomes
   install    install genome
+  plugin     manage plugins
   providers  list available providers
   search     search for genomes
 ```
-
-
-#### List available providers
-
-```
-$ genomepy providers
-Ensembl
-UCSC
-NCBI
-```
-
-#### List available genomes
-
-You can constrain the genome list by using the `-p` option to search only a 
-specific provider. 
-
-```
-$ genomepy genomes -p UCSC
-UCSC	hg38	Human Dec. 2013 (GRCh38/hg38) Genome at UCSC
-UCSC	hg19	Human Feb. 2009 (GRCh37/hg19) Genome at UCSC
-UCSC	hg18	Human Mar. 2006 (NCBI36/hg18) Genome at UCSC
-...
-UCSC	danRer4	Zebrafish Mar. 2006 (Zv6/danRer4) Genome at UCSC
-UCSC	danRer3	Zebrafish May 2005 (Zv5/danRer3) Genome at UCSC
-```
-
-#### Search for a genome.
-
-```
-$ genomepy search Xenopus
-NCBI	Xenopus_tropicalis_v9.1	Xenopus tropicalis; DOE Joint Genome Institute
-NCBI	ViralProj30173	Xenopus laevis endogenous retrovirus Xen1; 
-NCBI	Xenopus_laevis_v2	Xenopus laevis; International Xenopus Sequencing Consortium
-NCBI	v4.2	Xenopus tropicalis; DOE Joint Genome Institute
-NCBI	Xtropicalis_v7	Xenopus tropicalis; DOE Joint Genome Institute
-Ensembl	JGI 4.2	Xenopus
-```
-
-Only search a specific provider:
-
-```
-$ genomepy search tropicalis -p UCSC
-UCSC	xenTro7	X. tropicalis Sep. 2012 (JGI 7.0/xenTro7) Genome at UCSC
-UCSC	xenTro3	X. tropicalis Nov. 2009 (JGI 4.2/xenTro3) Genome at UCSC
-UCSC	xenTro2	X. tropicalis Aug. 2005 (JGI 4.1/xenTro2) Genome at UCSC
-UCSC	xenTro1	X. tropicalis Oct. 2004 (JGI 3.0/xenTro1) Genome at UCSC
-```
-
-Note that searching doesn't work flawlessly, so try a few variations if 
-you don't get any results. 
-Search is case-insensitive.
-
 
 #### Install a genome.
 
@@ -200,6 +176,113 @@ $ genomepy  install hg38 UCSC --annotation
 Finally, in the spirit of reproducibility all selected options are stored in a `README.txt`. 
 This includes the original name and download location. 
 
+#### Manage plugins.
+
+Use `genomepy plugin list` to view the available plugins.
+
+```
+$ genomepy plugin list
+plugin              enabled
+bowtie2             
+bwa                 
+gaps                *
+gmap                
+hisat2              
+minimap2            
+sizes               *
+```
+
+Enable plugins as follows:
+
+```
+$ genomepy plugin enable bwa hisat2
+Enabled plugins: bwa, gaps, hisat2, sizes
+```
+
+And disable like this:
+```
+$ genomepy plugin disable bwa
+Enabled plugins: gaps, hisat2, sizes
+```
+
+#### Search for a genome.
+
+```
+$ genomepy search Xenopus
+NCBI	Xenopus_tropicalis_v9.1	Xenopus tropicalis; DOE Joint Genome Institute
+NCBI	ViralProj30173	Xenopus laevis endogenous retrovirus Xen1; 
+NCBI	Xenopus_laevis_v2	Xenopus laevis; International Xenopus Sequencing Consortium
+NCBI	v4.2	Xenopus tropicalis; DOE Joint Genome Institute
+NCBI	Xtropicalis_v7	Xenopus tropicalis; DOE Joint Genome Institute
+Ensembl	JGI 4.2	Xenopus
+```
+
+Only search a specific provider:
+
+```
+$ genomepy search tropicalis -p UCSC
+UCSC	xenTro7	X. tropicalis Sep. 2012 (JGI 7.0/xenTro7) Genome at UCSC
+UCSC	xenTro3	X. tropicalis Nov. 2009 (JGI 4.2/xenTro3) Genome at UCSC
+UCSC	xenTro2	X. tropicalis Aug. 2005 (JGI 4.1/xenTro2) Genome at UCSC
+UCSC	xenTro1	X. tropicalis Oct. 2004 (JGI 3.0/xenTro1) Genome at UCSC
+```
+
+Note that searching doesn't work flawlessly, so try a few variations if 
+you don't get any results. 
+Search is case-insensitive.
+
+#### List available providers
+
+```
+$ genomepy providers
+Ensembl
+UCSC
+NCBI
+```
+
+#### List available genomes
+
+You can constrain the genome list by using the `-p` option to search only a 
+specific provider. 
+
+```
+$ genomepy genomes -p UCSC
+UCSC	hg38	Human Dec. 2013 (GRCh38/hg38) Genome at UCSC
+UCSC	hg19	Human Feb. 2009 (GRCh37/hg19) Genome at UCSC
+UCSC	hg18	Human Mar. 2006 (NCBI36/hg18) Genome at UCSC
+...
+UCSC	danRer4	Zebrafish Mar. 2006 (Zv6/danRer4) Genome at UCSC
+UCSC	danRer3	Zebrafish May 2005 (Zv5/danRer3) Genome at UCSC
+```
+
+#### Manage configuration
+
+List the current configuration file that genomepy uses:
+
+```
+$ genomepy config file
+/home/simon/.config/genomepy/genomepy.yaml
+```
+
+To show the contents of the config file:
+
+```
+$ genomepy config show
+# Directory were downloaded genomes will be stored
+genome_dir: ~/.local/share/genomes/
+
+plugin:
+ - gaps
+ - sizes
+```
+
+To generate a personal configuration file (existing file will be overwritten):
+
+```
+$ genomepy config generate
+Created config file /home/simon/.config/genomepy/genomepy.yaml
+```
+
 #### Local cache. 
 
 Note that the first time you run `genomepy search` or `list` the command will take a long time
@@ -251,7 +334,6 @@ Let me know if you encounter issues with certain downloads.
 ## Todo
 
 * Linking genomes to NCBI taxonomy ID
-* Optionally: automatic indexing for aligners (such as bwa)
 * Optionally: Ensembl bacteria (although there might be better options specifically for bacterial sequences)
 
 ## Citation

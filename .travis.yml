@@ -33,15 +33,15 @@ before_install:
   - conda info -a
 
 install:
-  - conda install ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gtftogenepred
-  - pip install nose coverage pyyaml pyfaidx requests xmltodict bucketcache msgpack-python norns>0.1.1
+  - conda install ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gtftogenepred bwa minimap2 bowtie2 hisat2 gmap
+  - pip install pytest coverage pyyaml pyfaidx>=0.5.1 requests xmltodict bucketcache msgpack-python norns>0.1.1
   - python setup.py develop
   - python setup.py build
   - pip install coveralls
 
 # # command to run tests, e.g. python setup.py test
 script:  
-  - nosetests
+  - py.test -v
   - genomepy providers 
 #after_sucess:
 #  coveralls

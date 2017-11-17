@@ -4,7 +4,10 @@ import os
 import sys
 import genomepy
 
-@click.group()
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+@click.group(context_settings=CONTEXT_SETTINGS)
+@click.version_option(genomepy.__about__.__version__)
 def cli():
     """ Genomes for Python (and others)!
     
@@ -47,11 +50,25 @@ def providers():
     for p in genomepy.list_available_providers():
         print(p)
 
+@click.command('plugin', short_help="manage plugins")
+@click.argument("command")
+@click.argument("name", nargs=-1)
+def plugin(command, name):
+    """Enable or disable plugins"""
+    genomepy.functions.manage_plugins(command, name)
+
+@click.command('config', short_help="manage configuration")
+@click.argument("command")
+def config(command):
+    """Manage configuration"""
+    genomepy.functions.manage_config(command)
 
 cli.add_command(search)
 cli.add_command(install)
 cli.add_command(genomes)
 cli.add_command(providers)
+cli.add_command(plugin)
+cli.add_command(config)
 
 if __name__ == "__main__":
     cli()

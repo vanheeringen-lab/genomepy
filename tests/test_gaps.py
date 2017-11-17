@@ -1,4 +1,3 @@
-from nose.tools import *
 from tempfile import mkdtemp, NamedTemporaryFile
 from genomepy.utils import generate_gap_bed
 import shutil
@@ -11,13 +10,7 @@ try:
 except NameError:
     FileNotFoundError = IOError
 
-def setup():
-    pass
-
-def teardown():
-    pass
-
-def test_annotation():
+def test_gaps():
     infa = "tests/data/gap.fa"
     outbed = "tests/data/gap.bed" 
 

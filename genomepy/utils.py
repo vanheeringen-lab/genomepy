@@ -1,6 +1,10 @@
 """Utility functions."""
+import errno
 import os
 import re
+import sys
+import subprocess as sp
+
 from pyfaidx import Fasta
 
 def generate_gap_bed(fname, outname):
@@ -84,3 +88,36 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
 
     return Fasta(outfa)
 
+def mkdir_p(path):
+    """ 'mkdir -p' in Python """
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
+
+def cmd_ok(cmd):
+    """Returns True if cmd can be run.
+    """ 
+    try:
+        sp.check_call(cmd, stderr=sp.PIPE, stdout=sp.PIPE)
+    except sp.CalledProcessError:
+        # bwa gives return code of 1 with no argument
+        pass
+    except:
+        sys.stderr.write("{} not found, skipping\n".format(cmd))
+        return False
+    return True
+
+def run_index_cmd(name, cmd):
+    """Run command, show errors if the returncode is non-zero."""
+    sys.stderr.write("Creating {} index...\n".format(name))
+    # Create index
+    p = sp.Popen(cmd, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
+    stdout, stderr = p.communicate()
+    if p.returncode != 0:
+        sys.stderr.write("Index for {} failed\n".format(name))
+        sys.stderr.write(stdout)
+        sys.stderr.write(stderr)

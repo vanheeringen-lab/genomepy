@@ -7,9 +7,10 @@ import re
 import shutil
 from tempfile import mkdtemp
 
+from appdirs import user_config_dir
 from pyfaidx import Fasta,Sequence
 from genomepy.provider import ProviderBase
-from genomepy.utils import generate_sizes, generate_gap_bed
+from genomepy.plugin import get_active_plugins, init_plugins, activate
 import norns
 
 config = norns.config("genomepy", default="cfg/default.yaml")
@@ -20,6 +21,23 @@ try:
 except NameError:
     # pylint: disable=redefined-builtin
     FileNotFoundError = IOError
+
+def manage_config(cmd, *args):
+    """Manage genomepy config file."""
+    if cmd == "file":
+        print(config.config_file)
+    elif cmd == "show":
+        with open(config.config_file) as f:
+            print(f.read())
+    elif cmd == "generate":
+        fname = os.path.join(
+                user_config_dir("genomepy"), "{}.yaml".format("genomepy")
+            )
+
+        with open(fname, "w") as fout:
+            with open(config.config_file) as fin:
+                fout.write(fin.read())
+        print("Created config file {}".format(fname))
 
 def list_available_genomes(provider=None):
     """
@@ -179,13 +197,9 @@ def install_genome(name, provider, version=None, genome_dir=None, localname=None
         # Download annotation from provider
         p.download_annotation(name, genome_dir, version=version)
 
-    # Create chromosome sizes
-    generate_sizes(name, genome_dir)
-
-    fa = os.path.join(genome_dir, name, "{}.fa".format(name))
-    bed = os.path.join(genome_dir, name, "{}.gaps.bed".format(name))
-    generate_gap_bed(fa, bed)
-
+    g = Genome(name, genome_dir=genome_dir)
+    for plugin in get_active_plugins():
+        plugin.after_genome_download(g)
 
 def get_track_type(track):
     region_p = re.compile(r'^(.+):(\d+)-(\d+)$')
@@ -233,57 +247,44 @@ class Genome(Fasta):
     def __init__(self, name, genome_dir=None):
         
         try:
-            return super(Genome, self).__init__(name)
+            super(Genome, self).__init__(name)
+            self.name = os.path.basename(name)
         except:
-            pass
-
-        if not genome_dir:
-            genome_dir = config.get("genome_dir", None)
-        if not genome_dir:
-            raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
-    
-        genome_dir = os.path.expanduser(genome_dir)
-        if not os.path.exists(genome_dir):
-            raise FileNotFoundError(
-                    "genome_dir {} does not exist".format(genome_dir)
-                    )
-
-        pattern = os.path.join(genome_dir, name, "*.fa")
-        fnames = glob.glob(pattern)
-        if len(fnames) == 0:
-            raise FileNotFoundError(
-                    "no *.fa files found in genome_dir {}".format(
-                        os.path.join(genome_dir, name)
-                        )
-                    )
-        elif len(fnames) > 1:
-            fname = os.path.join(genome_dir, name, "{}.fa".format(name))
-            if fname not in fnames:
-                raise Exception("More than one FASTA file found, no {}.fa!".format(name))
-        else:
-            fname = fnames[0]
-
-        return super(Genome, self).__init__(fname)
-
-    def get_spliced_seq(self, name, intervals, rc=False):
-        """Return a sequence by record name and list of intervals 
+            if not genome_dir:
+                genome_dir = config.get("genome_dir", None)
+            if not genome_dir:
+                raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
         
-        Interval list is an iterable of [start, end].
-        Coordinates are 0-based, end-exclusive.
-        """
-        # Get sequence for all intervals
-        chunks = [self.faidx.fetch(name, s, e) for s,e in intervals]
-        start = chunks[0].start
-        end = chunks[-1].end
+            genome_dir = os.path.expanduser(genome_dir)
+            if not os.path.exists(genome_dir):
+                raise FileNotFoundError(
+                        "genome_dir {} does not exist".format(genome_dir)
+                        )
+    
+            pattern = os.path.join(genome_dir, name, "*.fa")
+            fnames = glob.glob(pattern)
+            if len(fnames) == 0:
+                raise FileNotFoundError(
+                        "no *.fa files found in genome_dir {}".format(
+                            os.path.join(genome_dir, name)
+                            )
+                        )
+            elif len(fnames) > 1:
+                fname = os.path.join(genome_dir, name, "{}.fa".format(name))
+                if fname not in fnames:
+                    raise Exception("More than one FASTA file found, no {}.fa!".format(name))
+            else:
+                fname = fnames[0]
+    
+            super(Genome, self).__init__(fname)
+        
+            self.name = name
+        
+        self._gap_sizes = None
+        self.props = {}
 
-        # reverce complement
-        if rc:
-            seq = "".join([(-chunk).seq for chunk in chunks[::-1]])
-        else:
-            seq = "".join([chunk.seq for chunk in chunks])
-
-        return Sequence(name=name, seq=seq, start=start, end=end)
- 
+        for plugin in get_active_plugins():
+            self.props[plugin.name()] = plugin.get_properties(self) 
 
     def _bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
         BUFSIZE = 10000
@@ -318,10 +319,12 @@ class Genome(Fasta):
                         sizes = [int(x) for x in vals[10].split(",")[:-1]]
                         starts = [start + x  for x in starts]
                         ends = [start + size  for start,size in zip(starts, sizes)]
+                    name = "{}:{}-{}".format(chrom, start, end)    
                     try:
-                        name = vals[3]
-                    except:
-                        name = "{}:{}-{}".format(chrom, start, end)    
+                        name = " ".join((name, vals[3]))
+                    except: 
+                        pass
+
                     # bed half open
                     if rc:
                         starts = [start + 1 for start in starts]
@@ -392,18 +395,67 @@ class Genome(Fasta):
         else:
             return [seq for seq in seqqer]
 
-
+    def gap_sizes(self):
+        """Return gap sizes per chromosome.
+        
+        Returns
+        -------
+        gap_sizes : dict
+            a dictionary with chromosomes as key and the total number of
+            Ns as values
+        """ 
+        if not self._gap_sizes:
+            gap_file = self.props["gaps"]["gaps"]
+            self._gap_sizes = {}
+            with open(gap_file) as f:
+                for line in f:
+                    chrom, start, end = line.strip().split("\t")
+                    start, end = int(start), int(end)
+                    self._gap_sizes[chrom] = self._gap_sizes.get(chrom, 0) + end - start
+        return self._gap_sizes
+    
     def get_random_sequences(self, n=10, length=200, chroms=None, max_n=0.1):
-        retries = 50
+        """Return random genomic sequences.
+
+        Parameters
+        ----------
+        n : int , optional
+            Number of sequences to return.
+
+        length : int , optional
+            Length of sequences to return.
+
+        chroms : list , optional
+            Return sequences only from these chromosomes.
+
+        max_n : float , optional
+            Maximum fraction of Ns.
+
+        Returns
+        -------
+        coords : list
+            List with [chrom, start, end] genomic coordinates.
+        """ 
+        retries = 100
         cutoff = length * max_n
         if not chroms:
             chroms = self.keys()
-    
-        sizes = dict([(chrom, len(self[chrom])) for chrom in chroms])
-    
-        l = [(sizes[x], x) for x in chroms if sizes[x] > length]
+   
+        gap_sizes = self.gap_sizes()
+        sizes = dict([(chrom, len(self[chrom]) - gap_sizes.get(chrom, 0)) for chrom in chroms])
+   
+        l = [(sizes[x], x) for x in chroms if 
+                sizes[x] / len(self[x]) > 0.1 and sizes[x] > 10 * length]
         chroms = _weighted_selection(l, n)
         coords = []
+        
+        count = {}
+        for chrom in chroms:
+            if chrom in count:
+                count[chrom] += 1
+            else:
+                count[chrom] = 1
+
         for chrom in chroms:
             for i in range(retries):
                 start = int(random.random() * (sizes[chrom] - length))
@@ -412,8 +464,37 @@ class Genome(Fasta):
                 if count_n <= cutoff:
                     break
             if count_n > cutoff:
-                raise ValueError("Failed to find suitable non-N sequence")
+                raise ValueError("Failed to find suitable non-N sequence for {}".format(chrom))
             
             coords.append([chrom, start, end])
 
         return coords
+
+def manage_plugins(command, plugin_names=None):
+    """Enable or disable plugins.
+    """ 
+    if plugin_names is None:
+        plugin_names = []
+    active_plugins = config.get("plugin", [])
+    plugins = init_plugins()
+    if command == "enable":
+        for name in plugin_names:
+            if name not in plugins:
+                raise ValueError("Unknown plugin: {}".format(name))
+            if name not in active_plugins:
+                active_plugins.append(name)
+    elif command == "disable":
+        for name in plugin_names:
+            if name in active_plugins:
+                active_plugins.remove(name)
+    elif command == "list":
+        print("{:20}{}".format("plugin", "enabled"))
+        for plugin in sorted(plugins):
+            print("{:20}{}".format(plugin, {False:"", True:"*"}[plugin in active_plugins]))
+    else:
+        raise ValueError("Invalid plugin command")
+    config["plugins"] = active_plugins
+    config.save()
+
+    if command in ["enable", "disable"]:
+        print("Enabled plugins: {}".format(", ".join(sorted(active_plugins))))

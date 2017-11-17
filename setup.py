@@ -24,6 +24,7 @@ except(IOError, ImportError, RuntimeError):
 
 packages = [
     'genomepy',
+    'genomepy/plugins',
 ]
 
 package_data = {
@@ -31,9 +32,9 @@ package_data = {
 }
 
 requires = [
-    'nose',
+    'pytest',
     'click',
-    'pyfaidx',
+    'pyfaidx>=0.5.1',
     'norns>0.1.1',
     'xmltodict',
     'bucketcache',
@@ -42,9 +43,11 @@ requires = [
     'appdirs',
 ]
 
-scripts = [
-    'bin/genomepy'
-]
+entry_points = {
+    'console_scripts': [
+        'genomepy=genomepy.cli:cli',
+    ],
+}
 
 classifiers = [
         'Development Status :: 4 - Beta',
@@ -70,7 +73,7 @@ setup(
     long_description=long_description,
     packages=packages,
     package_data=package_data,
-    scripts=scripts,
+    entry_points=entry_points,
     install_requires=requires,
     author=__author__,
     author_email='simon.vanheeringen@gmail.com',

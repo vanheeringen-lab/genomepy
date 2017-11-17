@@ -1,4 +1,3 @@
-from nose.tools import *
 from tempfile import mkdtemp, NamedTemporaryFile
 import genomepy
 import shutil
