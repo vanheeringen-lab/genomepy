@@ -34,7 +34,7 @@ package_data = {
 requires = [
     'pytest',
     'click',
-    'pyfaidx',
+    'pyfaidx>=0.5.1',
     'norns>0.1.1',
     'xmltodict',
     'bucketcache',
