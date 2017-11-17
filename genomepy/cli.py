@@ -14,7 +14,6 @@ def cli():
     Version: {}""".format(genomepy.__version__)
     pass
 
-
 @click.command('search', short_help="search for genomes")
 @click.argument("term")
 @click.option("-p", "--provider", help="provider")
