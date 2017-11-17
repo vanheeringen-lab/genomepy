@@ -5,6 +5,7 @@ from tempfile import mkdtemp
 from shutil import rmtree, copyfile
 
 from genomepy.plugin import init_plugins, activate
+from genomepy.utils import cmd_ok
 from genomepy.functions import Genome
 from genomepy.plugins.bwa import BwaPlugin
 from genomepy.plugins.gmap import GmapPlugin
@@ -38,49 +39,56 @@ def genome(tempdir):
 def test_bwa(genome):
     """Create bwa index.""" 
     assert os.path.exists(genome.filename)
-    p = BwaPlugin()
-    p.after_genome_download(genome)
-    dirname = os.path.dirname(genome.filename)
-    index_dir = os.path.join(dirname, "index" , "bwa")
-    assert os.path.exists(index_dir)
-    assert os.path.exists(os.path.join(index_dir, "{}.fa.sa".format(genome.name)))
+
+    if cmd_ok("bwa"):
+        p = Bowtie2Plugin()
+        p = BwaPlugin()
+        p.after_genome_download(genome)
+        dirname = os.path.dirname(genome.filename)
+        index_dir = os.path.join(dirname, "index" , "bwa")
+        assert os.path.exists(index_dir)
+        assert os.path.exists(os.path.join(index_dir, "{}.fa.sa".format(genome.name)))
 
 def test_minimap2(genome):
     """Create minimap2 index.""" 
     assert os.path.exists(genome.filename)
-    p = Minimap2Plugin()
-    p.after_genome_download(genome)
-    dirname = os.path.dirname(genome.filename)
-    index_dir = os.path.join(dirname, "index" , "minimap2")
-    assert os.path.exists(index_dir)
-    assert os.path.exists(os.path.join(index_dir, "{}.mmi".format(genome.name)))
+    if cmd_ok("minimap2"):
+        p = Minimap2Plugin()
+        p.after_genome_download(genome)
+        dirname = os.path.dirname(genome.filename)
+        index_dir = os.path.join(dirname, "index" , "minimap2")
+        assert os.path.exists(index_dir)
+        assert os.path.exists(os.path.join(index_dir, "{}.mmi".format(genome.name)))
 
 def test_bowtie2(genome):
     """Create bowtie2 index.""" 
     assert os.path.exists(genome.filename)
-    p = Bowtie2Plugin()
-    p.after_genome_download(genome)
-    dirname = os.path.dirname(genome.filename)
-    index_dir = os.path.join(dirname, "index" , "bowtie2")
-    assert os.path.exists(index_dir)
-    assert os.path.exists(os.path.join(index_dir, "{}.1.bt2".format(genome.name)))
+    if cmd_ok("bowtie2"):
+        p = Bowtie2Plugin()
+        p.after_genome_download(genome)
+        dirname = os.path.dirname(genome.filename)
+        index_dir = os.path.join(dirname, "index" , "bowtie2")
+        assert os.path.exists(index_dir)
+        assert os.path.exists(os.path.join(index_dir, "{}.1.bt2".format(genome.name)))
 
 def test_hisat2(genome):
     """Create hisat2 index.""" 
     assert os.path.exists(genome.filename)
-    p = Hisat2Plugin()
-    p.after_genome_download(genome)
-    dirname = os.path.dirname(genome.filename)
-    index_dir = os.path.join(dirname, "index" , "hisat2")
-    assert os.path.exists(index_dir)
-    assert os.path.exists(os.path.join(index_dir, "{}.1.ht2".format(genome.name)))
+    if cmd_ok("hisat2-build"):
+        p = Hisat2Plugin()
+        p.after_genome_download(genome)
+        dirname = os.path.dirname(genome.filename)
+        index_dir = os.path.join(dirname, "index" , "hisat2")
+        assert os.path.exists(index_dir)
+        assert os.path.exists(os.path.join(index_dir, "{}.1.ht2".format(genome.name)))
 
 def test_gmap(genome):
     """Create gmap index.""" 
     assert os.path.exists(genome.filename)
-    p = GmapPlugin()
-    p.after_genome_download(genome)
-    dirname = os.path.dirname(genome.filename)
-    index_dir = os.path.join(dirname, "index" , "gmap", genome.name)
-    assert os.path.exists(index_dir)
-    assert os.path.exists(os.path.join(index_dir, "{}.version".format(genome.name)))
+    if cmd_ok("gmap"):
+        p = GmapPlugin()
+        p.after_genome_download(genome)
+        dirname = os.path.dirname(genome.filename)
+        index_dir = os.path.join(dirname, "index" , "gmap", genome.name)
+        assert os.path.exists(index_dir)
+        assert os.path.exists(os.path.join(index_dir, "{}.version".format(genome.name)))
