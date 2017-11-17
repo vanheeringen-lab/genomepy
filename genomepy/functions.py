@@ -321,10 +321,12 @@ class Genome(Fasta):
                         sizes = [int(x) for x in vals[10].split(",")[:-1]]
                         starts = [start + x  for x in starts]
                         ends = [start + size  for start,size in zip(starts, sizes)]
+                    name = "{}:{}-{}".format(chrom, start, end)    
                     try:
-                        name = vals[3]
-                    except:
-                        name = "{}:{}-{}".format(chrom, start, end)    
+                        name = " ".join((name, vals[3]))
+                    except: 
+                        pass
+
                     # bed half open
                     if rc:
                         starts = [start + 1 for start in starts]
@@ -470,19 +472,23 @@ class Genome(Fasta):
 
         return coords
 
-def manage_plugins(command, name):
+def manage_plugins(command, plugin_names=None):
     """Enable or disable plugins.
     """ 
+    if plugin_names is None:
+        plugin_names = []
     active_plugins = config.get("plugin", [])
     plugins = init_plugins()
     if command == "enable":
-        if name not in plugins:
-            raise ValueError("Unknown plugin: {}".format(name))
-        if name not in active_plugins:
-            active_plugins.append(name)
+        for name in plugin_names:
+            if name not in plugins:
+                raise ValueError("Unknown plugin: {}".format(name))
+            if name not in active_plugins:
+                active_plugins.append(name)
     elif command == "disable":
-        if name in active_plugins:
-            active_plugins.remove(name)
+        for name in plugin_names:
+            if name in active_plugins:
+                active_plugins.remove(name)
     elif command == "list":
         print("{:20}{}".format("plugin", "enabled"))
         for plugin in sorted(plugins):
@@ -492,3 +498,5 @@ def manage_plugins(command, name):
     config["plugins"] = active_plugins
     config.save()
 
+    if command in ["enable", "disable"]:
+        print("Enabled plugins: {}".format(", ".join(sorted(active_plugins))))

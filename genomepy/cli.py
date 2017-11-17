@@ -49,7 +49,7 @@ def providers():
 
 @click.command('plugin', short_help="manage plugins")
 @click.argument("command")
-@click.argument("name")
+@click.argument("name", nargs=-1)
 def plugin(command, name):
     """Enable or disable plugins"""
     genomepy.functions.manage_plugins(command, name)
