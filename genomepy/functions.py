@@ -7,6 +7,7 @@ import re
 import shutil
 from tempfile import mkdtemp
 
+from appdirs import user_config_dir
 from pyfaidx import Fasta,Sequence
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins, activate
@@ -20,6 +21,23 @@ try:
 except NameError:
     # pylint: disable=redefined-builtin
     FileNotFoundError = IOError
+
+def manage_config(cmd, *args):
+    """Manage genomepy config file."""
+    if cmd == "file":
+        print(config.config_file)
+    elif cmd == "show":
+        with open(config.config_file) as f:
+            print(f.read())
+    elif cmd == "generate":
+        fname = os.path.join(
+                user_config_dir("genomepy"), "{}.yaml".format("genomepy")
+            )
+
+        with open(fname, "w") as fout:
+            with open(config.config_file) as fin:
+                fout.write(fin.read())
+        print("Created config file {}".format(fname))
 
 def list_available_genomes(provider=None):
     """

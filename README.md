@@ -57,8 +57,21 @@ You can configure the index creation using the `genomepy plugin` command (see be
 ## Configuration
 
 By default genomes will be saved in `~/.local/share/genomes`. 
-This default can be changed by creating a configuration file called `~/.config/genomepy/genomepy.yaml`. 
-For instance, to set the default genome directory to `/data/genomes`, edit `~/.config/genomepy/genomepy.yaml` and add the following line:
+
+To change the configuration, generate a personal config file:
+
+```
+$ genomepy config generate
+Created config file /home/simon/.config/genomepy/genomepy.yaml
+```
+
+To set the default genome directory to `/data/genomes` for instance, edit `~/.config/genomepy/genomepy.yaml` and change the following line:
+
+```
+genome_dir: ~/.local/share/genomes/
+```
+
+to:
 
 ```
 genome_dir: /data/genomes
@@ -78,6 +91,7 @@ Options:
   -h, --help  Show this message and exit.
 
 Commands:
+  config     manage configuration
   genomes    list available genomes
   install    install genome
   plugin     manage plugins
@@ -239,6 +253,34 @@ UCSC	hg18	Human Mar. 2006 (NCBI36/hg18) Genome at UCSC
 ...
 UCSC	danRer4	Zebrafish Mar. 2006 (Zv6/danRer4) Genome at UCSC
 UCSC	danRer3	Zebrafish May 2005 (Zv5/danRer3) Genome at UCSC
+```
+
+#### Manage configuration
+
+List the current configuration file that genomepy uses:
+
+```
+$ genomepy config file
+/home/simon/.config/genomepy/genomepy.yaml
+```
+
+To show the contents of the config file:
+
+```
+$ genomepy config show
+# Directory were downloaded genomes will be stored
+genome_dir: ~/.local/share/genomes/
+
+plugin:
+ - gaps
+ - sizes
+```
+
+To generate a personal configuration file (existing file will be overwritten):
+
+```
+$ genomepy config generate
+Created config file /home/simon/.config/genomepy/genomepy.yaml
 ```
 
 #### Local cache. 

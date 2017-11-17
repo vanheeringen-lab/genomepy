@@ -57,11 +57,18 @@ def plugin(command, name):
     """Enable or disable plugins"""
     genomepy.functions.manage_plugins(command, name)
 
+@click.command('config', short_help="manage configuration")
+@click.argument("command")
+def config(command):
+    """Manage configuration"""
+    genomepy.functions.manage_config(command)
+
 cli.add_command(search)
 cli.add_command(install)
 cli.add_command(genomes)
 cli.add_command(providers)
 cli.add_command(plugin)
+cli.add_command(config)
 
 if __name__ == "__main__":
     cli()
