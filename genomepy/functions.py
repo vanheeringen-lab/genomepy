@@ -325,11 +325,7 @@ class Genome(Fasta):
                     except: 
                         pass
 
-                    # bed half open
-                    if rc:
-                        starts = [start + 1 for start in starts]
-                    else:
-                        ends = [end - 1 for end in ends]
+                    starts = [start + 1 for start in starts]
                     
                     # extend
                     if extend_up:
@@ -351,11 +347,11 @@ class Genome(Fasta):
 
     def _region_to_seqs(self, track, extend_up=0, extend_down=0):
         BUFSIZE = 10000
-        
         if type(track) == type([]):
             for name in track:
                     chrom, coords = name.split(":")
                     start, end = [int(c) for c in coords.split("-")]
+                    start += 1
                     start -= extend_up
                     end += extend_down
                     seq = self.get_seq(chrom, start, end)
@@ -368,6 +364,7 @@ class Genome(Fasta):
                         name = line.strip()
                         chrom, coords = name.split(":")
                         start, end = [int(c) for c in coords.split("-")]
+                        start += 1
                         start -= extend_up
                         end += extend_down
                         seq = self.get_seq(chrom, start, end)
@@ -493,7 +490,7 @@ def manage_plugins(command, plugin_names=None):
             print("{:20}{}".format(plugin, {False:"", True:"*"}[plugin in active_plugins]))
     else:
         raise ValueError("Invalid plugin command")
-    config["plugins"] = active_plugins
+    config["plugin"] = active_plugins
     config.save()
 
     if command in ["enable", "disable"]:
