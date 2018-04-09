@@ -254,10 +254,11 @@ def generate_env(fname=None):
         Name of the output file.
     """
     config_dir = user_config_dir("genomepy")
-    fname = os.path.join(config_dir, "exports.txt")
-    with open(fname, "w") as fout:
-        for env in generate_exports():
-            fout.write("{}\n".format(env))
+    if os.path.exists(config_dir):
+        fname = os.path.join(config_dir, "exports.txt")
+        with open(fname, "w") as fout:
+            for env in generate_exports():
+                fout.write("{}\n".format(env))
 
 class Genome(Fasta):
     """
