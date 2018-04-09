@@ -201,6 +201,8 @@ def install_genome(name, provider, version=None, genome_dir=None, localname=None
     for plugin in get_active_plugins():
         plugin.after_genome_download(g)
 
+    generate_env()
+
 def get_track_type(track):
     region_p = re.compile(r'^(.+):(\d+)-(\d+)$')
     if type(track) == type([]):
@@ -227,6 +229,35 @@ def _weighted_selection(l, n):
         items.append(item)
 
     return [items[bisect.bisect(cuml, random.random()*total_weight)] for _ in range(n)]
+
+def generate_exports():
+	"""Print export commands for setting environment variables.
+	"""
+	env = []
+	for name in list_installed_genomes():
+	    try:
+	        g = Genome(name)
+	        env_name = re.sub(r'[^\w]+', "_", name).upper()
+	        env.append("export {}={}".format(env_name, g.filename))
+	    except:
+	        pass
+	return env
+
+def generate_env(fname=None):
+    """Generate file with exports. 
+
+    By default this is in .config/genomepy/exports.txt.
+
+    Parameters
+    ----------
+    fname: strs, optional
+        Name of the output file.
+    """
+    config_dir = user_config_dir("genomepy")
+    fname = os.path.join(config_dir, "exports.txt")
+    with open(fname, "w") as fout:
+        for env in generate_exports():
+            fout.write("{}\n".format(env))
 
 class Genome(Fasta):
     """
