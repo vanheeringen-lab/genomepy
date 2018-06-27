@@ -282,10 +282,13 @@ class Genome(Fasta):
             super(Genome, self).__init__(name)
             self.name = os.path.basename(name)
         except:
-            if not genome_dir:
-                genome_dir = config.get("genome_dir", None)
-            if not genome_dir:
-                raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
+            if os.path.isdir(name):
+                genome_dir = name
+            else:
+                if not genome_dir:
+                    genome_dir = config.get("genome_dir", None)
+                if not genome_dir:
+                    raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
         
             genome_dir = os.path.expanduser(genome_dir)
             if not os.path.exists(genome_dir):
