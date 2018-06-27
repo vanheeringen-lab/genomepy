@@ -5,6 +5,7 @@
 *egg-info
 *egg
 .cache
+.pytest_cache
 
 # Directories
 build
