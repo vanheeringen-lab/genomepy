@@ -13,6 +13,8 @@ Easily install and use genomes in Python and elsewhere!
 The goal is to have a _simple_ and _straightforward_ way to download and use genomic sequences. 
 Currently, genomepy supports UCSC, Ensembl and NCBI. 
 
+[![asciicast](https://asciinema.org/a/eZttBuf5ly0AnjFVBiEIybbjS.png)](https://asciinema.org/a/eZttBuf5ly0AnjFVBiEIybbjS)
+
 ## Installation
 
 Genomepy works with Python 2.7 and Python 3.4+. 
@@ -40,7 +42,7 @@ utilities and make sure they are in your PATH:
 
 You can find the binaries [here](http://hgdownload.cse.ucsc.edu/admin/exe/).
 
-## Plugins
+## Plugins and indexing
 
 By default `genomepy` generates a file with chromosome sizes and a BED file with
 gap locations (Ns in the sequence). However, you can also create indices for
@@ -51,6 +53,12 @@ some widely using aligners. Currently, genomepy supports:
 * [gmap](http://research-pub.gene.com/gmap/)
 * [hisat2](https://ccb.jhu.edu/software/hisat2/index.shtml)
 * [minimap2](https://github.com/lh3/minimap2)
+
+Note 1: these programs are not installed by genomepy and need to be
+installed seperately for the indexing to work.
+
+Note 2: the index is based on the genome, annotation (splice sites) is currently
+not taken into account.
 
 You can configure the index creation using the `genomepy plugin` command (see below)
 
@@ -338,7 +346,7 @@ Let me know if you encounter issues with certain downloads.
 
 ## Citation
 
-If you use genomepy in your research, please consider citing it: [10.21105/joss.00320](http://dx.doi.org/10.21105/joss.00320).
+If you use genomepy in your research, please cite it: [10.21105/joss.00320](http://dx.doi.org/10.21105/joss.00320).
 
 
 ## Getting help
