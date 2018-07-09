@@ -33,8 +33,7 @@ before_install:
   - conda info -a
 
 install:
-  - conda install ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gtftogenepred bwa minimap2 bowtie2 hisat2 gmap
-  - pip install pytest coverage pyyaml pyfaidx>=0.5.1 requests xmltodict bucketcache msgpack-python norns>0.1.1
+  - conda install ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gtftogenepred bwa minimap2 bowtie2 hisat2 gmap msgpack-python pyfaidx>=0.5.1 bucketcache norns>0.1.1 xmltodict pytest coverage pyyaml requests
   - python setup.py develop
   - python setup.py build
   - pip install coveralls

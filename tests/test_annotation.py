@@ -59,7 +59,7 @@ def test_ensembl_annotation():
     tmp = mkdtemp()
     p = genomepy.provider.ProviderBase.create("Ensembl")
     
-    for name, version in [("GRCh38.p10", 89), ("TAIR10", None)]:
+    for name, version in [("GRCh38.p12", 92), ("TAIR10", None)]:
         p.download_annotation(name, tmp)
     
         gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")

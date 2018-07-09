@@ -201,6 +201,8 @@ def install_genome(name, provider, version=None, genome_dir=None, localname=None
     for plugin in get_active_plugins():
         plugin.after_genome_download(g)
 
+    generate_env()
+
 def get_track_type(track):
     region_p = re.compile(r'^(.+):(\d+)-(\d+)$')
     if type(track) == type([]):
@@ -228,6 +230,36 @@ def _weighted_selection(l, n):
 
     return [items[bisect.bisect(cuml, random.random()*total_weight)] for _ in range(n)]
 
+def generate_exports():
+	"""Print export commands for setting environment variables.
+	"""
+	env = []
+	for name in list_installed_genomes():
+	    try:
+	        g = Genome(name)
+	        env_name = re.sub(r'[^\w]+', "_", name).upper()
+	        env.append("export {}={}".format(env_name, g.filename))
+	    except:
+	        pass
+	return env
+
+def generate_env(fname=None):
+    """Generate file with exports. 
+
+    By default this is in .config/genomepy/exports.txt.
+
+    Parameters
+    ----------
+    fname: strs, optional
+        Name of the output file.
+    """
+    config_dir = user_config_dir("genomepy")
+    if os.path.exists(config_dir):
+        fname = os.path.join(config_dir, "exports.txt")
+        with open(fname, "w") as fout:
+            for env in generate_exports():
+                fout.write("{}\n".format(env))
+
 class Genome(Fasta):
     """
     Get pyfaidx Fasta object of genome
@@ -250,10 +282,13 @@ class Genome(Fasta):
             super(Genome, self).__init__(name)
             self.name = os.path.basename(name)
         except:
-            if not genome_dir:
-                genome_dir = config.get("genome_dir", None)
-            if not genome_dir:
-                raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
+            if os.path.isdir(name):
+                genome_dir = name
+            else:
+                if not genome_dir:
+                    genome_dir = config.get("genome_dir", None)
+                if not genome_dir:
+                    raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
         
             genome_dir = os.path.expanduser(genome_dir)
             if not os.path.exists(genome_dir):
@@ -325,11 +360,7 @@ class Genome(Fasta):
                     except: 
                         pass
 
-                    # bed half open
-                    if rc:
-                        starts = [start + 1 for start in starts]
-                    else:
-                        ends = [end - 1 for end in ends]
+                    starts = [start + 1 for start in starts]
                     
                     # extend
                     if extend_up:
@@ -351,11 +382,11 @@ class Genome(Fasta):
 
     def _region_to_seqs(self, track, extend_up=0, extend_down=0):
         BUFSIZE = 10000
-        
         if type(track) == type([]):
             for name in track:
                     chrom, coords = name.split(":")
                     start, end = [int(c) for c in coords.split("-")]
+                    start += 1
                     start -= extend_up
                     end += extend_down
                     seq = self.get_seq(chrom, start, end)
@@ -368,6 +399,7 @@ class Genome(Fasta):
                         name = line.strip()
                         chrom, coords = name.split(":")
                         start, end = [int(c) for c in coords.split("-")]
+                        start += 1
                         start -= extend_up
                         end += extend_down
                         seq = self.get_seq(chrom, start, end)
@@ -493,7 +525,7 @@ def manage_plugins(command, plugin_names=None):
             print("{:20}{}".format(plugin, {False:"", True:"*"}[plugin in active_plugins]))
     else:
         raise ValueError("Invalid plugin command")
-    config["plugins"] = active_plugins
+    config["plugin"] = active_plugins
     config.save()
 
     if command in ["enable", "disable"]:

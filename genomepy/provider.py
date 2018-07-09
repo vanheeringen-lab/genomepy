@@ -148,7 +148,8 @@ class ProviderBase(object):
         fname = os.path.join(genome_dir, myname, myname + ".fa")
         if regex:
             down_dir = mkdtemp()
-            fname = os.path.join(down_dir, myname + ".fa") 
+            os.mkdir(os.path.join(down_dir, myname))
+            fname = os.path.join(down_dir, myname, myname + ".fa") 
         with open(fname, "wb") as f_out:
             if gzipped:
                 # Supports both Python 2.7 as well as 3
