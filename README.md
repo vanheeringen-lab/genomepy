@@ -346,7 +346,7 @@ Let me know if you encounter issues with certain downloads.
 
 ## Citation
 
-If you use genomepy in your research, please consider citing it: [10.21105/joss.00320](http://dx.doi.org/10.21105/joss.00320).
+If you use genomepy in your research, please cite it: [10.21105/joss.00320](http://dx.doi.org/10.21105/joss.00320).
 
 
 ## Getting help
