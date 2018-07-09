@@ -13,6 +13,8 @@ Easily install and use genomes in Python and elsewhere!
 The goal is to have a _simple_ and _straightforward_ way to download and use genomic sequences. 
 Currently, genomepy supports UCSC, Ensembl and NCBI. 
 
+[![asciicast](https://asciinema.org/a/eZttBuf5ly0AnjFVBiEIybbjS.png)](https://asciinema.org/a/eZttBuf5ly0AnjFVBiEIybbjS)
+
 ## Installation
 
 Genomepy works with Python 2.7 and Python 3.4+. 
