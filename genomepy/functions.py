@@ -33,7 +33,10 @@ def manage_config(cmd, *args):
         fname = os.path.join(
                 user_config_dir("genomepy"), "{}.yaml".format("genomepy")
             )
-
+        
+        if not os.path.exists(user_config_dir("genomepy")):
+            os.makedirs(user_config_dir("genomepy"))
+        
         with open(fname, "w") as fout:
             with open(config.config_file) as fin:
                 fout.write(fin.read())
@@ -282,34 +285,35 @@ class Genome(Fasta):
             super(Genome, self).__init__(name)
             self.name = os.path.basename(name)
         except:
-            if os.path.isdir(name):
-                genome_dir = name
+            if os.path.isdir(name) and len(glob.glob(os.path.join(name, "*.fa"))) == 1 and genome_dir is not None:
+                fname = glob.glob(os.path.join(name, "*.fa"))[0]
+                name = os.path.basename(fname)  
             else:
                 if not genome_dir:
                     genome_dir = config.get("genome_dir", None)
                 if not genome_dir:
                     raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
         
-            genome_dir = os.path.expanduser(genome_dir)
-            if not os.path.exists(genome_dir):
-                raise FileNotFoundError(
-                        "genome_dir {} does not exist".format(genome_dir)
-                        )
-    
-            pattern = os.path.join(genome_dir, name, "*.fa")
-            fnames = glob.glob(pattern)
-            if len(fnames) == 0:
-                raise FileNotFoundError(
-                        "no *.fa files found in genome_dir {}".format(
-                            os.path.join(genome_dir, name)
+                genome_dir = os.path.expanduser(genome_dir)
+                if not os.path.exists(genome_dir):
+                    raise FileNotFoundError(
+                            "genome_dir {} does not exist".format(genome_dir)
                             )
-                        )
-            elif len(fnames) > 1:
-                fname = os.path.join(genome_dir, name, "{}.fa".format(name))
-                if fname not in fnames:
-                    raise Exception("More than one FASTA file found, no {}.fa!".format(name))
-            else:
-                fname = fnames[0]
+    
+                pattern = os.path.join(genome_dir, name, "*.fa")
+                fnames = glob.glob(pattern)
+                if len(fnames) == 0:
+                    raise FileNotFoundError(
+                            "no *.fa files found in genome_dir {}".format(
+                                os.path.join(genome_dir, name)
+                                )
+                            )
+                elif len(fnames) > 1:
+                    fname = os.path.join(genome_dir, name, "{}.fa".format(name))
+                    if fname not in fnames:
+                        raise Exception("More than one FASTA file found, no {}.fa!".format(name))
+                else:
+                    fname = fnames[0]
     
             super(Genome, self).__init__(fname)
         
