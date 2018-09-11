@@ -6,10 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-## [0.5.2] - 2018-08-01
+## [0.5.2] - 2018-09-11
 
 ### Fixed
 
+- Fixed genome_dir argument to `genomepy install`
 - Fixed msgpack dependency
 - Fixed issue with `config generate` where config directory does note exist.
 
