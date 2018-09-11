@@ -18,18 +18,20 @@ try:
 except:
         from urllib import urlopen, urlretrieve, urlcleanup
 
-from bucketcache import Bucket,JSONBackend,MessagePackBackend
+from bucketcache import Bucket
 from pyfaidx import Fasta
 from appdirs import user_cache_dir
 
 from genomepy import exceptions
 from genomepy.utils import filter_fasta
+from genomepy.__about__ import __version__
 
+my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
 # Create .cache dir if it does not exist
-if not os.path.exists(user_cache_dir("genomepy")):
-    os.makedirs(user_cache_dir("genomepy"))
+if not os.path.exists(my_cache_dir):
+    os.makedirs(my_cache_dir)
 
-cached = Bucket(user_cache_dir("genomepy"), days=7, backend=MessagePackBackend)
+cached = Bucket(my_cache_dir, days=7)
 
 class ProviderBase(object):
     

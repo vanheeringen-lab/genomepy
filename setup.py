@@ -38,7 +38,6 @@ requires = [
     'norns>0.1.1',
     'xmltodict',
     'bucketcache',
-    'msgpack',
     'requests',
     'appdirs',
 ]
