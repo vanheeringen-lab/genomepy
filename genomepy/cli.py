@@ -34,7 +34,7 @@ def search(term, provider=None):
 def install(name, provider, genome_dir, localname, mask, regex, match, annotation):
     """Install genome NAME from provider PROVIDER in directory GENOME_DIR."""
     genomepy.install_genome(
-            name, provider, genome_dir, localname=localname, mask=mask, 
+            name, provider, genome_dir=genome_dir, localname=localname, mask=mask, 
             regex=regex, invert_match=not(match), annotation=annotation)
 
 @click.command('genomes', short_help="list available genomes")
