@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Downloading annotation from NCBI now implemented.
+- Genbank assemblies at NCBI can be searched and downloaded
+
+### Fixed
+
+- Fixed #23.
+- Fixed #26.
+
 ## [0.5.2] - 2018-09-11
 
 ### Fixed
