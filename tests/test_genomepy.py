@@ -48,6 +48,14 @@ def test_ensembl_genome():
     assert str(seq).upper() == "TTTGCAACAGCTGCCGCAGTGTGACCGTTGTACTG"
     shutil.rmtree(tmp)
 
+def test_ensembl_genome_ftp_links():
+    """Test Ensembl FTP links for various genomes
+    """
+    p = genomepy.provider.ProviderBase.create("Ensembl")
+
+    for genome in ['AgamP4', 'WBcel235', "GRCz11", "GRCh38.p12", "TAIR10", 'R64-1-1']:
+        p.get_genome_download_link(genome)
+
 def test_ncbi_genome(): 
     """Test NCBI.
     

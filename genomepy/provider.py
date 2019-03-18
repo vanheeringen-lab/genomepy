@@ -334,7 +334,7 @@ class EnsemblProvider(ProviderBase):
         and link is a str with the ftp download link.
         """
         genome_info = self._get_genome_info(name)
-
+        
         # parse the division
         division = genome_info["division"].lower().replace("ensembl","")
         if division == "bacteria":
@@ -348,16 +348,16 @@ class EnsemblProvider(ProviderBase):
                 version = m.group(1)
         
         ftp_site = "ftp.ensemblgenomes.org"
-        if not division:
+        if division == "vertebrates":
             ftp_site = "ftp.ensembl.org"
-
-        if division:
+        
+        if division != 'vertebrates':
             base_url = "/pub/{}/release-{}/fasta/{}/dna/"
             ftp_dir = base_url.format(division, version, genome_info["species"])
         else:
             base_url = "/pub/release-{}/fasta/{}/dna/"
             ftp_dir = base_url.format(version, genome_info["species"])
-        
+
         ftp = ftplib.FTP(ftp_site)
         ftp.login("anonymous", "s.vanheeringen@science.ru.nl")
         fnames = ftp.nlst(ftp_dir)
@@ -371,6 +371,9 @@ class EnsemblProvider(ProviderBase):
         for fname in fnames:
             if pattern in fname:
                 return genome_info["assembly_name"], "ftp://" + ftp_site + fname
+
+        raise ValueError("No download link found for {} on Ensembl. ".format(name) + 
+                "Please report this at https://github.com/simonvh/genomepy/issues")
 
     def download_annotation(self, name, genome_dir, version=None):
         """
@@ -401,7 +404,7 @@ class EnsemblProvider(ProviderBase):
         
         # Get the base link depending on division
         ftp_site = "ftp://ftp.ensemblgenomes.org/pub/{}".format(division)
-        if not division:
+        if division == 'vertebrates':
             ftp_site = "ftp://ftp.ensembl.org/pub"
 
         # Get the GTF URL
