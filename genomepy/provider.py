@@ -736,6 +736,7 @@ class NCBIProvider(ProviderBase):
             if genome["asm_name"] == name:
                 url = genome["ftp_path"]
                 url += "/" + url.split("/")[-1] + "_assembly_report.txt"
+                url = url.replace("ftp://", "https://")
                 break
    
         # Create mapping of accessions to names
