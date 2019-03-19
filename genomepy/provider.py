@@ -4,7 +4,6 @@ import requests
 import re
 import os
 import io
-import ftplib
 import time
 import gzip
 import xmltodict
@@ -334,7 +333,7 @@ class EnsemblProvider(ProviderBase):
         and link is a str with the ftp download link.
         """
         genome_info = self._get_genome_info(name)
-
+        
         # parse the division
         division = genome_info["division"].lower().replace("ensembl","")
         if division == "bacteria":
@@ -348,29 +347,31 @@ class EnsemblProvider(ProviderBase):
                 version = m.group(1)
         
         ftp_site = "ftp.ensemblgenomes.org"
-        if not division:
+        if division == "vertebrates":
             ftp_site = "ftp.ensembl.org"
-
-        if division:
+        
+        if division != 'vertebrates':
             base_url = "/pub/{}/release-{}/fasta/{}/dna/"
             ftp_dir = base_url.format(division, version, genome_info["species"])
+            url = "ftp://{}/{}".format(ftp_site, ftp_dir)
         else:
             base_url = "/pub/release-{}/fasta/{}/dna/"
             ftp_dir = base_url.format(version, genome_info["species"])
-        
-        ftp = ftplib.FTP(ftp_site)
-        ftp.login("anonymous", "s.vanheeringen@science.ru.nl")
-        fnames = ftp.nlst(ftp_dir)
-        
+            url = "https://{}/{}".format(ftp_site, ftp_dir)
+      
         pattern = "dna.toplevel"
         if mask == "soft":
             pattern = "dna_sm.toplevel"
         elif mask == "hard":
             pattern = "dna_rm.toplevel"
-
-        for fname in fnames:
-            if pattern in fname:
-                return genome_info["assembly_name"], "ftp://" + ftp_site + fname
+        
+        asm_url = "{}/{}.{}.{}.fa.gz".format(
+            url,
+            genome_info['species'].capitalize(),
+            re.sub(r'\.p\d+$', '', genome_info["assembly_name"]),
+            pattern)
+        
+        return genome_info["assembly_name"], asm_url
 
     def download_annotation(self, name, genome_dir, version=None):
         """
@@ -401,8 +402,8 @@ class EnsemblProvider(ProviderBase):
         
         # Get the base link depending on division
         ftp_site = "ftp://ftp.ensemblgenomes.org/pub/{}".format(division)
-        if not division:
-            ftp_site = "ftp://ftp.ensembl.org/pub"
+        if division == 'vertebrates':
+            ftp_site = "https://ftp.ensembl.org/pub"
 
         # Get the GTF URL
         base_url = ftp_site + "/release-{}/gtf/{}/{}.{}.{}.gtf.gz"
@@ -604,7 +605,7 @@ class NCBIProvider(ProviderBase):
     Useas the assembly reports page to search and list genomes. 
     """
     
-    assembly_url = "ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"
+    assembly_url = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"
 
     def __init__(self):
         self.genomes = None
@@ -712,6 +713,7 @@ class NCBIProvider(ProviderBase):
             if genome["asm_name"] == name:
                 #ftp_path': 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/004/195/GCF_000004195.3_Xenopus_tropicalis_v9.1'
                 url = genome["ftp_path"]
+                url = url.replace("ftp://", "https://")
                 url += "/" + url.split("/")[-1] + "_genomic.fna.gz"
                 return name, url
         raise exceptions.GenomeDownloadError("Could not download genome from NCBI")
@@ -734,6 +736,7 @@ class NCBIProvider(ProviderBase):
             if genome["asm_name"] == name:
                 url = genome["ftp_path"]
                 url += "/" + url.split("/")[-1] + "_assembly_report.txt"
+                url = url.replace("ftp://", "https://")
                 break
    
         # Create mapping of accessions to names

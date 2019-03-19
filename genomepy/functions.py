@@ -477,7 +477,10 @@ class Genome(Fasta):
         if not chroms:
             chroms = self.keys()
    
-        gap_sizes = self.gap_sizes()
+        try:
+            gap_sizes = self.gap_sizes()
+        except:
+            gap_sizes = {}
         sizes = dict([(chrom, len(self[chrom]) - gap_sizes.get(chrom, 0)) for chrom in chroms])
    
         l = [(sizes[x], x) for x in chroms if 

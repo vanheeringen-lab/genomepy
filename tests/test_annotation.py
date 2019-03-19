@@ -3,12 +3,15 @@ import genomepy
 import shutil
 import gzip
 import os
+import pytest
 
 # Python 2
 try:
     FileNotFoundError
 except NameError:
     FileNotFoundError = IOError
+
+travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 def setup():
     pass
@@ -59,7 +62,24 @@ def test_ensembl_annotation():
     tmp = mkdtemp()
     p = genomepy.provider.ProviderBase.create("Ensembl")
     
-    for name, version in [("GRCh38.p12", 92), ("TAIR10", None)]:
+    for name, version in [("GRCh38.p12", 92)]:
+        p.download_annotation(name, tmp)
+    
+        gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
+        validate_gzipped_gtf(gtf)
+    
+        bed = os.path.join(tmp, name, name + ".annotation.bed.gz")
+        validate_gzipped_bed(bed)
+    
+    shutil.rmtree(tmp)
+
+@pytest.mark.skipif(travis,
+                reason="FTP does not work on Travis")
+def test_ensemblgenomes_annotation():
+    tmp = mkdtemp()
+    p = genomepy.provider.ProviderBase.create("Ensembl")
+    
+    for name, version in [("TAIR10", None)]:
         p.download_annotation(name, tmp)
     
         gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
