@@ -39,6 +39,7 @@ utilities and make sure they are in your PATH:
 * `genePredToGtf`
 * `bedToGenePred`
 * `gtfToGenePred`
+* `gff3ToGenePred`
 
 You can find the binaries [here](http://hgdownload.cse.ucsc.edu/admin/exe/).
 
