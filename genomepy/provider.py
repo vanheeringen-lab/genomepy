@@ -353,26 +353,25 @@ class EnsemblProvider(ProviderBase):
         if division != 'vertebrates':
             base_url = "/pub/{}/release-{}/fasta/{}/dna/"
             ftp_dir = base_url.format(division, version, genome_info["species"])
+            url = "ftp://{}/{}".format(ftp_site, ftp_dir)
         else:
             base_url = "/pub/release-{}/fasta/{}/dna/"
             ftp_dir = base_url.format(version, genome_info["species"])
-        url = "https://{}/{}".format(ftp_site, ftp_dir)
-        
+            url = "https://{}/{}".format(ftp_site, ftp_dir)
+      
         pattern = "dna.toplevel"
         if mask == "soft":
             pattern = "dna_sm.toplevel"
         elif mask == "hard":
             pattern = "dna_rm.toplevel"
         
-        p = re.compile('href="([^"]+)"')
-        r = requests.get(url)
-        for m in p.finditer(str(r.content)):
-            if pattern in m.group(1):
-                asm_url = url + m.group(1)
-                return genome_info["assembly_name"], asm_url
-
-        raise ValueError("No download link found for {} on Ensembl. ".format(name) + 
-                "Please report this at https://github.com/simonvh/genomepy/issues")
+        asm_url = "{}/{}.{}.{}.fa.gz".format(
+            url,
+            genome_info['species'].capitalize(),
+            genome_info["assembly_name"],
+            pattern)
+        
+        return genome_info["assembly_name"], asm_url
 
     def download_annotation(self, name, genome_dir, version=None):
         """
