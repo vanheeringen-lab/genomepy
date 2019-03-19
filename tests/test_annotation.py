@@ -3,6 +3,7 @@ import genomepy
 import shutil
 import gzip
 import os
+import pytest
 
 # Python 2
 try:

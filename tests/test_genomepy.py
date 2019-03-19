@@ -3,6 +3,8 @@ import genomepy
 import shutil
 import pytest
 import os
+import pytest
+
 # Python 2
 try:
     FileNotFoundError
