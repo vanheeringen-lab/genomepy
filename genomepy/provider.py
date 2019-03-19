@@ -368,7 +368,7 @@ class EnsemblProvider(ProviderBase):
         asm_url = "{}/{}.{}.{}.fa.gz".format(
             url,
             genome_info['species'].capitalize(),
-            genome_info["assembly_name"],
+            re.sub(r'\.p\d+$', '', genome_info["assembly_name"]),
             pattern)
         
         return genome_info["assembly_name"], asm_url
