@@ -401,7 +401,7 @@ class EnsemblProvider(ProviderBase):
                 version = m.group(1)
         
         # Get the base link depending on division
-        ftp_site = "https://ftp.ensemblgenomes.org/pub/{}".format(division)
+        ftp_site = "ftp://ftp.ensemblgenomes.org/pub/{}".format(division)
         if division == 'vertebrates':
             ftp_site = "https://ftp.ensembl.org/pub"
 
