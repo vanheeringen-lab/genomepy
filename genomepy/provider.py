@@ -617,9 +617,12 @@ class NCBIProvider(ProviderBase):
         
         names = [
                 "assembly_summary_refseq.txt", 
+                "assembly_summary_genbank.txt", 
                 "assembly_summary_refseq_historical.txt",
                 ]
         
+        sys.stderr.write("Downloading assembly summaries from NCBI, this will take a while...\n")
+        seen = {}
         for fname in names:
             urlcleanup() 
             response = urlopen(self.assembly_url + "/" + fname)
@@ -627,7 +630,10 @@ class NCBIProvider(ProviderBase):
             header = lines[1].strip("# ").split("\t")
             for line in lines[2:]:
                 vals = line.strip("# ").split("\t")
-                genomes.append(dict(zip(header, vals)))
+                # Don't repeat samples with the same BioSample ID
+                if vals[2] not in seen:   # BioSample ID
+                    genomes.append(dict(zip(header, vals)))
+                    seen[vals[2]] = 1
         
         return genomes
 
@@ -780,3 +786,67 @@ class NCBIProvider(ProviderBase):
         
         # Rename tmp file to real genome file
         shutil.move(new_fa, fa)
+
+    def download_annotation(self, name, genome_dir, version=None):
+        """
+        Download annotation file to to a specific directory
+
+        Parameters
+        ----------
+        name : str
+            Genome / species name
+        
+        genome_dir : str
+            Directory to install annotation
+        """
+        sys.stderr.write("Downloading annotation...\n")
+        if not self.genomes:
+            self.genomes = self._get_genomes()
+        
+        for genome in self.genomes:
+            if genome["asm_name"] == name:
+                #ftp_path': 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/004/195/GCF_000004195.3_Xenopus_tropicalis_v9.1'
+                url = genome["ftp_path"]
+                url += "/" + url.split("/")[-1] + "_genomic.gff.gz"
+  
+        out_dir = os.path.join(genome_dir, name)
+        if not os.path.exists(out_dir):
+            os.mkdir(out_dir)
+        
+        # Download the file
+        try:
+            response = urlopen(url)
+            gff_file = out_dir + "/"+ name + ".annotation.gff.gz"
+            with open(gff_file, "wb") as f:
+                f.write(response.read())
+        except Exception:
+            sys.stderr.write("WARNING: Could not download annotation from NCBI, skipping.\n")
+            sys.stderr.write("URL: {}\n".format(url))
+
+            sys.stderr.write("If you think the annotation should be there, please file a bug report at:\n")
+            sys.stderr.write("https://github.com/simonvh/genomepy/issues\n")
+            return
+        
+        cmd = "gff3ToGenePred {0} /dev/stdout | wc -l"
+        out = sp.check_output(cmd.format(gff_file), shell=True)
+        if out.strip() == b"0":
+            sys.stderr.write("WARNING: annotation from NCBI contains no genes, skipping.\n")
+        else:
+            # Convert to BED file
+            bed_file = gff_file.replace("gff.gz", "bed")
+            cmd = "gff3ToGenePred -rnaNameAttr=gene {0} /dev/stdout | genePredToBed /dev/stdin {1} && gzip {1}"
+            ret = sp.check_call(cmd.format(gff_file, bed_file), shell=True) 
+
+            # Convert to GTF file
+            gtf_file = gff_file.replace("gff.gz", "gtf")
+            cmd = "gff3ToGenePred -geneNameAttr=gene {0} /dev/stdout | genePredToGtf file /dev/stdin {1} && gzip {1}"
+            ret = sp.check_call(cmd.format(gff_file, gtf_file), shell=True)
+        
+        readme = os.path.join(genome_dir, name, "README.txt")
+        with open(readme, "a") as f:
+            f.write("annotation url: {}\n".format(url))
+
+        return out_dir
+
+
+
