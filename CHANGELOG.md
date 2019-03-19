@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.5.3] - 2019-03-19
+
+### Fixed
+
+- Fixed Ensembl downloads
+- Fixed FTP tests for CI
+
 ## [0.5.2] - 2018-09-11
 
 ### Fixed
