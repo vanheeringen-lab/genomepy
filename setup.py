@@ -35,7 +35,7 @@ requires = [
     'pytest',
     'click',
     'pyfaidx>=0.5.1',
-    'norns>0.1.1',
+    'norns>=0.1.4',
     'xmltodict',
     'bucketcache',
     'requests',
