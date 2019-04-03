@@ -183,7 +183,7 @@ def install_genome(name, provider, version=None, genome_dir=None, localname=None
     if not genome_dir:
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
     if not localname:
-        localname = name
+        localname = name.replace(' ', '_')
    
     genome_dir = os.path.expanduser(genome_dir)
     

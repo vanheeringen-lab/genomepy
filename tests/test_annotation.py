@@ -46,9 +46,9 @@ def validate_gzipped_bed(fname):
 def test_annotation():
     tmp = mkdtemp()
     p = genomepy.provider.ProviderBase.create("UCSC")
-    name = "sacCer3"
+    name = localname = "sacCer3"
     
-    p.download_annotation(name, tmp)
+    p.download_annotation(name, name, tmp)
     
     gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
     validate_gzipped_gtf(gtf)
@@ -63,7 +63,7 @@ def test_ensembl_annotation():
     p = genomepy.provider.ProviderBase.create("Ensembl")
     
     for name, version in [("GRCh38.p12", 92)]:
-        p.download_annotation(name, tmp)
+        p.download_annotation(name, name, tmp)
     
         gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
         validate_gzipped_gtf(gtf)
