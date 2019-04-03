@@ -182,25 +182,27 @@ def install_genome(name, provider, version=None, genome_dir=None, localname=None
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
+    if not localname:
+        localname = name
    
     genome_dir = os.path.expanduser(genome_dir)
     
     # Download genome from provider
     p = ProviderBase.create(provider)
-    name = p.download_genome(
-            name, 
-            genome_dir, 
-            version=version,
-            mask=mask, 
-            localname=localname, 
-            regex=regex, 
-            invert_match=invert_match)
+    p.download_genome(
+        name, 
+        genome_dir, 
+        version=version,
+        mask=mask, 
+        localname=localname, 
+        regex=regex, 
+        invert_match=invert_match)
 
     if annotation:
         # Download annotation from provider
-        p.download_annotation(name, genome_dir, version=version)
+        p.download_annotation(name, localname, genome_dir, version=version)
 
-    g = Genome(name, genome_dir=genome_dir)
+    g = Genome(localname, genome_dir=genome_dir)
     for plugin in get_active_plugins():
         plugin.after_genome_download(g)
 
