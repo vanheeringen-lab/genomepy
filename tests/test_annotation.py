@@ -48,7 +48,7 @@ def test_annotation():
     p = genomepy.provider.ProviderBase.create("UCSC")
     name = localname = "sacCer3"
     
-    p.download_annotation(name, name, tmp)
+    p.download_annotation(name, tmp, localname=name)
     
     gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
     validate_gzipped_gtf(gtf)
@@ -63,7 +63,7 @@ def test_ensembl_annotation():
     p = genomepy.provider.ProviderBase.create("Ensembl")
     
     for name, version in [("GRCh38.p12", 92)]:
-        p.download_annotation(name, name, tmp)
+        p.download_annotation(name, tmp, localname=name)
     
         gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
         validate_gzipped_gtf(gtf)

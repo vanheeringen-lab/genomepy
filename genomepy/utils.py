@@ -121,3 +121,10 @@ def run_index_cmd(name, cmd):
         sys.stderr.write("Index for {} failed\n".format(name))
         sys.stderr.write(stdout)
         sys.stderr.write(stderr)
+
+def get_localname(name, localname):
+    """Returns localname if localname is not None, else returns name."""
+    if localname is None:
+        return name.replace(' ', '_')
+    else:
+        return localname.replace(" ", "_")

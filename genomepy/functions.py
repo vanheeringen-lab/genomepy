@@ -11,6 +11,7 @@ from appdirs import user_config_dir
 from pyfaidx import Fasta,Sequence
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins, activate
+from genomepy.utils import get_localname
 import norns
 
 config = norns.config("genomepy", default="cfg/default.yaml")
@@ -182,10 +183,9 @@ def install_genome(name, provider, version=None, genome_dir=None, localname=None
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
-    if not localname:
-        localname = name.replace(' ', '_')
    
     genome_dir = os.path.expanduser(genome_dir)
+    localname = get_localname(name, localname)
     
     # Download genome from provider
     p = ProviderBase.create(provider)
@@ -200,7 +200,7 @@ def install_genome(name, provider, version=None, genome_dir=None, localname=None
 
     if annotation:
         # Download annotation from provider
-        p.download_annotation(name, localname, genome_dir, version=version)
+        p.download_annotation(name, genome_dir, localname=localname, version=version)
 
     g = Genome(localname, genome_dir=genome_dir)
     for plugin in get_active_plugins():

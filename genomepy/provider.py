@@ -22,7 +22,7 @@ from pyfaidx import Fasta
 from appdirs import user_cache_dir
 
 from genomepy import exceptions
-from genomepy.utils import filter_fasta
+from genomepy.utils import filter_fasta, get_localname
 from genomepy.__about__ import __version__
 
 my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
@@ -203,7 +203,7 @@ class ProviderBase(object):
                 for seq in not_included:
                     f.write("\t{}\n".format(seq))
     
-    def download_annotation(self, name, localname, genome_dir, version=None):
+    def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
         Download annotation file to to a specific directory
 
@@ -370,7 +370,7 @@ class EnsemblProvider(ProviderBase):
         
         return genome_info["assembly_name"], asm_url
 
-    def download_annotation(self, name, localname, genome_dir, version=None):
+    def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
         Download gene annotation from Ensembl based on genome name.
     
@@ -383,7 +383,7 @@ class EnsemblProvider(ProviderBase):
         version : str , optional
             Ensembl version. By default the latest version is used.
         """
-        localname = localname.replace(" ", "_")
+        localname = get_localname(name, localname)
         genome_info = self._get_genome_info(name)
 
         # parse the division
@@ -526,7 +526,7 @@ class UcscProvider(ProviderBase):
                 "Could not download genome {} from UCSC".format(name))
 
 
-    def download_annotation(self, name, localname, genome_dir, version=None):
+    def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
         Download gene annotation from UCSC based on genomebuild.
     
@@ -539,6 +539,8 @@ class UcscProvider(ProviderBase):
         genome_dir : str
             Genome directory.
         """
+        localname = get_localname(name, localname)
+
         UCSC_GENE_URL = "http://hgdownload.cse.ucsc.edu/goldenPath/{}/database/"
         ANNOS = ["knownGene.txt.gz", "ensGene.txt.gz", "refGene.txt.gz"]
         pred = "genePredToBed"
@@ -786,7 +788,7 @@ class NCBIProvider(ProviderBase):
         # Rename tmp file to real genome file
         shutil.move(new_fa, fa)
 
-    def download_annotation(self, name, localname, genome_dir, version=None):
+    def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
         Download annotation file to to a specific directory
 
@@ -808,7 +810,7 @@ class NCBIProvider(ProviderBase):
                 url = genome["ftp_path"]
                 url += "/" + url.split("/")[-1] + "_genomic.gff.gz"
   
-        localname = localname.replace(" ", "_")
+        localname = get_localname(name, localname)
         out_dir = os.path.join(genome_dir, localname)
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
