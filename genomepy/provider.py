@@ -22,7 +22,7 @@ from pyfaidx import Fasta
 from appdirs import user_cache_dir
 
 from genomepy import exceptions
-from genomepy.utils import filter_fasta
+from genomepy.utils import filter_fasta, get_localname
 from genomepy.__about__ import __version__
 
 my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
@@ -202,11 +202,8 @@ class ProviderBase(object):
                 f.write("sequences that were excluded:\n")
                 for seq in not_included:
                     f.write("\t{}\n".format(seq))
-#
-       
-        return myname
     
-    def download_annotation(self, name, genome_dir, version=None):
+    def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
         Download annotation file to to a specific directory
 
@@ -373,7 +370,7 @@ class EnsemblProvider(ProviderBase):
         
         return genome_info["assembly_name"], asm_url
 
-    def download_annotation(self, name, genome_dir, version=None):
+    def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
         Download gene annotation from Ensembl based on genome name.
     
@@ -386,6 +383,7 @@ class EnsemblProvider(ProviderBase):
         version : str , optional
             Ensembl version. By default the latest version is used.
         """
+        localname = get_localname(name, localname)
         genome_info = self._get_genome_info(name)
 
         # parse the division
@@ -412,20 +410,20 @@ class EnsemblProvider(ProviderBase):
 
         ftp_link = base_url.format(version, genome_info["species"], genome_info["species"].capitalize(), safe_name, version)
 
-        out_dir = os.path.join(genome_dir, name)
+        out_dir = os.path.join(genome_dir, localname)
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
         # Download the file
         try:
             response = urlopen(ftp_link)
-            gtf_file = out_dir + "/"+ name + ".annotation.gtf.gz"
+            gtf_file = out_dir + "/"+ localname + ".annotation.gtf.gz"
             with open(gtf_file, "wb") as f:
                 f.write(response.read())
         
             bed_file = gtf_file.replace("gtf.gz", "bed")
             cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1} && gzip {1}"
             ret = sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
-            readme = os.path.join(genome_dir, name, "README.txt")
+            readme = os.path.join(genome_dir, localname, "README.txt")
             with open(readme, "a") as f:
                 f.write("annotation url: {}\n".format(ftp_link))
         except Exception:
@@ -528,7 +526,7 @@ class UcscProvider(ProviderBase):
                 "Could not download genome {} from UCSC".format(name))
 
 
-    def download_annotation(self, name, genome_dir, version=None):
+    def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
         Download gene annotation from UCSC based on genomebuild.
     
@@ -541,6 +539,8 @@ class UcscProvider(ProviderBase):
         genome_dir : str
             Genome directory.
         """
+        localname = get_localname(name, localname)
+
         UCSC_GENE_URL = "http://hgdownload.cse.ucsc.edu/goldenPath/{}/database/"
         ANNOS = ["knownGene.txt.gz", "ensGene.txt.gz", "refGene.txt.gz"]
         pred = "genePredToBed"
@@ -577,10 +577,11 @@ class UcscProvider(ProviderBase):
                     break
             end_col = start_col + 10
            
-            path = os.path.join(genome_dir, name)
+            localname = localname.replace(" ", "_")
+            path = os.path.join(genome_dir, localname)
             if not os.path.exists(path):
                 os.mkdir(path)
-            bed_file = os.path.join(genome_dir, name, name + ".annotation.bed")
+            bed_file = os.path.join(genome_dir, localname, localname + ".annotation.bed")
             cmd = "zcat {} | cut -f{}-{} | {} /dev/stdin {} && gzip {}"
             sp.call(cmd.format(
                 tmp.name, start_col, end_col, pred, bed_file, bed_file), 
@@ -590,7 +591,7 @@ class UcscProvider(ProviderBase):
             cmd = "bedToGenePred {0}.gz /dev/stdout | genePredToGtf file /dev/stdin /dev/stdout -utr -honorCdsStat | sed 's/.dev.stdin/UCSC/' > {1} && gzip {1}"
             ret = sp.check_call(cmd.format(bed_file, gtf_file), shell=True)
         
-            readme = os.path.join(genome_dir, name, "README.txt")
+            readme = os.path.join(genome_dir, localname, "README.txt")
             with open(readme, "a") as f:
                 f.write("annotation url: {}\n".format(url))
         else:
@@ -787,7 +788,7 @@ class NCBIProvider(ProviderBase):
         # Rename tmp file to real genome file
         shutil.move(new_fa, fa)
 
-    def download_annotation(self, name, genome_dir, version=None):
+    def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
         Download annotation file to to a specific directory
 
@@ -809,14 +810,15 @@ class NCBIProvider(ProviderBase):
                 url = genome["ftp_path"]
                 url += "/" + url.split("/")[-1] + "_genomic.gff.gz"
   
-        out_dir = os.path.join(genome_dir, name)
+        localname = get_localname(name, localname)
+        out_dir = os.path.join(genome_dir, localname)
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
         
         # Download the file
         try:
             response = urlopen(url)
-            gff_file = out_dir + "/"+ name + ".annotation.gff.gz"
+            gff_file = out_dir + "/"+ localname + ".annotation.gff.gz"
             with open(gff_file, "wb") as f:
                 f.write(response.read())
         except Exception:
