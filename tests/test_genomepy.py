@@ -38,6 +38,8 @@ def test_ucsc_genome():
     assert str(seq) == "TTTGGTTGTTCCTCTTCCTT"
     shutil.rmtree(tmp)
 
+# 2019-05-08 BDGP6 currently fails on Ensembl
+@pytest.mark.xfail()
 def test_ensembl_genome(): 
     """Test Ensembl.
     
