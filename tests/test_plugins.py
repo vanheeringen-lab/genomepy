@@ -12,6 +12,7 @@ from genomepy.plugins.gmap import GmapPlugin
 from genomepy.plugins.minimap2 import Minimap2Plugin
 from genomepy.plugins.bowtie2 import Bowtie2Plugin
 from genomepy.plugins.hisat2 import Hisat2Plugin
+from genomepy.plugins.blacklist import BlacklistPlugin
 
 @pytest.fixture(scope="module")
 def tempdir():
@@ -23,7 +24,7 @@ def tempdir():
 @pytest.fixture(scope="module")
 def genome(tempdir):
     """Create a test genome.""" 
-    name = "small_genome" 
+    name = "dm3"    # Use fake name for blacklist test
     fafile = "tests/data/small_genome.fa"
     if os.path.exists(fafile + ".gz"):
         check_call(["gunzip", fafile + ".gz"])
@@ -35,6 +36,15 @@ def genome(tempdir):
     yield Genome(name, genome_dir=tempdir)  # provide the fixture value
     if os.path.exists(fafile):
         check_call(["gzip", fafile])
+
+def test_blacklist(genome):
+    """Create bwa index.""" 
+    assert os.path.exists(genome.filename)
+
+    p = BlacklistPlugin()
+    p.after_genome_download(genome)
+    fname = genome.filename.replace(".fa", ".blacklist.bed.gz")
+    assert os.path.exists(fname)
 
 def test_bwa(genome):
     """Create bwa index.""" 
