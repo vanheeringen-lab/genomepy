@@ -236,6 +236,7 @@ class EnsemblProvider(ProviderBase):
     
     def __init__(self):
         self.genomes = None
+        self.version = None
 
     @cached(method=True)
     def request_json(self, ext):
@@ -334,6 +335,7 @@ class EnsemblProvider(ProviderBase):
         if m:
             version = m.group(2)
             sys.stderr.write("Using version {}\n".format(version))
+            self.version = version
             return version
 
     def get_genome_download_link(self, name, version=None, mask="soft"):
@@ -362,6 +364,7 @@ class EnsemblProvider(ProviderBase):
         if division == "vertebrates":
             ftp_site = "https://ftp.ensembl.org/pub"
 
+        version = self.version
         if not version:
             version = self.get_version(ftp_site)
 
