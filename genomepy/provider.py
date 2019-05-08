@@ -251,6 +251,11 @@ class EnsemblProvider(ProviderBase):
         
         return r.json()
     
+    def safe(self, name):
+        """Replace spaces with undescores.
+        """
+        return name.replace(" ", "_")
+
     def list_available_genomes(self, as_dict=False):
         """
         List all available genomes.
@@ -275,7 +280,7 @@ class EnsemblProvider(ProviderBase):
             if as_dict:
                 yield genome
             else:
-                yield genome.get("assembly_name", ""), genome.get("name", "")
+                yield (self.safe(genome.get("assembly_name", "")), genome.get("name", ""))
    
     def search(self, term):
         """
@@ -297,14 +302,15 @@ class EnsemblProvider(ProviderBase):
         term = term.lower()
         for genome in self.list_available_genomes(as_dict=True):
             if term in ",".join([str(v) for v in genome.values()]).lower():
-                yield genome.get("assembly_name", ""), genome.get("name", "")
+                yield (self.safe(genome.get("assembly_name", "")), 
+                        genome.get("name", ""))
 
     def _get_genome_info(self, name):
         """Get genome_info from json request."""
         try:
             assembly_acc = ""
             for genome in self.list_available_genomes(as_dict=True):
-                if genome.get("assembly_name", "") == name:
+                if self.safe(genome.get("assembly_name", "")) == self.safe(name):
                     assembly_acc = genome.get("assembly_accession", "")
                     break
             if assembly_acc:
@@ -377,10 +383,10 @@ class EnsemblProvider(ProviderBase):
         asm_url = "{}/{}.{}.{}.fa.gz".format(
             url,
             genome_info['url_name'].capitalize(),
-            re.sub(r'\.p\d+$', '', genome_info["assembly_name"]),
+            re.sub(r'\.p\d+$', '', self.safe(genome_info["assembly_name"])),
             pattern)
         
-        return genome_info["assembly_name"], asm_url
+        return self.safe(genome_info["assembly_name"]), asm_url
 
     def download_annotation(self, name, genome_dir, version=None):
         """
