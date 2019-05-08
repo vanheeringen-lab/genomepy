@@ -229,10 +229,11 @@ class EnsemblProvider(ProviderBase):
     The bacteria division is not yet supported.
     """
     
-    rest_url = "http://rest.ensemblgenomes.org/"
+    rest_url = "http://rest.ensembl.org/"
     
     def __init__(self):
         self.genomes = None
+        self.version = None
 
     @cached(method=True)
     def request_json(self, ext):
@@ -248,6 +249,11 @@ class EnsemblProvider(ProviderBase):
         
         return r.json()
     
+    def safe(self, name):
+        """Replace spaces with undescores.
+        """
+        return name.replace(" ", "_")
+
     def list_available_genomes(self, as_dict=False):
         """
         List all available genomes.
@@ -261,16 +267,18 @@ class EnsemblProvider(ProviderBase):
         ------
         genomes : dictionary or tuple
         """
-        ext = "/info/genomes?"
-        
         if not self.genomes:
-            self.genomes = self.request_json(ext)
-        
+            self.genomes = []
+            divisions = self.request_json('info/divisions?')
+            for division in divisions:
+                genomes = self.request_json("info/genomes/division/{}?".format(division))
+                self.genomes += genomes
+       
         for genome in self.genomes:
             if as_dict:
                 yield genome
             else:
-                yield genome.get("assembly_name", ""), genome.get("name", "")
+                yield (self.safe(genome.get("assembly_name", "")), genome.get("name", ""))
    
     def search(self, term):
         """
@@ -292,18 +300,19 @@ class EnsemblProvider(ProviderBase):
         term = term.lower()
         for genome in self.list_available_genomes(as_dict=True):
             if term in ",".join([str(v) for v in genome.values()]).lower():
-                yield genome.get("assembly_name", ""), genome.get("name", "")
+                yield (self.safe(genome.get("assembly_name", "")), 
+                        genome.get("name", ""))
 
     def _get_genome_info(self, name):
         """Get genome_info from json request."""
         try:
-            assembly_id = ""
+            assembly_acc = ""
             for genome in self.list_available_genomes(as_dict=True):
-                if genome.get("assembly_name", "") == name:
-                    assembly_id = genome.get("assembly_id", "")
+                if self.safe(genome.get("assembly_name", "")) == self.safe(name):
+                    assembly_acc = genome.get("assembly_accession", "")
                     break
-            if assembly_id:
-                ext = "info/genomes/assembly/" + assembly_id + "/?"
+            if assembly_acc:
+                ext  = "info/genomes/assembly/" + assembly_acc + "/?"
                 genome_info = self.request_json(ext)
             else:
                 raise exceptions.GenomeDownloadError(
@@ -313,6 +322,18 @@ class EnsemblProvider(ProviderBase):
             raise exceptions.GenomeDownloadError(
                 "Could not download genome {} from Ensembl".format(name))
         return genome_info
+
+    def get_version(self, ftp_site):
+        """Retrieve current version from Ensembl FTP.
+        """
+        response = urlopen(ftp_site + "/current_README")
+        p = re.compile(r'Ensembl (Genomes|Release) (\d+)')
+        m = p.search(response.read().decode())
+        if m:
+            version = m.group(2)
+            sys.stderr.write("Using version {}\n".format(version))
+            self.version = version
+            return version
 
     def get_genome_download_link(self, name, version=None, mask="soft"):
         """
@@ -336,25 +357,22 @@ class EnsemblProvider(ProviderBase):
         if division == "bacteria":
             raise NotImplementedError("bacteria from ensembl not yet supported")
         
-        if not version:
-            # get version info from the dbname string
-            p = re.compile(r'core_(\d+)')
-            m = p.search(genome_info["dbname"])
-            if m:
-                version = m.group(1)
-        
-        ftp_site = "ftp.ensemblgenomes.org"
+        ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
         if division == "vertebrates":
-            ftp_site = "ftp.ensembl.org"
-        
+            ftp_site = "https://ftp.ensembl.org/pub"
+
+        version = self.version
+        if not version:
+            version = self.get_version(ftp_site)
+
         if division != 'vertebrates':
-            base_url = "/pub/{}/release-{}/fasta/{}/dna/"
-            ftp_dir = base_url.format(division, version, genome_info["species"])
-            url = "ftp://{}/{}".format(ftp_site, ftp_dir)
+            base_url = "/{}/release-{}/fasta/{}/dna/"
+            ftp_dir = base_url.format(division, version, genome_info["url_name"].lower())
+            url = "{}/{}".format(ftp_site, ftp_dir)
         else:
-            base_url = "/pub/release-{}/fasta/{}/dna/"
-            ftp_dir = base_url.format(version, genome_info["species"])
-            url = "https://{}/{}".format(ftp_site, ftp_dir)
+            base_url = "/release-{}/fasta/{}/dna/"
+            ftp_dir = base_url.format(version, genome_info["url_name"].lower())
+            url = "{}/{}".format(ftp_site, ftp_dir)
       
         pattern = "dna.toplevel"
         if mask == "soft":
@@ -364,11 +382,11 @@ class EnsemblProvider(ProviderBase):
         
         asm_url = "{}/{}.{}.{}.fa.gz".format(
             url,
-            genome_info['species'].capitalize(),
-            re.sub(r'\.p\d+$', '', genome_info["assembly_name"]),
+            genome_info['url_name'].capitalize(),
+            re.sub(r'\.p\d+$', '', self.safe(genome_info["assembly_name"])),
             pattern)
         
-        return genome_info["assembly_name"], asm_url
+        return self.safe(genome_info["assembly_name"]), asm_url
 
     def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
@@ -390,25 +408,21 @@ class EnsemblProvider(ProviderBase):
         division = genome_info["division"].lower().replace("ensembl","")
         if division == "bacteria":
             raise NotImplementedError("bacteria from ensembl not yet supported")
-        
-        if not version:
-            # get version info from the dbname string
-            p = re.compile(r'core_(\d+)')
-            m = p.search(genome_info["dbname"])
-            if m:
-                version = m.group(1)
-        
+                
         # Get the base link depending on division
-        ftp_site = "ftp://ftp.ensemblgenomes.org/pub/{}".format(division)
+        ftp_site = "https://ftp.ensemblgenomes.org/pub/{}".format(division)
         if division == 'vertebrates':
             ftp_site = "https://ftp.ensembl.org/pub"
+
+        if not version:
+            version = self.get_version(ftp_site)
 
         # Get the GTF URL
         base_url = ftp_site + "/release-{}/gtf/{}/{}.{}.{}.gtf.gz"
         safe_name = name.replace(" ", "_")
         safe_name = re.sub('\.p\d+$', '', safe_name)
 
-        ftp_link = base_url.format(version, genome_info["species"], genome_info["species"].capitalize(), safe_name, version)
+        ftp_link = base_url.format(version, genome_info["url_name"].lower(), genome_info["url_name"].capitalize(), safe_name, version)
 
         out_dir = os.path.join(genome_dir, localname)
         if not os.path.exists(out_dir):

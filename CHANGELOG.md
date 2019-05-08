@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.5.5] - 2019-03-19
+
+### Added 
+
+- Plugin for downloading genome blacklists (from Kundaje lab).
+
+### Fixed
+
+- Fix for new Ensembl REST API and FTP layout.
+- Genomes from Ensembl with a space in their name can be downloaded.
+- Plugin imports use relative parts to prevent conflicts with other imports.
+
 ## [0.5.4] - 2019-03-19
 
 ### Added
