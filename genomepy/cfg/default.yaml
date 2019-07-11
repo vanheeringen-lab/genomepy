@@ -5,4 +5,4 @@ plugin:
  - gaps
  - sizes
 
- bgzip: False
+bgzip: False
