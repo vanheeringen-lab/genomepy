@@ -4,21 +4,18 @@ matrix:
   include:
     - os: osx
       language: generic
-    - os: linux
-      sudo: false
-      dist: trusty
-      language: python
-      python: "2.7"
-    - os: linux
-      sudo: false
-      dist: trusty
-      language: python
-      python: "3.5"
+      env:
+        - PYTHON="3.7"
     - os: linux
       sudo: false
       dist: trusty
       language: python
       python: "3.6"
+    - os: linux
+      sudo: false
+      dist: trusty
+      language: python
+      python: "3.7"
 
 #cache:
 #  apt: true
@@ -41,14 +38,14 @@ before_install:
   - export PATH=$HOME/miniconda/bin:$PATH
   - conda config --set always_yes yes
   - conda update --yes conda
-  - conda config --add channels r
   - conda config --add channels defaults
-  - conda config --add channels conda-forge
   - conda config --add channels bioconda
+  - conda config --add channels conda-forge
   - conda info -a
 
 install:
-  - conda install ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gtftogenepred bwa minimap2 bowtie2 hisat2 gmap pyfaidx>=0.5.1 bucketcache norns>0.1.1 xmltodict pytest coverage pyyaml requests
+  - conda create -n genomepy-$TRAVIS_PYTHON_VERSION python=$TRAVIS_PYTHON_VERSION install ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gtftogenepred bwa minimap2 bowtie2 hisat2 gmap pyfaidx>=0.5.1 bucketcache norns>0.1.1 xmltodict pytest coverage pyyaml requests tabix biopython
+  - conda activate genomepy-$TRAVIS_PYTHON_VERSION
   - python setup.py develop
   - python setup.py build
   - pip install coveralls
