@@ -11,11 +11,11 @@ matrix:
       python: "3.6"
       env: 
         - PYTHON_VERSION: "3.6"
-    - os: linux
-      language: python
-      python: "3.6"
-      env: 
-        - PYTHON_VERSION: "3.7"
+#    - os: linux
+#      language: python
+#      python: "3.6"
+#      env: 
+#        - PYTHON_VERSION: "3.7"
 
 #cache:
 #  apt: true
@@ -38,11 +38,10 @@ before_install:
   - conda config --add channels bioconda
   - conda config --add channels conda-forge
   - conda info -a
-  - conda init bash
 
 install:
   - conda create -n genomepy-$PYTHON_VERSION python=$PYTHON_VERSION ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gtftogenepred bwa minimap2 bowtie2 hisat2 gmap pyfaidx>=0.5.1 bucketcache norns>0.1.1 xmltodict pytest coverage pyyaml requests tabix biopython
-  - conda activate genomepy-$PYTHON_VERSION
+  - source activate genomepy-$PYTHON_VERSION
   - python setup.py develop
   - python setup.py build
   - pip install coveralls
