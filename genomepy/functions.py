@@ -147,7 +147,6 @@ def search(term, provider=None):
         # if provider is not specified search all providers
         providers = [ProviderBase.create(p) for
                      p in ProviderBase.list_providers()]
-
     for p in providers:
         for row in p.search(term):
             yield [x.encode('latin-1') for x in [p.name] + list(row)]
@@ -210,7 +209,8 @@ def install_genome(name, provider, version=None, genome_dir=None,
         mask=mask,
         localname=localname,
         regex=regex,
-        invert_match=invert_match)
+        invert_match=invert_match,
+        bgzip=bgzip)
 
     if annotation:
         # Download annotation from provider
@@ -218,20 +218,7 @@ def install_genome(name, provider, version=None, genome_dir=None,
             name, genome_dir, localname=localname, version=version)
 
     g = Genome(localname, genome_dir=genome_dir)
-    if bgzip is None:
-        bgzip = config.get("bgzip", False)
 
-    print("bgzip is", bgzip)
-    if bgzip:
-        ret = sp.check_call(["bgzip", g.filename])
-        if ret != 0:
-            raise Exception(
-                "Error bgzipping {}. ".format(g.filename) +
-                "Is tabix installed?"
-            )
-        localname += ".gz"
-
-    g = Genome(localname, genome_dir=genome_dir)
     for plugin in get_active_plugins():
         plugin.after_genome_download(g)
 
