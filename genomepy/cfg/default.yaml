@@ -4,3 +4,5 @@ genome_dir: ~/.local/share/genomes/
 plugin:
  - gaps
  - sizes
+
+ bgzip: False

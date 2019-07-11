@@ -13,3 +13,4 @@ dist
 eggs
 tmp
 docs/_build
+.vscode

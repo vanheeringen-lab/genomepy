@@ -10,12 +10,11 @@ import xmltodict
 import shutil
 import subprocess as sp
 import tarfile
-import time
-from tempfile import mkdtemp,NamedTemporaryFile
+from tempfile import mkdtemp, NamedTemporaryFile
 try:
-        from urllib.request import urlopen, urlretrieve, urlcleanup
-except:
-        from urllib import urlopen, urlretrieve, urlcleanup
+    from urllib.request import urlopen, urlretrieve, urlcleanup
+except ImportError:
+    from urllib import urlopen, urlretrieve, urlcleanup
 
 from bucketcache import Bucket
 from pyfaidx import Fasta
@@ -31,6 +30,7 @@ if not os.path.exists(my_cache_dir):
     os.makedirs(my_cache_dir)
 
 cached = Bucket(my_cache_dir, days=7)
+
 
 class ProviderBase(object):
     
@@ -108,7 +108,8 @@ class ProviderBase(object):
         # Remove temp dir
         shutil.rmtree(tmpdir)
 
-    def download_genome(self, name, genome_dir, localname=None, mask="soft", regex=None, invert_match=False, version=None):
+    def download_genome(self, name, genome_dir, localname=None, mask="soft", 
+                        regex=None, invert_match=False, version=None):
         """
         Download a (gzipped) genome file to a specific directory
 
@@ -202,7 +203,7 @@ class ProviderBase(object):
                 f.write("sequences that were excluded:\n")
                 for seq in not_included:
                     f.write("\t{}\n".format(seq))
-    
+
     def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
         Download annotation file to to a specific directory
@@ -211,17 +212,19 @@ class ProviderBase(object):
         ----------
         name : str
             Genome / species name
-        
+    
         genome_dir : str
             Directory to install annotation
         """
         raise NotImplementedError()
 
+
 register_provider = ProviderBase.register_provider
+
 
 @register_provider('Ensembl')
 class EnsemblProvider(ProviderBase):
-    
+
     """
     Ensembl genome provider.
 
@@ -242,7 +245,7 @@ class EnsemblProvider(ProviderBase):
             ext = ext[1:]
         
         r = requests.get(self.rest_url + ext, 
-            headers={ "Content-Type" : "application/json"})
+                        headers={"Content-Type": "application/json"})
 
         if not r.ok:
             r.raise_for_status()
@@ -326,6 +329,7 @@ class EnsemblProvider(ProviderBase):
     def get_version(self, ftp_site):
         """Retrieve current version from Ensembl FTP.
         """
+        print("README", ftp_site)
         response = urlopen(ftp_site + "/current_README")
         p = re.compile(r'Ensembl (Genomes|Release) (\d+)')
         m = p.search(response.read().decode())
@@ -379,19 +383,19 @@ class EnsemblProvider(ProviderBase):
             pattern = "dna_sm.toplevel"
         elif mask == "hard":
             pattern = "dna_rm.toplevel"
-        
+
         asm_url = "{}/{}.{}.{}.fa.gz".format(
             url,
             genome_info['url_name'].capitalize(),
             re.sub(r'\.p\d+$', '', self.safe(genome_info["assembly_name"])),
             pattern)
-        
+
         return self.safe(genome_info["assembly_name"]), asm_url
 
     def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
         Download gene annotation from Ensembl based on genome name.
-    
+
         Parameters
         ----------
         name : str
@@ -408,14 +412,17 @@ class EnsemblProvider(ProviderBase):
         division = genome_info["division"].lower().replace("ensembl","")
         if division == "bacteria":
             raise NotImplementedError("bacteria from ensembl not yet supported")
-                
+
         # Get the base link depending on division
-        ftp_site = "https://ftp.ensemblgenomes.org/pub/{}".format(division)
+        ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
         if division == 'vertebrates':
             ftp_site = "https://ftp.ensembl.org/pub"
 
         if not version:
             version = self.get_version(ftp_site)
+
+        if division != "vertebrates":
+            ftp_site += "/{}".format(division)
 
         # Get the GTF URL
         base_url = ftp_site + "/release-{}/gtf/{}/{}.{}.{}.gtf.gz"
