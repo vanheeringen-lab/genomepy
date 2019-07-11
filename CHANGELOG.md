@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Support for storing bzgip-compressed genomes (#41).
+
+### Changed
+
+- Removed support for Python 2 ([2020 is close!](https://python3statement.org/)).
+
+### Fixed
+
+- Ensembl annotation for non-vertebrate genomes should work again.
+
 ## [0.5.5] - 2019-03-19
 
 ### Added 
