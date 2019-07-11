@@ -16,7 +16,7 @@ travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 def test_basic():
     cfg = genomepy.functions.config
     print(cfg)
-    assert 2 == len(cfg.keys())
+    assert 3 == len(cfg.keys())
 
 
 def test_genome_dir_not_found():
