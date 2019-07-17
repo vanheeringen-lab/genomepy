@@ -285,7 +285,7 @@ class EnsemblProvider(ProviderBase):
         Search for a genome at Ensembl. 
         
         Both the name and description are used for the 
-        search. Seacrch term is case-insensitive.
+        search. Search term is case-insensitive.
     
         Parameters
         ----------
