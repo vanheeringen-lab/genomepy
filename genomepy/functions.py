@@ -115,6 +115,7 @@ def list_installed_genomes(genome_dir=None):
     if not genome_dir:
         raise norns.exceptions.ConfigError(
             "Please provide or configure a genome_dir")
+    genome_dir = os.path.expanduser(genome_dir)
 
     return [f for f in os.listdir(genome_dir) if
             _is_genome_dir(genome_dir + "/" + f)]
@@ -337,8 +338,8 @@ class Genome(Fasta):
                 if not genome_dir:
                     raise norns.exceptions.ConfigError(
                         "Please provide or configure a genome_dir")
-
                 genome_dir = os.path.expanduser(genome_dir)
+                
                 if not os.path.exists(genome_dir):
                     raise FileNotFoundError(
                         "genome_dir {} does not exist".format(genome_dir)
