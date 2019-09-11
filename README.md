@@ -76,14 +76,16 @@ You can configure the index creation using the `genomepy plugin` command (see be
 
 ## Configuration
 
-By default genomes will be saved in `~/.local/share/genomes`. 
-
-To change the configuration, generate a personal config file:
+To change the default configuration, generate a personal config file:
 
 ```
 $ genomepy config generate
 Created config file /home/simon/.config/genomepy/genomepy.yaml
 ```
+
+### Genome location
+
+By default genomes will be saved in `~/.local/share/genomes`. 
 
 To set the default genome directory to `/data/genomes` for instance, edit `~/.config/genomepy/genomepy.yaml` and change the following line:
 
@@ -98,6 +100,20 @@ genome_dir: /data/genomes
 ```
 
 The genome directory can also be explicitly specified in both the Python API as well as on the command-line.
+
+### Compression
+
+Optionally genome FASTA files can be saved using bgzip compression. This means that the FASTA 
+files will take up less space on disk. To enable this, add the following line to your config 
+file:
+
+```
+bgzip: True
+```
+
+Most tools are able to use bgzip-compressed genome files. 
+One notable exception is `bedtools getfasta`. As an alternative, you can use the `faidx` command-line
+script from [pyfaidx](https://github.com/mdshw5/pyfaidx) which comes installed with genomepy.
 
 ## Usage
 

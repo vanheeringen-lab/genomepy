@@ -4,21 +4,18 @@ matrix:
   include:
     - os: osx
       language: generic
+      env:
+        - PYTHON_VERSION: "3.6"
     - os: linux
-      sudo: false
-      dist: trusty
-      language: python
-      python: "2.7"
-    - os: linux
-      sudo: false
-      dist: trusty
-      language: python
-      python: "3.5"
-    - os: linux
-      sudo: false
-      dist: trusty
       language: python
       python: "3.6"
+      env: 
+        - PYTHON_VERSION: "3.6"
+#    - os: linux
+#      language: python
+#      python: "3.6"
+#      env: 
+#        - PYTHON_VERSION: "3.7"
 
 #cache:
 #  apt: true
@@ -28,11 +25,7 @@ matrix:
 before_install:
   # install miniconda for Python dependencies
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-        wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-      else
-        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-      fi
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
     else
       wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
     fi
@@ -41,14 +34,14 @@ before_install:
   - export PATH=$HOME/miniconda/bin:$PATH
   - conda config --set always_yes yes
   - conda update --yes conda
-  - conda config --add channels r
   - conda config --add channels defaults
-  - conda config --add channels conda-forge
   - conda config --add channels bioconda
+  - conda config --add channels conda-forge
   - conda info -a
 
 install:
-  - conda install ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gtftogenepred bwa minimap2 bowtie2 hisat2 gmap pyfaidx>=0.5.1 bucketcache norns>0.1.1 xmltodict pytest coverage pyyaml requests
+  - conda create -n genomepy-$PYTHON_VERSION python=$PYTHON_VERSION ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gtftogenepred bwa minimap2 bowtie2 hisat2 gmap pyfaidx>=0.5.1 bucketcache norns>0.1.5 xmltodict pytest coverage pyyaml requests tabix biopython
+  - source activate genomepy-$PYTHON_VERSION
   - python setup.py develop
   - python setup.py build
   - pip install coveralls

@@ -10,16 +10,16 @@ import xmltodict
 import shutil
 import subprocess as sp
 import tarfile
-import time
-from tempfile import mkdtemp,NamedTemporaryFile
+from tempfile import mkdtemp, NamedTemporaryFile
 try:
-        from urllib.request import urlopen, urlretrieve, urlcleanup
-except:
-        from urllib import urlopen, urlretrieve, urlcleanup
+    from urllib.request import urlopen, urlretrieve, urlcleanup
+except ImportError:
+    from urllib import urlopen, urlretrieve, urlcleanup
 
 from bucketcache import Bucket
 from pyfaidx import Fasta
 from appdirs import user_cache_dir
+import norns
 
 from genomepy import exceptions
 from genomepy.utils import filter_fasta, get_localname
@@ -32,8 +32,10 @@ if not os.path.exists(my_cache_dir):
 
 cached = Bucket(my_cache_dir, days=7)
 
+config = norns.config("genomepy", default="cfg/default.yaml")
+
+
 class ProviderBase(object):
-    
     """Provider base class.
 
     Use to get a list of available providers:
@@ -108,7 +110,8 @@ class ProviderBase(object):
         # Remove temp dir
         shutil.rmtree(tmpdir)
 
-    def download_genome(self, name, genome_dir, localname=None, mask="soft", regex=None, invert_match=False, version=None):
+    def download_genome(self, name, genome_dir, localname=None, mask="soft", 
+                        regex=None, invert_match=False, version=None, bgzip=None):
         """
         Download a (gzipped) genome file to a specific directory
 
@@ -159,13 +162,13 @@ class ProviderBase(object):
             else:
                 f_out.write(response.read())
         sys.stderr.write("done...\n")
-        
+
         if link.endswith("tar.gz"):
             self.tar_to_bigfile(fname, fname) 
-        
+
         if hasattr(self, '_post_process_download'):
             self._post_process_download(name, down_dir, mask)
-        
+
         if regex:
             infa = fname
             outfa = os.path.join(genome_dir, myname, myname + ".fa") 
@@ -180,7 +183,19 @@ class ProviderBase(object):
             not_included = [k for k in Fasta(infa).keys() if k not in Fasta(outfa).keys()]
             shutil.rmtree(down_dir)
             fname = outfa
-        
+
+        if bgzip is None:
+            bgzip = config.get("bgzip", False)
+
+        if bgzip:
+            ret = sp.check_call(["bgzip", fname])
+            if ret != 0:
+                raise Exception(
+                    "Error bgzipping {}. ".format(fname) +
+                    "Is tabix installed?"
+                )
+            fname += ".gz"
+
         sys.stderr.write("name: {}\n".format(dbname))
         sys.stderr.write("local name: {}\n".format(myname))
         sys.stderr.write("fasta: {}\n".format(fname))
@@ -202,7 +217,7 @@ class ProviderBase(object):
                 f.write("sequences that were excluded:\n")
                 for seq in not_included:
                     f.write("\t{}\n".format(seq))
-    
+
     def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
         Download annotation file to to a specific directory
@@ -211,17 +226,19 @@ class ProviderBase(object):
         ----------
         name : str
             Genome / species name
-        
+    
         genome_dir : str
             Directory to install annotation
         """
         raise NotImplementedError()
 
+
 register_provider = ProviderBase.register_provider
+
 
 @register_provider('Ensembl')
 class EnsemblProvider(ProviderBase):
-    
+
     """
     Ensembl genome provider.
 
@@ -230,7 +247,7 @@ class EnsemblProvider(ProviderBase):
     """
     
     rest_url = "http://rest.ensembl.org/"
-    
+
     def __init__(self):
         self.genomes = None
         self.version = None
@@ -240,15 +257,15 @@ class EnsemblProvider(ProviderBase):
         """Make a REST request and return as json."""
         if self.rest_url.endswith("/") and ext.startswith("/"):
             ext = ext[1:]
-        
-        r = requests.get(self.rest_url + ext, 
-            headers={ "Content-Type" : "application/json"})
+
+        r = requests.get(self.rest_url + ext,
+                         headers={"Content-Type": "application/json"})
 
         if not r.ok:
             r.raise_for_status()
-        
+
         return r.json()
-    
+
     def safe(self, name):
         """Replace spaces with undescores.
         """
@@ -285,7 +302,7 @@ class EnsemblProvider(ProviderBase):
         Search for a genome at Ensembl. 
         
         Both the name and description are used for the 
-        search. Seacrch term is case-insensitive.
+        search. Search term is case-insensitive.
     
         Parameters
         ----------
@@ -301,7 +318,7 @@ class EnsemblProvider(ProviderBase):
         for genome in self.list_available_genomes(as_dict=True):
             if term in ",".join([str(v) for v in genome.values()]).lower():
                 yield (self.safe(genome.get("assembly_name", "")), 
-                        genome.get("name", ""))
+                       genome.get("name", ""))
 
     def _get_genome_info(self, name):
         """Get genome_info from json request."""
@@ -312,7 +329,7 @@ class EnsemblProvider(ProviderBase):
                     assembly_acc = genome.get("assembly_accession", "")
                     break
             if assembly_acc:
-                ext  = "info/genomes/assembly/" + assembly_acc + "/?"
+                ext = "info/genomes/assembly/" + assembly_acc + "/?"
                 genome_info = self.request_json(ext)
             else:
                 raise exceptions.GenomeDownloadError(
@@ -326,6 +343,7 @@ class EnsemblProvider(ProviderBase):
     def get_version(self, ftp_site):
         """Retrieve current version from Ensembl FTP.
         """
+        print("README", ftp_site)
         response = urlopen(ftp_site + "/current_README")
         p = re.compile(r'Ensembl (Genomes|Release) (\d+)')
         m = p.search(response.read().decode())
@@ -353,7 +371,7 @@ class EnsemblProvider(ProviderBase):
         genome_info = self._get_genome_info(name)
         
         # parse the division
-        division = genome_info["division"].lower().replace("ensembl","")
+        division = genome_info["division"].lower().replace("ensembl", "")
         if division == "bacteria":
             raise NotImplementedError("bacteria from ensembl not yet supported")
         
@@ -379,19 +397,19 @@ class EnsemblProvider(ProviderBase):
             pattern = "dna_sm.toplevel"
         elif mask == "hard":
             pattern = "dna_rm.toplevel"
-        
+
         asm_url = "{}/{}.{}.{}.fa.gz".format(
             url,
             genome_info['url_name'].capitalize(),
             re.sub(r'\.p\d+$', '', self.safe(genome_info["assembly_name"])),
             pattern)
-        
+
         return self.safe(genome_info["assembly_name"]), asm_url
 
     def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
         Download gene annotation from Ensembl based on genome name.
-    
+
         Parameters
         ----------
         name : str
@@ -405,24 +423,29 @@ class EnsemblProvider(ProviderBase):
         genome_info = self._get_genome_info(name)
 
         # parse the division
-        division = genome_info["division"].lower().replace("ensembl","")
+        division = genome_info["division"].lower().replace("ensembl", "")
         if division == "bacteria":
             raise NotImplementedError("bacteria from ensembl not yet supported")
-                
+
         # Get the base link depending on division
-        ftp_site = "https://ftp.ensemblgenomes.org/pub/{}".format(division)
+        ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
         if division == 'vertebrates':
             ftp_site = "https://ftp.ensembl.org/pub"
 
         if not version:
             version = self.get_version(ftp_site)
 
+        if division != "vertebrates":
+            ftp_site += "/{}".format(division)
+
         # Get the GTF URL
         base_url = ftp_site + "/release-{}/gtf/{}/{}.{}.{}.gtf.gz"
         safe_name = name.replace(" ", "_")
         safe_name = re.sub('\.p\d+$', '', safe_name)
 
-        ftp_link = base_url.format(version, genome_info["url_name"].lower(), genome_info["url_name"].capitalize(), safe_name, version)
+        ftp_link = base_url.format(version, genome_info["url_name"].lower(), 
+                                   genome_info["url_name"].capitalize(), safe_name, 
+                                   version)
 
         out_dir = os.path.join(genome_dir, localname)
         if not os.path.exists(out_dir):
@@ -430,13 +453,14 @@ class EnsemblProvider(ProviderBase):
         # Download the file
         try:
             response = urlopen(ftp_link)
-            gtf_file = out_dir + "/"+ localname + ".annotation.gtf.gz"
+            gtf_file = out_dir + "/" + localname + ".annotation.gtf.gz"
             with open(gtf_file, "wb") as f:
                 f.write(response.read())
         
             bed_file = gtf_file.replace("gtf.gz", "bed")
-            cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1} && gzip {1}"
-            ret = sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
+            cmd = ("gtfToGenePred {0} /dev/stdout | "
+                   "genePredToBed /dev/stdin {1} && gzip {1}")
+            sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
             readme = os.path.join(genome_dir, localname, "README.txt")
             with open(readme, "a") as f:
                 f.write("annotation url: {}\n".format(ftp_link))
@@ -446,24 +470,25 @@ class EnsemblProvider(ProviderBase):
 
         return out_dir
 
+
 @register_provider('UCSC')
 class UcscProvider(ProviderBase):
-     
+
     """
     UCSC genome provider.
-    
-    The UCSC DAS server is used to search and list genomes. 
+
+    The UCSC DAS server is used to search and list genomes.
     """
-    
-    ucsc_url = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/chromFa.tar.gz"
-    ucsc_url_masked = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/chromFaMasked.tar.gz"
-    alt_ucsc_url = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/{0}.fa.gz"
-    alt_ucsc_url_masked = "http://hgdownload.soe.ucsc.edu/goldenPath/{0}/bigZips/{0}.fa.masked.gz"
+    base_url = "http://hgdownload.soe.ucsc.edu/goldenPath"
+    ucsc_url = base_url + "/{0}/bigZips/chromFa.tar.gz"
+    ucsc_url_masked = base_url + "/{0}/bigZips/chromFaMasked.tar.gz"
+    alt_ucsc_url = base_url + "/{0}/bigZips/{0}.fa.gz"
+    alt_ucsc_url_masked = base_url + "/{0}/bigZips/{0}.fa.masked.gz"
     das_url = "http://genome.ucsc.edu/cgi-bin/das/dsn"
-    
+
     def __init__(self):
         self.genomes = []
-   
+
     def list_available_genomes(self):
         """
         List all available genomes.
@@ -482,11 +507,10 @@ class UcscProvider(ProviderBase):
         d = xmltodict.parse(response.read())
         genomes = []
         for genome in d['DASDSN']['DSN']:
-                genomes.append([
+            genomes.append([
                     genome['SOURCE']['@id'], genome['DESCRIPTION']
                     ])
         return genomes
-
 
     def search(self, term):
         """
@@ -506,9 +530,9 @@ class UcscProvider(ProviderBase):
             genome information (name/identifier and description)
         """
         term = term.lower()
-        for name,description in self.list_available_genomes():
+        for name, description in self.list_available_genomes():
             if term in name.lower() or term in description.lower():
-                yield name,description
+                yield name, description
     
     def get_genome_download_link(self, name, mask="soft", version=None):
         """
@@ -538,7 +562,6 @@ class UcscProvider(ProviderBase):
 
         raise exceptions.GenomeDownloadError(
                 "Could not download genome {} from UCSC".format(name))
-
 
     def download_annotation(self, name, genome_dir, localname=None, version=None):
         """
@@ -585,7 +608,7 @@ class UcscProvider(ProviderBase):
                 cols = f.readline().decode(errors='ignore').split("\t")
     
             start_col = 1
-            for i,col in enumerate(cols):
+            for i, col in enumerate(cols):
                 if col == "+" or col == "-":
                     start_col = i - 1
                     break
@@ -602,14 +625,18 @@ class UcscProvider(ProviderBase):
                 shell=True)
             
             gtf_file = bed_file.replace(".bed", ".gtf")
-            cmd = "bedToGenePred {0}.gz /dev/stdout | genePredToGtf file /dev/stdin /dev/stdout -utr -honorCdsStat | sed 's/.dev.stdin/UCSC/' > {1} && gzip {1}"
-            ret = sp.check_call(cmd.format(bed_file, gtf_file), shell=True)
+            cmd = ("bedToGenePred {0}.gz /dev/stdout | "
+                   "genePredToGtf file /dev/stdin /dev/stdout -utr -honorCdsStat | "
+                   "sed 's/.dev.stdin/UCSC/' > {1} && gzip {1}"
+                   )
+            sp.check_call(cmd.format(bed_file, gtf_file), shell=True)
         
             readme = os.path.join(genome_dir, localname, "README.txt")
             with open(readme, "a") as f:
                 f.write("annotation url: {}\n".format(url))
         else:
             sys.stderr.write("No annotation found!")
+
 
 @register_provider('NCBI')
 class NCBIProvider(ProviderBase):
@@ -636,7 +663,8 @@ class NCBIProvider(ProviderBase):
                 "assembly_summary_refseq_historical.txt",
                 ]
         
-        sys.stderr.write("Downloading assembly summaries from NCBI, this will take a while...\n")
+        sys.stderr.write("Downloading assembly summaries from NCBI, " +
+                         "this will take a while...\n")
         seen = {}
         for fname in names:
             urlcleanup() 
@@ -732,7 +760,6 @@ class NCBIProvider(ProviderBase):
         
         for genome in self.genomes:
             if genome["asm_name"] == name:
-                #ftp_path': 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/004/195/GCF_000004195.3_Xenopus_tropicalis_v9.1'
                 url = genome["ftp_path"]
                 url = url.replace("ftp://", "https://")
                 url += "/" + url.split("/")[-1] + "_genomic.fna.gz"
@@ -820,7 +847,6 @@ class NCBIProvider(ProviderBase):
         
         for genome in self.genomes:
             if genome["asm_name"] == name:
-                #ftp_path': 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/004/195/GCF_000004195.3_Xenopus_tropicalis_v9.1'
                 url = genome["ftp_path"]
                 url += "/" + url.split("/")[-1] + "_genomic.gff.gz"
   
@@ -832,31 +858,36 @@ class NCBIProvider(ProviderBase):
         # Download the file
         try:
             response = urlopen(url)
-            gff_file = out_dir + "/"+ localname + ".annotation.gff.gz"
+            gff_file = out_dir + "/" + localname + ".annotation.gff.gz"
             with open(gff_file, "wb") as f:
                 f.write(response.read())
         except Exception:
-            sys.stderr.write("WARNING: Could not download annotation from NCBI, skipping.\n")
+            sys.stderr.write("WARNING: Could not download annotation from NCBI, " +
+                             "skipping.\n")
             sys.stderr.write("URL: {}\n".format(url))
 
-            sys.stderr.write("If you think the annotation should be there, please file a bug report at:\n")
+            sys.stderr.write("If you think the annotation should be there, " + 
+                             "please file a bug report at:\n")
             sys.stderr.write("https://github.com/simonvh/genomepy/issues\n")
             return
         
         cmd = "gff3ToGenePred {0} /dev/stdout | wc -l"
         out = sp.check_output(cmd.format(gff_file), shell=True)
         if out.strip() == b"0":
-            sys.stderr.write("WARNING: annotation from NCBI contains no genes, skipping.\n")
+            sys.stderr.write("WARNING: annotation from NCBI contains no genes, " + 
+                             "skipping.\n")
         else:
             # Convert to BED file
             bed_file = gff_file.replace("gff.gz", "bed")
-            cmd = "gff3ToGenePred -rnaNameAttr=gene {0} /dev/stdout | genePredToBed /dev/stdin {1} && gzip {1}"
-            ret = sp.check_call(cmd.format(gff_file, bed_file), shell=True) 
+            cmd = ("gff3ToGenePred -rnaNameAttr=gene {0} /dev/stdout | "
+                   "genePredToBed /dev/stdin {1} && gzip {1}")
+            sp.check_call(cmd.format(gff_file, bed_file), shell=True) 
 
             # Convert to GTF file
             gtf_file = gff_file.replace("gff.gz", "gtf")
-            cmd = "gff3ToGenePred -geneNameAttr=gene {0} /dev/stdout | genePredToGtf file /dev/stdin {1} && gzip {1}"
-            ret = sp.check_call(cmd.format(gff_file, gtf_file), shell=True)
+            cmd = ("gff3ToGenePred -geneNameAttr=gene {0} /dev/stdout | " + 
+                   "genePredToGtf file /dev/stdin {1} && gzip {1}")
+            sp.check_call(cmd.format(gff_file, gtf_file), shell=True)
         
         readme = os.path.join(genome_dir, name, "README.txt")
         with open(readme, "a") as f:

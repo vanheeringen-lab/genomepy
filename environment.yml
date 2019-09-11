@@ -1,0 +1,32 @@
+channels:
+  - defaults
+  - bioconda
+  - conda-forge
+dependencies:
+  - click
+  - pyfaidx>=0.5.1
+  - bucketcache
+  - xmltodict
+  - norns>0.1.1
+  - pyyaml
+  - requests
+  - biopython
+  - appdirs
+  - ucsc-genepredtobed
+  - ucsc-genepredtogtf
+  - ucsc-bedtogenepred
+  - ucsc-gtftogenepred 
+  - bwa
+  - minimap2
+  - bowtie2
+  - hisat2
+  - gmap
+  - tabix
+  
+  # Testing etc.
+  - autopep8
+  - flake8
+  - black
+  - coverage
+  - pytest
+        
