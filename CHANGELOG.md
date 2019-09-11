@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - Ensembl annotation for non-vertebrate genomes should work again.
+- Fixed bug where a deleted or empty config file would result in an error.
 
 ## [0.5.5] - 2019-03-19
 
