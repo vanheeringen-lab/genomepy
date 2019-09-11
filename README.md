@@ -15,6 +15,9 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 
 [![asciicast](https://asciinema.org/a/eZttBuf5ly0AnjFVBiEIybbjS.png)](https://asciinema.org/a/eZttBuf5ly0AnjFVBiEIybbjS)
 
+**Pssst, hey there!** Is genomepy not doing what you want? Does it fail? Is it clunky? Is the documentation unclear? Have any other ideas on how to improve it? Don't be shy and [let us know](https://github.com/simonvh/genomepy/issues)!
+
+
 ## Installation
 
 Genomepy works with Python 2.7 and Python 3.4+. 
