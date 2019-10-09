@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [0.6.0] - 2019-09-11
+
+### Added
+
 - Support for storing bzgip-compressed genomes (#41).
 
 ### Changed
