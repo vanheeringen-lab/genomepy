@@ -5,6 +5,7 @@ import glob
 import random
 import re
 import subprocess as sp
+from collections.abc import Iterable
 
 from appdirs import user_config_dir
 from pyfaidx import Fasta, Sequence
@@ -228,10 +229,9 @@ def install_genome(name, provider, version=None, genome_dir=None,
 
 def get_track_type(track):
     region_p = re.compile(r'^(.+):(\d+)-(\d+)$')
-    if isinstance(track, []):
-        if region_p.search(track[0]):
+    if not isinstance(track, (str, bytes)) and isinstance(track, Iterable):
+        if isinstance(track[0], (str, bytes)) and region_p.search(track[0]):
             return "interval"
-
     with open(track) as fin:
         line = fin.readline().strip()
     if region_p.search(line):
