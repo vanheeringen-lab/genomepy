@@ -5,6 +5,7 @@ import glob
 import random
 import re
 import subprocess as sp
+from collections.abc import Iterable
 
 from appdirs import user_config_dir
 from pyfaidx import Fasta, Sequence
@@ -31,9 +32,7 @@ def manage_config(cmd, *args):
         with open(config.config_file) as f:
             print(f.read())
     elif cmd == "generate":
-        fname = os.path.join(
-            user_config_dir("genomepy"), "{}.yaml".format("genomepy")
-        )
+        fname = os.path.join(user_config_dir("genomepy"), "{}.yaml".format("genomepy"))
 
         if not os.path.exists(user_config_dir("genomepy")):
             os.makedirs(user_config_dir("genomepy"))
@@ -62,8 +61,7 @@ def list_available_genomes(provider=None):
         providers = [ProviderBase.create(provider)]
     else:
         # if provider is not specified search all providers
-        providers = [ProviderBase.create(p) for
-                     p in ProviderBase.list_providers()]
+        providers = [ProviderBase.create(p) for p in ProviderBase.list_providers()]
 
     for p in providers:
         for row in p.list_available_genomes():
@@ -113,12 +111,10 @@ def list_installed_genomes(genome_dir=None):
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
-        raise norns.exceptions.ConfigError(
-            "Please provide or configure a genome_dir")
+        raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
     genome_dir = os.path.expanduser(genome_dir)
 
-    return [f for f in os.listdir(genome_dir) if
-            _is_genome_dir(genome_dir + "/" + f)]
+    return [f for f in os.listdir(genome_dir) if _is_genome_dir(genome_dir + "/" + f)]
 
 
 def search(term, provider=None):
@@ -146,16 +142,24 @@ def search(term, provider=None):
         providers = [ProviderBase.create(provider)]
     else:
         # if provider is not specified search all providers
-        providers = [ProviderBase.create(p) for
-                     p in ProviderBase.list_providers()]
+        providers = [ProviderBase.create(p) for p in ProviderBase.list_providers()]
     for p in providers:
         for row in p.search(term):
-            yield [x.encode('latin-1') for x in [p.name] + list(row)]
+            yield [x.encode("latin-1") for x in [p.name] + list(row)]
 
 
-def install_genome(name, provider, version=None, genome_dir=None,
-                   localname=None, mask="soft", regex=None, invert_match=False,
-                   annotation=False, bgzip=None):
+def install_genome(
+    name,
+    provider,
+    version=None,
+    genome_dir=None,
+    localname=None,
+    mask="soft",
+    regex=None,
+    invert_match=False,
+    annotation=False,
+    bgzip=None,
+):
     """
     Install a genome.
 
@@ -195,8 +199,7 @@ def install_genome(name, provider, version=None, genome_dir=None,
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
-        raise norns.exceptions.ConfigError(
-            "Please provide or configure a genome_dir")
+        raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
 
     genome_dir = os.path.expanduser(genome_dir)
     localname = get_localname(name, localname)
@@ -211,12 +214,12 @@ def install_genome(name, provider, version=None, genome_dir=None,
         localname=localname,
         regex=regex,
         invert_match=invert_match,
-        bgzip=bgzip)
+        bgzip=bgzip,
+    )
 
     if annotation:
         # Download annotation from provider
-        p.download_annotation(
-            name, genome_dir, localname=localname, version=version)
+        p.download_annotation(name, genome_dir, localname=localname, version=version)
 
     g = Genome(localname, genome_dir=genome_dir)
 
@@ -227,11 +230,10 @@ def install_genome(name, provider, version=None, genome_dir=None,
 
 
 def get_track_type(track):
-    region_p = re.compile(r'^(.+):(\d+)-(\d+)$')
-    if isinstance(track, []):
-        if region_p.search(track[0]):
+    region_p = re.compile(r"^(.+):(\d+)-(\d+)$")
+    if not isinstance(track, (str, bytes)) and isinstance(track, Iterable):
+        if isinstance(track[0], (str, bytes)) and region_p.search(track[0]):
             return "interval"
-
     with open(track) as fin:
         line = fin.readline().strip()
     if region_p.search(line):
@@ -252,7 +254,9 @@ def _weighted_selection(l, n):
         cuml.append(total_weight)
         items.append(item)
 
-    return [items[bisect.bisect(cuml, random.random()*total_weight)] for _ in range(n)]
+    return [
+        items[bisect.bisect(cuml, random.random() * total_weight)] for _ in range(n)
+    ]
 
 
 def generate_exports():
@@ -262,7 +266,7 @@ def generate_exports():
     for name in list_installed_genomes():
         try:
             g = Genome(name)
-            env_name = re.sub(r'[^\w]+', "_", name).upper()
+            env_name = re.sub(r"[^\w]+", "_", name).upper()
             env.append("export {}={}".format(env_name, g.filename))
         except Exception:
             pass
@@ -327,9 +331,11 @@ class Genome(Fasta):
             super(Genome, self).__init__(name)
             self.name = os.path.basename(name)
         except Exception:
-            if (os.path.isdir(name) and
-                    len(glob_fa_files(name)) == 1 and
-                    genome_dir is not None):
+            if (
+                os.path.isdir(name)
+                and len(glob_fa_files(name)) == 1
+                and genome_dir is not None
+            ):
                 fname = glob_fa_files(name)[0]
                 name = os.path.basename(fname)
             else:
@@ -337,16 +343,18 @@ class Genome(Fasta):
                     genome_dir = config.get("genome_dir", None)
                 if not genome_dir:
                     raise norns.exceptions.ConfigError(
-                        "Please provide or configure a genome_dir")
+                        "Please provide or configure a genome_dir"
+                    )
                 genome_dir = os.path.expanduser(genome_dir)
-                
+
                 if not os.path.exists(genome_dir):
                     raise FileNotFoundError(
                         "genome_dir {} does not exist".format(genome_dir)
                     )
 
-                fnames = glob_fa_files(os.path.join(
-                    genome_dir, name.replace('.gz', '')))
+                fnames = glob_fa_files(
+                    os.path.join(genome_dir, name.replace(".gz", ""))
+                )
                 if len(fnames) == 0:
                     raise FileNotFoundError(
                         "no *.fa files found in genome_dir {}".format(
@@ -354,13 +362,13 @@ class Genome(Fasta):
                         )
                     )
                 elif len(fnames) > 1:
-                    fname = os.path.join(
-                        genome_dir, name, "{}.fa".format(name))
+                    fname = os.path.join(genome_dir, name, "{}.fa".format(name))
                     if fname not in fnames:
                         fname += ".gz"
                         if fname not in fnames:
                             raise Exception(
-                                "More than one FASTA file found, no {}.fa!".format(name))
+                                "More than one FASTA file found, no {}.fa!".format(name)
+                            )
                 else:
                     fname = fnames[0]
 
@@ -406,8 +414,7 @@ class Genome(Fasta):
                         starts = [int(x) for x in vals[11].split(",")[:-1]]
                         sizes = [int(x) for x in vals[10].split(",")[:-1]]
                         starts = [start + x for x in starts]
-                        ends = [start + size for start,
-                                size in zip(starts, sizes)]
+                        ends = [start + size for start, size in zip(starts, sizes)]
                     name = "{}:{}-{}".format(chrom, start, end)
                     try:
                         name = " ".join((name, vals[3]))
@@ -461,18 +468,18 @@ class Genome(Fasta):
 
                     lines = fin.readlines(BUFSIZE)
 
-    def track2fasta(self, track, fastafile=None, stranded=False, extend_up=0,
-                    extend_down=0):
+    def track2fasta(
+        self, track, fastafile=None, stranded=False, extend_up=0, extend_down=0
+    ):
         track_type = get_track_type(track)
         if track_type == "interval":
             seqqer = self._region_to_seqs(
-                track, extend_up=extend_up, extend_down=extend_down)
+                track, extend_up=extend_up, extend_down=extend_down
+            )
         else:
             seqqer = self._bed_to_seqs(
-                track,
-                stranded=stranded,
-                extend_up=extend_up,
-                extend_down=extend_down)
+                track, stranded=stranded, extend_up=extend_up, extend_down=extend_down
+            )
 
         if fastafile:
             with open(fastafile, "w") as fout:
@@ -497,8 +504,7 @@ class Genome(Fasta):
                 for line in f:
                     chrom, start, end = line.strip().split("\t")
                     start, end = int(start), int(end)
-                    self._gap_sizes[chrom] = self._gap_sizes.get(
-                        chrom, 0) + end - start
+                    self._gap_sizes[chrom] = self._gap_sizes.get(chrom, 0) + end - start
         return self._gap_sizes
 
     def get_random_sequences(self, n=10, length=200, chroms=None, max_n=0.1):
@@ -532,11 +538,15 @@ class Genome(Fasta):
             gap_sizes = self.gap_sizes()
         except Exception:
             gap_sizes = {}
-        sizes = dict([(chrom, len(self[chrom]) - gap_sizes.get(chrom, 0))
-                      for chrom in chroms])
+        sizes = dict(
+            [(chrom, len(self[chrom]) - gap_sizes.get(chrom, 0)) for chrom in chroms]
+        )
 
-        lengths = [(sizes[x], x) for x in chroms if
-                   sizes[x] / len(self[x]) > 0.1 and sizes[x] > 10 * length]
+        lengths = [
+            (sizes[x], x)
+            for x in chroms
+            if sizes[x] / len(self[x]) > 0.1 and sizes[x] > 10 * length
+        ]
         chroms = _weighted_selection(lengths, n)
         coords = []
 
@@ -556,7 +566,8 @@ class Genome(Fasta):
                     break
             if count_n > cutoff:
                 raise ValueError(
-                    "Failed to find suitable non-N sequence for {}".format(chrom))
+                    "Failed to find suitable non-N sequence for {}".format(chrom)
+                )
 
             coords.append([chrom, start, end])
 
@@ -583,8 +594,11 @@ def manage_plugins(command, plugin_names=None):
     elif command == "list":
         print("{:20}{}".format("plugin", "enabled"))
         for plugin in sorted(plugins):
-            print("{:20}{}".format(
-                plugin, {False: "", True: "*"}[plugin in active_plugins]))
+            print(
+                "{:20}{}".format(
+                    plugin, {False: "", True: "*"}[plugin in active_plugins]
+                )
+            )
     else:
         raise ValueError("Invalid plugin command")
     config["plugin"] = active_plugins
