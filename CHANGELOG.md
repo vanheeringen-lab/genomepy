@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+## [0.6.1] - 2019-10-10
+
+### Fixed
+
 - Fixed bug with get_track_type.
 
 ## [0.6.0] - 2019-09-11
