@@ -67,7 +67,7 @@ class ProviderBase(object):
             Provider instance.
         """
         try:
-            return cls._providers[name]()
+            return cls._providers[name.lower()]()
         except KeyError:
             raise Exception("Unknown provider")
 
@@ -76,8 +76,8 @@ class ProviderBase(object):
         """Register method to keep list of providers."""
         def decorator(subclass):
             """Register as decorator function."""
-            cls._providers[provider] = subclass
-            subclass.name = provider
+            cls._providers[provider.lower()] = subclass
+            subclass.name = provider.lower()
             return subclass
         return decorator
     
