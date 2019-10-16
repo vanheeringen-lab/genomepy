@@ -104,8 +104,7 @@ def mkdir_p(path):
 
 
 def cmd_ok(cmd):
-    """Returns True if cmd can be run.
-    """
+    """Returns True if cmd can be run."""
     try:
         sp.check_call(cmd, stderr=sp.PIPE, stdout=sp.PIPE)
     except sp.CalledProcessError:

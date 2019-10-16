@@ -82,9 +82,9 @@ class ProviderBase(object):
         return decorator
     
     @classmethod
-    def list_providers(self):
+    def list_providers(cls):
         """List available providers.""" 
-        return self._providers.keys()
+        return cls._providers.keys()
 
     def __hash__(self):
         return hash(str(self.__class__))
