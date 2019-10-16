@@ -137,12 +137,11 @@ def test_url_genome():
     """
     tmp = mkdtemp()
     genomepy.install_genome(
-        "http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz", "url",
-        genome_dir=tmp, localname='Release_6_plus_ISO1_MT'
+        "http://hgdownload.soe.ucsc.edu/goldenPath/ce11/bigZips/chromFa.tar.gz", "url",
+        genome_dir=tmp, localname='url_test'
     )
-    g = genomepy.Genome("Release_6_plus_ISO1_MT", genome_dir=tmp)
-    seq = g["3L"][10637840:10637875]
-    assert str(seq).upper() == "TTTGCAACAGCTGCCGCAGTGTGACCGTTGTACTG"
+    g = genomepy.Genome("url_test", genome_dir=tmp)
+    assert str(g['chrI'][:12]).lower() == "gcctaagcctaa"
     shutil.rmtree(tmp)
 
 
