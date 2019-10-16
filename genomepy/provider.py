@@ -910,6 +910,6 @@ class UrlProvider(ProviderBase):
 
         Returns
         ------
-        tuple (url, url) where name is the filename and url the provided url
+        tuple (url, url)
         """
         return url, url
