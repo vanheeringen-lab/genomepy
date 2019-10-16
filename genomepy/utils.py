@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import subprocess as sp
+import urllib.request
 
 from pyfaidx import Fasta
 
@@ -135,12 +136,13 @@ def get_localname(name, localname):
       else: returns name
     """
     if localname is None:
-        # name is an url if it contains . / and :
-        if all(char in name for char in ['.', '/', ':']):
-            # then parse url to filename: http://path/to/file.fa.gz -> file
+        try:
+            urllib.request.urlopen(name)
+        except IOError:
+            return name.replace(' ', '_')
+        else:
+            # try to get the name from the url
             name = name[name.rfind("/") + 1:]
             return name[:name.find(".")]
-        else:
-            return name.replace(' ', '_')
     else:
         return localname.replace(" ", "_")
