@@ -67,7 +67,7 @@ class ProviderBase(object):
             Provider instance.
         """
         try:
-            return cls._providers[name]()
+            return cls._providers[name.lower()]()
         except KeyError:
             raise Exception("Unknown provider")
 
@@ -76,15 +76,15 @@ class ProviderBase(object):
         """Register method to keep list of providers."""
         def decorator(subclass):
             """Register as decorator function."""
-            cls._providers[provider] = subclass
-            subclass.name = provider
+            cls._providers[provider.lower()] = subclass
+            subclass.name = provider.lower()
             return subclass
         return decorator
     
     @classmethod
-    def list_providers(self):
+    def list_providers(cls):
         """List available providers.""" 
-        return self._providers.keys()
+        return cls._providers.keys()
 
     def __hash__(self):
         return hash(str(self.__class__))
@@ -896,4 +896,20 @@ class NCBIProvider(ProviderBase):
         return out_dir
 
 
+@register_provider('URL')
+class UrlProvider(ProviderBase):
+    """
+    URL genome provider.
 
+    Simply download a genome directly through an url.
+    """
+    def get_genome_download_link(self, url, mask=None, version=None):
+        """
+        url : str
+            url of where to download genome from
+
+        Returns
+        ------
+        tuple (url, url)
+        """
+        return url, url

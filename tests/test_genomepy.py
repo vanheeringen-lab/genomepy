@@ -127,3 +127,37 @@ def test_regexp_filter():
         assert len(fa.keys()) == match
         fa = genomepy.utils.filter_fasta(fname, tmpfa, regex=regex, v=True, force=True)
         assert len(fa.keys()) == no_match
+
+
+def test_url_genome():
+    """Test URL.
+
+    Download S. cerevisiae genome directly from an url from UCSC and retrieve a
+    specific sequence.
+    """
+    tmp = mkdtemp()
+    genomepy.install_genome(
+        "http://hgdownload.soe.ucsc.edu/goldenPath/ce11/bigZips/chromFa.tar.gz", "url",
+        genome_dir=tmp, localname='url_test'
+    )
+    g = genomepy.Genome("url_test", genome_dir=tmp)
+    assert str(g['chrI'][:12]).lower() == "gcctaagcctaa"
+    shutil.rmtree(tmp)
+
+
+def test_bad_url():
+    """Test URL.
+
+    Try to download a non-genome url link.
+    """
+    with pytest.raises(ValueError):
+        genomepy.install_genome("www.google.com", "url")
+
+
+def test_nonexisting_url():
+    """Test URL.
+
+    Try to download a non-genome url link.
+    """
+    with pytest.raises(ValueError):
+        genomepy.install_genome("this is not an url", "url")

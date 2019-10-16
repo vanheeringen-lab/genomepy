@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import subprocess as sp
+import urllib.request
 
 from pyfaidx import Fasta
 
@@ -104,8 +105,7 @@ def mkdir_p(path):
 
 
 def cmd_ok(cmd):
-    """Returns True if cmd can be run.
-    """
+    """Returns True if cmd can be run."""
     try:
         sp.check_call(cmd, stderr=sp.PIPE, stdout=sp.PIPE)
     except sp.CalledProcessError:
@@ -130,8 +130,19 @@ def run_index_cmd(name, cmd):
 
 
 def get_localname(name, localname):
-    """Returns localname if localname is not None, else returns name."""
+    """
+    Returns localname if localname is not None, else;
+      if name is an url (URL provider): Returns parsed filename from name
+      else: returns name
+    """
     if localname is None:
-        return name.replace(' ', '_')
+        try:
+            urllib.request.urlopen(name)
+        except (IOError, ValueError):
+            return name.replace(' ', '_')
+        else:
+            # try to get the name from the url
+            name = name[name.rfind("/") + 1:]
+            return name[:name.find(".")]
     else:
         return localname.replace(" ", "_")
