@@ -138,7 +138,7 @@ def get_localname(name, localname):
     if localname is None:
         try:
             urllib.request.urlopen(name)
-        except IOError:
+        except (IOError, ValueError):
             return name.replace(' ', '_')
         else:
             # try to get the name from the url
