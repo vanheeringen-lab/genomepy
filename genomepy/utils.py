@@ -130,8 +130,18 @@ def run_index_cmd(name, cmd):
 
 
 def get_localname(name, localname):
-    """Returns localname if localname is not None, else returns name."""
+    """
+    Returns localname if localname is not None, else;
+      if name is an url (URL provider): Returns parsed filename from name
+      else: returns name
+    """
     if localname is None:
-        return name.replace(' ', '_')
+        # name is an url if it contains . / and :
+        if all(char in name for char in ['.', '/', ':']):
+            # then parse url to filename: http://path/to/file.fa.gz -> file
+            name = name[name.rfind("/") + 1:]
+            return name[:name.find(".")]
+        else:
+            return name.replace(' ', '_')
     else:
         return localname.replace(" ", "_")

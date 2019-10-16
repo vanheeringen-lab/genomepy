@@ -896,4 +896,20 @@ class NCBIProvider(ProviderBase):
         return out_dir
 
 
+@register_provider('URL')
+class UrlProvider(ProviderBase):
+    """
+    URL genome provider.
 
+    Simply download a genome directly through an url.
+    """
+    def get_genome_download_link(self, url, mask=None, version=None):
+        """
+        url : str
+            url of where to download genome from
+
+        Returns
+        ------
+        tuple (url, url) where name is the filename and url the provided url
+        """
+        return url, url
