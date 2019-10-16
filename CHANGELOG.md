@@ -7,8 +7,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Direct downloading from url through url provider.
 
 ### Changed
+- Providers are now case-insensitive.
 
 ### Fixed
 
