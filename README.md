@@ -209,6 +209,14 @@ These will be saved in BED and GTF format.
 $ genomepy  install hg38 UCSC --annotation
 ```
 
+To facilitate the downloading of genomes not supported by either NCBI, UCSC, or Ensembl, genomes 
+can also be downloaded directly from an url:
+```
+$ genomepy install https://research.nhgri.nih.gov/hydra/download/assembly/\Hm105_Dovetail_Assembly_1.0.fa.gz url
+```
+This installs the genome under the filename of the link, but can be changed with the `--localname` 
+option
+
 Finally, in the spirit of reproducibility all selected options are stored in a `README.txt`. 
 This includes the original name and download location. 
 
