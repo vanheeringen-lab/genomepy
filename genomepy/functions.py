@@ -499,6 +499,13 @@ class Genome(Fasta):
         """
         if not self._gap_sizes:
             gap_file = self.props["gaps"]["gaps"]
+            
+            # generate gap file if not found
+            if not os.path.exists(gap_file):
+                from genomepy.utils import generate_gap_bed
+                genome_fasta = os.path.join(os.path.dirname(gap_file), self.name)
+                generate_gap_bed(genome_fasta, gap_file)
+            
             self._gap_sizes = {}
             with open(gap_file) as f:
                 for line in f:
