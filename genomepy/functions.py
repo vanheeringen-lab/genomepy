@@ -309,7 +309,7 @@ def generate_env(fname=None):
 
 def glob_fa_files(dirname, ext='fa'):
     """
-    Return (gzipped) FASTA file name in directory.
+    Return (gzipped) file names in directory containing the given extension.
 
     Parameters
     ----------
