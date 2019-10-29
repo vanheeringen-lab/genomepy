@@ -23,11 +23,11 @@ def tempdir():
     yield tmpdir
     rmtree(tmpdir)
 
-@pytest.fixture(scope="module",
-                params=["unzipped", "bgzipped"])
+
+@pytest.fixture(scope="module", params=["unzipped", "bgzipped"])
 def genome(request, tempdir):
     """Create a test genome."""
-    name = "dm3"    # Use fake name for blacklist test
+    name = "dm3"  # Use fake name for blacklist test
     fafile = "tests/data/small_genome.fa"
 
     # Input needs to be bgzipped, depending on param
@@ -72,8 +72,7 @@ def test_bwa(genome):
         dirname = os.path.dirname(genome.filename)
         index_dir = os.path.join(dirname, "index", "bwa")
         assert os.path.exists(index_dir)
-        assert os.path.exists(os.path.join(
-            index_dir, "{}.fa.sa".format(genome.name)))
+        assert os.path.exists(os.path.join(index_dir, "{}.fa.sa".format(genome.name)))
 
 
 def test_minimap2(genome):
@@ -85,8 +84,7 @@ def test_minimap2(genome):
         dirname = os.path.dirname(genome.filename)
         index_dir = os.path.join(dirname, "index", "minimap2")
         assert os.path.exists(index_dir)
-        assert os.path.exists(os.path.join(
-            index_dir, "{}.mmi".format(genome.name)))
+        assert os.path.exists(os.path.join(index_dir, "{}.mmi".format(genome.name)))
 
 
 def test_bowtie2(genome):
@@ -98,8 +96,7 @@ def test_bowtie2(genome):
         dirname = os.path.dirname(genome.filename)
         index_dir = os.path.join(dirname, "index", "bowtie2")
         assert os.path.exists(index_dir)
-        assert os.path.exists(os.path.join(
-            index_dir, "{}.1.bt2".format(genome.name)))
+        assert os.path.exists(os.path.join(index_dir, "{}.1.bt2".format(genome.name)))
 
 
 def test_hisat2(genome):
@@ -111,8 +108,7 @@ def test_hisat2(genome):
         dirname = os.path.dirname(genome.filename)
         index_dir = os.path.join(dirname, "index", "hisat2")
         assert os.path.exists(index_dir)
-        assert os.path.exists(os.path.join(
-            index_dir, "{}.1.ht2".format(genome.name)))
+        assert os.path.exists(os.path.join(index_dir, "{}.1.ht2".format(genome.name)))
 
 
 def test_gmap(genome):
@@ -124,5 +120,4 @@ def test_gmap(genome):
         dirname = os.path.dirname(genome.filename)
         index_dir = os.path.join(dirname, "index", "gmap", genome.name)
         assert os.path.exists(index_dir)
-        assert os.path.exists(os.path.join(
-            index_dir, "{}.version".format(genome.name)))
+        assert os.path.exists(os.path.join(index_dir, "{}.version".format(genome.name)))

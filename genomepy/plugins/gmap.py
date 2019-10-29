@@ -27,15 +27,16 @@ class GmapPlugin(Plugin):
 
         # Create index
         cmd = "gmap_build -D {} -d {} {}".format(
-            index_dir, genome.name, genome.filename)
+            index_dir, genome.name, genome.filename
+        )
         run_index_cmd("gmap", cmd)
 
         if bgzip:
             ret = sp.check_call(["bgzip", fname])
             if ret != 0:
                 raise Exception(
-                    "Error bgzipping genome {}. ".format(fname) +
-                    "Is tabix installed?")
+                    "Error bgzipping genome {}. ".format(fname) + "Is tabix installed?"
+                )
 
     def get_properties(self, genome):
         props = {

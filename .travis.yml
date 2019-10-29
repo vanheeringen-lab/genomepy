@@ -41,14 +41,16 @@ before_install:
   - conda info -a
 
 install:
-  - conda create -n genomepy-$PYTHON_VERSION python=$PYTHON_VERSION ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gtftogenepred bwa minimap2 bowtie2 hisat2 gmap pyfaidx>=0.5.1 bucketcache norns>0.1.5 xmltodict pytest coverage pyyaml requests tabix biopython
+  - conda create -n genomepy-$PYTHON_VERSION python=$PYTHON_VERSION ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gtftogenepred bwa minimap2 bowtie2 hisat2 gmap pyfaidx>=0.5.1 bucketcache norns>0.1.5 xmltodict pytest coverage pyyaml requests tabix biopython black flake8 flake8-bugbear
   - source activate genomepy-$PYTHON_VERSION
   - python setup.py develop
   - python setup.py build
   - pip install coveralls
 
 # # command to run tests, e.g. python setup.py test
-script:  
+script:
+  - black --check genomepy/ setup.py tests/
+  - flake8 setup.py genomepy/ tests/
   - py.test -v
   - genomepy providers 
 #after_sucess:

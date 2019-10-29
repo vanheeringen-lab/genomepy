@@ -21,13 +21,10 @@ class Bowtie2Plugin(Plugin):
     def get_properties(self, genome):
         props = {
             "index_dir": os.path.join(
-                os.path.dirname(genome.filename),
-                "index",
-                "bowtie2"),
+                os.path.dirname(genome.filename), "index", "bowtie2"
+            ),
             "index_name": os.path.join(
-                os.path.dirname(genome.filename),
-                "index",
-                "bowtie2",
-                genome.name),
+                os.path.dirname(genome.filename), "index", "bowtie2", genome.name
+            ),
         }
         return props

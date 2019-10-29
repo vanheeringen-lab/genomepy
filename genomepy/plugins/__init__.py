@@ -1,6 +1,4 @@
-import os
-
-#def list_plugins():
+# def list_plugins():
 #    path = os.path.dirname(__file__)
 #    for x in os.listdir(path):
 #        if x != "__init__.py" and x.endswith(".py"):
@@ -9,5 +7,4 @@ import os
 #            print(help(module))
 #
 #
-#list_plugins()
-
+# list_plugins()

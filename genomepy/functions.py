@@ -4,7 +4,6 @@ import os
 import glob
 import random
 import re
-import subprocess as sp
 from collections.abc import Iterable
 
 from appdirs import user_config_dir
