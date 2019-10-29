@@ -156,6 +156,7 @@ def install_genome(
     localname=None,
     mask="soft",
     regex=None,
+    force=False,
     invert_match=False,
     annotation=False,
     bgzip=None,
@@ -204,20 +205,31 @@ def install_genome(
     genome_dir = os.path.expanduser(genome_dir)
     localname = get_localname(name, localname)
 
-    # Download genome from provider
-    p = ProviderBase.create(provider)
-    p.download_genome(
-        name,
-        genome_dir,
-        version=version,
-        mask=mask,
-        localname=localname,
-        regex=regex,
-        invert_match=invert_match,
-        bgzip=bgzip,
-    )
+    # check if genome already exists, or if installation is forced
+    out_dir = os.path.join(genome_dir, localname)
+    genome_file = out_dir + "/" + localname + ".fa"
+    if not os.path.exists(genome_file) or force is True:
+        # Download genome from provider
+        p = ProviderBase.create(provider)
+        p.download_genome(
+            name,
+            genome_dir,
+            version=version,
+            mask=mask,
+            localname=localname,
+            regex=regex,
+            invert_match=invert_match,
+            bgzip=bgzip,
+        )
 
-    if annotation:
+    # ann_gtfgz_file = out_dir + "/" + localname + ".annotation.gtf.gz"
+    # ann_gtf_file = out_dir + "/" + localname + ".annotation.gtf"
+    # gtfgz_file = out_dir + "/" + localname + ".gtf.gz"
+    # gtf_file = out_dir + "/" + localname + ".gtf"
+    # if (annotation and not (os.path.exists(gtf_file) or os.path.exists(gtfgz_file))) or force is True:
+
+    # if annotation is requested, check if annotation already exists or if installation is forced
+    if annotation and (localname in glob_fa_files(out_dir, 'gtf') or force is True):
         # Download annotation from provider
         p.download_annotation(name, genome_dir, localname=localname, version=version)
 
@@ -291,7 +303,7 @@ def generate_env(fname=None):
                 fout.write("{}\n".format(env))
 
 
-def glob_fa_files(dirname):
+def glob_fa_files(dirname, ext='fa'):
     """
     Return (gzipped) FASTA file name in directory.
 
@@ -300,12 +312,32 @@ def glob_fa_files(dirname):
     dirname: str
         Directory name.
 
+    ext: str
+        Filename extension (default: fa).
+
     Returns
     -------
         File names.
     """
-    fnames = glob.glob(os.path.join(dirname, "*.fa*"))
-    return [fname for fname in fnames if fname.endswith("fa") or fname.endswith("gz")]
+    fnames = glob.glob(os.path.join(dirname, "*." + ext + "*"))
+    return [fname for fname in fnames if fname.endswith(ext) or fname.endswith("gz")]
+
+
+# def glob_gtf_files(dirname):
+#     """
+#     Return (gzipped) GTF file name in directory.
+#
+#     Parameters
+#     ----------
+#     dirname: str
+#         Directory name.
+#
+#     Returns
+#     -------
+#         File names.
+#     """
+#     fnames = glob.glob(os.path.join(dirname, "*.gtf*"))
+#     return [fname for fname in fnames if fname.endswith("gtf") or fname.endswith("gz")]
 
 
 class Genome(Fasta):
