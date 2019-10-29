@@ -1,4 +1,4 @@
-from tempfile import mkdtemp, NamedTemporaryFile
+from tempfile import mkdtemp
 import genomepy
 import shutil
 import pytest
@@ -12,50 +12,50 @@ except NameError:
 
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
-@pytest.mark.skipif(travis, 
-        reason="Too slow for Travis")
+
+@pytest.mark.skipif(travis, reason="Too slow for Travis")
 @pytest.mark.slow
-def test_ucsc_human(): 
+def test_ucsc_human():
     """Test UCSC.
-   
-    Download human genome from UCSC and retrieve a 
+
+    Download human genome from UCSC and retrieve a
     specific sequence.
     """
     tmp = mkdtemp()
     genomepy.install_genome("hg38", "UCSC", genome_dir=tmp)
     g = genomepy.Genome("hg38", genome_dir=tmp)
-    seq = g["chr6"][166168664:166168679] 
+    seq = g["chr6"][166168664:166168679]
     assert str(seq) == "CCTCCTCGCTCTCTT"
     shutil.rmtree(tmp)
 
-@pytest.mark.skipif(travis, 
-        reason="Too slow for Travis")
+
+@pytest.mark.skipif(travis, reason="Too slow for Travis")
 @pytest.mark.slow
-def test_ensembl_human(): 
+def test_ensembl_human():
     """Test Ensembl.
-    
-    Download human genome from Ensembl and retrieve a 
+
+    Download human genome from Ensembl and retrieve a
     specific sequence.
     """
     tmp = mkdtemp()
     genomepy.install_genome("GRCh38.p13", "Ensembl", genome_dir=tmp)
     g = genomepy.Genome("GRCh38.p13", genome_dir=tmp)
-    seq = g["6"][166168664:166168679] 
+    seq = g["6"][166168664:166168679]
     assert str(seq) == "CCTCCTCGCTCTCTT"
     shutil.rmtree(tmp)
 
-@pytest.mark.skipif(travis, 
-        reason="Too slow for Travis")
+
+@pytest.mark.skipif(travis, reason="Too slow for Travis")
 @pytest.mark.slow
-def test_ncbi_human(): 
+def test_ncbi_human():
     """Test NCBI.
-    
-    Download human genome from NCBI and retrieve a 
+
+    Download human genome from NCBI and retrieve a
     specific sequence.
     """
     tmp = mkdtemp()
     genomepy.install_genome("GRCh38.p9", "NCBI", genome_dir=tmp)
     g = genomepy.Genome("GRCh38.p9", genome_dir=tmp)
-    seq = g["6"][166168664:166168679] 
+    seq = g["6"][166168664:166168679]
     assert str(seq) == "CCTCCTCGCTCTCTT"
     shutil.rmtree(tmp)

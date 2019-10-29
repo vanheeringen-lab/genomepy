@@ -1,9 +1,8 @@
 import os
-import sys
-import subprocess as sp
 
 from genomepy.plugin import Plugin
 from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
+
 
 class Minimap2Plugin(Plugin):
     def after_genome_download(self, genome, force):
@@ -24,10 +23,12 @@ class Minimap2Plugin(Plugin):
         props = {
             "index_dir": os.path.join(
                 os.path.dirname(genome.filename), "index", "minimap2"
-                ),
+            ),
             "index_name": os.path.join(
-                os.path.dirname(genome.filename), 
-                "index", "minimap2", "{}.mmi".format(genome.name)
-                ),
-            }
+                os.path.dirname(genome.filename),
+                "index",
+                "minimap2",
+                "{}.mmi".format(genome.name),
+            ),
+        }
         return props

@@ -4,9 +4,11 @@ import re
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
+
 class Plugin(object):
     """Plugin base class.
     """
+
     active = False
 
     def name(self):
@@ -25,14 +27,16 @@ class Plugin(object):
     def get_properties(self, genome):
         raise NotImplementedError("plugin should implement this method")
 
+
 def find_plugins():
     """Locate and initialize all available plugins.
-    """ 
+    """
     plugin_dir = os.path.dirname(os.path.realpath(__file__))
     plugin_dir = os.path.join(plugin_dir, "plugins")
     plugin_files = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
     for plugin in plugin_files:
         __import__("genomepy.plugins.{}".format(plugin))
+
 
 def convert(name):
     """Convert CamelCase to underscore
@@ -46,9 +50,10 @@ def convert(name):
     -------
     name : str
         Converted name
-    """ 
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+    """
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
+
 
 def init_plugins():
     """Return dictionary of available plugins
@@ -57,18 +62,19 @@ def init_plugins():
     -------
     plugins : dictionary
         key is plugin name, value Plugin object
-    """ 
+    """
     find_plugins()
     d = {}
     for c in Plugin.__subclasses__():
         ins = c()
-    
+
         if ins.name() in config.get("plugin", []):
             ins.activate()
-        
+
         d[ins.name()] = ins
-    
+
     return d
+
 
 def activate(name):
     """Activate plugin.
@@ -83,6 +89,7 @@ def activate(name):
     else:
         raise Exception("plugin {} not found".format(name))
 
+
 def deactivate(name):
     """Deactivate plugin.
 
@@ -96,9 +103,11 @@ def deactivate(name):
     else:
         raise Exception("plugin {} not found".format(name))
 
+
 def get_active_plugins():
     """Returns all active plugin instances.
-    """ 
+    """
     return [inst for name, inst in plugins.items() if inst.active]
+
 
 plugins = init_plugins()

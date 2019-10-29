@@ -23,7 +23,7 @@ def generate_gap_bed(fname, outname):
     f = Fasta(fname)
     with open(outname, "w") as bed:
         for chrom in f.keys():
-            for m in re.finditer(r'N+', f[chrom][:].seq):
+            for m in re.finditer(r"N+", f[chrom][:].seq):
                 bed.write("{}\t{}\t{}\n".format(chrom, m.start(0), m.end(0)))
 
 
@@ -72,7 +72,8 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
                 os.unlink(outfa + ".fai")
         else:
             raise ValueError(
-                "{} already exists, set force to True to overwrite".format(outfa))
+                "{} already exists, set force to True to overwrite".format(outfa)
+            )
 
     filt_function = re.compile(regex).search
     fa = Fasta(infa, filt_function=filt_function)
@@ -111,7 +112,7 @@ def cmd_ok(cmd):
     except sp.CalledProcessError:
         # bwa gives return code of 1 with no argument
         pass
-    except:
+    except Exception:
         sys.stderr.write("{} not found, skipping\n".format(cmd))
         return False
     return True
@@ -125,8 +126,8 @@ def run_index_cmd(name, cmd):
     stdout, stderr = p.communicate()
     if p.returncode != 0:
         sys.stderr.write("Index for {} failed\n".format(name))
-        sys.stderr.write(stdout.decode('utf8'))
-        sys.stderr.write(stderr.decode('utf8'))
+        sys.stderr.write(stdout.decode("utf8"))
+        sys.stderr.write(stderr.decode("utf8"))
 
 
 def get_localname(name, localname):
@@ -139,10 +140,10 @@ def get_localname(name, localname):
         try:
             urllib.request.urlopen(name)
         except (IOError, ValueError):
-            return name.replace(' ', '_')
+            return name.replace(" ", "_")
         else:
             # try to get the name from the url
-            name = name[name.rfind("/") + 1:]
-            return name[:name.find(".")]
+            name = name[name.rfind("/") + 1 :]
+            return name[: name.find(".")]
     else:
         return localname.replace(" ", "_")
