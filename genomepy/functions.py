@@ -557,7 +557,7 @@ class Genome(Fasta):
                 count[chrom] = 1
 
         for chrom in chroms:
-            for i in range(retries):
+            for _ in range(retries):
                 start = int(random.random() * (sizes[chrom] - length))
                 end = start + length
                 count_n = self[chrom][start:end].seq.upper().count("N")
