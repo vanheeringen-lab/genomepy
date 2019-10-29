@@ -28,13 +28,15 @@ def search(term, provider=None):
 @click.option("-l", "--localname", help="custom name", default=None)
 @click.option("-m", "--mask", help="mask (hard or soft)", default="soft")
 @click.option("-r", "--regex", help="regex to filter sequences", default=None)
-@click.option("-f", "--force", help="overwrite existing files", default=False)
+@click.option("--toplevel/--try-primary", help="always download toplevel-genome (Ensembl) / "
+                                               "try primary assembly first", default=False)
+@click.option("--force/--no-force", help="overwrite existing files", default=False)
 @click.option("--match/--no-match", help="set no-match to select sequences that *don't*  match regex", default=True)
 @click.option("--annotation/--no-annotation", help="download annotation", default=False)
-def install(name, provider, genome_dir, localname, mask, regex, force, match, annotation):
+def install(name, provider, genome_dir, localname, mask, toplevel, regex, force, match, annotation):
     """Install genome NAME from provider PROVIDER in directory GENOME_DIR."""
     genomepy.install_genome(
-            name, provider, genome_dir=genome_dir, localname=localname, mask=mask, 
+            name, provider, genome_dir=genome_dir, localname=localname, mask=mask, toplevel=toplevel,
             regex=regex, force=force, invert_match=not(match), annotation=annotation)
 
 @click.command('genomes', short_help="list available genomes")

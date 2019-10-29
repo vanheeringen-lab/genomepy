@@ -4,6 +4,7 @@ import requests
 import re
 import os
 import io
+import norns
 import time
 import gzip
 import xmltodict
@@ -12,15 +13,13 @@ import subprocess as sp
 import tarfile
 from tempfile import mkdtemp, NamedTemporaryFile
 try:
-    from urllib.request import urlopen, urlretrieve, urlcleanup
+    from urllib.request import urlopen, urlretrieve, urlcleanup, URLError
 except ImportError:
     from urllib import urlopen, urlretrieve, urlcleanup
 
 from bucketcache import Bucket
 from pyfaidx import Fasta
 from appdirs import user_cache_dir
-import norns
-
 from genomepy import exceptions
 from genomepy.utils import filter_fasta, get_localname
 from genomepy.__about__ import __version__
@@ -111,7 +110,7 @@ class ProviderBase(object):
         shutil.rmtree(tmpdir)
 
     def download_genome(self, name, genome_dir, localname=None, mask="soft", 
-                        regex=None, invert_match=False, version=None, bgzip=None):
+                        regex=None, invert_match=False, version=None, toplevel=False, bgzip=None):
         """
         Download a (gzipped) genome file to a specific directory
 
@@ -131,7 +130,7 @@ class ProviderBase(object):
         if not os.path.exists(genome_dir):
             os.makedirs(genome_dir)
         
-        dbname, link = self.get_genome_download_link(name, mask=mask, version=version)
+        dbname, link = self.get_genome_download_link(name, mask=mask, version=version, toplevel=toplevel)
         myname = dbname 
         if localname:
             myname = localname
@@ -353,7 +352,7 @@ class EnsemblProvider(ProviderBase):
             self.version = version
             return version
 
-    def get_genome_download_link(self, name, version=None, mask="soft"):
+    def get_genome_download_link(self, name, version=None, mask="soft", toplevel=False):
         """
         Return Ensembl ftp link to toplevel genome sequence
 
@@ -391,18 +390,40 @@ class EnsemblProvider(ProviderBase):
             base_url = "/release-{}/fasta/{}/dna/"
             ftp_dir = base_url.format(version, genome_info["url_name"].lower())
             url = "{}/{}".format(ftp_site, ftp_dir)
-      
-        pattern = "dna.toplevel"
-        if mask == "soft":
-            pattern = "dna_sm.toplevel"
-        elif mask == "hard":
-            pattern = "dna_rm.toplevel"
 
-        asm_url = "{}/{}.{}.{}.fa.gz".format(
-            url,
-            genome_info['url_name'].capitalize(),
-            re.sub(r'\.p\d+$', '', self.safe(genome_info["assembly_name"])),
-            pattern)
+        # first try the (much smaller) primary assembly, otherwise use the toplevel assembly
+        try:
+            if toplevel:
+                raise ValueError('skipping primary assembly check')
+
+            pattern = "dna.primary_assembly"
+            if mask == "soft":
+                pattern = "dna_sm.primary_assembly"
+            elif mask == "hard":
+                pattern = "dna_rm.primary_assembly"
+
+            asm_url = "{}/{}.{}.{}.fa.gz".format(
+                url,
+                genome_info['url_name'].capitalize(),
+                re.sub(r'\.p\d+$', '', self.safe(genome_info["assembly_name"])),
+                pattern)
+
+            # try if the url exists
+            urlopen(asm_url)
+
+        # URLError: urllib.request.urlopen. IOError: urllib.urlopen
+        except (URLError, IOError, ValueError):
+            pattern = "dna.toplevel"
+            if mask == "soft":
+                pattern = "dna_sm.toplevel"
+            elif mask == "hard":
+                pattern = "dna_rm.toplevel"
+
+            asm_url = "{}/{}.{}.{}.fa.gz".format(
+                url,
+                genome_info['url_name'].capitalize(),
+                re.sub(r'\.p\d+$', '', self.safe(genome_info["assembly_name"])),
+                pattern)
 
         return self.safe(genome_info["assembly_name"]), asm_url
 
@@ -534,7 +555,7 @@ class UcscProvider(ProviderBase):
             if term in name.lower() or term in description.lower():
                 yield name, description
     
-    def get_genome_download_link(self, name, mask="soft", version=None):
+    def get_genome_download_link(self, name, mask="soft", version=None, toplevel=False):
         """
         Return UCSC http link to genome sequence
 
@@ -737,7 +758,7 @@ class NCBIProvider(ProviderBase):
                         ))
                     )
 
-    def get_genome_download_link(self, name, mask="soft", version=None):
+    def get_genome_download_link(self, name, mask="soft", version=None, toplevel=False):
         """
         Return NCBI ftp link to top-level genome sequence
 
@@ -903,7 +924,7 @@ class UrlProvider(ProviderBase):
 
     Simply download a genome directly through an url.
     """
-    def get_genome_download_link(self, url, mask=None, version=None):
+    def get_genome_download_link(self, url, mask=None, version=None, toplevel=False):
         """
         url : str
             url of where to download genome from

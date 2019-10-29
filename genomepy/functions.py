@@ -155,6 +155,7 @@ def install_genome(
     genome_dir=None,
     localname=None,
     mask="soft",
+    toplevel=False,
     regex=None,
     force=False,
     invert_match=False,
@@ -183,6 +184,9 @@ def install_genome(
 
     mask : str , optional
         Default is 'soft', specify 'hard' for hard masking.
+
+    toplevel : srt , optional
+        Always download the toplevel genome (Ensembl), instead of the (much smaller) primary assembly
 
     regex : str , optional
         Regular expression to select specific chromosome / scaffold names.
@@ -219,6 +223,7 @@ def install_genome(
             genome_dir,
             version=version,
             mask=mask,
+            toplevel=toplevel,
             localname=localname,
             regex=regex,
             invert_match=invert_match,
