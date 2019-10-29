@@ -1,8 +1,6 @@
-import os
-import sys
-import re
-
 import norns
+import os
+import re
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -21,7 +19,7 @@ class Plugin(object):
     def deactivate(self):
         self.active = False
 
-    def after_genome_download(self, genome):
+    def after_genome_download(self, genome, force):
         raise NotImplementedError("plugin should implement this method")
 
     def get_properties(self, genome):

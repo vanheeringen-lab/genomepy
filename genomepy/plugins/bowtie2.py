@@ -5,7 +5,7 @@ from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
 
 
 class Bowtie2Plugin(Plugin):
-    def after_genome_download(self, genome):
+    def after_genome_download(self, genome, force):
         if not cmd_ok("bowtie2-build"):
             return
 
@@ -14,9 +14,10 @@ class Bowtie2Plugin(Plugin):
         index_name = genome.props["bowtie2"]["index_name"]
         mkdir_p(index_dir)
 
-        # Create index
-        cmd = "bowtie2-build {} {}".format(genome.filename, index_name)
-        run_index_cmd("bowtie2", cmd)
+        if not any(fname.endswith('.bt2') for fname in os.listdir(index_dir)) or force is True:
+            # Create index
+            cmd = "bowtie2-build {} {}".format(genome.filename, index_name)
+            run_index_cmd("bowtie2", cmd)
 
     def get_properties(self, genome):
         props = {

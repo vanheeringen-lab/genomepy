@@ -5,7 +5,7 @@ from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
 
 
 class BwaPlugin(Plugin):
-    def after_genome_download(self, genome):
+    def after_genome_download(self, genome, force):
         if not cmd_ok("bwa"):
             return
 
@@ -14,11 +14,13 @@ class BwaPlugin(Plugin):
         index_fa = genome.props["bwa"]["index_name"]
         mkdir_p(index_dir)
 
-        if not os.path.exists(index_fa):
-            os.symlink(genome.filename, index_fa)
+        if not any(fname.endswith('.bwt') for fname in os.listdir(index_dir)) or force is True:
+            # Create index
+            if not os.path.exists(index_fa):
+                os.symlink(genome.filename, index_fa)
 
-        cmd = "bwa index {}".format(index_fa)
-        run_index_cmd("bwa", cmd)
+            cmd = "bwa index {}".format(index_fa)
+            run_index_cmd("bwa", cmd)
 
     def get_properties(self, genome):
         props = {

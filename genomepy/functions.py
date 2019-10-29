@@ -2,17 +2,17 @@
 import bisect
 import os
 import glob
+import norns
 import random
 import re
-import subprocess as sp
-from collections.abc import Iterable
 
 from appdirs import user_config_dir
+from collections.abc import Iterable
 from pyfaidx import Fasta, Sequence
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
+from genomepy.utils import generate_gap_bed
 from genomepy.utils import get_localname
-import norns
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -187,6 +187,9 @@ def install_genome(
     regex : str , optional
         Regular expression to select specific chromosome / scaffold names.
 
+    force : bool , optional
+        Set to True to overwrite existing files.
+
     invert_match : bool , optional
         Set to True to select all chromosomes that don't match the regex.
 
@@ -222,21 +225,17 @@ def install_genome(
             bgzip=bgzip,
         )
 
-    # ann_gtfgz_file = out_dir + "/" + localname + ".annotation.gtf.gz"
-    # ann_gtf_file = out_dir + "/" + localname + ".annotation.gtf"
-    # gtfgz_file = out_dir + "/" + localname + ".gtf.gz"
-    # gtf_file = out_dir + "/" + localname + ".gtf"
-    # if (annotation and not (os.path.exists(gtf_file) or os.path.exists(gtfgz_file))) or force is True:
-
     # if annotation is requested, check if annotation already exists or if installation is forced
-    if annotation and (localname in glob_fa_files(out_dir, 'gtf') or force is True):
+    no_annotation = not any(localname in os.path.basename(fname) for fname in glob_fa_files(out_dir, 'gtf'))
+    if annotation and (no_annotation or force is True):
         # Download annotation from provider
+        p = ProviderBase.create(provider)
         p.download_annotation(name, genome_dir, localname=localname, version=version)
 
     g = Genome(localname, genome_dir=genome_dir)
 
     for plugin in get_active_plugins():
-        plugin.after_genome_download(g)
+        plugin.after_genome_download(g, force)
 
     generate_env()
 
@@ -321,23 +320,6 @@ def glob_fa_files(dirname, ext='fa'):
     """
     fnames = glob.glob(os.path.join(dirname, "*." + ext + "*"))
     return [fname for fname in fnames if fname.endswith(ext) or fname.endswith("gz")]
-
-
-# def glob_gtf_files(dirname):
-#     """
-#     Return (gzipped) GTF file name in directory.
-#
-#     Parameters
-#     ----------
-#     dirname: str
-#         Directory name.
-#
-#     Returns
-#     -------
-#         File names.
-#     """
-#     fnames = glob.glob(os.path.join(dirname, "*.gtf*"))
-#     return [fname for fname in fnames if fname.endswith("gtf") or fname.endswith("gz")]
 
 
 class Genome(Fasta):
@@ -531,6 +513,11 @@ class Genome(Fasta):
         """
         if not self._gap_sizes:
             gap_file = self.props["gaps"]["gaps"]
+
+            # generate gap file if not found
+            if not os.path.exists(gap_file):
+                generate_gap_bed(self.filename, gap_file)
+
             self._gap_sizes = {}
             with open(gap_file) as f:
                 for line in f:

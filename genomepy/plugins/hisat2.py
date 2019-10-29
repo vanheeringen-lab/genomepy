@@ -7,7 +7,7 @@ from genomepy.utils import mkdir_p,  cmd_ok, run_index_cmd
 
 
 class Hisat2Plugin(Plugin):
-    def after_genome_download(self, genome):
+    def after_genome_download(self, genome, force):
         if not cmd_ok("hisat2-build"):
             return
 
@@ -16,26 +16,27 @@ class Hisat2Plugin(Plugin):
         index_name = genome.props["hisat2"]["index_name"]
         mkdir_p(index_dir)
 
-        # If the genome is bgzipped it needs to be unzipped first
-        fname = genome.filename
-        bgzip = False
-        if fname.endswith(".gz"):
-            ret = sp.check_call(["gunzip", fname])
-            if ret != 0:
-                raise Exception("Error gunzipping genome {}".format(fname))
-            fname = re.sub(".gz$", "", fname)
-            bgzip = True
+        if not any(fname.endswith('.ht2') for fname in os.listdir(index_dir)) or force is True:
+            # If the genome is bgzipped it needs to be unzipped first
+            fname = genome.filename
+            bgzip = False
+            if fname.endswith(".gz"):
+                ret = sp.check_call(["gunzip", fname])
+                if ret != 0:
+                    raise Exception("Error gunzipping genome {}".format(fname))
+                fname = re.sub(".gz$", "", fname)
+                bgzip = True
 
-        # Create index
-        cmd = "hisat2-build {} {}".format(fname, index_name)
-        run_index_cmd("hisat2", cmd)
+            # Create index
+            cmd = "hisat2-build {} {}".format(fname, index_name)
+            run_index_cmd("hisat2", cmd)
 
-        if bgzip:
-            ret = sp.check_call(["bgzip", fname])
-            if ret != 0:
-                raise Exception(
-                    "Error bgzipping genome {}. ".format(fname) +
-                    "Is tabix installed?")
+            if bgzip:
+                ret = sp.check_call(["bgzip", fname])
+                if ret != 0:
+                    raise Exception(
+                        "Error bgzipping genome {}. ".format(fname) +
+                        "Is tabix installed?")
 
     def get_properties(self, genome):
         props = {

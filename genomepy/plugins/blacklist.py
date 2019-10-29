@@ -1,5 +1,7 @@
+import os.path
 import re
 import sys
+
 from genomepy.plugin import Plugin
 try:
     from urllib.request import urlopen
@@ -18,22 +20,23 @@ class BlacklistPlugin(Plugin):
         "mm10": base_url + "mm10-mouse/mm10.blacklist.bed.gz",
     }
 
-    def after_genome_download(self, genome):
+    def after_genome_download(self, genome, force):
         props = self.get_properties(genome)
         fname = props["blacklist"]
 
-        link = self.http_dict.get(genome.name)
-        if link is None:
-            sys.stderr.write("No blacklist found for {}\n".format(genome.name))
-            return
-        try:
-            sys.stderr.write("Downloading blacklist {}\n".format(link))
-            response = urlopen(link)
-            with open(fname, "wb") as bed:
-                bed.write(response.read())
-        except Exception as e:
-            print(e)
-            print("Could not download blacklist file from {}".format(link))
+        if not os.path.exists(fname) or force is True:
+            link = self.http_dict.get(genome.name)
+            if link is None:
+                sys.stderr.write("No blacklist found for {}\n".format(genome.name))
+                return
+            try:
+                sys.stderr.write("Downloading blacklist {}\n".format(link))
+                response = urlopen(link)
+                with open(fname, "wb") as bed:
+                    bed.write(response.read())
+            except Exception as e:
+                print(e)
+                print("Could not download blacklist file from {}".format(link))
 
     def get_properties(self, genome):
         props = {
