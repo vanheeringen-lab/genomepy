@@ -2,6 +2,7 @@ import os.path
 
 from genomepy.plugin import Plugin
 
+
 class SizesPlugin(Plugin):
 
     def after_genome_download(self, genome, force=False):
@@ -14,7 +15,5 @@ class SizesPlugin(Plugin):
                     f.write("{}\t{}\n".format(seqname, len(genome[seqname])))
 
     def get_properties(self, genome):
-        props = {
-               "sizes":genome.filename + ".sizes",
-               }
+        props = {"sizes": genome.filename + ".sizes"}
         return props

@@ -3,6 +3,7 @@ import re
 import sys
 
 from genomepy.plugin import Plugin
+
 try:
     from urllib.request import urlopen
 except ImportError:
@@ -40,6 +41,6 @@ class BlacklistPlugin(Plugin):
 
     def get_properties(self, genome):
         props = {
-            "blacklist": re.sub(".fa(.gz)?$", ".blacklist.bed.gz", genome.filename),
+            "blacklist": re.sub(".fa(.gz)?$", ".blacklist.bed.gz", genome.filename)
         }
         return props

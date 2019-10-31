@@ -3,7 +3,7 @@ import re
 import subprocess as sp
 
 from genomepy.plugin import Plugin
-from genomepy.utils import mkdir_p,  cmd_ok, run_index_cmd
+from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
 
 
 class Hisat2Plugin(Plugin):
@@ -44,8 +44,7 @@ class Hisat2Plugin(Plugin):
                 os.path.dirname(genome.filename), "index", "hisat2"
             ),
             "index_name": os.path.join(
-                os.path.dirname(
-                    genome.filename), "index", "hisat2", genome.name
+                os.path.dirname(genome.filename), "index", "hisat2", genome.name
             ),
         }
         return props

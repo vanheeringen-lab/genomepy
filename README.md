@@ -393,6 +393,17 @@ If you want to report a bug or issue, or have problems with installing or runnin
 
 Contributions welcome! Send me a pull request or get in [touch](mailto:simon.vanheeringen@gmail.com).
 
+When contributing a PR, please use the [develop](https://github.com/simonvh/genomepy/tree/develop) branch.
+For style, code will be checked using flake8 and
+[black](https://github.com/psf/black). These modules can be
+installed via conda, `conda install black flake8 flake8-bugbear` or via pip `pip
+install black flake8 flake8-bugbear`.
+
+```
+black setup.py tests genomepy
+flake8 setup.py tests genomepy
+```
+
 ## License
 
 This module is licensed under the terms of the [MIT license](https://opensource.org/licenses/MIT).

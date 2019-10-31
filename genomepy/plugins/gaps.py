@@ -18,7 +18,5 @@ class GapsPlugin(Plugin):
                             chrom, m.start(0), m.end(0)))
 
     def get_properties(self, genome):
-        props = {
-            "gaps": genome.filename.replace(".fa", ".gaps.bed"),
-        }
+        props = {"gaps": genome.filename.replace(".fa", ".gaps.bed")}
         return props
