@@ -6,7 +6,7 @@ from genomepy.plugin import Plugin
 
 class GapsPlugin(Plugin):
 
-    def after_genome_download(self, genome, force):
+    def after_genome_download(self, genome, force=False):
         props = self.get_properties(genome)
         fname = props["gaps"]
 

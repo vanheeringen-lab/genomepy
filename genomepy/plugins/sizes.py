@@ -4,7 +4,7 @@ from genomepy.plugin import Plugin
 
 class SizesPlugin(Plugin):
 
-    def after_genome_download(self, genome, force):
+    def after_genome_download(self, genome, force=False):
         props = self.get_properties(genome)
         fname = props["sizes"]
 

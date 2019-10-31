@@ -6,7 +6,7 @@ from genomepy.plugin import Plugin
 from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
 
 class Minimap2Plugin(Plugin):
-    def after_genome_download(self, genome, force):
+    def after_genome_download(self, genome, force=False):
         if not cmd_ok("minimap2"):
             return
 

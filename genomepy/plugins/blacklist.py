@@ -20,7 +20,7 @@ class BlacklistPlugin(Plugin):
         "mm10": base_url + "mm10-mouse/mm10.blacklist.bed.gz",
     }
 
-    def after_genome_download(self, genome, force):
+    def after_genome_download(self, genome, force=False):
         props = self.get_properties(genome)
         fname = props["blacklist"]
 
