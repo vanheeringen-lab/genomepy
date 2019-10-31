@@ -231,7 +231,7 @@ def install_genome(
         )
 
     # if annotation is requested, check if annotation already exists or if installation is forced
-    no_annotation = not any(localname in os.path.basename(fname) for fname in glob_fa_files(out_dir, 'gtf'))
+    no_annotation = not any(localname in os.path.basename(fname) for fname in glob_ext_files(out_dir, 'gtf'))
     if annotation and (no_annotation or force is True):
         # Download annotation from provider
         p = ProviderBase.create(provider)
@@ -307,7 +307,7 @@ def generate_env(fname=None):
                 fout.write("{}\n".format(env))
 
 
-def glob_fa_files(dirname, ext='fa'):
+def glob_ext_files(dirname, ext='fa'):
     """
     Return (gzipped) file names in directory containing the given extension.
 
@@ -352,10 +352,10 @@ class Genome(Fasta):
         except Exception:
             if (
                 os.path.isdir(name)
-                and len(glob_fa_files(name)) == 1
+                and len(glob_ext_files(name)) == 1
                 and genome_dir is not None
             ):
-                fname = glob_fa_files(name)[0]
+                fname = glob_ext_files(name)[0]
                 name = os.path.basename(fname)
             else:
                 if not genome_dir:
@@ -371,7 +371,7 @@ class Genome(Fasta):
                         "genome_dir {} does not exist".format(genome_dir)
                     )
 
-                fnames = glob_fa_files(
+                fnames = glob_ext_files(
                     os.path.join(genome_dir, name.replace(".gz", ""))
                 )
                 if len(fnames) == 0:

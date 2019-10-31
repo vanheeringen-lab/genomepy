@@ -1,5 +1,8 @@
 # Directory were downloaded genomes will be stored
 genome_dir: ~/.local/share/genomes/
+
 plugin:
  - gaps
  - sizes
+
+bgzip: False
