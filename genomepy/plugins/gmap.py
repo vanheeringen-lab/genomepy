@@ -16,7 +16,7 @@ class GmapPlugin(Plugin):
         index_name = genome.props["gmap"]["index_name"]
         mkdir_p(index_dir)
 
-        if not any(fname.endswith('.iit') for fname in os.listdir(index_name)) or force is True:
+        if not os.path.exists(index_name) or any(fname.endswith('.iit') for fname in os.listdir(index_name)) or force is True:
             # If the genome is bgzipped it needs to be unzipped first
             fname = genome.filename
             bgzip = False
