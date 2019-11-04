@@ -231,7 +231,9 @@ def install_genome(
         )
 
     # if annotation is requested, check if annotation already exists or if installation is forced
-    no_annotation = not any(localname in os.path.basename(fname) for fname in glob_ext_files(out_dir, 'gtf'))
+    no_annotation = not any(
+        localname in os.path.basename(fname) for fname in glob_ext_files(out_dir, "gtf")
+    )
     if annotation and (no_annotation or force is True):
         # Download annotation from provider
         p = ProviderBase.create(provider)
@@ -307,7 +309,7 @@ def generate_env(fname=None):
                 fout.write("{}\n".format(env))
 
 
-def glob_ext_files(dirname, ext='fa'):
+def glob_ext_files(dirname, ext="fa"):
     """
     Return (gzipped) file names in directory containing the given extension.
 

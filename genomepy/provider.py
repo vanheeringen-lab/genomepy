@@ -142,9 +142,11 @@ class ProviderBase(object):
 
         if not os.path.exists(genome_dir):
             os.makedirs(genome_dir)
-        
-        dbname, link = self.get_genome_download_link(name, mask=mask, version=version, toplevel=toplevel)
-        myname = dbname 
+
+        dbname, link = self.get_genome_download_link(
+            name, mask=mask, version=version, toplevel=toplevel
+        )
+        myname = dbname
         if localname:
             myname = localname
 
@@ -414,7 +416,7 @@ class EnsemblProvider(ProviderBase):
         # first try the (much smaller) primary assembly, otherwise use the toplevel assembly
         try:
             if toplevel:
-                raise ValueError('skipping primary assembly check')
+                raise ValueError("skipping primary assembly check")
 
             pattern = "dna.primary_assembly"
             if mask == "soft":
@@ -424,9 +426,10 @@ class EnsemblProvider(ProviderBase):
 
             asm_url = "{}/{}.{}.{}.fa.gz".format(
                 url,
-                genome_info['url_name'].capitalize(),
-                re.sub(r'\.p\d+$', '', self.safe(genome_info["assembly_name"])),
-                pattern)
+                genome_info["url_name"].capitalize(),
+                re.sub(r"\.p\d+$", "", self.safe(genome_info["assembly_name"])),
+                pattern,
+            )
 
             # try if the url exists
             urlopen(asm_url)
@@ -441,9 +444,10 @@ class EnsemblProvider(ProviderBase):
 
             asm_url = "{}/{}.{}.{}.fa.gz".format(
                 url,
-                genome_info['url_name'].capitalize(),
-                re.sub(r'\.p\d+$', '', self.safe(genome_info["assembly_name"])),
-                pattern)
+                genome_info["url_name"].capitalize(),
+                re.sub(r"\.p\d+$", "", self.safe(genome_info["assembly_name"])),
+                pattern,
+            )
 
         return self.safe(genome_info["assembly_name"]), asm_url
 
@@ -579,7 +583,7 @@ class UcscProvider(ProviderBase):
         for name, description in self.list_available_genomes():
             if term in name.lower() or term in description.lower():
                 yield name, description
-    
+
     def get_genome_download_link(self, name, mask="soft", version=None, toplevel=False):
         """
         Return UCSC http link to genome sequence

@@ -16,7 +16,11 @@ class GmapPlugin(Plugin):
         index_name = genome.props["gmap"]["index_name"]
         mkdir_p(index_dir)
 
-        if not os.path.exists(index_name) or any(fname.endswith('.iit') for fname in os.listdir(index_name)) or force is True:
+        if (
+            not os.path.exists(index_name)
+            or any(fname.endswith(".iit") for fname in os.listdir(index_name))
+            or force is True
+        ):
             # If the genome is bgzipped it needs to be unzipped first
             fname = genome.filename
             bgzip = False
@@ -29,15 +33,17 @@ class GmapPlugin(Plugin):
 
             # Create index
             cmd = "gmap_build -D {} -d {} {}".format(
-                index_dir, genome.name, genome.filename)
+                index_dir, genome.name, genome.filename
+            )
             run_index_cmd("gmap", cmd)
 
             if bgzip:
                 ret = sp.check_call(["bgzip", fname])
                 if ret != 0:
                     raise Exception(
-                        "Error bgzipping genome {}. ".format(fname) +
-                        "Is tabix installed?")
+                        "Error bgzipping genome {}. ".format(fname)
+                        + "Is tabix installed?"
+                    )
 
     def get_properties(self, genome):
         props = {

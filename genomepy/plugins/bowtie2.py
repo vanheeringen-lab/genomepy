@@ -14,7 +14,10 @@ class Bowtie2Plugin(Plugin):
         index_name = genome.props["bowtie2"]["index_name"]
         mkdir_p(index_dir)
 
-        if not any(fname.endswith('.bt2') for fname in os.listdir(index_dir)) or force is True:
+        if (
+            not any(fname.endswith(".bt2") for fname in os.listdir(index_dir))
+            or force is True
+        ):
             # Create index
             cmd = "bowtie2-build {} {}".format(genome.filename, index_name)
             run_index_cmd("bowtie2", cmd)

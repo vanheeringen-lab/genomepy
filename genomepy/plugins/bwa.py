@@ -14,7 +14,10 @@ class BwaPlugin(Plugin):
         index_fa = genome.props["bwa"]["index_name"]
         mkdir_p(index_dir)
 
-        if not any(fname.endswith('.bwt') for fname in os.listdir(index_dir)) or force is True:
+        if (
+            not any(fname.endswith(".bwt") for fname in os.listdir(index_dir))
+            or force is True
+        ):
             # Create index
             if not os.path.exists(index_fa):
                 os.symlink(genome.filename, index_fa)

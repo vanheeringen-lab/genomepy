@@ -14,7 +14,10 @@ class Minimap2Plugin(Plugin):
         index_name = genome.props["minimap2"]["index_name"]
         mkdir_p(index_dir)
 
-        if not any(fname.endswith('.mmi') for fname in os.listdir(index_dir)) or force is True:
+        if (
+            not any(fname.endswith(".mmi") for fname in os.listdir(index_dir))
+            or force is True
+        ):
             # Create index
             cmd = "minimap2 -d {} {}".format(index_name, genome.filename)
             run_index_cmd("minimap2", cmd)

@@ -16,7 +16,10 @@ class Hisat2Plugin(Plugin):
         index_name = genome.props["hisat2"]["index_name"]
         mkdir_p(index_dir)
 
-        if not any(fname.endswith('.ht2') for fname in os.listdir(index_dir)) or force is True:
+        if (
+            not any(fname.endswith(".ht2") for fname in os.listdir(index_dir))
+            or force is True
+        ):
             # If the genome is bgzipped it needs to be unzipped first
             fname = genome.filename
             bgzip = False
@@ -35,8 +38,9 @@ class Hisat2Plugin(Plugin):
                 ret = sp.check_call(["bgzip", fname])
                 if ret != 0:
                     raise Exception(
-                        "Error bgzipping genome {}. ".format(fname) +
-                        "Is tabix installed?")
+                        "Error bgzipping genome {}. ".format(fname)
+                        + "Is tabix installed?"
+                    )
 
     def get_properties(self, genome):
         props = {
