@@ -153,11 +153,9 @@ def search(term, provider=None):
 def install_genome(
     name,
     provider,
-    # version=None,
     genome_dir=None,
     localname=None,
     mask="soft",
-    # toplevel=False,
     regex=None,
     invert_match=False,
     bgzip=None,
@@ -228,11 +226,9 @@ def install_genome(
         p.download_genome(
             name,
             genome_dir,
-            # version=version,
             mask=mask,
             regex=regex,
             invert_match=invert_match,
-            # toplevel=toplevel,
             localname=localname,
             bgzip=bgzip,
             **kwargs
@@ -245,9 +241,7 @@ def install_genome(
     if annotation and (no_annotation_found or force is True):
         # Download annotation from provider
         p = ProviderBase.create(provider)
-        p.download_annotation(
-            name, genome_dir, localname=localname, **kwargs
-        )  # version=version)
+        p.download_annotation(name, genome_dir, localname=localname, **kwargs)
 
     g = Genome(localname, genome_dir=genome_dir)
 

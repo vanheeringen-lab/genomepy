@@ -905,8 +905,10 @@ class NCBIProvider(ProviderBase):
 
         # Use a tmp file and replace the names
         new_fa = os.path.join(genome_dir, name, ".process.{}.fa".format(name))
-        if mask != "soft":  # if mask == "hard":
-            sys.stderr.write("NCBI genomes are softmasked by default. Changing mask...\n")  # sys.stderr.write("masking lower-case.\n")
+        if mask != "soft":
+            sys.stderr.write(
+                "NCBI genomes are softmasked by default. Changing mask...\n"
+            )
 
         with open(fa) as old:
             with open(new_fa, "w") as new:
