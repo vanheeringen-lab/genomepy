@@ -42,56 +42,15 @@ def test_track_type():
         assert result == track_type
 
 
-@pytest.fixture(
-    scope="module",
-    params=[
-        ["unzipped", "no-overwrite"],
-        ["unzipped", "overwrite"],
-        ["bgzipped", "no-overwrite"],
-        ["bgzipped", "overwrite"],
-    ],
-)
-def status(request):
-    return [request.param[0], request.param[1]]
+def test_ucsc_genome():
+    """Test UCSC.
 
-
-def test_install_genome(status, genome="sacCer3"):
-    """Test UCSC, force and bgzip
-
-    Download S. cerevisiae genome from UCSC and retrieve a specific sequence.
-
-    Force and bgzip are called regardless of provider, and are therefore only tested here
-    """
+    Download S. cerevisiae genome from UCSC and retrieve a specific sequence."""
     tmp = mkdtemp()
-    bgzip = False
-    if status[0] == "bgzipped":
-        bgzip = True
-    force = False
-    if status[1] == "overwrite":
-        force = True
-
-    genomepy.install_genome(genome, "UCSC", genome_dir=tmp, bgzip=bgzip, force=force)
+    genomepy.install_genome("sacCer3", "UCSC", genome_dir=tmp)
     g = genomepy.Genome("sacCer3", genome_dir=tmp)
     seq = g["chrIV"][1337000:1337020]
     assert str(seq) == "TTTGGTTGTTCCTCTTCCTT"
-
-    # Check if force==True overwrites files, and if force==False doesn't
-    ext = ".fa.gz" if bgzip else ".fa"
-    path = os.path.join(tmp, genome, genome + ext)
-    t0 = os.path.getmtime(path)
-    genomepy.install_genome(genome, "UCSC", genome_dir=tmp, bgzip=bgzip, force=force)
-    t1 = os.path.getmtime(path)
-    if force:
-        assert t0 != t1
-    else:
-        assert t0 == t1
-
-    shutil.rmtree(tmp)
-
-
-def test_ucsc_genome():
-    """Already tested ucsc in previous test`"""
-    assert 1
 
 
 # 2019-11-07 BDGP6, BDGP6.22 and dere_caf1 currently fails on Ensembl
@@ -149,6 +108,44 @@ def test_ncbi_genome():
     g = genomepy.Genome("Release_6_plus_ISO1_MT", genome_dir=tmp)
     seq = g["3L"][10637840:10637875]
     assert str(seq).upper() == "TTTGCAACAGCTGCCGCAGTGTGACCGTTGTACTG"
+    shutil.rmtree(tmp)
+
+
+@pytest.fixture(
+    scope="module",
+    params=[
+        ["unzipped", "no-overwrite"],
+        ["unzipped", "overwrite"],
+        ["bgzipped", "no-overwrite"],
+        ["bgzipped", "overwrite"],
+    ],
+)
+def bgzip_force(request):
+    return [request.param[0], request.param[1]]
+
+
+def test_install_options(bgzip_force, genome="sacCer3"):
+    """Test force and bgzip"""
+    tmp = mkdtemp()
+    bgzip = False
+    if bgzip_force[0] == "bgzipped":
+        bgzip = True
+    force = False
+    if bgzip_force[1] == "overwrite":
+        force = True
+
+    genomepy.install_genome(genome, "UCSC", genome_dir=tmp, bgzip=bgzip, force=force)
+
+    ext = ".fa.gz" if bgzip else ".fa"
+    path = os.path.join(tmp, genome, genome + ext)
+    t0 = os.path.getmtime(path)
+    genomepy.install_genome(genome, "UCSC", genome_dir=tmp, bgzip=bgzip, force=force)
+    t1 = os.path.getmtime(path)
+    if force:
+        assert t0 != t1
+    else:
+        assert t0 == t1
+
     shutil.rmtree(tmp)
 
 

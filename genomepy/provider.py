@@ -208,7 +208,7 @@ class ProviderBase(object):
             bgzip = config.get("bgzip", False)
 
         if bgzip:
-            ret = sp.check_call(["bgzip", fname])
+            ret = sp.check_call(["bgzip", "-f", fname])
             if ret != 0:
                 raise Exception(
                     "Error bgzipping {}. ".format(fname) + "Is tabix installed?"
