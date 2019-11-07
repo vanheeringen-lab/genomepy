@@ -116,11 +116,6 @@ def custom_options(options):
     return decorator
 
 
-@click.group()
-def cli():
-    pass
-
-
 @custom_options(install_options)
 @click.argument("provider")
 @click.argument("name")
