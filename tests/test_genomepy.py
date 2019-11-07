@@ -76,19 +76,11 @@ def test_install_genome(status, genome="sacCer3"):
     assert str(seq) == "TTTGGTTGTTCCTCTTCCTT"
 
     # Check if force==True overwrites files, and if force==False doesn't
-    try:
-        path = os.path.join(tmp, genome + ".fa.gz")
-        t0 = os.path.getmtime(path)
-    except FileNotFoundError:
-        path = os.path.join(tmp, genome + ".fa")
-        t0 = os.path.getmtime(path)
+    ext = ".fa.gz" if bgzip else ".fa"
+    path = os.path.join(tmp, genome, genome + ext)
+    t0 = os.path.getmtime(path)
     genomepy.install_genome(genome, "UCSC", genome_dir=tmp, bgzip=bgzip, force=force)
-    try:
-        path = os.path.join(tmp, genome + ".fa.gz")
-        t1 = os.path.getmtime(path)
-    except FileNotFoundError:
-        path = os.path.join(tmp, genome + ".fa")
-        t1 = os.path.getmtime(path)
+    t1 = os.path.getmtime(path)
     if force:
         assert t0 != t1
     else:
