@@ -49,6 +49,10 @@ def validate_gzipped_bed(fname):
 
 
 def test_ensembl_annotation():
+    """Test Ensembl annotation
+
+    This annotation is hosted on ftp.ensembl.org.
+    """
     tmp = mkdtemp()
     p = genomepy.provider.ProviderBase.create("Ensembl")
 
@@ -64,7 +68,29 @@ def test_ensembl_annotation():
     shutil.rmtree(tmp)
 
 
+@pytest.mark.skipif(travis, reason="FTP does not work on Travis")
+def test_ensemblgenomes_annotation():
+    """Test Ensembl annotation
+
+    This annotation is hosted on ftp.ensemblgenomes.org.
+    """
+    tmp = mkdtemp()
+    p = genomepy.provider.ProviderBase.create("Ensembl")
+
+    for name, version in [("TAIR10", None)]:
+        p.download_annotation(name, tmp, version=version)
+
+        gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
+        validate_gzipped_gtf(gtf)
+
+        bed = os.path.join(tmp, name, name + ".annotation.bed.gz")
+        validate_gzipped_bed(bed)
+
+    shutil.rmtree(tmp)
+
+
 def test_UCSC_annotation():
+    """Test UCSC annotation"""
     tmp = mkdtemp()
     p = genomepy.provider.ProviderBase.create("UCSC")
     name = "sacCer3"
@@ -81,6 +107,7 @@ def test_UCSC_annotation():
 
 
 def test_NCBI_annotation():
+    """Test NCBI annotation"""
     tmp = mkdtemp()
     p = genomepy.provider.ProviderBase.create("NCBI")
     name = "ASM69910v1"
@@ -94,20 +121,3 @@ def test_NCBI_annotation():
     validate_gzipped_bed(bed)
 
     shutil.rmtree(tmp)
-
-
-# @pytest.mark.skipif(travis, reason="FTP does not work on Travis")
-# def test_ensemblgenomes_annotation():
-#     tmp = mkdtemp()
-#     p = genomepy.provider.ProviderBase.create("Ensembl")
-#
-#     for name, version in [("TAIR10", None)]:
-#         p.download_annotation(name, tmp, version=version)
-#
-#         gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
-#         validate_gzipped_gtf(gtf)
-#
-#         bed = os.path.join(tmp, name, name + ".annotation.bed.gz")
-#         validate_gzipped_bed(bed)
-#
-#     shutil.rmtree(tmp)

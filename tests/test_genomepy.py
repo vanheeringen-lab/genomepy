@@ -42,7 +42,7 @@ def test_track_type():
         assert result == track_type
 
 
-@pytest.mark.parametrize("bgzip", [True, False])
+@pytest.mark.parametrize(params=["unzipped", "bgzipped"])  # original: "bgzip", [True, False])
 def test_ucsc_genome(bgzip):
     """Test UCSC.
 
@@ -50,6 +50,9 @@ def test_ucsc_genome(bgzip):
     specific sequence.
     """
     tmp = mkdtemp()
+    bgzip = True
+    if request.param == "unzipped":
+        bgzip = False
     genomepy.install_genome("sacCer3", "UCSC", genome_dir=tmp, bgzip=bgzip)
     g = genomepy.Genome("sacCer3", genome_dir=tmp)
     seq = g["chrIV"][1337000:1337020]
