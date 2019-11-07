@@ -15,6 +15,7 @@ dependencies:
   - ucsc-genepredtobed
   - ucsc-genepredtogtf
   - ucsc-bedtogenepred
+  - ucsc-gff3togenepred
   - ucsc-gtftogenepred 
   - bwa
   - minimap2

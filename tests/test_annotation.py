@@ -48,7 +48,23 @@ def validate_gzipped_bed(fname):
             break
 
 
-def test_annotation():
+def test_ensembl_annotation():
+    tmp = mkdtemp()
+    p = genomepy.provider.ProviderBase.create("Ensembl")
+
+    for name, version in [("Turkey_2.01", 98)]:
+        p.download_annotation(name, tmp, localname=name, version=version)
+
+        gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
+        validate_gzipped_gtf(gtf)
+
+        bed = os.path.join(tmp, name, name + ".annotation.bed.gz")
+        validate_gzipped_bed(bed)
+
+    shutil.rmtree(tmp)
+
+
+def test_UCSC_annotation():
     tmp = mkdtemp()
     p = genomepy.provider.ProviderBase.create("UCSC")
     name = "sacCer3"
@@ -64,34 +80,34 @@ def test_annotation():
     shutil.rmtree(tmp)
 
 
-def test_ensembl_annotation():
+def test_NCBI_annotation():
     tmp = mkdtemp()
-    p = genomepy.provider.ProviderBase.create("Ensembl")
+    p = genomepy.provider.ProviderBase.create("NCBI")
+    name = "ASM69910v1"
 
-    for name, version in [("GRCh38.p13", 98)]:
-        p.download_annotation(name, tmp, localname=name, version=version)
+    p.download_annotation(name, tmp, localname=name)
 
-        gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
-        validate_gzipped_gtf(gtf)
+    gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
+    validate_gzipped_gtf(gtf)
 
-        bed = os.path.join(tmp, name, name + ".annotation.bed.gz")
-        validate_gzipped_bed(bed)
+    bed = os.path.join(tmp, name, name + ".annotation.bed.gz")
+    validate_gzipped_bed(bed)
 
     shutil.rmtree(tmp)
 
 
-@pytest.mark.skipif(travis, reason="FTP does not work on Travis")
-def test_ensemblgenomes_annotation():
-    tmp = mkdtemp()
-    p = genomepy.provider.ProviderBase.create("Ensembl")
-
-    for name, version in [("TAIR10", None)]:
-        p.download_annotation(name, tmp, version=version)
-
-        gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
-        validate_gzipped_gtf(gtf)
-
-        bed = os.path.join(tmp, name, name + ".annotation.bed.gz")
-        validate_gzipped_bed(bed)
-
-    shutil.rmtree(tmp)
+# @pytest.mark.skipif(travis, reason="FTP does not work on Travis")
+# def test_ensemblgenomes_annotation():
+#     tmp = mkdtemp()
+#     p = genomepy.provider.ProviderBase.create("Ensembl")
+#
+#     for name, version in [("TAIR10", None)]:
+#         p.download_annotation(name, tmp, version=version)
+#
+#         gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
+#         validate_gzipped_gtf(gtf)
+#
+#         bed = os.path.join(tmp, name, name + ".annotation.bed.gz")
+#         validate_gzipped_bed(bed)
+#
+#     shutil.rmtree(tmp)

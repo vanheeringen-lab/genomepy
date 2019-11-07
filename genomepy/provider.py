@@ -168,23 +168,23 @@ class ProviderBase(object):
 
         if not os.path.exists(os.path.join(genome_dir, myname)):
             os.makedirs(os.path.join(genome_dir, myname))
-        urlcleanup()
-        response = urlopen(link)
 
-        sys.stderr.write("downloading from {}...\n".format(link))
+        sys.stderr.write("Downloading from {}...\n".format(link))
         down_dir = genome_dir
         fname = os.path.join(genome_dir, myname, myname + ".fa")
         if regex:
             down_dir = mkdtemp()
             os.mkdir(os.path.join(down_dir, myname))
             fname = os.path.join(down_dir, myname, myname + ".fa")
-        with open(fname, "wb") as f_out:
-            if gzipped:
-                # Supports both Python 2.7 as well as 3
-                with gzip.GzipFile(fileobj=io.BytesIO(response.read())) as f_in:
-                    shutil.copyfileobj(f_in, f_out)
-            else:
-                f_out.write(response.read())
+        urlcleanup()
+        with urlopen(link) as response:
+            with open(fname, "wb") as f_out:
+                if gzipped:
+                    # Supports both Python 2.7 as well as 3
+                    with gzip.GzipFile(fileobj=io.BytesIO(response.read())) as f_in:
+                        shutil.copyfileobj(f_in, f_out)
+                else:
+                    f_out.write(response.read())
         sys.stderr.write("done...\n")
 
         if link.endswith("tar.gz"):
@@ -376,9 +376,9 @@ class EnsemblProvider(ProviderBase):
         """Retrieve current version from Ensembl FTP.
         """
         print("README", ftp_site)
-        response = urlopen(ftp_site + "/current_README")
-        p = re.compile(r"Ensembl (Genomes|Release) (\d+)")
-        m = p.search(response.read().decode())
+        with urlopen(ftp_site + "/current_README") as response:
+            p = re.compile(r"Ensembl (Genomes|Release) (\d+)")
+            m = p.search(response.read().decode())
         if m:
             version = m.group(2)
             sys.stderr.write("Using version {}\n".format(version))
@@ -459,7 +459,7 @@ class EnsemblProvider(ProviderBase):
 
     def download_annotation(self, name, genome_dir, localname=None, **kwargs):
         """
-        Download gene annotation from Ensembl based on genome name.
+        Download Ensembl annotation file to to a specific directory
 
         Parameters
         ----------
@@ -513,20 +513,20 @@ class EnsemblProvider(ProviderBase):
             os.mkdir(out_dir)
         # Download the file
         try:
-            response = urlopen(ftp_link)
-            gtf_file = out_dir + "/" + localname + ".annotation.gtf.gz"
-            with open(gtf_file, "wb") as f:
-                f.write(response.read())
+            with urlopen(ftp_link) as response:
+                gtf_file = out_dir + "/" + localname + ".annotation.gtf.gz"
+                with open(gtf_file, "wb") as f:
+                    f.write(response.read())
 
-            bed_file = gtf_file.replace("gtf.gz", "bed")
-            cmd = (
-                "gtfToGenePred {0} /dev/stdout | "
-                "genePredToBed /dev/stdin {1} && gzip {1}"
-            )
-            sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
-            readme = os.path.join(genome_dir, localname, "README.txt")
-            with open(readme, "a") as f:
-                f.write("annotation url: {}\n".format(ftp_link))
+                bed_file = gtf_file.replace("gtf.gz", "bed")
+                cmd = (
+                    "gtfToGenePred {0} /dev/stdout | "
+                    "genePredToBed /dev/stdin {1} && gzip -f {1}"
+                )
+                sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
+                readme = os.path.join(genome_dir, localname, "README.txt")
+                with open(readme, "a") as f:
+                    f.write("annotation url: {}\n".format(ftp_link))
         except Exception:
             sys.stderr.write("\nCould not download {}\n".format(ftp_link))
             raise
@@ -567,8 +567,8 @@ class UcscProvider(ProviderBase):
 
     @cached(method=True)
     def _get_genomes(self):
-        response = urlopen(self.das_url)
-        d = xmltodict.parse(response.read())
+        with urlopen(self.das_url) as response:
+            d = xmltodict.parse(response.read())
         genomes = []
         for genome in d["DASDSN"]["DSN"]:
             genomes.append([genome["SOURCE"]["@id"], genome["DESCRIPTION"]])
@@ -665,7 +665,7 @@ class UcscProvider(ProviderBase):
 
     def download_annotation(self, name, genome_dir, localname=None, **kwargs):
         """
-        Download gene annotation from UCSC based on genomebuild.
+        Download UCSC annotation file to to a specific directory.
 
         Will check UCSC, Ensembl and RefSeq annotation.
 
@@ -718,7 +718,7 @@ class UcscProvider(ProviderBase):
             bed_file = os.path.join(
                 genome_dir, localname, localname + ".annotation.bed"
             )
-            cmd = "zcat {} | cut -f{}-{} | {} /dev/stdin {} && gzip {}"
+            cmd = "zcat {} | cut -f{}-{} | {} /dev/stdin {} && gzip -f {}"
             sp.call(
                 cmd.format(tmp.name, start_col, end_col, pred, bed_file, bed_file),
                 shell=True,
@@ -728,7 +728,7 @@ class UcscProvider(ProviderBase):
             cmd = (
                 "bedToGenePred {0}.gz /dev/stdout | "
                 "genePredToGtf file /dev/stdin /dev/stdout -utr -honorCdsStat | "
-                "sed 's/.dev.stdin/UCSC/' > {1} && gzip {1}"
+                "sed 's/.dev.stdin/UCSC/' > {1} && gzip -f {1}"
             )
             sp.check_call(cmd.format(bed_file, gtf_file), shell=True)
 
@@ -770,8 +770,8 @@ class NCBIProvider(ProviderBase):
         seen = {}
         for fname in names:
             urlcleanup()
-            response = urlopen(self.assembly_url + "/" + fname)
-            lines = response.read().decode("utf-8").splitlines()
+            with urlopen(self.assembly_url + "/" + fname) as response:
+                lines = response.read().decode("utf-8").splitlines()
             header = lines[1].strip("# ").split("\t")
             for line in lines[2:]:
                 vals = line.strip("# ").split("\t")
@@ -890,12 +890,12 @@ class NCBIProvider(ProviderBase):
         # Create mapping of accessions to names
         tr = {}
         urlcleanup()
-        response = urlopen(url)
-        for line in response.read().decode("utf-8").splitlines():
-            if line.startswith("#"):
-                continue
-            vals = line.strip().split("\t")
-            tr[vals[6]] = vals[0]
+        with urlopen(url) as response:
+            for line in response.read().decode("utf-8").splitlines():
+                if line.startswith("#"):
+                    continue
+                vals = line.strip().split("\t")
+                tr[vals[6]] = vals[0]
 
         name = name.replace(" ", "_")
         # Check of the original genome fasta exists
@@ -929,7 +929,7 @@ class NCBIProvider(ProviderBase):
 
     def download_annotation(self, name, genome_dir, localname=None, **kwargs):
         """
-        Download annotation file to to a specific directory
+        Download NCBI annotation file to to a specific directory
 
         Parameters
         ----------
@@ -955,10 +955,10 @@ class NCBIProvider(ProviderBase):
 
         # Download the file
         try:
-            response = urlopen(url)
-            gff_file = out_dir + "/" + localname + ".annotation.gff.gz"
-            with open(gff_file, "wb") as f:
-                f.write(response.read())
+            with urlopen(url) as response:
+                gff_file = out_dir + "/" + localname + ".annotation.gff.gz"
+                with open(gff_file, "wb") as f:
+                    f.write(response.read())
         except Exception:
             sys.stderr.write(
                 "WARNING: Could not download annotation from NCBI, " + "skipping.\n"
@@ -983,7 +983,7 @@ class NCBIProvider(ProviderBase):
             bed_file = gff_file.replace("gff.gz", "bed")
             cmd = (
                 "gff3ToGenePred -rnaNameAttr=gene {0} /dev/stdout | "
-                "genePredToBed /dev/stdin {1} && gzip {1}"
+                "genePredToBed /dev/stdin {1} && gzip -f {1}"
             )
             sp.check_call(cmd.format(gff_file, bed_file), shell=True)
 
@@ -991,7 +991,7 @@ class NCBIProvider(ProviderBase):
             gtf_file = gff_file.replace("gff.gz", "gtf")
             cmd = (
                 "gff3ToGenePred -geneNameAttr=gene {0} /dev/stdout | "
-                + "genePredToGtf file /dev/stdin {1} && gzip {1}"
+                + "genePredToGtf file /dev/stdin {1} && gzip -f {1}"
             )
             sp.check_call(cmd.format(gff_file, gtf_file), shell=True)
 
