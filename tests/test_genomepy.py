@@ -49,11 +49,9 @@ def test_track_type():
         ["unzipped", "overwrite"],
         ["bgzipped", "no-overwrite"],
         ["bgzipped", "overwrite"],
-    ],  # force=["no-overwrite", "overwrite"], bgzip=["unzipped", "bgzipped"]
+    ],
 )
-def test_install_genome(
-    genome="sacCer3", zip_status=request.param[0], force_status=request.param[1]
-):
+def test_install_genome(request, genome="sacCer3"):
     """Test UCSC, force and bgzip
 
     Download S. cerevisiae genome from UCSC and retrieve a specific sequence.
@@ -62,10 +60,10 @@ def test_install_genome(
     """
     tmp = mkdtemp()
     bgzip = False
-    if zip_status == "bgzipped":
+    if request.param[0] == "bgzipped":
         bgzip = True
     force = False
-    if force_status == "overwrite":
+    if request.param[1] == "overwrite":
         force = True
 
     genomepy.install_genome(genome, "UCSC", genome_dir=tmp, bgzip=bgzip, force=force)
