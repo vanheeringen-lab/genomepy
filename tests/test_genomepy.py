@@ -51,7 +51,11 @@ def test_track_type():
         ["bgzipped", "overwrite"],
     ],
 )
-def test_install_genome(request, genome="sacCer3"):
+def status(request):
+    return [request.param[0], request.param[1]]
+
+
+def test_install_genome(status, genome="sacCer3"):
     """Test UCSC, force and bgzip
 
     Download S. cerevisiae genome from UCSC and retrieve a specific sequence.
@@ -60,10 +64,10 @@ def test_install_genome(request, genome="sacCer3"):
     """
     tmp = mkdtemp()
     bgzip = False
-    if request.param[0] == "bgzipped":
+    if status[0] == "bgzipped":
         bgzip = True
     force = False
-    if request.param[1] == "overwrite":
+    if status[1] == "overwrite":
         force = True
 
     genomepy.install_genome(genome, "UCSC", genome_dir=tmp, bgzip=bgzip, force=force)
@@ -98,8 +102,8 @@ def test_ucsc_genome():
     assert 1
 
 
-# 2019-05-08 BDGP6 currently fails on Ensembl
-# @pytest.mark.xfail()
+# 2019-11-07 BDGP6, BDGP6.22 and dere_caf1 currently fails on Ensembl
+@pytest.mark.xfail()
 def test_ensembl_genome(genome="dere_caf1"):
     """Test Ensembl.
 

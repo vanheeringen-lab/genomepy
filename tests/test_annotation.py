@@ -3,6 +3,7 @@ import genomepy
 import shutil
 import gzip
 import os
+import pytest
 
 # Python 2
 try:
@@ -67,7 +68,7 @@ def test_ensembl_annotation():
     shutil.rmtree(tmp)
 
 
-# @pytest.mark.skipif(travis, reason="FTP does not work on Travis")
+@pytest.mark.skipif(travis, reason="FTP does not work on Travis")
 def test_ensemblgenomes_annotation():
     """Test Ensembl annotation
 
@@ -105,6 +106,7 @@ def test_UCSC_annotation():
     shutil.rmtree(tmp)
 
 
+@pytest.mark.skipif(travis, reason="FTP does not work on Travis")
 def test_NCBI_annotation():
     """Test NCBI annotation"""
     tmp = mkdtemp()
