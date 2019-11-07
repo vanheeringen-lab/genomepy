@@ -219,7 +219,8 @@ def install_genome(
 
     # check if genome already exists, or if installation is forced
     out_dir = os.path.join(genome_dir, localname)
-    genome_file = out_dir + "/" + localname + ".fa"
+    ext = ".fa.gz" if bgzip else ".fa"
+    genome_file = out_dir + "/" + localname + ext
     if not os.path.exists(genome_file) or force is True:
         # Download genome from provider
         p = ProviderBase.create(provider)
