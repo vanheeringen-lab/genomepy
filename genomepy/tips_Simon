@@ -1,0 +1,15 @@
+create a list/dict/array per provider in its class
+in click, add provider specific options and let these be populated by looping over the class dict.
+
+see code below for inspiration:
+
+
+>>> from genomepy.provider import ProviderBase
+>>> ProviderBase.list_providers()
+dict_keys(['Ensembl', 'UCSC', 'NCBI'])
+>>> ProviderBase.create("Ensembl")
+<genomepy.provider.EnsemblProvider object at 0x7f5a42340278>
+>>> for name in ProviderBase.list_providers():
+...     p = ProviderBase.create(name)
+...     for opion in p.options:
+...

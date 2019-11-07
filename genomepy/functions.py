@@ -123,7 +123,7 @@ def search(term, provider=None):
 
      If provider is specified, search only that specific provider, else
      search all providers. Both the name and description are used for the
-     search. Seacrch term is case-insensitive.
+     search. Search term is case-insensitive.
 
     Parameters
     ----------
@@ -141,8 +141,10 @@ def search(term, provider=None):
     if provider:
         providers = [ProviderBase.create(provider)]
     else:
-        # if provider is not specified search all providers
-        providers = [ProviderBase.create(p) for p in ProviderBase.list_providers()]
+        # if provider is not specified search all providers (except direct url)
+        providers = [
+            ProviderBase.create(p) for p in ProviderBase.list_providers() if p != "url"
+        ]
     for p in providers:
         for row in p.search(term):
             yield [x.encode("latin-1") for x in [p.name] + list(row)]
@@ -151,16 +153,17 @@ def search(term, provider=None):
 def install_genome(
     name,
     provider,
-    version=None,
+    # version=None,
     genome_dir=None,
     localname=None,
     mask="soft",
-    toplevel=False,
+    # toplevel=False,
     regex=None,
-    force=False,
     invert_match=False,
-    annotation=False,
     bgzip=None,
+    annotation=False,
+    force=False,
+    **kwargs
 ):
     """
     Install a genome.
@@ -173,9 +176,6 @@ def install_genome(
     provider : str
         Provider name
 
-    version : str
-        Version (only for Ensembl)
-
     genome_dir : str , optional
         Where to store the fasta files
 
@@ -183,26 +183,33 @@ def install_genome(
         Custom name for this genome.
 
     mask : str , optional
-        Default is 'soft', specify 'hard' for hard masking.
-
-    toplevel : srt , optional
-        Always download the toplevel genome (Ensembl), instead of the (much smaller) primary assembly
+        Default is 'soft', choices 'hard'/'soft/'none' for respective masking level.
 
     regex : str , optional
         Regular expression to select specific chromosome / scaffold names.
 
-    force : bool , optional
-        Set to True to overwrite existing files.
-
     invert_match : bool , optional
         Set to True to select all chromosomes that don't match the regex.
-
-    annotation : bool , optional
-        If set to True, download gene annotation in BED and GTF format.
 
     bgzip : bool , optional
         If set to True the genome FASTA file will be compressed using bgzip.
         If not specified, the setting from the configuration file will be used.
+
+    annotation : bool , optional
+        If set to True, download gene annotation in BED and GTF format.
+
+    force : bool , optional
+        Set to True to overwrite existing files.
+
+    kwargs : dict, optional
+        Provider specific options.
+        Ensembl:
+
+        toplevel : bool , optional
+            Ensembl only: Always download the toplevel genome. Ignores potential primary assembly.
+
+        version : int, optional
+            Ensembl only: Specify release version. Default is latest.
     """
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
@@ -221,23 +228,26 @@ def install_genome(
         p.download_genome(
             name,
             genome_dir,
-            version=version,
+            # version=version,
             mask=mask,
-            toplevel=toplevel,
-            localname=localname,
             regex=regex,
             invert_match=invert_match,
+            # toplevel=toplevel,
+            localname=localname,
             bgzip=bgzip,
+            **kwargs
         )
 
     # if annotation is requested, check if annotation already exists or if installation is forced
-    no_annotation = not any(
+    no_annotation_found = not any(
         localname in os.path.basename(fname) for fname in glob_ext_files(out_dir, "gtf")
     )
-    if annotation and (no_annotation or force is True):
+    if annotation and (no_annotation_found or force is True):
         # Download annotation from provider
         p = ProviderBase.create(provider)
-        p.download_annotation(name, genome_dir, localname=localname, version=version)
+        p.download_annotation(
+            name, genome_dir, localname=localname, **kwargs
+        )  # version=version)
 
     g = Genome(localname, genome_dir=genome_dir)
 

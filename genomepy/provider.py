@@ -120,9 +120,8 @@ class ProviderBase(object):
         mask="soft",
         regex=None,
         invert_match=False,
-        version=None,
-        toplevel=False,
         bgzip=None,
+        **kwargs
     ):
         """
         Download a (gzipped) genome file to a specific directory
@@ -135,17 +134,28 @@ class ProviderBase(object):
         genome_dir : str
             Directory to install genome
 
+        localname : str , optional
+            Custom name for your genome
+
         mask: str , optional
             Masking, soft, hard or none (all other strings)
+
+        regex : str , optional
+            Regular expression to select specific chromosome / scaffold names.
+
+        invert_match : bool , optional
+            Set to True to select all chromosomes that don't match the regex.
+
+        bgzip : bool , optional
+            If set to True the genome FASTA file will be compressed using bgzip.
+            If not specified, the setting from the configuration file will be used.
         """
         genome_dir = os.path.expanduser(genome_dir)
 
         if not os.path.exists(genome_dir):
             os.makedirs(genome_dir)
 
-        dbname, link = self.get_genome_download_link(
-            name, mask=mask, version=version, toplevel=toplevel
-        )
+        dbname, link = self.get_genome_download_link(name, mask=mask, **kwargs)
         myname = dbname
         if localname:
             myname = localname
@@ -227,7 +237,7 @@ class ProviderBase(object):
                 for seq in not_included:
                     f.write("\t{}\n".format(seq))
 
-    def download_annotation(self, name, genome_dir, localname=None, version=None):
+    def download_annotation(self, name, genome_dir, localname=None, **kwargs):
         """
         Download annotation file to to a specific directory
 
@@ -238,6 +248,9 @@ class ProviderBase(object):
 
         genome_dir : str
             Directory to install annotation
+
+        localname : str , optional
+            Custom name for your genome
         """
         raise NotImplementedError()
 
@@ -372,9 +385,9 @@ class EnsemblProvider(ProviderBase):
             self.version = version
             return version
 
-    def get_genome_download_link(self, name, version=None, mask="soft", toplevel=False):
+    def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
-        Return Ensembl ftp link to toplevel genome sequence
+        Return Ensembl ftp link to the genome sequence
 
         Parameters
         ----------
@@ -399,7 +412,9 @@ class EnsemblProvider(ProviderBase):
             ftp_site = "https://ftp.ensembl.org/pub"
 
         version = self.version
-        if not version:
+        if kwargs.get("version", None):
+            version = kwargs.get("version")
+        elif not version:
             version = self.get_version(ftp_site)
 
         if division != "vertebrates":
@@ -413,45 +428,36 @@ class EnsemblProvider(ProviderBase):
             ftp_dir = base_url.format(version, genome_info["url_name"].lower())
             url = "{}/{}".format(ftp_site, ftp_dir)
 
+        def get_url(level="toplevel"):
+            pattern = "dna.{}".format(level)
+            if mask == "soft":
+                pattern = "dna_sm.{}".format(level)
+            elif mask == "hard":
+                pattern = "dna_rm.{}".format(level)
+
+            asm_url = "{}/{}.{}.{}.fa.gz".format(
+                url,
+                genome_info["url_name"].capitalize(),
+                re.sub(r"\.p\d+$", "", self.safe(genome_info["assembly_name"])),
+                pattern,
+            )
+            return asm_url
+
         # first try the (much smaller) primary assembly, otherwise use the toplevel assembly
         try:
-            if toplevel:
+            if kwargs.get("toplevel", False):
                 raise ValueError("skipping primary assembly check")
-
-            pattern = "dna.primary_assembly"
-            if mask == "soft":
-                pattern = "dna_sm.primary_assembly"
-            elif mask == "hard":
-                pattern = "dna_rm.primary_assembly"
-
-            asm_url = "{}/{}.{}.{}.fa.gz".format(
-                url,
-                genome_info["url_name"].capitalize(),
-                re.sub(r"\.p\d+$", "", self.safe(genome_info["assembly_name"])),
-                pattern,
-            )
-
-            # try if the url exists
+            asm_url = get_url("primary_assembly")
             urlopen(asm_url)
 
-        # URLError: urllib.request.urlopen. IOError: urllib.urlopen
+        # URLError: urllib.request.urlopen.
+        # IOError:  urllib.urlopen
         except (URLError, IOError, ValueError):
-            pattern = "dna.toplevel"
-            if mask == "soft":
-                pattern = "dna_sm.toplevel"
-            elif mask == "hard":
-                pattern = "dna_rm.toplevel"
-
-            asm_url = "{}/{}.{}.{}.fa.gz".format(
-                url,
-                genome_info["url_name"].capitalize(),
-                re.sub(r"\.p\d+$", "", self.safe(genome_info["assembly_name"])),
-                pattern,
-            )
+            asm_url = get_url()
 
         return self.safe(genome_info["assembly_name"]), asm_url
 
-    def download_annotation(self, name, genome_dir, localname=None, version=None):
+    def download_annotation(self, name, genome_dir, localname=None, **kwargs):
         """
         Download gene annotation from Ensembl based on genome name.
 
@@ -461,8 +467,11 @@ class EnsemblProvider(ProviderBase):
             Ensembl genome name.
         genome_dir : str
             Genome directory.
-        version : str , optional
-            Ensembl version. By default the latest version is used.
+        kwargs: dict , optional:
+            Provider specific options.
+
+            version : int , optional
+                Ensembl version. By default the latest version is used.
         """
         localname = get_localname(name, localname)
         genome_info = self._get_genome_info(name)
@@ -477,7 +486,10 @@ class EnsemblProvider(ProviderBase):
         if division == "vertebrates":
             ftp_site = "https://ftp.ensembl.org/pub"
 
-        if not version:
+        version = self.version
+        if kwargs.get("version", None):
+            version = kwargs.get("version")
+        elif not version:
             version = self.get_version(ftp_site)
 
         if division != "vertebrates":
@@ -584,7 +596,7 @@ class UcscProvider(ProviderBase):
             if term in name.lower() or term in description.lower():
                 yield name, description
 
-    def get_genome_download_link(self, name, mask="soft", version=None, toplevel=False):
+    def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
         Return UCSC http link to genome sequence
 
@@ -599,6 +611,9 @@ class UcscProvider(ProviderBase):
         tuple (name, link) where name is the genome build identifier
         and link is a str with the http download link.
         """
+        if mask not in ["soft", "hard"]:
+            sys.stderr.write("ignoring mask parameter for UCSC at download.\n")
+
         urls = [self.ucsc_url, self.alt_ucsc_url]
         if mask == "hard":
             urls = [self.ucsc_url_masked, self.alt_ucsc_url_masked]
@@ -614,7 +629,41 @@ class UcscProvider(ProviderBase):
             "Could not download genome {} from UCSC".format(name)
         )
 
-    def download_annotation(self, name, genome_dir, localname=None, version=None):
+    def _post_process_download(self, name, genome_dir, mask="soft"):
+        """
+        Unmask a softmasked genome if required
+
+        Parameters
+        ----------
+        name : str
+            UCSC genome name
+
+        genome_dir : str
+            Genome directory
+        """
+        if mask not in ["hard", "soft"]:
+            name = name.replace(" ", "_")
+            # Check of the original genome fasta exists
+            fa = os.path.join(genome_dir, name, "{}.fa".format(name))
+            if not os.path.exists(fa):
+                raise Exception("Genome fasta file not found, {}".format(fa))
+
+            sys.stderr.write("UCSC genomes are softmasked by default. Unmasking...\n")
+
+            # Use a tmp file and replace the names
+            new_fa = os.path.join(genome_dir, name, ".process.{}.fa".format(name))
+            with open(fa) as old:
+                with open(new_fa, "w") as new:
+                    for line in old:
+                        if not line.startswith(">"):
+                            new.write(line.upper())
+                        else:
+                            new.write(line)
+
+            # Rename tmp file to real genome file
+            shutil.move(new_fa, fa)
+
+    def download_annotation(self, name, genome_dir, localname=None, **kwargs):
         """
         Download gene annotation from UCSC based on genomebuild.
 
@@ -788,7 +837,7 @@ class NCBIProvider(ProviderBase):
                     ),
                 )
 
-    def get_genome_download_link(self, name, mask="soft", version=None, toplevel=False):
+    def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
         Return NCBI ftp link to top-level genome sequence
 
@@ -803,7 +852,7 @@ class NCBIProvider(ProviderBase):
         tuple (name, link) where name is the NCBI asm_name identifier
         and link is a str with the ftp download link.
         """
-        if mask == "hard":
+        if mask != "soft":
             sys.stderr.write("ignoring mask parameter for NCBI at download.\n")
 
         if not self.genomes:
@@ -856,8 +905,8 @@ class NCBIProvider(ProviderBase):
 
         # Use a tmp file and replace the names
         new_fa = os.path.join(genome_dir, name, ".process.{}.fa".format(name))
-        if mask == "hard":
-            sys.stderr.write("masking lower-case.\n")
+        if mask != "soft":  # if mask == "hard":
+            sys.stderr.write("NCBI genomes are softmasked by default. Changing mask...\n")  # sys.stderr.write("masking lower-case.\n")
 
         with open(fa) as old:
             with open(new_fa, "w") as new:
@@ -868,13 +917,15 @@ class NCBIProvider(ProviderBase):
                         new.write(">{} {}\n".format(tr.get(name, name), desc))
                     elif mask == "hard":
                         new.write(re.sub("[actg]", "N", line))
+                    elif mask not in ["hard", "soft"]:
+                        new.write(line.upper())
                     else:
                         new.write(line)
 
         # Rename tmp file to real genome file
         shutil.move(new_fa, fa)
 
-    def download_annotation(self, name, genome_dir, localname=None, version=None):
+    def download_annotation(self, name, genome_dir, localname=None, **kwargs):
         """
         Download annotation file to to a specific directory
 
@@ -957,7 +1008,7 @@ class UrlProvider(ProviderBase):
     Simply download a genome directly through an url.
     """
 
-    def get_genome_download_link(self, url, mask=None, version=None, toplevel=False):
+    def get_genome_download_link(self, url, mask=None, **kwargs):
         """
         url : str
             url of where to download genome from

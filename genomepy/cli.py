@@ -2,6 +2,8 @@
 import click
 import genomepy
 
+from collections import deque
+
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -31,71 +33,76 @@ install_options = {
         "short": "g",
         "long": "genome_dir",
         "help": "genome directory",
-        # "type": str,
         "default": None,
     },
     "localname": {
         "short": "l",
         "long": "localname",
         "help": "custom name",
-        # "type": str,
         "default": None,
     },
     "mask": {
         "short": "m",
         "long": "mask",
-        "help": "mask (hard/soft/none) default=soft",
-        # "type": str,
+        "help": "hard/soft/no mask (default: soft)",
         "default": "soft",
     },
     "regex": {
         "short": "r",
         "long": "regex",
         "help": "regex to filter sequences",
-        # "type": str,
         "default": None,
     },
     "invert_match": {
         "short": "n",
         "long": "no-match",
         "help": "select sequences that *don't* match regex",
-        # "type": bool,
+        "flag_value": True,
+    },
+    "bgzip": {
+        "short": "b",
+        "long": "bgzip",
+        "help": "bgzip genome",
         "flag_value": True,
     },
     "annotation": {
         "short": "a",
         "long": "annotation",
         "help": "download annotation",
-        # "type": bool,
         "flag_value": True,
     },
     "force": {
         "short": "f",
         "long": "force",
         "help": "overwrite existing files",
-        # "type": bool,
         "flag_value": True,
     },
+    # provider specific options (passed to kwargs if used)
+    # Ensembl
     "toplevel": {
-        "short": "t",
         "long": "toplevel",
-        "help": "always download toplevel-genome (Ensembl)",
-        # "type": bool,
+        "help": "Ensembl only: always download toplevel-genome",
         "flag_value": True,
+    },
+    "version": {
+        "long": "version",
+        "help": "Ensembl only: select release version",
+        "type": int,
+        "default": None,
     },
 }
 
 
 def custom_options(options):
+    """dynamically add options to a click.command (based on a dict with options)"""
+
     def decorator(f):
         for opt_name, opt_params in options.items():
-            param_decls = (
-                "-" + opt_params["short"],
-                "--" + opt_params["long"],
-                opt_name,  # opt_params["name"],
-            )
+            param_decls = deque(["--" + opt_params["long"], opt_name])
+            if "short" in opt_params.keys():
+                param_decls.appendleft("-" + opt_params["short"])
+
             attrs = dict(help=opt_params["help"])
-            # type=opt_params["type"])
             if "type" in opt_params.keys():
                 attrs["type"] = opt_params["type"]
             if "default" in opt_params.keys():
@@ -109,91 +116,41 @@ def custom_options(options):
     return decorator
 
 
-# provider_options = {
-#     'Ensembl': {
-#         'toplevel': ["BOOL", "always download toplevel-genome", "flag_value=True"],
-#         'version': ["INT", "select release version", "None"]},
-#     'NCBI': {},
-#     'UCSC': {}}
-# for provider, options in provider_options.items():
-#     for option, info in options.items():
-#         print("  --{}-{} {}\t{}".format(provider, option, info[0], info[1]))
-#         # @click.option("--{}-{}".format(provider, option), help=info[1], eval(info[2]))
-
-
-# def get_PSOs():
-#     PSOs = ['Ensembl-version=VERSION', 'Ensembl-toplevel']
-#     parsed_list = "\n".join(PSOs)
-#     return parsed_list
-
-
 @click.group()
 def cli():
     pass
 
 
 @custom_options(install_options)
-@click.argument("name")
 @click.argument("provider")
+@click.argument("name")
 @cli.command()
-# @click.command("install", short_help="install genome")
-# @click.argument("name")
-# @click.argument("provider")
-# # @click.argument("provider_specific_options", nargs=-1)
-# @click.option("-g", "--genome_dir", help="genome directory", default=None)
-# @click.option("-l", "--localname", help="custom name", default=None)
-# @click.option(
-#     "-m", "--mask", help="mask (hard, soft or none. Default = soft)", default="soft"
-# )
-# @click.option("-r", "--regex", help="regex to filter sequences", default=None)
-# @click.option(
-#     "-n",
-#     "--no_match",
-#     "invert_match",
-#     help="select sequences that *don't* match regex",
-#     flag_value=True,
-# )
-# @click.option(
-#     "-t",
-#     "--toplevel",
-#     help="always download toplevel-genome (Ensembl)",
-#     flag_value=True,
-# )
-# @click.option("-a", "--annotation", help="download annotation", flag_value=True)
-# @click.option("-f", "--force", help="overwrite existing files", flag_value=True)
-# # @click.option("--PSO", help="Provider specific options:\n{}".format(get_PSOs()), flag_value=True)
 def install(
     name,
     provider,
     genome_dir,
     localname,
     mask,
-    toplevel,
     regex,
-    force,
     invert_match,
+    bgzip,
     annotation,
+    force,
+    **kwargs
 ):
     """Install genome NAME from provider PROVIDER in directory GENOME_DIR."""
-
-    # """Install genome NAME from provider PROVIDER in directory GENOME_DIR.
-    #
-    # PSOs:\n{}""".format(get_PSOs())
-
-    # """Install genome NAME from provider PROVIDER in directory GENOME_DIR.
-    #
-    # PSOs:"""+get_PSOs()
     genomepy.install_genome(
         name,
         provider,
         genome_dir=genome_dir,
         localname=localname,
         mask=mask,
-        toplevel=toplevel,
         regex=regex,
-        force=force,
         invert_match=invert_match,
+        bgzip=bgzip,
         annotation=annotation,
+        force=force,
+        **kwargs
     )
 
 
