@@ -42,37 +42,82 @@ def test_track_type():
         assert result == track_type
 
 
-@pytest.mark.parametrize(params=["unzipped", "bgzipped"])  # original: "bgzip", [True, False])
-def test_ucsc_genome(bgzip):
-    """Test UCSC.
+@pytest.fixture(
+    scope="module",
+    params=[
+        ["unzipped", "no-overwrite"],
+        ["unzipped", "overwrite"],
+        ["bgzipped", "no-overwrite"],
+        ["bgzipped", "overwrite"],
+    ],  # force=["no-overwrite", "overwrite"], bgzip=["unzipped", "bgzipped"]
+)
+def test_install_genome(
+    genome="sacCer3", zip_status=request.param[0], force_status=request.param[1]
+):
+    """Test UCSC, force and bgzip
 
-    Download S. cerevisiae genome from UCSC and retrieve a
-    specific sequence.
+    Download S. cerevisiae genome from UCSC and retrieve a specific sequence.
+
+    Force and bgzip are called regardless of provider, and are therefore only tested here
     """
     tmp = mkdtemp()
-    bgzip = True
-    if request.param == "unzipped":
-        bgzip = False
-    genomepy.install_genome("sacCer3", "UCSC", genome_dir=tmp, bgzip=bgzip)
+    bgzip = False
+    if zip_status == "bgzipped":
+        bgzip = True
+    force = False
+    if force_status == "overwrite":
+        force = True
+
+    genomepy.install_genome(genome, "UCSC", genome_dir=tmp, bgzip=bgzip, force=force)
     g = genomepy.Genome("sacCer3", genome_dir=tmp)
     seq = g["chrIV"][1337000:1337020]
     assert str(seq) == "TTTGGTTGTTCCTCTTCCTT"
+
+    # Check if force==True overwrites files, and if force==False doesn't
+    try:
+        path = os.path.join(tmp, genome + ".fa.gz")
+        t0 = os.path.getmtime(path)
+    except FileNotFoundError:
+        path = os.path.join(tmp, genome + ".fa")
+        t0 = os.path.getmtime(path)
+    genomepy.install_genome(genome, "UCSC", genome_dir=tmp, bgzip=bgzip, force=force)
+    try:
+        path = os.path.join(tmp, genome + ".fa.gz")
+        t1 = os.path.getmtime(path)
+    except FileNotFoundError:
+        path = os.path.join(tmp, genome + ".fa")
+        t1 = os.path.getmtime(path)
+    if force:
+        assert t0 != t1
+    else:
+        assert t0 == t1
+
     shutil.rmtree(tmp)
 
 
+def test_ucsc_genome():
+    """Already tested ucsc in previous test`"""
+    assert 1
+
+
 # 2019-05-08 BDGP6 currently fails on Ensembl
-@pytest.mark.xfail()
-def test_ensembl_genome():
+# @pytest.mark.xfail()
+def test_ensembl_genome(genome="dere_caf1"):
     """Test Ensembl.
 
     Download Drosophila genome from Ensembl and retrieve a
     specific sequence.
     """
     tmp = mkdtemp()
-    genomepy.install_genome("BDGP6", "Ensembl", genome_dir=tmp)
-    g = genomepy.Genome("BDGP6", genome_dir=tmp)
-    seq = g["3L"][10637840:10637875]
-    assert str(seq).upper() == "TTTGCAACAGCTGCCGCAGTGTGACCGTTGTACTG"
+    genomepy.install_genome(genome, "Ensembl", genome_dir=tmp)
+    g = genomepy.Genome(genome, genome_dir=tmp)
+    seq = g["scaffold_4929"][61:121]
+    assert (
+        str(seq).upper()
+        == "ACACTTGGCTAAATTCCAAGAGAACTTACAAAAACAAACACCCCCCAGTCGAAAAAGGCC"
+    )
+    # seq = g["3L"][10637840:10637875]
+    # assert str(seq).upper() == "TTTGCAACAGCTGCCGCAGTGTGACCGTTGTACTG"
     shutil.rmtree(tmp)
 
 

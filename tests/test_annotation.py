@@ -68,7 +68,7 @@ def test_ensembl_annotation():
     shutil.rmtree(tmp)
 
 
-@pytest.mark.skipif(travis, reason="FTP does not work on Travis")
+# @pytest.mark.skipif(travis, reason="FTP does not work on Travis")
 def test_ensemblgenomes_annotation():
     """Test Ensembl annotation
 
@@ -77,7 +77,7 @@ def test_ensemblgenomes_annotation():
     tmp = mkdtemp()
     p = genomepy.provider.ProviderBase.create("Ensembl")
 
-    for name, version in [("TAIR10", None)]:
+    for name, version in [("TAIR10", 45)]:
         p.download_annotation(name, tmp, version=version)
 
         gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
