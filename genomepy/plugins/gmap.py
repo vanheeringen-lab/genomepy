@@ -1,6 +1,7 @@
 import os.path
 import re
 import subprocess as sp
+from shutil import rmtree
 
 from genomepy.plugin import Plugin
 from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
@@ -32,11 +33,8 @@ class GmapPlugin(Plugin):
                 bgzip = True
 
             # remove old files in index dir if force-overwrite is requested
-            if force and os.path.exists(index_dir):
-                for f in os.listdir(index_dir):
-                    fpath = os.path.join(index_dir, f)
-                    if os.path.isfile(fpath):
-                        os.unlink(fpath)
+            if force and os.path.exists(index_name):
+                rmtree(index_name)
 
             # Create index
             cmd = "gmap_build -D {} -d {} {}".format(index_dir, genome.name, fname)
