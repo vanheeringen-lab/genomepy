@@ -44,7 +44,7 @@ def masking(request):
     return request.param
 
 
-@pytest.fixture(scope="module", params=["98", "54", None])
+@pytest.fixture(scope="module", params=["54", None])
 def release_version(request):
     return request.param
 
