@@ -167,7 +167,6 @@ def test_gmap(genome, force):
         dirname = os.path.dirname(genome.filename)
         index_dir = os.path.join(dirname, "index", "gmap", genome.name)
         fname = os.path.join(index_dir, "{}.maps".format(genome.name))
-        print(os.listdir(index_dir))
         assert os.path.exists(index_dir)
         assert os.path.exists(fname)
 

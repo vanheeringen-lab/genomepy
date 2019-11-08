@@ -18,7 +18,7 @@ def test_ensembl_genome_download_links():
     """
     p = genomepy.provider.ProviderBase.create("Ensembl")
 
-    for genome in ["GRCz11", "GRCh38.p13"]:
+    for genome in ["GRCz11"]:  # "GRCh38.p13"
         p.get_genome_download_link(genome)
 
 

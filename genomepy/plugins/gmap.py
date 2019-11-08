@@ -32,10 +32,9 @@ class GmapPlugin(Plugin):
                 bgzip = True
 
             # remove old files in index dir if force-overwrite is requested
-            gmap_files = os.listdir(index_name)
-            if force and len(gmap_files) > 0:
-                for f in gmap_files:
-                    fpath = os.path.join(index_name, f)
+            if force and os.path.exists(index_dir):
+                for f in os.listdir(index_dir):
+                    fpath = os.path.join(index_dir, f)
                     if os.path.isfile(fpath):
                         os.unlink(fpath)
 
