@@ -31,10 +31,16 @@ class GmapPlugin(Plugin):
                 fname = re.sub(".gz$", "", fname)
                 bgzip = True
 
+            # remove old files in index dir if force-overwrite is requested
+            gmap_files = os.listdir(index_name)
+            if force and len(gmap_files) > 0:
+                for f in gmap_files:
+                    fpath = os.path.join(index_name, f)
+                    if os.path.isfile(fpath):
+                        os.unlink(fpath)
+
             # Create index
-            cmd = "gmap_build -D {} -d {} {}".format(
-                index_dir, genome.name, genome.filename
-            )
+            cmd = "gmap_build -D {} -d {} {}".format(index_dir, genome.name, fname)
             run_index_cmd("gmap", cmd)
 
             if bgzip:

@@ -995,7 +995,7 @@ class NCBIProvider(ProviderBase):
             )
             sp.check_call(cmd.format(gff_file, gtf_file), shell=True)
 
-        readme = os.path.join(genome_dir, name, "README.txt")
+        readme = os.path.join(genome_dir, localname, "README.txt")
         with open(readme, "a") as f:
             f.write("annotation url: {}\n".format(url))
 
