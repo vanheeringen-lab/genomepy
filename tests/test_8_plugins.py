@@ -4,13 +4,14 @@ import re
 from subprocess import check_call
 from tempfile import mkdtemp
 from shutil import rmtree, copyfile
+from time import sleep
 
 from genomepy.plugin import init_plugins, activate
 from genomepy.utils import cmd_ok
 from genomepy.utils import mkdir_p
 from genomepy.functions import Genome
 from genomepy.plugins.bwa import BwaPlugin
-# from genomepy.plugins.gmap import GmapPlugin
+from genomepy.plugins.gmap import GmapPlugin
 from genomepy.plugins.minimap2 import Minimap2Plugin
 from genomepy.plugins.bowtie2 import Bowtie2Plugin
 from genomepy.plugins.hisat2 import Hisat2Plugin
@@ -68,21 +69,12 @@ def test_blacklist(genome, force):
 
     p.after_genome_download(genome, force=force)
     fname = re.sub(".fa(.gz)?$", ".blacklist.bed.gz", genome.filename)
-    #
-    import sys
-    sys.stderr.write("fname:" + str(fname) + "\n")
-    #
     assert os.path.exists(fname)
 
     t0 = os.path.getmtime(fname)
-    import time
-    time.sleep(1)
+    sleep(0.1)
     p.after_genome_download(genome, force=force)
     t1 = os.path.getmtime(fname)
-    #
-    sys.stderr.write("t0:" + str(t0) + "\n")
-    sys.stderr.write("t1:" + str(t1) + "\n")
-    #
     assert t0 != t1 if force else t0 == t1
 
 
@@ -101,6 +93,7 @@ def test_bwa(genome, force):
         assert os.path.exists(fname)
 
         t0 = os.path.getmtime(fname)
+        sleep(0.1)
         p.after_genome_download(genome, force=force)
         t1 = os.path.getmtime(fname)
         assert t0 != t1 if force else t0 == t1
@@ -121,6 +114,7 @@ def test_minimap2(genome, force):
         assert os.path.exists(fname)
 
         t0 = os.path.getmtime(fname)
+        sleep(0.1)
         p.after_genome_download(genome, force=force)
         t1 = os.path.getmtime(fname)
         assert t0 != t1 if force else t0 == t1
@@ -141,6 +135,7 @@ def test_bowtie2(genome, force):
         assert os.path.exists(fname)
 
         t0 = os.path.getmtime(fname)
+        sleep(0.1)
         p.after_genome_download(genome, force=force)
         t1 = os.path.getmtime(fname)
         assert t0 != t1 if force else t0 == t1
@@ -161,6 +156,7 @@ def test_hisat2(genome, force):
         assert os.path.exists(fname)
 
         t0 = os.path.getmtime(fname)
+        sleep(0.1)
         p.after_genome_download(genome, force=force)
         t1 = os.path.getmtime(fname)
         assert t0 != t1 if force else t0 == t1
@@ -181,6 +177,7 @@ def test_hisat2(genome, force):
 #         assert os.path.exists(fname)
 #
 #         t0 = os.path.getmtime(fname)
+#         sleep(0.1)
 #         p.after_genome_download(genome, force=force)
 #         t1 = os.path.getmtime(fname)
 #         assert t0 != t1 if force else t0 == t1
