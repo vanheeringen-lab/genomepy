@@ -5,6 +5,7 @@ from subprocess import check_call
 from tempfile import mkdtemp
 from shutil import rmtree, copyfile
 from time import sleep
+from platform import system
 
 from genomepy.plugin import init_plugins, activate
 from genomepy.utils import cmd_ok
@@ -60,6 +61,17 @@ def force(request):
     return request.param
 
 
+def force_test(p, fname, genome, force):
+    """check if a plugin file was properly overwritten (or not) depending on force flag"""
+    t0 = os.path.getmtime(fname)
+    # OSX rounds down getmtime to the second
+    if system() != "Linux":
+        sleep(1)
+    p.after_genome_download(genome, force=force)
+    t1 = os.path.getmtime(fname)
+    assert t0 != t1 if force else t0 == t1
+
+
 def test_blacklist(genome, force):
     """Create blacklist."""
     assert os.path.exists(genome.filename)
@@ -71,11 +83,7 @@ def test_blacklist(genome, force):
     fname = re.sub(".fa(.gz)?$", ".blacklist.bed.gz", genome.filename)
     assert os.path.exists(fname)
 
-    t0 = os.path.getmtime(fname)
-    sleep(0.1)
-    p.after_genome_download(genome, force=force)
-    t1 = os.path.getmtime(fname)
-    assert t0 != t1 if force else t0 == t1
+    force_test(p, fname, genome, force)
 
 
 def test_bwa(genome, force):
@@ -92,11 +100,7 @@ def test_bwa(genome, force):
         assert os.path.exists(index_dir)
         assert os.path.exists(fname)
 
-        t0 = os.path.getmtime(fname)
-        sleep(1)
-        p.after_genome_download(genome, force=force)
-        t1 = os.path.getmtime(fname)
-        assert t0 != t1 if force else t0 == t1
+        force_test(p, fname, genome, force)
 
 
 def test_minimap2(genome, force):
@@ -113,11 +117,7 @@ def test_minimap2(genome, force):
         assert os.path.exists(index_dir)
         assert os.path.exists(fname)
 
-        t0 = os.path.getmtime(fname)
-        sleep(1)
-        p.after_genome_download(genome, force=force)
-        t1 = os.path.getmtime(fname)
-        assert t0 != t1 if force else t0 == t1
+        force_test(p, fname, genome, force)
 
 
 def test_bowtie2(genome, force):
@@ -134,11 +134,7 @@ def test_bowtie2(genome, force):
         assert os.path.exists(index_dir)
         assert os.path.exists(fname)
 
-        t0 = os.path.getmtime(fname)
-        sleep(1)
-        p.after_genome_download(genome, force=force)
-        t1 = os.path.getmtime(fname)
-        assert t0 != t1 if force else t0 == t1
+        force_test(p, fname, genome, force)
 
 
 def test_hisat2(genome, force):
@@ -155,29 +151,21 @@ def test_hisat2(genome, force):
         assert os.path.exists(index_dir)
         assert os.path.exists(fname)
 
-        t0 = os.path.getmtime(fname)
-        sleep(1)
+        force_test(p, fname, genome, force)
+
+
+def test_gmap(genome, force):
+    """Create gmap index."""
+    assert os.path.exists(genome.filename)
+
+    force = True if force == "overwrite" else False
+    if cmd_ok("gmap"):
+        p = GmapPlugin()
         p.after_genome_download(genome, force=force)
-        t1 = os.path.getmtime(fname)
-        assert t0 != t1 if force else t0 == t1
+        dirname = os.path.dirname(genome.filename)
+        index_dir = os.path.join(dirname, "index", "gmap")
+        fname = os.path.join(index_dir, "{}.maps".format(genome.name))
+        assert os.path.exists(index_dir)
+        assert os.path.exists(fname)
 
-
-# def test_gmap(genome, force):
-#     """Create gmap index."""
-#     assert os.path.exists(genome.filename)
-#
-#     force = True if force == "overwrite" else False
-#     if cmd_ok("gmap"):
-#         p = GmapPlugin()
-#         p.after_genome_download(genome, force=force)
-#         dirname = os.path.dirname(genome.filename)
-#         index_dir = os.path.join(dirname, "index", "gmap")
-#         fname = os.path.join(index_dir, "{}.maps".format(genome.name))
-#         assert os.path.exists(index_dir)
-#         assert os.path.exists(fname)
-#
-#         t0 = os.path.getmtime(fname)
-#         sleep(1)
-#         p.after_genome_download(genome, force=force)
-#         t1 = os.path.getmtime(fname)
-#         assert t0 != t1 if force else t0 == t1
+        force_test(p, fname, genome, force)
