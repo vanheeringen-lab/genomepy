@@ -10,7 +10,7 @@ from genomepy.utils import cmd_ok
 from genomepy.utils import mkdir_p
 from genomepy.functions import Genome
 from genomepy.plugins.bwa import BwaPlugin
-from genomepy.plugins.gmap import GmapPlugin
+# from genomepy.plugins.gmap import GmapPlugin
 from genomepy.plugins.minimap2 import Minimap2Plugin
 from genomepy.plugins.bowtie2 import Bowtie2Plugin
 from genomepy.plugins.hisat2 import Hisat2Plugin
@@ -71,8 +71,10 @@ def test_blacklist(genome, force):
     assert os.path.exists(fname)
 
     t0 = os.path.getmtime(fname)
+    sys.stderr.write(t0)
     p.after_genome_download(genome, force=force)
     t1 = os.path.getmtime(fname)
+    sys.stderr.write(t1)
     assert t0 != t1 if force else t0 == t1
 
 
