@@ -51,7 +51,7 @@ install:
 script:
   - black --check genomepy/ setup.py tests/
   - flake8 setup.py genomepy/ tests/
-  - py.test -v
+  - py.test -v tests/test_8_plugins.py  # py.test -v
   - genomepy providers 
 #after_sucess:
 #  coveralls

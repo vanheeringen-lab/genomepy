@@ -60,7 +60,7 @@ def force(request):
 
 
 def test_blacklist(genome, force):
-    """Create bwa index."""
+    """Create blacklist."""
     assert os.path.exists(genome.filename)
 
     force = True if force == "overwrite" else False
@@ -156,21 +156,21 @@ def test_hisat2(genome, force):
         assert t0 != t1 if force else t0 == t1
 
 
-def test_gmap(genome, force):
-    """Create gmap index."""
-    assert os.path.exists(genome.filename)
-
-    force = True if force == "overwrite" else False
-    if cmd_ok("gmap"):
-        p = GmapPlugin()
-        p.after_genome_download(genome, force=force)
-        dirname = os.path.dirname(genome.filename)
-        index_dir = os.path.join(dirname, "index", "gmap")
-        fname = os.path.join(index_dir, "{}.maps".format(genome.name))
-        assert os.path.exists(index_dir)
-        assert os.path.exists(fname)
-
-        t0 = os.path.getmtime(fname)
-        p.after_genome_download(genome, force=force)
-        t1 = os.path.getmtime(fname)
-        assert t0 != t1 if force else t0 == t1
+# def test_gmap(genome, force):
+#     """Create gmap index."""
+#     assert os.path.exists(genome.filename)
+#
+#     force = True if force == "overwrite" else False
+#     if cmd_ok("gmap"):
+#         p = GmapPlugin()
+#         p.after_genome_download(genome, force=force)
+#         dirname = os.path.dirname(genome.filename)
+#         index_dir = os.path.join(dirname, "index", "gmap")
+#         fname = os.path.join(index_dir, "{}.maps".format(genome.name))
+#         assert os.path.exists(index_dir)
+#         assert os.path.exists(fname)
+#
+#         t0 = os.path.getmtime(fname)
+#         p.after_genome_download(genome, force=force)
+#         t1 = os.path.getmtime(fname)
+#         assert t0 != t1 if force else t0 == t1
