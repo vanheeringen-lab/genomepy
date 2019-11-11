@@ -28,7 +28,7 @@ def search(term, provider=None):
         print("\t".join([x.decode("utf-8", "ignore") for x in row]))
 
 
-install_options = {
+general_install_options = {
     "genome_dir": {
         "short": "g",
         "long": "genome_dir",
@@ -77,20 +77,23 @@ install_options = {
         "help": "overwrite existing files",
         "flag_value": True,
     },
-    # provider specific options (passed to kwargs if used)
-    # Ensembl
-    "toplevel": {
-        "long": "toplevel",
-        "help": "Ensembl only: always download toplevel-genome",
-        "flag_value": True,
-    },
-    "version": {
-        "long": "version",
-        "help": "Ensembl only: select release version",
-        "type": int,
-        "default": None,
-    },
 }
+
+
+def get_install_options():
+    """combine general and provider specific options
+
+    add provider in front of the provider specific options to prevent overlap"""
+    install_options = general_install_options
+
+    for name in genomepy.provider.ProviderBase.list_providers():
+        p = genomepy.provider.ProviderBase.create(name)
+        p_dict = p.list_install_options()
+        for option in p_dict.keys():
+            p_dict[option]["long"] = name + "-" + p_dict[option]["long"]
+        install_options.update(p_dict)
+
+    return install_options
 
 
 def custom_options(options):
@@ -116,7 +119,7 @@ def custom_options(options):
     return decorator
 
 
-@custom_options(install_options)
+@custom_options(get_install_options())
 @click.argument("provider")
 @click.argument("name")
 @cli.command()

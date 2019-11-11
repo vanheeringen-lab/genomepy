@@ -112,6 +112,13 @@ class ProviderBase(object):
         # Remove temp dir
         shutil.rmtree(tmpdir)
 
+    def list_install_options(self):
+        """List provider specific install options"""
+
+        provider_specific_options = {}
+
+        return provider_specific_options
+
     def download_genome(
         self,
         name,
@@ -293,6 +300,25 @@ class EnsemblProvider(ProviderBase):
         """Replace spaces with undescores.
         """
         return name.replace(" ", "_")
+
+    def list_install_options(self):
+        """List provider specific install options"""
+
+        provider_specific_options = {
+            "toplevel": {
+                "long": "toplevel",
+                "help": "always download toplevel-genome",
+                "flag_value": True,
+            },
+            "version": {
+                "long": "version",
+                "help": "select release version",
+                "type": int,
+                "default": None,
+            },
+        }
+
+        return provider_specific_options
 
     def list_available_genomes(self, as_dict=False):
         """
