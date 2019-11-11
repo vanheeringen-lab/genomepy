@@ -6,11 +6,11 @@ matrix:
       language: generic
       env:
         - PYTHON_VERSION: "3.6"
-#    - os: linux
-#      language: python
-#      python: "3.6"
-#      env:
-#        - PYTHON_VERSION: "3.6"
+    - os: linux
+      language: python
+      python: "3.6"
+      env:
+        - PYTHON_VERSION: "3.6"
 
 #cache:
 #  apt: true
@@ -44,9 +44,9 @@ install:
 
 # command to run tests, e.g. python setup.py test
 script:
-#  - black --check genomepy/ setup.py tests/
-#  - flake8 setup.py genomepy/ tests/
-  - py.test -v tests/test_8_plugins.py  # py.test -v
+  - black --check genomepy/ setup.py tests/
+  - flake8 setup.py genomepy/ tests/
+  - py.test -v
   - genomepy providers 
 #after_sucess:
 #  coveralls
