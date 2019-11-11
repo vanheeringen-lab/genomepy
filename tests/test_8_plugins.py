@@ -93,7 +93,7 @@ def test_bwa(genome, force):
         assert os.path.exists(fname)
 
         t0 = os.path.getmtime(fname)
-        sleep(0.1)
+        sleep(1)
         p.after_genome_download(genome, force=force)
         t1 = os.path.getmtime(fname)
         assert t0 != t1 if force else t0 == t1
@@ -114,7 +114,7 @@ def test_minimap2(genome, force):
         assert os.path.exists(fname)
 
         t0 = os.path.getmtime(fname)
-        sleep(0.1)
+        sleep(1)
         p.after_genome_download(genome, force=force)
         t1 = os.path.getmtime(fname)
         assert t0 != t1 if force else t0 == t1
@@ -135,7 +135,7 @@ def test_bowtie2(genome, force):
         assert os.path.exists(fname)
 
         t0 = os.path.getmtime(fname)
-        sleep(0.1)
+        sleep(1)
         p.after_genome_download(genome, force=force)
         t1 = os.path.getmtime(fname)
         assert t0 != t1 if force else t0 == t1
@@ -156,7 +156,7 @@ def test_hisat2(genome, force):
         assert os.path.exists(fname)
 
         t0 = os.path.getmtime(fname)
-        sleep(0.1)
+        sleep(1)
         p.after_genome_download(genome, force=force)
         t1 = os.path.getmtime(fname)
         assert t0 != t1 if force else t0 == t1
@@ -177,7 +177,7 @@ def test_hisat2(genome, force):
 #         assert os.path.exists(fname)
 #
 #         t0 = os.path.getmtime(fname)
-#         sleep(0.1)
+#         sleep(1)
 #         p.after_genome_download(genome, force=force)
 #         t1 = os.path.getmtime(fname)
 #         assert t0 != t1 if force else t0 == t1
