@@ -71,6 +71,7 @@ def test_blacklist(genome, force):
     assert os.path.exists(fname)
 
     t0 = os.path.getmtime(fname)
+    import sys
     sys.stderr.write(t0)
     p.after_genome_download(genome, force=force)
     t1 = os.path.getmtime(fname)
