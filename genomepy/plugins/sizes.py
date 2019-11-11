@@ -8,7 +8,7 @@ class SizesPlugin(Plugin):
         props = self.get_properties(genome)
         fname = props["sizes"]
 
-        if not os.path.exists(fname) or force is True:
+        if not os.path.exists(fname) or force:
             with open(fname, "w") as f:
                 for seqname in genome.keys():
                     f.write("{}\t{}\n".format(seqname, len(genome[seqname])))

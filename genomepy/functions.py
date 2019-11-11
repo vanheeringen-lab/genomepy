@@ -221,7 +221,7 @@ def install_genome(
     out_dir = os.path.join(genome_dir, localname)
     ext = ".fa.gz" if bgzip else ".fa"
     genome_file = out_dir + "/" + localname + ext
-    if not os.path.exists(genome_file) or force is True:
+    if not os.path.exists(genome_file) or force:
         # Download genome from provider
         p = ProviderBase.create(provider)
         p.download_genome(
@@ -239,7 +239,7 @@ def install_genome(
     no_annotation_found = not any(
         localname in os.path.basename(fname) for fname in glob_ext_files(out_dir, "gtf")
     )
-    if annotation and (no_annotation_found or force is True):
+    if annotation and (no_annotation_found or force):
         # Download annotation from provider
         p = ProviderBase.create(provider)
         p.download_annotation(name, genome_dir, localname=localname, **kwargs)

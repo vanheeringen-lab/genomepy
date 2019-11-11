@@ -25,7 +25,7 @@ class BlacklistPlugin(Plugin):
         props = self.get_properties(genome)
         fname = props["blacklist"]
 
-        if not os.path.exists(fname) or force is True:
+        if not os.path.exists(fname) or force:
             link = self.http_dict.get(genome.name)
             if link is None:
                 sys.stderr.write("No blacklist found for {}\n".format(genome.name))
@@ -36,8 +36,8 @@ class BlacklistPlugin(Plugin):
                 with open(fname, "wb") as bed:
                     bed.write(response.read())
             except Exception as e:
-                print(e)
-                print("Could not download blacklist file from {}".format(link))
+                sys.stderr.write(e)
+                sys.stderr.write("Could not download blacklist file from {}".format(link))
 
     def get_properties(self, genome):
         props = {

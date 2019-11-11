@@ -165,7 +165,7 @@ def test_gmap(genome, force):
         p = GmapPlugin()
         p.after_genome_download(genome, force=force)
         dirname = os.path.dirname(genome.filename)
-        index_dir = os.path.join(dirname, "index", "gmap", genome.name)
+        index_dir = os.path.join(dirname, "index", "gmap")
         fname = os.path.join(index_dir, "{}.maps".format(genome.name))
         assert os.path.exists(index_dir)
         assert os.path.exists(fname)

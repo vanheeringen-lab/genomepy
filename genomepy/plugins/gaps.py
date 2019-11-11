@@ -9,7 +9,7 @@ class GapsPlugin(Plugin):
         props = self.get_properties(genome)
         fname = props["gaps"]
 
-        if not os.path.exists(fname) or force is True:
+        if not os.path.exists(fname) or force:
             with open(fname, "w") as bed:
                 for chrom in genome.keys():
                     for m in re.finditer(r"N+", genome[chrom][:].seq):

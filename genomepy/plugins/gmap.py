@@ -1,10 +1,12 @@
 import os.path
 import re
 import subprocess as sp
+from shutil import move
 from shutil import rmtree
+from tempfile import TemporaryDirectory
 
 from genomepy.plugin import Plugin
-from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
+from genomepy.utils import cmd_ok, run_index_cmd
 
 
 class GmapPlugin(Plugin):
@@ -14,14 +16,11 @@ class GmapPlugin(Plugin):
 
         # Create index dir
         index_dir = genome.props["gmap"]["index_dir"]
-        index_name = genome.props["gmap"]["index_name"]
-        mkdir_p(index_dir)
+        if force:
+            # Start from scratch
+            rmtree(index_dir, ignore_errors=True)
 
-        if (
-            not os.path.exists(index_name)
-            or any(fname.endswith(".iit") for fname in os.listdir(index_name))
-            or force is True
-        ):
+        if not os.path.exists(index_dir):
             # If the genome is bgzipped it needs to be unzipped first
             fname = genome.filename
             bgzip = False
@@ -32,13 +31,16 @@ class GmapPlugin(Plugin):
                 fname = re.sub(".gz$", "", fname)
                 bgzip = True
 
-            # remove old files in index dir if force-overwrite is requested
-            if force and os.path.exists(index_name):
-                rmtree(index_name)
+            # gmap outputs a folder named genome.name
+            # its content is moved to index dir, consistent with other plugins
+            with TemporaryDirectory() as tmpdir:
+                # Create index
+                cmd = "gmap_build -D {} -d {} {}".format(tmpdir, genome.name, fname)
+                run_index_cmd("gmap", cmd)
 
-            # Create index
-            cmd = "gmap_build -D {} -d {} {}".format(index_dir, genome.name, fname)
-            run_index_cmd("gmap", cmd)
+                # Move files to index_dir
+                src = os.path.join(tmpdir, genome.name)
+                move(src, index_dir)
 
             if bgzip:
                 ret = sp.check_call(["bgzip", fname])

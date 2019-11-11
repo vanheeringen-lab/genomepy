@@ -1,4 +1,5 @@
 import os
+from shutil import rmtree
 
 from genomepy.plugin import Plugin
 from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
@@ -11,18 +12,18 @@ class BwaPlugin(Plugin):
 
         # Create index dir
         index_dir = genome.props["bwa"]["index_dir"]
-        index_fa = genome.props["bwa"]["index_name"]
+        index_name = genome.props["bwa"]["index_name"]
+        if force:
+            # Start from scratch
+            rmtree(index_dir, ignore_errors=True)
         mkdir_p(index_dir)
 
-        if (
-            not any(fname.endswith(".bwt") for fname in os.listdir(index_dir))
-            or force is True
-        ):
+        if not any(fname.endswith(".bwt") for fname in os.listdir(index_dir)):
             # Create index
-            if not os.path.exists(index_fa):
-                os.symlink(genome.filename, index_fa)
+            if not os.path.exists(index_name):
+                os.symlink(genome.filename, index_name)
 
-            cmd = "bwa index {}".format(index_fa)
+            cmd = "bwa index {}".format(index_name)
             run_index_cmd("bwa", cmd)
 
     def get_properties(self, genome):
