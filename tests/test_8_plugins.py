@@ -76,7 +76,7 @@ def test_blacklist(genome, force):
     p.after_genome_download(genome, force=force)
     t1 = os.path.getmtime(fname)
     sys.stderr.write(str(t1))
-    sys.stderr.write(type(t1))
+    sys.stderr.write(str(type(t1)))
     assert t0 != t1 if force else t0 == t1
 
 
