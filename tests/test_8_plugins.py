@@ -75,10 +75,12 @@ def test_blacklist(genome, force):
     assert os.path.exists(fname)
 
     t0 = os.path.getmtime(fname)
+    import time
+    time.sleep(1)
     p.after_genome_download(genome, force=force)
     t1 = os.path.getmtime(fname)
     #
-    sys.stderr.write("t1:" + str(t0) + "\n")
+    sys.stderr.write("t0:" + str(t0) + "\n")
     sys.stderr.write("t1:" + str(t1) + "\n")
     #
     assert t0 != t1 if force else t0 == t1
