@@ -68,15 +68,19 @@ def test_blacklist(genome, force):
 
     p.after_genome_download(genome, force=force)
     fname = re.sub(".fa(.gz)?$", ".blacklist.bed.gz", genome.filename)
+    #
+    import sys
+    sys.stderr.write("fname:" + str(fname) + "\n")
+    #
     assert os.path.exists(fname)
 
     t0 = os.path.getmtime(fname)
-    import sys
-    sys.stderr.write(str(t0))
     p.after_genome_download(genome, force=force)
     t1 = os.path.getmtime(fname)
-    sys.stderr.write(str(t1))
-    sys.stderr.write(str(type(t1)))
+    #
+    sys.stderr.write("t1:" + str(t0) + "\n")
+    sys.stderr.write("t1:" + str(t1) + "\n")
+    #
     assert t0 != t1 if force else t0 == t1
 
 
