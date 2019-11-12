@@ -28,7 +28,7 @@ def test_zipped_genomes(zipped_genomes):
 
 
 # 2019-11-07 BDGP6, BDGP6.22 and dere_caf1 currently fails on Ensembl
-@pytest.mark.xfail()
+# @pytest.mark.xfail()
 def test_ensembl_genome():
     """Test Ensembl.
 
@@ -58,7 +58,7 @@ def test_ucsc_genome():
 
 
 # 2019-11-12 Release_6_plus_ISO1_MT currently fails on NCBI
-@pytest.mark.xfail()
+# @pytest.mark.xfail()
 def test_ncbi_genome():
     """Test NCBI.
 
