@@ -4,11 +4,11 @@ import shutil
 import pytest
 import os
 
-# Python 2
-try:
-    FileNotFoundError
-except NameError:
-    FileNotFoundError = IOError
+# # Python 2
+# try:
+#     FileNotFoundError
+# except NameError:
+#     FileNotFoundError = IOError
 
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 

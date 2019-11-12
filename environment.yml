@@ -23,6 +23,7 @@ dependencies:
   - hisat2
   - gmap
   - tabix
+  - psutil
   
   # Testing etc.
   - autopep8

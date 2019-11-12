@@ -12,11 +12,12 @@ import subprocess as sp
 import tarfile
 from psutil import virtual_memory
 from tempfile import NamedTemporaryFile, TemporaryDirectory
+from urllib.request import urlopen, urlretrieve, urlcleanup, URLError
 
-try:
-    from urllib.request import urlopen, urlretrieve, urlcleanup, URLError
-except ImportError:
-    from urllib import urlopen, urlretrieve, urlcleanup
+# try:
+#     from urllib.request import urlopen, urlretrieve, urlcleanup, URLError
+# except ImportError:
+#     from urllib import urlopen, urlretrieve, urlcleanup
 
 from bucketcache import Bucket
 from pyfaidx import Fasta
@@ -475,14 +476,12 @@ class EnsemblProvider(ProviderBase):
         # first try the (much smaller) primary assembly, otherwise use the toplevel assembly
         try:
             if kwargs.get("toplevel", False):
-                raise ValueError("skipping primary assembly check")
+                raise URLError("skipping primary assembly check")
             asm_url = get_url("primary_assembly")
             with urlopen(asm_url):
                 None
 
-        # URLError: urllib.request.urlopen.
-        # IOError:  urllib.urlopen
-        except (URLError, IOError, ValueError):
+        except URLError:
             asm_url = get_url()
 
         return self.safe(genome_info["assembly_name"]), asm_url

@@ -7,9 +7,9 @@ biopython
 bucketcache
 xmltodict
 appdirs
+psutil
 autopep8
 flake8
 black
 coverage
 pytest
-psutil

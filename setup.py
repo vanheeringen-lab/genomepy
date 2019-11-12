@@ -32,6 +32,7 @@ requires = [
     "bucketcache",
     "requests",
     "appdirs",
+    "psutil",
 ]
 
 entry_points = {"console_scripts": ["genomepy=genomepy.cli:cli"]}
