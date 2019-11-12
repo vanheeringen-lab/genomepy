@@ -13,6 +13,20 @@ except NameError:
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
+@pytest.fixture(scope="module", params=[".gz", ".tar.gz"])
+def zipped_genomes(request):
+    return request.param
+
+
+def test_zipped_genomes(zipped_genomes):
+    """Download a gzipped and a tar.gzipped genome"""
+    genome = "AgamP4" if zipped_genomes == ".gz" else "sacCer3"
+    provider = "Ensembl" if zipped_genomes == ".gz" else "UCSC"
+    tmp = mkdtemp()
+    genomepy.install_genome(genome, provider, genome_dir=tmp)
+    shutil.rmtree(tmp)
+
+
 # 2019-11-07 BDGP6, BDGP6.22 and dere_caf1 currently fails on Ensembl
 @pytest.mark.xfail()
 def test_ensembl_genome():
@@ -43,6 +57,8 @@ def test_ucsc_genome():
     assert str(seq) == "TTTGGTTGTTCCTCTTCCTT"
 
 
+# 2019-11-12 Release_6_plus_ISO1_MT currently fails on NCBI
+@pytest.mark.xfail()
 def test_ncbi_genome():
     """Test NCBI.
 

@@ -3,7 +3,6 @@ import sys
 import requests
 import re
 import os
-import io
 import norns
 import time
 import gzip
@@ -11,7 +10,8 @@ import xmltodict
 import shutil
 import subprocess as sp
 import tarfile
-from tempfile import mkdtemp, NamedTemporaryFile
+from psutil import virtual_memory
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 try:
     from urllib.request import urlopen, urlretrieve, urlcleanup, URLError
@@ -94,23 +94,19 @@ class ProviderBase(object):
     def tar_to_bigfile(self, fname, outfile):
         """Convert tar of multiple FASTAs to one file."""
         fnames = []
-        tmpdir = mkdtemp()
+        with TemporaryDirectory() as tmpdir:
+            # Extract files to temporary directory
+            with tarfile.open(fname) as tar:
+                tar.extractall(path=tmpdir)
+            for root, _, files in os.walk(tmpdir):
+                fnames += [os.path.join(root, fname) for fname in files]
 
-        # Extract files to temporary directory
-        with tarfile.open(fname) as tar:
-            tar.extractall(path=tmpdir)
-        for root, _, files in os.walk(tmpdir):
-            fnames += [os.path.join(root, fname) for fname in files]
-
-        # Concatenate
-        with open(outfile, "w") as out:
-            for infile in fnames:
-                for line in open(infile):
-                    out.write(line)
-                os.unlink(infile)
-
-        # Remove temp dir
-        shutil.rmtree(tmpdir)
+            # Concatenate
+            with open(outfile, "w") as out:
+                for infile in fnames:
+                    for line in open(infile):
+                        out.write(line)
+                    os.unlink(infile)
 
     def list_install_options(self):
         """List provider specific install options"""
@@ -158,7 +154,6 @@ class ProviderBase(object):
             If not specified, the setting from the configuration file will be used.
         """
         genome_dir = os.path.expanduser(genome_dir)
-
         if not os.path.exists(genome_dir):
             os.makedirs(genome_dir)
 
@@ -166,61 +161,72 @@ class ProviderBase(object):
         myname = dbname
         if localname:
             myname = localname
-
         myname = myname.replace(" ", "_")
-
-        gzipped = False
-        if link.endswith(".gz"):
-            gzipped = True
-
         if not os.path.exists(os.path.join(genome_dir, myname)):
             os.makedirs(os.path.join(genome_dir, myname))
 
         sys.stderr.write("Downloading from {}...\n".format(link))
-        down_dir = genome_dir
-        fname = os.path.join(genome_dir, myname, myname + ".fa")
-        if regex:
-            down_dir = mkdtemp()
-            os.mkdir(os.path.join(down_dir, myname))
-            fname = os.path.join(down_dir, myname, myname + ".fa")
-        urlcleanup()
-        with urlopen(link) as response:
-            with open(fname, "wb") as f_out:
-                if gzipped:
-                    # Supports both Python 2.7 as well as 3
-                    with gzip.GzipFile(fileobj=io.BytesIO(response.read())) as f_in:
-                        shutil.copyfileobj(f_in, f_out)
-                else:
-                    f_out.write(response.read())
-        sys.stderr.write("done...\n")
 
-        if link.endswith("tar.gz"):
-            self.tar_to_bigfile(fname, fname)
+        # download to tmp dir. Move genome on completion.
+        # tmp dir is in genome_dir to prevent moving the genome between disks
+        with TemporaryDirectory(prefix=genome_dir) as tmpdir:
+            fname = os.path.join(tmpdir, myname + ".fa")
 
-        if hasattr(self, "_post_process_download"):
-            self._post_process_download(name, down_dir, mask)
+            # actual download
+            urlcleanup()
+            with urlopen(link) as response:
+                # check available memory vs file size.
+                available_memory = int(virtual_memory().available)
+                file_size = int(response.info()["Content-Length"])
+                # download file in chunks if >75% of memory would be used
+                cutoff = int(available_memory * 0.75)
+                chunk_size = None if file_size < cutoff else cutoff
+                with open(fname, "wb") as f_out:
+                    shutil.copyfileobj(response, f_out, chunk_size)
 
-        if regex:
-            infa = fname
-            outfa = os.path.join(genome_dir, myname, myname + ".fa")
-            filter_fasta(infa, outfa, regex=regex, v=invert_match, force=True)
+            # unzip genome
+            if link.endswith("tar.gz"):
+                self.tar_to_bigfile(fname, fname)
+            elif link.endswith(".gz"):
+                # gunzip will only work with files ending with ".gz"
+                os.rename(fname, fname + ".gz")
+                ret = sp.check_call(["gunzip", "-f", fname])
+                if ret != 0:
+                    raise Exception("Error gunzipping genome {}".format(fname))
 
-            not_included = [
-                k for k in Fasta(infa).keys() if k not in Fasta(outfa).keys()
-            ]
-            shutil.rmtree(down_dir)
-            fname = outfa
+            # process genome (e.g. masking)
+            if hasattr(self, "_post_process_download"):
+                self._post_process_download(name, tmpdir, mask)
 
-        if bgzip is None:
-            bgzip = config.get("bgzip", False)
+            if regex:
+                os.rename(fname, fname + "_to_regex")
+                infa = fname + "_to_regex"
+                outfa = fname
+                filter_fasta(infa, outfa, regex=regex, v=invert_match, force=True)
 
-        if bgzip:
-            ret = sp.check_call(["bgzip", "-f", fname])
-            if ret != 0:
-                raise Exception(
-                    "Error bgzipping {}. ".format(fname) + "Is tabix installed?"
-                )
-            fname += ".gz"
+                not_included = [
+                    k for k in Fasta(infa).keys() if k not in Fasta(outfa).keys()
+                ]
+
+            # bgzip genome if requested
+            if bgzip is None:
+                bgzip = config.get("bgzip", False)
+
+            if bgzip:
+                ret = sp.check_call(["bgzip", "-f", fname])
+                if ret != 0:
+                    raise Exception(
+                        "Error bgzipping {}. ".format(fname) + "Is tabix installed?"
+                    )
+                fname += ".gz"
+
+            # transfer the genome from the tmpdir to the genome_dir
+            if not os.path.exists(os.path.join(genome_dir, myname)):
+                os.makedirs(os.path.join(genome_dir, myname))
+
+            src = fname
+            dst = os.path.join(genome_dir, myname, os.path.basename(fname))
+            shutil.move(src, dst)
 
         sys.stderr.write("name: {}\n".format(dbname))
         sys.stderr.write("local name: {}\n".format(myname))
@@ -474,7 +480,8 @@ class EnsemblProvider(ProviderBase):
             if kwargs.get("toplevel", False):
                 raise ValueError("skipping primary assembly check")
             asm_url = get_url("primary_assembly")
-            urlopen(asm_url)
+            with urlopen(asm_url):
+                None
 
         # URLError: urllib.request.urlopen.
         # IOError:  urllib.urlopen
@@ -550,9 +557,10 @@ class EnsemblProvider(ProviderBase):
                     "genePredToBed /dev/stdin {1} && gzip -f {1}"
                 )
                 sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
-                readme = os.path.join(genome_dir, localname, "README.txt")
-                with open(readme, "a") as f:
-                    f.write("annotation url: {}\n".format(ftp_link))
+
+            readme = os.path.join(genome_dir, localname, "README.txt")
+            with open(readme, "a") as f:
+                f.write("annotation url: {}\n".format(ftp_link))
         except Exception:
             sys.stderr.write("\nCould not download {}\n".format(ftp_link))
             raise
@@ -711,12 +719,12 @@ class UcscProvider(ProviderBase):
         tmp = NamedTemporaryFile(delete=False, suffix=".gz")
 
         anno = []
-        f = urlopen(UCSC_GENE_URL.format(name))
         p = re.compile(r"\w+.Gene.txt.gz")
-        for line in f.readlines():
-            m = p.search(line.decode())
-            if m:
-                anno.append(m.group(0))
+        with urlopen(UCSC_GENE_URL.format(name)) as f:
+            for line in f.readlines():
+                m = p.search(line.decode())
+                if m:
+                    anno.append(m.group(0))
         sys.stderr.write("Retrieving gene annotation for {}\n".format(name))
         url = ""
         for a in ANNOS:

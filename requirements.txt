@@ -7,3 +7,4 @@ biopython
 bucketcache
 xmltodict
 appdirs
+psutil
