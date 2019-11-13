@@ -1001,6 +1001,7 @@ class NCBIProvider(ProviderBase):
         for genome in self.genomes:
             if name in [genome["asm_name"], genome["asm_name"].replace(" ", "_")]:
                 url = genome["ftp_path"]
+                url = url.replace("ftp://", "https://")
                 url += "/" + url.split("/")[-1] + "_genomic.gff.gz"
 
         out_dir = os.path.join(genome_dir, localname)
