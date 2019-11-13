@@ -38,7 +38,7 @@ before_install:
 install:
   - conda env create -f environment.yml
   - conda activate genomepy_travis
-#  - conda create -n genomepy-$PYTHON_VERSION python=$PYTHON_VERSION ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gff3togenepred ucsc-gtftogenepred bwa minimap2 bowtie2 hisat2 gmap pyfaidx>=0.5.1 bucketcache norns>0.1.5 xmltodict pytest coverage pyyaml requests tabix biopython black flake8 flake8-bugbear pypandoc psutil
+#  - conda create -n genomepy-$PYTHON_VERSION python=$PYTHON_VERSION ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gff3togenepred ucsc-gtftogenepred bwa minimap2 bowtie2 hisat2 gmap pyfaidx>=0.5.1 bucketcache norns>=0.1.5 xmltodict pytest coverage pyyaml requests tabix biopython black flake8 flake8-bugbear pypandoc psutil
 #  - source activate genomepy-$PYTHON_VERSION
   - python setup.py develop
   - python setup.py build

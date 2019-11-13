@@ -9,7 +9,7 @@ dependencies:
   - pyfaidx>=0.5.1
   - bucketcache
   - xmltodict
-  - norns>0.1.5
+  - norns>=0.1.5
 #  - pyyaml
   - requests
 #  - biopython
