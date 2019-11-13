@@ -16,13 +16,6 @@ from genomepy.utils import get_localname
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
-# # Python 2
-# try:
-#     FileNotFoundError
-# except NameError:
-#     # pylint: disable=redefined-builtin
-#     FileNotFoundError = IOError
-
 
 def manage_config(cmd, *args):
     """Manage genomepy config file."""

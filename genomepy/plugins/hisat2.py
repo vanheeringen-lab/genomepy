@@ -2,7 +2,6 @@ import os
 import re
 import subprocess as sp
 from shutil import rmtree
-
 from genomepy.plugin import Plugin
 from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
 

@@ -8,20 +8,16 @@ import time
 import gzip
 import xmltodict
 import shutil
-import subprocess as sp
 import tarfile
+import subprocess as sp
+
 from psutil import virtual_memory
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from urllib.request import urlopen, urlretrieve, urlcleanup, URLError
-
-# try:
-#     from urllib.request import urlopen, urlretrieve, urlcleanup, URLError
-# except ImportError:
-#     from urllib import urlopen, urlretrieve, urlcleanup
-
 from bucketcache import Bucket
 from pyfaidx import Fasta
 from appdirs import user_cache_dir
+
 from genomepy import exceptions
 from genomepy.utils import filter_fasta, get_localname
 from genomepy.__about__ import __version__

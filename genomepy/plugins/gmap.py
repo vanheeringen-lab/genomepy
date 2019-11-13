@@ -1,10 +1,8 @@
 import os.path
 import re
 import subprocess as sp
-from shutil import move
-from shutil import rmtree
+from shutil import move, rmtree
 from tempfile import TemporaryDirectory
-
 from genomepy.plugin import Plugin
 from genomepy.utils import cmd_ok, run_index_cmd
 

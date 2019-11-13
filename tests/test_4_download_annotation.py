@@ -1,18 +1,13 @@
-from tempfile import mkdtemp
 import genomepy
 import shutil
 import gzip
 import os
-
-# import pytest
-
-# # Python 2
-# try:
-#     FileNotFoundError
-# except NameError:
-#     FileNotFoundError = IOError
+import pytest
+from tempfile import mkdtemp
+from platform import system
 
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+linux = system() == "Linux"
 
 
 def setup():
@@ -49,6 +44,7 @@ def validate_gzipped_bed(fname):
             break
 
 
+@pytest.mark.skipif(travis and linux, reason="FTP does not work on Linux with Travis")
 def test_ensembl_annotation(localname=None):
     """Test Ensembl annotation
 
@@ -57,7 +53,9 @@ def test_ensembl_annotation(localname=None):
     tmp = mkdtemp()
     p = genomepy.provider.ProviderBase.create("Ensembl")
 
-    for name, version in [("Turkey_2.01", 98)]:
+    for name, version in [
+        ("GRCh38.p13", 98)
+    ]:  # ("GRCz11", 98)]:  # ("Turkey_2.01", 98),
         p.download_annotation(name, tmp, localname=localname, version=version)
 
         localname = genomepy.utils.get_localname(name, localname)
@@ -70,7 +68,7 @@ def test_ensembl_annotation(localname=None):
     shutil.rmtree(tmp)
 
 
-# @pytest.mark.skipif(travis, reason="FTP does not work on Travis")
+@pytest.mark.skipif(travis and linux, reason="FTP does not work on Linux with Travis")
 def test_ensemblgenomes_annotation(localname=None):
     """Test Ensembl annotation
 
@@ -111,6 +109,7 @@ def test_UCSC_annotation(localname=None):
 
 
 # @pytest.mark.skipif(travis, reason="FTP does not work on Travis")
+@pytest.mark.skipif(travis and linux, reason="FTP does not work on Linux with Travis")
 def test_NCBI_annotation(localname=None):
     """Test NCBI annotation"""
     tmp = mkdtemp()

@@ -1,13 +1,8 @@
 import os.path
 import re
 import sys
-
+from urllib.request import urlopen
 from genomepy.plugin import Plugin
-
-try:
-    from urllib.request import urlopen
-except ImportError:
-    from urllib import urlopen
 
 
 class BlacklistPlugin(Plugin):

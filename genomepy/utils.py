@@ -3,8 +3,8 @@ import errno
 import os
 import re
 import sys
-import subprocess as sp
 import urllib.request
+import subprocess as sp
 
 from pyfaidx import Fasta
 

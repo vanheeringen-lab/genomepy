@@ -1,6 +1,5 @@
 import os
 from shutil import rmtree
-
 from genomepy.plugin import Plugin
 from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
 

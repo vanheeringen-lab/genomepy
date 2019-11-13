@@ -2,23 +2,20 @@ import genomepy
 import pytest
 import os
 
-# # Python 2
-# try:
-#     FileNotFoundError
-# except NameError:
-#     FileNotFoundError = IOError
-
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
 def test_ensembl_genome_download_links():
-    """Test Ensembl FTP links for various genomes
+    """Test Ensembl links for various genomes
 
-    These genomes are hosted on ftp.ensembl.org.
+    These genomes are hosted on ftp.ensembl.org
+
+    Vertebrates are downloaded from HTTPS.
     """
     p = genomepy.provider.ProviderBase.create("Ensembl")
 
-    for genome in ["GRCz11"]:  # "GRCh38.p13"
+    # only test on vertebrates, as FTP is unreliable on Travis
+    for genome in ["Anan_2.0", "ASM303372v1"]:
         p.get_genome_download_link(genome)
 
 
@@ -30,7 +27,7 @@ def test_ensemblgenomes_genome_download_links():
     """
     p = genomepy.provider.ProviderBase.create("Ensembl")
 
-    for genome in ["AgamP4", "WBcel235"]:  # "R64-1-1"
+    for genome in ["AgamP4", "WBcel235"]:
         p.get_genome_download_link(genome)
 
 
@@ -63,7 +60,7 @@ def test_ensembl_download_options(assembly, masking, release_version):
 
 
 def test_ucsc_genome_download_links(masking):
-    """Test UCSC FTP links for various genomes
+    """Test UCSC HTTP links for various genomes
 
     Also test masking (unmasked should be ignored)."""
     p = genomepy.provider.ProviderBase.create("UCSC")
@@ -73,9 +70,11 @@ def test_ucsc_genome_download_links(masking):
 
 
 def test_ncbi_genome_download_links(masking):
-    """Test NCBI FTP links for various genomes
+    """Test NCBI HTTPS links for various genomes
 
-    Also test masking (should be ignored)."""
+    Also test masking (should be ignored).
+
+    These genomes are hosted on ftp://ftp.ncbi.nlm.nih.gov."""
     p = genomepy.provider.ProviderBase.create("NCBI")
 
     for genome in ["Charlie1.0", "GRCh38.p13"]:

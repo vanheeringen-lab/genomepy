@@ -1,5 +1,4 @@
 import os.path
-
 from genomepy.plugin import Plugin
 
 

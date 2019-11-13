@@ -1,16 +1,12 @@
-from tempfile import mkdtemp
 import genomepy
 import shutil
 import pytest
 import os
-
-# # Python 2
-# try:
-#     FileNotFoundError
-# except NameError:
-#     FileNotFoundError = IOError
+from tempfile import mkdtemp
+from platform import system
 
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+linux = system() == "Linux"
 
 
 @pytest.fixture(scope="module", params=[".gz", ".tar.gz"])
@@ -20,8 +16,8 @@ def zipped_genomes(request):
 
 def test_zipped_genomes(zipped_genomes):
     """Download a gzipped and a tar.gzipped genome"""
-    genome = "AgamP4" if zipped_genomes == ".gz" else "sacCer3"
-    provider = "Ensembl" if zipped_genomes == ".gz" else "UCSC"
+    genome = "Release_6_plus_ISO1_MT" if zipped_genomes == ".gz" else "sacCer3"
+    provider = "NCBI" if zipped_genomes == ".gz" else "UCSC"
     tmp = mkdtemp()
     genomepy.install_genome(genome, provider, genome_dir=tmp)
     shutil.rmtree(tmp)
@@ -29,6 +25,7 @@ def test_zipped_genomes(zipped_genomes):
 
 # 2019-11-07 BDGP6, BDGP6.22 and dere_caf1 currently fails on Ensembl
 # @pytest.mark.xfail()
+# @pytest.mark.skipif(travis and linux, reason="FTP does not work on Linux with Travis")
 def test_ensembl_genome():
     """Test Ensembl.
 
@@ -36,10 +33,16 @@ def test_ensembl_genome():
     specific sequence.
     """
     tmp = mkdtemp()
-    genomepy.install_genome("dere_caf1", "Ensembl", genome_dir=tmp)
-    g = genomepy.Genome("dere_caf1", genome_dir=tmp)
-    seq = g["scaffold_4929"][61:81]
-    assert str(seq).upper() == "CACTTGGCTAAATTCCAAGA"
+    # only test on vertebrates which are downloaded from HTTPS, as FTP is unreliable on Travis
+    # TETRAODON_8.0   # no assembly_accession
+    # H_comes_QL1_v1  # 500 MB genome
+    # fBetSpl5.2      # 450 MB
+    # R64-1-1         # yeast -> ftp
+    # KH              # 117 MB
+    genomepy.install_genome("KH", "Ensembl", genome_dir=tmp, version=98)
+    g = genomepy.Genome("KH", genome_dir=tmp)
+    seq = g["1"][40:60]
+    assert str(seq).upper() == "nnnnnnnnnnAACCCCTAAC".upper()
     shutil.rmtree(tmp)
 
 
