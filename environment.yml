@@ -1,16 +1,18 @@
+name: genomepy_travis
 channels:
-  - defaults
   - bioconda
   - conda-forge
+  - defaults
 dependencies:
+  - python=3.6.*
   - click
   - pyfaidx>=0.5.1
   - bucketcache
   - xmltodict
-  - norns>0.1.1
-  - pyyaml
+  - norns>0.1.5
+#  - pyyaml
   - requests
-  - biopython
+#  - biopython
   - appdirs
   - ucsc-genepredtobed
   - ucsc-genepredtogtf
@@ -26,9 +28,10 @@ dependencies:
   - psutil
   
   # Testing etc.
-  - autopep8
+#  - autopep8
   - flake8
+  - flake8-bugbear
   - black
-  - coverage
+#  - coverage
   - pytest
-        
+  - pypandoc

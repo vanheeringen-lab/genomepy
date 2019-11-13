@@ -48,8 +48,8 @@ def test_ncbi_human():
     specific sequence.
     """
     tmp = mkdtemp()
-    genomepy.install_genome("GRCh38.p9", "NCBI", genome_dir=tmp)
-    g = genomepy.Genome("GRCh38.p9", genome_dir=tmp)
+    genomepy.install_genome("GRCh38.p13", "NCBI", genome_dir=tmp)
+    g = genomepy.Genome("GRCh38.p13", genome_dir=tmp)
     seq = g["6"][166168664:166168679]
     assert str(seq) == "CCTCCTCGCTCTCTT"
     shutil.rmtree(tmp)

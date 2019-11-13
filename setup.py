@@ -1,11 +1,12 @@
 import os
 import sys
 import pypandoc
+from setuptools import setup
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+# try:
+#     from setuptools import setup
+# except ImportError:
+#     from distutils.core import setup
 
 # https://packaging.python.org/single_source_version/
 exec(open("genomepy/__about__.py").read())
@@ -23,6 +24,8 @@ packages = ["genomepy", "genomepy/plugins"]
 
 package_data = {"genomepy": ["cfg/*.yaml"]}
 
+entry_points = {"console_scripts": ["genomepy=genomepy.cli:cli"]}
+
 requires = [
     "pytest",
     "click",
@@ -34,8 +37,6 @@ requires = [
     "appdirs",
     "psutil",
 ]
-
-entry_points = {"console_scripts": ["genomepy=genomepy.cli:cli"]}
 
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -56,7 +57,7 @@ classifiers = [
 setup(
     name="genomepy",
     version=__version__,  # noqa: F821
-    description="Genomes in Python",
+    description="Download genomes in Python",
     long_description=long_description,
     packages=packages,
     package_data=package_data,

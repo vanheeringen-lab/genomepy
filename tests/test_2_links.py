@@ -16,7 +16,8 @@ def test_ensembl_genome_download_links():
     """
     p = genomepy.provider.ProviderBase.create("Ensembl")
 
-    # only test on vertebrates, as FTP is unreliable on Travis
+    # Only test on vertebrates as these are downloaded over HTTPS.
+    # All others are downloaded over FTP, which is unreliable on Travis.
     for genome in ["Anan_2.0", "ASM303372v1"]:
         p.get_genome_download_link(genome)
 

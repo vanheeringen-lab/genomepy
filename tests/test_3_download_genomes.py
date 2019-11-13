@@ -31,7 +31,8 @@ def test_ensembl_genome():
     Download smallest genome from Ensembl's HTTPS and retrieve a specific sequence.
     """
     tmp = mkdtemp()
-    # only test on vertebrates which are downloaded from HTTPS, as FTP is unreliable on Travis
+    # Only test on vertebrates as these are downloaded over HTTPS.
+    # All others are downloaded over FTP, which is unreliable on Travis.
     genomepy.install_genome("KH", "Ensembl", genome_dir=tmp, version=98)
     g = genomepy.Genome("KH", genome_dir=tmp)
     seq = g["1"][40:60]

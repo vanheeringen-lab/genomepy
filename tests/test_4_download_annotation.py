@@ -52,7 +52,8 @@ def test_ensembl_annotation(localname=None):
     tmp = mkdtemp()
     p = genomepy.provider.ProviderBase.create("Ensembl")
 
-    # only test on vertebrates which are downloaded from HTTPS, as FTP is unreliable on Travis
+    # Only test on vertebrates as these are downloaded over HTTPS.
+    # All others are downloaded over FTP, which is unreliable on Travis.
     for name, version in [("KH", 98)]:
         p.download_annotation(name, tmp, localname=localname, version=version)
 
@@ -106,8 +107,6 @@ def test_UCSC_annotation(localname=None):
     shutil.rmtree(tmp)
 
 
-# @pytest.mark.skipif(travis, reason="FTP does not work on Travis")
-# @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_NCBI_annotation(localname=None):
     """Test NCBI annotation"""
     tmp = mkdtemp()
