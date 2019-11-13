@@ -341,6 +341,8 @@ class EnsemblProvider(ProviderBase):
             self.genomes = []
             divisions = self.request_json("info/divisions?")
             for division in divisions:
+                if division == "EnsemblBacteria":
+                    continue
                 genomes = self.request_json(
                     "info/genomes/division/{}?".format(division)
                 )

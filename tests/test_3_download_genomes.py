@@ -38,11 +38,8 @@ def test_ensembl_genome():
     tmp = mkdtemp()
     genomepy.install_genome("dere_caf1", "Ensembl", genome_dir=tmp)
     g = genomepy.Genome("dere_caf1", genome_dir=tmp)
-    seq = g["scaffold_4929"][61:121]
-    assert (
-        str(seq).upper()
-        == "ACACTTGGCTAAATTCCAAGAGAACTTACAAAAACAAACACCCCCCAGTCGAAAAAGGCC"
-    )
+    seq = g["scaffold_4929"][61:81]
+    assert str(seq).upper() == "CACTTGGCTAAATTCCAAGA"
     shutil.rmtree(tmp)
 
 
