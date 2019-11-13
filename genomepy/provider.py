@@ -916,7 +916,7 @@ class NCBIProvider(ProviderBase):
             self.genomes = self._get_genomes()
 
         for genome in self.genomes:
-            if genome["asm_name"] == name:
+            if name in [genome["asm_name"], genome["asm_name"].replace(" ", "_")]:
                 url = genome["ftp_path"]
                 url = url.replace("ftp://", "https://")
                 url += "/" + url.split("/")[-1] + "_genomic.fna.gz"
@@ -938,7 +938,7 @@ class NCBIProvider(ProviderBase):
         # Get the FTP url for this specific genome and download
         # the assembly report
         for genome in self.genomes:
-            if genome["asm_name"] == name:
+            if name in [genome["asm_name"], genome["asm_name"].replace(" ", "_")]:
                 url = genome["ftp_path"]
                 url += "/" + url.split("/")[-1] + "_assembly_report.txt"
                 url = url.replace("ftp://", "https://")
@@ -1003,7 +1003,7 @@ class NCBIProvider(ProviderBase):
             self.genomes = self._get_genomes()
 
         for genome in self.genomes:
-            if genome["asm_name"] == name:
+            if name in [genome["asm_name"], genome["asm_name"].replace(" ", "_")]:
                 url = genome["ftp_path"]
                 url += "/" + url.split("/")[-1] + "_genomic.gff.gz"
 
