@@ -44,18 +44,16 @@ def validate_gzipped_bed(fname):
             break
 
 
-@pytest.mark.skipif(travis and linux, reason="FTP does not work on Linux with Travis")
 def test_ensembl_annotation(localname=None):
     """Test Ensembl annotation
 
-    This annotation is hosted on ftp.ensembl.org.
+    This annotation is hosted on https://ftp.ensembl.org.
     """
     tmp = mkdtemp()
     p = genomepy.provider.ProviderBase.create("Ensembl")
 
-    for name, version in [
-        ("GRCh38.p13", 98)
-    ]:  # ("GRCz11", 98)]:  # ("Turkey_2.01", 98),
+    # only test on vertebrates which are downloaded from HTTPS, as FTP is unreliable on Travis
+    for name, version in [("KH", 98)]:
         p.download_annotation(name, tmp, localname=localname, version=version)
 
         localname = genomepy.utils.get_localname(name, localname)
@@ -68,7 +66,7 @@ def test_ensembl_annotation(localname=None):
     shutil.rmtree(tmp)
 
 
-@pytest.mark.skipif(travis and linux, reason="FTP does not work on Linux with Travis")
+@pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_ensemblgenomes_annotation(localname=None):
     """Test Ensembl annotation
 
@@ -109,7 +107,7 @@ def test_UCSC_annotation(localname=None):
 
 
 # @pytest.mark.skipif(travis, reason="FTP does not work on Travis")
-@pytest.mark.skipif(travis and linux, reason="FTP does not work on Linux with Travis")
+# @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_NCBI_annotation(localname=None):
     """Test NCBI annotation"""
     tmp = mkdtemp()

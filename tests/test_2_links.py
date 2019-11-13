@@ -1,8 +1,10 @@
 import genomepy
 import pytest
 import os
+from platform import system
 
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+linux = system() == "Linux"
 
 
 def test_ensembl_genome_download_links():
@@ -19,7 +21,7 @@ def test_ensembl_genome_download_links():
         p.get_genome_download_link(genome)
 
 
-# @pytest.mark.skipif(travis, reason="FTP does not work on Travis")
+@pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_ensemblgenomes_genome_download_links():
     """Test Ensembl FTP links for various genomes
 

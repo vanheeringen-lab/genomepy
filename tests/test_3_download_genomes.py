@@ -23,22 +23,15 @@ def test_zipped_genomes(zipped_genomes):
     shutil.rmtree(tmp)
 
 
-# 2019-11-07 BDGP6, BDGP6.22 and dere_caf1 currently fails on Ensembl
-# @pytest.mark.xfail()
-# @pytest.mark.skipif(travis and linux, reason="FTP does not work on Linux with Travis")
+@pytest.mark.skipif(travis, reason="Too slow for Travis")
+@pytest.mark.slow
 def test_ensembl_genome():
     """Test Ensembl.
 
-    Download Drosophila genome from Ensembl and retrieve a
-    specific sequence.
+    Download smallest genome from Ensembl's HTTPS and retrieve a specific sequence.
     """
     tmp = mkdtemp()
     # only test on vertebrates which are downloaded from HTTPS, as FTP is unreliable on Travis
-    # TETRAODON_8.0   # no assembly_accession
-    # H_comes_QL1_v1  # 500 MB genome
-    # fBetSpl5.2      # 450 MB
-    # R64-1-1         # yeast -> ftp
-    # KH              # 117 MB
     genomepy.install_genome("KH", "Ensembl", genome_dir=tmp, version=98)
     g = genomepy.Genome("KH", genome_dir=tmp)
     seq = g["1"][40:60]
@@ -57,8 +50,6 @@ def test_ucsc_genome():
     assert str(seq) == "TTTGGTTGTTCCTCTTCCTT"
 
 
-# 2019-11-12 Release_6_plus_ISO1_MT currently fails on NCBI
-# @pytest.mark.xfail()
 def test_ncbi_genome():
     """Test NCBI.
 

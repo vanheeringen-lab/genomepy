@@ -46,6 +46,7 @@ install:
 script:
   - black --check genomepy/ setup.py tests/
   - flake8 setup.py genomepy/ tests/
+  - py.test -v tests/test_4_download_annotation.py -k "test_NCBI_annotation"
   - py.test -v
   - genomepy providers 
 #after_sucess:
