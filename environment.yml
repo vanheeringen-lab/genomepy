@@ -10,7 +10,6 @@ dependencies:
   - bucketcache
   - xmltodict
   - norns>=0.1.5
-#  - pyyaml
   - requests
   - biopython>=1.73
   - appdirs
@@ -26,12 +25,11 @@ dependencies:
   - gmap
   - tabix
   - psutil
-  
+  - setuptools
+
   # Testing etc.
-#  - autopep8
   - flake8
   - flake8-bugbear
   - black
-#  - coverage
   - pytest
   - pypandoc
