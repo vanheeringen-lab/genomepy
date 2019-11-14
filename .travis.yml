@@ -1,16 +1,16 @@
-#language: python
+# use the minimal travis environment since we test in conda
+language: minimal
 
-matrix:
-  include:
-    - os: osx
-      language: generic
-#      env:
-#        - PYTHON_VERSION: "3.6"
-    - os: linux
-      language: python
-#      python: "3.6"
-#      env:
-#        - PYTHON_VERSION: "3.6"
+os:
+  - osx
+  - linux
+
+#matrix:
+#  include:
+#    - os: osx
+#      language: generic
+#    - os: linux
+#      language: python
 
 before_install:
   # install miniconda
