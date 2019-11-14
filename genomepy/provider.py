@@ -688,7 +688,9 @@ class UcscProvider(ProviderBase):
             sys.stderr.write("UCSC genomes are softmasked by default. Unmasking...\n")
 
             # Use a tmp file and replace the names
-            new_fa = os.path.join(out_dir, localname, ".process.{}.fa".format(localname))
+            new_fa = os.path.join(
+                out_dir, localname, ".process.{}.fa".format(localname)
+            )
             with open(fa) as old:
                 with open(new_fa, "w") as new:
                     for line in old:
@@ -826,10 +828,10 @@ class NCBIProvider(ProviderBase):
             header = lines[1].strip("# ").split("\t")
             for line in lines[2:]:
                 vals = line.strip("# ").split("\t")
-                # Don't repeat samples with the same BioSample ID
-                if vals[2] not in seen:  # BioSample ID
+                # Don't repeat samples with the same asn_name
+                if vals[15] not in seen:  # asn_name
                     genomes.append(dict(zip(header, vals)))
-                    seen[vals[2]] = 1
+                    seen[vals[15]] = 1
 
         return genomes
 

@@ -257,14 +257,14 @@ Enable plugins as follows:
 
 ```
 $ genomepy plugin enable bwa hisat2
-Enabled plugins: bwa, gaps, hisat2, sizes
+Enabled plugins: bwa, hisat2, sizes
 ```
 
 And disable like this:
 
 ```
 $ genomepy plugin disable bwa
-Enabled plugins: gaps, hisat2, sizes
+Enabled plugins: hisat2, sizes
 ```
 
 #### Search for a genome.
@@ -338,7 +338,6 @@ $ genomepy config show
 genome_dir: ~/.local/share/genomes/
 
 plugin:
- - gaps
  - sizes
 ```
 
