@@ -18,8 +18,7 @@ long_description = pypandoc.convert("README.md", "rst")
 packages = ["genomepy", "genomepy/plugins"]
 
 # this replaces the PyPa MANIFEST.in
-package_data = {"genomepy": ["cfg/*.yaml"],
-                "": ["LICENSE", "README.md"]}
+package_data = {"genomepy": ["cfg/*.yaml"], "": ["LICENSE", "README.md"]}
 
 entry_points = {"console_scripts": ["genomepy=genomepy.cli:cli"]}
 
@@ -33,7 +32,6 @@ requires = [
     "biopython>=1.73",
     "appdirs",
     "psutil",
-    "pytest",
 ]
 
 classifiers = [
@@ -42,13 +40,13 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Operating System :: MacOS :: MacOS X",
-    "Operating System :: MacOS :: MacOS X",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.3",
     "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
