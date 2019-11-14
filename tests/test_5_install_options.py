@@ -24,7 +24,7 @@ def bgzip(request):
 
 
 def test_install_genome_options(
-    force, localname, bgzip, genome="sacCer3", provider="UCSC"
+    force, localname, bgzip, genome="ASM14646v1", provider="NCBI"
 ):
     """Test force, localname and bgzip"""
     tmp = mkdtemp()
@@ -78,7 +78,7 @@ def validate_gzipped_bed(fname):
 
 
 def test_install_annotation_options(
-    force, localname, annotation=True, genome="sacCer3", provider="UCSC"
+    force, localname, annotation=True, genome="ASM14646v1", provider="NCBI"
 ):
     """Test force and localname with annotations"""
     tmp = mkdtemp()

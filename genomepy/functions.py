@@ -239,8 +239,10 @@ def install_genome(
         p = ProviderBase.create(provider)
         p.download_annotation(name, genome_dir, localname=localname, **kwargs)
 
-    # Run all active plugins
+    # generates a Fasta object and the index file
     g = Genome(localname, genome_dir=genome_dir)
+
+    # Run all active plugins
     for plugin in get_active_plugins():
         plugin.after_genome_download(g, force)
 
@@ -356,7 +358,7 @@ class Genome(Fasta):
     def __init__(self, name, genome_dir=None):
 
         try:
-            # generate the index file
+            # generates the Fasta object and the index file
             super(Genome, self).__init__(name)
             self.name = os.path.basename(name)
         except Exception:
@@ -401,15 +403,9 @@ class Genome(Fasta):
                 else:
                     fname = fnames[0]
 
-            # generates the index file
+            # generates the Fasta object and the index file
             super(Genome, self).__init__(fname)
             self.name = name
-
-            # pyfaidx will make and name the index file automatically if not found
-            # remove .gz from index file name and make a symlink with .gz to prevent reruns
-            if fname.endswith(".gz"):
-                os.rename(fname + ".fai", fname[:-3] + ".fai")
-                os.symlink(fname[:-3] + ".fai", fname + ".fai")
 
         self._gap_sizes = None
         self.props = {}

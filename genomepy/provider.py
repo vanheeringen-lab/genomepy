@@ -155,10 +155,7 @@ class ProviderBase(object):
             os.makedirs(genome_dir)
 
         dbname, link = self.get_genome_download_link(name, mask=mask, **kwargs)
-        myname = dbname
-        if localname:
-            myname = localname
-        myname = myname.replace(" ", "_")
+        myname = get_localname(dbname, localname)
         if not os.path.exists(os.path.join(genome_dir, myname)):
             os.makedirs(os.path.join(genome_dir, myname))
 
@@ -193,7 +190,7 @@ class ProviderBase(object):
 
             # process genome (e.g. masking)
             if hasattr(self, "_post_process_download"):
-                self._post_process_download(name, tmpdir, mask)
+                self._post_process_download(name, localname, tmpdir, mask)
 
             if regex:
                 os.rename(fname, fname + "_to_regex")
@@ -668,7 +665,7 @@ class UcscProvider(ProviderBase):
             "Could not download genome {} from UCSC".format(name)
         )
 
-    def _post_process_download(self, name, out_dir, mask="soft"):
+    def _post_process_download(self, name, localname, out_dir, mask="soft"):
         """
         Unmask a softmasked genome if required
 
@@ -681,16 +678,17 @@ class UcscProvider(ProviderBase):
             Output directory
         """
         if mask not in ["hard", "soft"]:
-            name = name.replace(" ", "_")
+            localname = get_localname(name, localname)
+
             # Check of the original genome fasta exists
-            fa = os.path.join(out_dir, "{}.fa".format(name))
+            fa = os.path.join(out_dir, "{}.fa".format(localname))
             if not os.path.exists(fa):
                 raise Exception("Genome fasta file not found, {}".format(fa))
 
             sys.stderr.write("UCSC genomes are softmasked by default. Unmasking...\n")
 
             # Use a tmp file and replace the names
-            new_fa = os.path.join(out_dir, name, ".process.{}.fa".format(name))
+            new_fa = os.path.join(out_dir, localname, ".process.{}.fa".format(localname))
             with open(fa) as old:
                 with open(new_fa, "w") as new:
                     for line in old:
@@ -710,7 +708,7 @@ class UcscProvider(ProviderBase):
 
         Parameters
         ----------
-        genomebuild : str
+        name : str
             UCSC genome name.
         genome_dir : str
             Genome directory.
@@ -798,7 +796,7 @@ class NCBIProvider(ProviderBase):
     """
     NCBI genome provider.
 
-    Useas the assembly reports page to search and list genomes.
+    Uses the assembly reports page to search and list genomes.
     """
 
     assembly_url = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"
@@ -919,7 +917,7 @@ class NCBIProvider(ProviderBase):
                 return name, url
         raise exceptions.GenomeDownloadError("Could not download genome from NCBI")
 
-    def _post_process_download(self, name, out_dir, mask="soft"):
+    def _post_process_download(self, name, localname, out_dir, mask="soft"):
         """
         Replace accessions with sequence names in fasta file.
 
@@ -950,14 +948,14 @@ class NCBIProvider(ProviderBase):
                 vals = line.strip().split("\t")
                 tr[vals[6]] = vals[0]
 
-        name = name.replace(" ", "_")
+        localname = get_localname(name, localname)
         # Check of the original genome fasta exists
-        fa = os.path.join(out_dir, "{}.fa".format(name))
+        fa = os.path.join(out_dir, "{}.fa".format(localname))
         if not os.path.exists(fa):
             raise Exception("Genome fasta file not found, {}".format(fa))
 
         # Use a tmp file and replace the names
-        new_fa = os.path.join(out_dir, ".process.{}.fa".format(name))
+        new_fa = os.path.join(out_dir, ".process.{}.fa".format(localname))
         if mask != "soft":
             sys.stderr.write(
                 "NCBI genomes are softmasked by default. Changing mask...\n"

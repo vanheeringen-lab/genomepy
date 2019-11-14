@@ -16,7 +16,7 @@ def zipped_genomes(request):
 
 def test_zipped_genomes(zipped_genomes):
     """Download a gzipped and a tar.gzipped genome"""
-    genome = "Release_6_plus_ISO1_MT" if zipped_genomes == ".gz" else "sacCer3"
+    genome = "ASM14646v1" if zipped_genomes == ".gz" else "sacCer3"
     provider = "NCBI" if zipped_genomes == ".gz" else "UCSC"
     tmp = mkdtemp()
     genomepy.install_genome(genome, provider, genome_dir=tmp)
@@ -25,7 +25,7 @@ def test_zipped_genomes(zipped_genomes):
 
 @pytest.mark.skipif(travis, reason="Too slow for Travis")
 @pytest.mark.slow
-def test_ensembl_genome():
+def test_ensembl_genome(genome="KH", provider="Ensembl", version=98):
     """Test Ensembl.
 
     Download smallest genome from Ensembl's HTTPS and retrieve a specific sequence.
@@ -33,35 +33,35 @@ def test_ensembl_genome():
     tmp = mkdtemp()
     # Only test on vertebrates as these are downloaded over HTTPS.
     # All others are downloaded over FTP, which is unreliable on Travis.
-    genomepy.install_genome("KH", "Ensembl", genome_dir=tmp, version=98)
-    g = genomepy.Genome("KH", genome_dir=tmp)
+    genomepy.install_genome(genome, provider, genome_dir=tmp, version=version)
+    g = genomepy.Genome(genome, genome_dir=tmp)
     seq = g["1"][40:60]
     assert str(seq).upper() == "nnnnnnnnnnAACCCCTAAC".upper()
     shutil.rmtree(tmp)
 
 
-def test_ucsc_genome():
+def test_ucsc_genome(genome="sacCer3", provider="UCSC"):
     """Test UCSC.
 
     Download S. cerevisiae genome from UCSC and retrieve a specific sequence."""
     tmp = mkdtemp()
-    genomepy.install_genome("sacCer3", "UCSC", genome_dir=tmp)
-    g = genomepy.Genome("sacCer3", genome_dir=tmp)
+    genomepy.install_genome(genome, provider, genome_dir=tmp)
+    g = genomepy.Genome(genome, genome_dir=tmp)
     seq = g["chrIV"][1337000:1337020]
     assert str(seq) == "TTTGGTTGTTCCTCTTCCTT"
 
 
-def test_ncbi_genome():
+def test_ncbi_genome(genome="ASM14646v1", provider="NCBI"):
     """Test NCBI.
 
-    Download Drosophila genome from NCBI and retrieve a
+    Download smallest genome from NCBI and retrieve a
     specific sequence.
     """
     tmp = mkdtemp()
-    genomepy.install_genome("Release 6 plus ISO1 MT", "NCBI", genome_dir=tmp)
-    g = genomepy.Genome("Release_6_plus_ISO1_MT", genome_dir=tmp)
-    seq = g["3L"][10637840:10637875]
-    assert str(seq).upper() == "TTTGCAACAGCTGCCGCAGTGTGACCGTTGTACTG"
+    genomepy.install_genome(genome, provider, genome_dir=tmp)
+    g = genomepy.Genome(genome, genome_dir=tmp)
+    seq = g["I"][80:107]
+    assert str(seq).upper() == "CTTGCATCCATAACGGTCGTCTTCCGT"
     shutil.rmtree(tmp)
 
 

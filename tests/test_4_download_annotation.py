@@ -111,7 +111,7 @@ def test_NCBI_annotation(localname=None):
     """Test NCBI annotation"""
     tmp = mkdtemp()
     p = genomepy.provider.ProviderBase.create("NCBI")
-    name = "ASM69910v1"
+    name = "ASM14646v1"
 
     p.download_annotation(name, tmp, localname=localname)
 
