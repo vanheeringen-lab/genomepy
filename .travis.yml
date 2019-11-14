@@ -37,6 +37,8 @@ script:
   - black --check genomepy/ setup.py tests/
   - flake8 setup.py genomepy/ tests/
   - py.test -v
-  - genomepy providers 
+  - genomepy providers
 #after_sucess:
 #  coveralls
+
+#conda activate base; conda remove --name genomepy_travis --all --yes; conda env create -f environment.yml; conda activate genomepy_travis

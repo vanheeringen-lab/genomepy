@@ -3,11 +3,6 @@ import sys
 import pypandoc
 from setuptools import setup
 
-# try:
-#     from setuptools import setup
-# except ImportError:
-#     from distutils.core import setup
-
 # https://packaging.python.org/single_source_version/
 exec(open("genomepy/__about__.py").read())
 
@@ -22,20 +17,23 @@ long_description = pypandoc.convert("README.md", "rst")
 
 packages = ["genomepy", "genomepy/plugins"]
 
-package_data = {"genomepy": ["cfg/*.yaml"]}
+# this replaces the PyPa MANIFEST.in
+package_data = {"genomepy": ["cfg/*.yaml"],
+                "": ["LICENSE", "README.md"]}
 
 entry_points = {"console_scripts": ["genomepy=genomepy.cli:cli"]}
 
 requires = [
-    "pytest",
     "click",
     "pyfaidx>=0.5.1",
     "norns>=0.1.5",
     "xmltodict",
     "bucketcache",
     "requests",
+    "biopython>=1.73",
     "appdirs",
     "psutil",
+    "pytest",
 ]
 
 classifiers = [

@@ -7,29 +7,37 @@ dependencies:
   - python=3.6.*
   - click
   - pyfaidx>=0.5.1
+  - norns>=0.1.5
   - bucketcache
   - xmltodict
-  - norns>=0.1.5
   - requests
   - biopython>=1.73
+  - psutil
   - appdirs
+
+  # Bgzip
+  - tabix
+
+  # Annotation downloading
   - ucsc-genepredtobed
   - ucsc-genepredtogtf
   - ucsc-bedtogenepred
   - ucsc-gff3togenepred
-  - ucsc-gtftogenepred 
+  - ucsc-gtftogenepred
+
+  # Plugins
   - bwa
   - minimap2
   - bowtie2
   - hisat2
   - gmap
-  - tabix
-  - psutil
-  - setuptools
 
-  # Testing etc.
+  # Distribution
+  - setuptools
+  - pypandoc
+
+  # Testing
   - flake8
   - flake8-bugbear
   - black
   - pytest
-  - pypandoc

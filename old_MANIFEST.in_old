@@ -1,4 +1,3 @@
 include LICENSE
 include README.md
-include setup.cfg
-include environment.yml
+include genomepy/cfg/default.yaml
