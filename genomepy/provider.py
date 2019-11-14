@@ -823,7 +823,7 @@ class NCBIProvider(ProviderBase):
         seen = {}
         for fname in names:
             urlcleanup()
-            with urlopen(self.assembly_url + "/" + fname) as response:
+            with urlopen(os.path.join(self.assembly_url, fname)) as response:
                 lines = response.read().decode("utf-8").splitlines()
             header = lines[1].strip("# ").split("\t")
             for line in lines[2:]:

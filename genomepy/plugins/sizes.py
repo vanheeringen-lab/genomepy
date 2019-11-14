@@ -13,5 +13,5 @@ class SizesPlugin(Plugin):
                     f.write("{}\t{}\n".format(seqname, len(genome[seqname])))
 
     def get_properties(self, genome):
-        props = {"sizes": genome.filename + ".sizes"}
+        props = {"sizes": genome.filename.replace(".gz", "") + ".sizes"}
         return props

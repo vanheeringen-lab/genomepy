@@ -11,8 +11,7 @@ from collections.abc import Iterable
 from pyfaidx import Fasta, Sequence
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
-from genomepy.utils import generate_gap_bed
-from genomepy.utils import get_localname
+from genomepy.utils import generate_gap_bed, get_localname
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -107,7 +106,9 @@ def list_installed_genomes(genome_dir=None):
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
     genome_dir = os.path.expanduser(genome_dir)
 
-    return [f for f in os.listdir(genome_dir) if _is_genome_dir(genome_dir + "/" + f)]
+    return [
+        f for f in os.listdir(genome_dir) if _is_genome_dir(os.path.join(genome_dir, f))
+    ]
 
 
 def search(term, provider=None):
@@ -209,12 +210,13 @@ def install_genome(
 
     genome_dir = os.path.expanduser(genome_dir)
     localname = get_localname(name, localname)
-
-    # check if genome already exists, or if installation is forced
     out_dir = os.path.join(genome_dir, localname)
-    ext = ".fa.gz" if bgzip else ".fa"
-    genome_file = out_dir + "/" + localname + ext
-    if not os.path.exists(genome_file) or force:
+
+    # Check if genome already exists, or if downloading is forced
+    no_genome_found = not any(
+        os.path.exists(fname) for fname in glob_ext_files(out_dir, "fa")
+    )
+    if no_genome_found or force:
         # Download genome from provider
         p = ProviderBase.create(provider)
         p.download_genome(
@@ -228,19 +230,24 @@ def install_genome(
             **kwargs
         )
 
-    # if annotation is requested, check if annotation already exists or if installation is forced
+    # If annotation is requested, check if annotation already exists, or if downloading is forced
     no_annotation_found = not any(
-        localname in os.path.basename(fname) for fname in glob_ext_files(out_dir, "gtf")
+        os.path.exists(fname) for fname in glob_ext_files(out_dir, "gtf")
     )
     if annotation and (no_annotation_found or force):
         # Download annotation from provider
         p = ProviderBase.create(provider)
         p.download_annotation(name, genome_dir, localname=localname, **kwargs)
 
+    # Run all active plugins
     g = Genome(localname, genome_dir=genome_dir)
-
     for plugin in get_active_plugins():
         plugin.after_genome_download(g, force)
+
+    # Generate gap file if not found or if generation is forced
+    gap_file = os.path.join(out_dir, localname + ".gaps.bed")
+    if not os.path.exists(gap_file) or force:
+        generate_gap_bed(glob_ext_files(out_dir, "fa")[0], gap_file)
 
     generate_env()
 
@@ -331,6 +338,8 @@ class Genome(Fasta):
     """
     Get pyfaidx Fasta object of genome
 
+    Also generates an index file of the genome
+
     Parameters
     ----------
     name : str
@@ -347,6 +356,7 @@ class Genome(Fasta):
     def __init__(self, name, genome_dir=None):
 
         try:
+            # generate the index file
             super(Genome, self).__init__(name)
             self.name = os.path.basename(name)
         except Exception:
@@ -391,9 +401,15 @@ class Genome(Fasta):
                 else:
                     fname = fnames[0]
 
+            # generates the index file
             super(Genome, self).__init__(fname)
-
             self.name = name
+
+            # pyfaidx will make and name the index file automatically if not found
+            # remove .gz from index file name and make a symlink with .gz to prevent reruns
+            if fname.endswith(".gz"):
+                os.rename(fname + ".fai", fname[:-3] + ".fai")
+                os.symlink(fname[:-3] + ".fai", fname + ".fai")
 
         self._gap_sizes = None
         self.props = {}

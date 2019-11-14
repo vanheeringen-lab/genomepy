@@ -175,7 +175,7 @@ def plugin(command, name):
 
     Use 'genomepy plugin list' to show all available plugins
 
-    Use 'genomepy enable/disable [NAME]' to (dis)able plugins"""
+    Use 'genomepy plugin enable/disable [NAME]' to (dis)able plugins"""
     genomepy.functions.manage_plugins(command, name)
 
 
