@@ -1,4 +1,7 @@
 language: python
+python:
+  # Unused, but required for Travis
+  - 3.6
 
 os:
   - linux
