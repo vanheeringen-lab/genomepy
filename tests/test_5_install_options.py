@@ -24,7 +24,7 @@ def bgzip(request):
 
 
 def test_install_genome_options(
-    force, localname, bgzip, genome="ASM14646v1", provider="NCBI"
+    force, localname, bgzip, genome="ASM2732v1", provider="NCBI"
 ):
     """Test force, localname and bgzip"""
     tmp = mkdtemp()

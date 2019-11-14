@@ -51,7 +51,7 @@ def test_ucsc_genome(genome="sacCer3", provider="UCSC"):
     assert str(seq) == "TTTGGTTGTTCCTCTTCCTT"
 
 
-def test_ncbi_genome(genome="ASM14646v1", provider="NCBI"):
+def test_ncbi_genome(genome="ASM2732v1", provider="NCBI"):
     """Test NCBI.
 
     Download smallest genome from NCBI and retrieve a
@@ -60,8 +60,8 @@ def test_ncbi_genome(genome="ASM14646v1", provider="NCBI"):
     tmp = mkdtemp()
     genomepy.install_genome(genome, provider, genome_dir=tmp)
     g = genomepy.Genome(genome, genome_dir=tmp)
-    seq = g["I"][80:107]
-    assert str(seq).upper() == "CTTGCATCCATAACGGTCGTCTTCCGT"
+    seq = g["ANONYMOUS"][80:107]
+    assert str(seq).upper() == "ATACCTTCCTTAATACTGTTAAATTAT"
     shutil.rmtree(tmp)
 
 
