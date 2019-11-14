@@ -14,3 +14,4 @@ eggs
 tmp
 docs/_build
 .vscode
+.idea

@@ -1,13 +1,13 @@
-language: python
+#language: python
 
 matrix:
   include:
     - os: osx
-#      language: generic
+      language: generic
 #      env:
 #        - PYTHON_VERSION: "3.6"
     - os: linux
-#      language: python
+      language: python
 #      python: "3.6"
 #      env:
 #        - PYTHON_VERSION: "3.6"
