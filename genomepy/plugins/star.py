@@ -31,8 +31,8 @@ class StarPlugin(Plugin):
                 bgzip = True
 
             # Create index
-            cmd = "STAR --runMode genomeGenerate --genomeFastaFiles {} --genomeDir {}".format(
-                fname, index_dir
+            cmd = "STAR --runMode genomeGenerate --genomeFastaFiles {} --genomeDir {} --outFileNamePrefix {}".format(
+                fname, index_dir, index_dir
             )
             run_index_cmd("star", cmd)
 

@@ -6,10 +6,11 @@ os:
   - linux
 
 env:
-  - PYTHON_VERSION: "3.5"
+#  - PYTHON_VERSION: "3.4"
+#  - PYTHON_VERSION: "3.5"
   - PYTHON_VERSION: "3.6"
-  - PYTHON_VERSION: "3.7"
-  - PYTHON_VERSION: "3.8"
+#  - PYTHON_VERSION: "3.7"
+#  - PYTHON_VERSION: "3.8"
 
 before_install:
   # install miniconda
@@ -27,8 +28,6 @@ install:
   # python version is specified in environment.yml
   - conda env create -n genomepy-$PYTHON_VERSION python=$PYTHON_VERSION -f environment.yml
   - source activate genomepy-$PYTHON_VERSION
-#  - conda env create -f environment.yml
-#  - source activate genomepy_travis
   - python setup.py develop
   - python setup.py build
 #  - pip install coveralls

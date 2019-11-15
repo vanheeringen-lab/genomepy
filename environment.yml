@@ -1,11 +1,8 @@
-#name: genomepy_travis
 channels:
   - bioconda
   - conda-forge
   - defaults
 dependencies:
-#  - python=3.6.*
-
   # Also found in setup.py
   - click
   - pyfaidx>=0.5.1

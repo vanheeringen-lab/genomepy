@@ -20,7 +20,6 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 
 ## Installation
 
-Genomepy works with Python 3.4+. 
 You can install it via [bioconda](https://bioconda.github.io/):
 
 ```
@@ -154,9 +153,11 @@ ncbi    Xenopus_tropicalis_v9.1 Xenopus tropicalis; DOE Joint Genome Institute
 
 Note that genomes with a space can be searched for either by using `"quotation marks"`, 
 or by replacing the space(s) with and underscore `_`. 
-For example, we can search for Xenopus Tropicalis as `"xenopus tropicalis"` or `xenopus_tropicalis`.
+For example, we can search for Xenopus Tropicalis as `"xenopus tropicalis"`, 
+`xenopus_tropicalis` or `xenopus`. The search function is case-insensitive.
 
-Lets say we want to download the Xenopus Tropicalis genome from UCSC:
+Lets say we want to download the Xenopus Tropicalis genome from UCSC. 
+Copy the name returned by the search function and it with the provider name to install:
 
 ```
 $ genomepy  install xenTro9 UCSC
@@ -175,7 +176,7 @@ downloading from http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chrom
 done...
 name: sacCer3
 local name: sacCer3
-fasta: /home/simon/genomes/sacCer3/sacCer3.fa
+fasta: /data/genomes/sacCer3/sacCer3.fa
 ```
 
 You can use a regular expression to filter for matching sequences 
@@ -247,11 +248,11 @@ $ genomepy plugin list
 plugin              enabled
 bowtie2             
 bwa                 
-gaps                *
 gmap                
 hisat2              
 minimap2            
 sizes               *
+star
 ```
 
 Enable plugins as follows:
