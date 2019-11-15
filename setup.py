@@ -49,7 +49,7 @@ classifiers = [
 setup(
     name="genomepy",
     version=__version__,  # noqa: F821
-    description="Download genomes in Python",
+    description="Automatic downloading and processing of genomes and metadata in command line and Python",
     long_description=long_description,
     packages=packages,
     package_data=package_data,
