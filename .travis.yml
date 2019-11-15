@@ -26,8 +26,8 @@ before_install:
 
 install:
   # python version is specified in environment.yml
-  - conda env create -n genomepy-$PYTHON_VERSION python=$PYTHON_VERSION -f environment.yml
-  - source activate genomepy-$PYTHON_VERSION
+  - conda env create -n genomepy python=$PYTHON_VERSION -f environment.yml
+  - source activate genomepy
   - python setup.py develop
   - python setup.py build
 #  - pip install coveralls
