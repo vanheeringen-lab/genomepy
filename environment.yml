@@ -1,10 +1,10 @@
-name: genomepy_travis
+#name: genomepy_travis
 channels:
   - bioconda
   - conda-forge
   - defaults
 dependencies:
-  - python=3.6.*
+#  - python=3.6.*
 
   # Also found in setup.py
   - click

@@ -6,6 +6,7 @@
 *egg
 .cache
 .pytest_cache
+Log.out
 
 # Directories
 build
