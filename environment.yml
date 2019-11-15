@@ -29,6 +29,7 @@ dependencies:
 
   # Plugins
   - bwa
+  - star
   - minimap2
   - bowtie2
   - hisat2

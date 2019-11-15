@@ -16,6 +16,7 @@ from genomepy.plugins.gmap import GmapPlugin
 from genomepy.plugins.minimap2 import Minimap2Plugin
 from genomepy.plugins.bowtie2 import Bowtie2Plugin
 from genomepy.plugins.hisat2 import Hisat2Plugin
+from genomepy.plugins.star import StarPlugin
 from genomepy.plugins.blacklist import BlacklistPlugin
 
 
@@ -148,6 +149,23 @@ def test_hisat2(genome, force):
         dirname = os.path.dirname(genome.filename)
         index_dir = os.path.join(dirname, "index", "hisat2")
         fname = os.path.join(index_dir, "{}.1.ht2".format(genome.name))
+        assert os.path.exists(index_dir)
+        assert os.path.exists(fname)
+
+        force_test(p, fname, genome, force)
+
+
+def test_star(genome, force):
+    """Create star index."""
+    assert os.path.exists(genome.filename)
+
+    force = True if force == "overwrite" else False
+    if cmd_ok("STAR"):
+        p = StarPlugin()
+        p.after_genome_download(genome)
+        dirname = os.path.dirname(genome.filename)
+        index_dir = os.path.join(dirname, "index", "star")
+        fname = os.path.join(index_dir, "SA")
         assert os.path.exists(index_dir)
         assert os.path.exists(fname)
 

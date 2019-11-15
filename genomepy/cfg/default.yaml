@@ -1,7 +1,5 @@
-# Directory were downloaded genomes will be stored
+bgzip: false
 genome_dir: ~/.local/share/genomes/
-
 plugin:
- - sizes
-
-bgzip: False
+- sizes
+- star

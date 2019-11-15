@@ -69,6 +69,7 @@ some widely using aligners. Currently, genomepy supports:
 * [gmap](http://research-pub.gene.com/gmap/)
 * [hisat2](https://ccb.jhu.edu/software/hisat2/index.shtml)
 * [minimap2](https://github.com/lh3/minimap2)
+* [star](https://github.com/alexdobin/STAR)
 
 Note 1: these programs are not installed by genomepy and need to be
 installed separately for the indexing to work.
