@@ -1,29 +1,19 @@
-language: python
+# use the minimal travis environment since we test in conda
+language: minimal
 
-matrix:
-  include:
-    - os: osx
-      language: generic
-      env:
-        - PYTHON_VERSION: "3.6"
-    - os: linux
-      language: python
-      python: "3.6"
-      env: 
-        - PYTHON_VERSION: "3.6"
-#    - os: linux
-#      language: python
-#      python: "3.6"
-#      env: 
-#        - PYTHON_VERSION: "3.7"
+os:
+  - osx
+  - linux
 
-#cache:
-#  apt: true
-#  directories:
-#    - $HOME/miniconda
+env:
+#  - PYTHON_VERSION: "3.4"
+#  - PYTHON_VERSION: "3.5"
+  - PYTHON_VERSION: "3.6"
+#  - PYTHON_VERSION: "3.7"
+#  - PYTHON_VERSION: "3.8"
 
 before_install:
-  # install miniconda for Python dependencies
+  # install miniconda
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
     else
@@ -33,25 +23,19 @@ before_install:
   - ./miniconda.sh -b -p $HOME/miniconda -f
   - export PATH=$HOME/miniconda/bin:$PATH
   - conda config --set always_yes yes
-  - conda install -c anaconda setuptools
-  - conda update --yes conda
-  - conda config --add channels defaults
-  - conda config --add channels bioconda
-  - conda config --add channels conda-forge
-  - conda info -a
 
 install:
-  - conda create -n genomepy-$PYTHON_VERSION python=$PYTHON_VERSION ucsc-genepredtobed ucsc-genepredtogtf ucsc-bedtogenepred ucsc-gtftogenepred bwa minimap2 bowtie2 hisat2 gmap pyfaidx>=0.5.1 bucketcache norns>0.1.5 xmltodict pytest coverage pyyaml requests tabix biopython black flake8 flake8-bugbear pypandoc
-  - source activate genomepy-$PYTHON_VERSION
+  # python version is specified in environment.yml
+  - conda env create -n genomepy python=$PYTHON_VERSION -f environment.yml
+  - source activate genomepy
   - python setup.py develop
   - python setup.py build
-  - pip install coveralls
+#  - pip install coveralls
 
-# # command to run tests, e.g. python setup.py test
 script:
   - black --check genomepy/ setup.py tests/
   - flake8 setup.py genomepy/ tests/
   - py.test -v
-  - genomepy providers 
+  - genomepy providers
 #after_sucess:
 #  coveralls

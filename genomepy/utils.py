@@ -3,8 +3,8 @@ import errno
 import os
 import re
 import sys
-import subprocess as sp
 import urllib.request
+import subprocess as sp
 
 from pyfaidx import Fasta
 
@@ -25,16 +25,6 @@ def generate_gap_bed(fname, outname):
         for chrom in f.keys():
             for m in re.finditer(r"N+", f[chrom][:].seq):
                 bed.write("{}\t{}\t{}\n".format(chrom, m.start(0), m.end(0)))
-
-
-def generate_sizes(name, genome_dir):
-    """Generate a sizes file with length of sequences in FASTA file."""
-    fa = os.path.join(genome_dir, name, "{}.fa".format(name))
-    sizes = fa + ".sizes"
-    g = Fasta(fa)
-    with open(sizes, "w") as f:
-        for seqname in g.keys():
-            f.write("{}\t{}\n".format(seqname, len(g[seqname])))
 
 
 def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
@@ -98,7 +88,7 @@ def mkdir_p(path):
     """ 'mkdir -p' in Python """
     try:
         os.makedirs(path)
-    except OSError as exc:  # Python >2.5
+    except OSError as exc:
         if exc.errno == errno.EEXIST and os.path.isdir(path):
             pass
         else:
