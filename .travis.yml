@@ -29,6 +29,7 @@ install:
   - source activate genomepy
   - python setup.py develop
   - python setup.py build
+  - pip install pytest-cov
 
 before_script:
   # install codeclimate test coverage

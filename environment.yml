@@ -40,3 +40,4 @@ dependencies:
 #  - flake8-bugbear
 #  - black
   - pytest
+#  - pytest-cov
