@@ -29,8 +29,6 @@ install:
   - source activate genomepy
   - python setup.py develop
   - python setup.py build
-#  # installing this with conda did not work??
-#  - pip install pytest-cov
 
 before_script:
   # install codeclimate test coverage
@@ -43,15 +41,11 @@ before_script:
   - ./cc-test-reporter before-build
 
 script:
-  - black --check genomepy/ setup.py tests/
+  - black --check setup.py genomepy/ tests/
   - flake8 setup.py genomepy/ tests/
-  - pytest -v --cov=genomepy --cov-report=xml tests/test_1_basics.py
-#  - genomepy providers
+  - pytest -v --cov=genomepy --cov-report=xml tests/
+  - genomepy providers
 
 # Pipe the coverage data to Code Climate
 after_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT; fi
-#  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter format-coverage -t simplecov -o coverage/codeclimate.backend.json coverage/backend/.resultset.json; fi # Format backend coverage
-#  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.frontend.json coverage/frontend/lcov.info; fi  # Format frontend coverage
-#  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter sum-coverage coverage/codeclimate.*.json -p 2; fi  # Sum both coverage parts into coverage/codeclimate.json
-#  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter upload-coverage; fi  # Upload coverage/codeclimate.json
