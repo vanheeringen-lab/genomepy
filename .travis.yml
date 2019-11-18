@@ -29,7 +29,8 @@ install:
   - source activate genomepy
   - python setup.py develop
   - python setup.py build
-  - pip install pytest-cov
+#  # installing this with conda did not work??
+#  - pip install pytest-cov
 
 before_script:
   # install codeclimate test coverage
@@ -42,8 +43,8 @@ before_script:
   - ./cc-test-reporter before-build
 
 script:
-#  - black --check genomepy/ setup.py tests/
-#  - flake8 setup.py genomepy/ tests/
+  - black --check genomepy/ setup.py tests/
+  - flake8 setup.py genomepy/ tests/
   - pytest -v --cov=genomepy --cov-report=xml tests/test_1_basics.py
 #  - genomepy providers
 

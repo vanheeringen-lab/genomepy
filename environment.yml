@@ -34,10 +34,10 @@ dependencies:
 #
 #  # Distribution
 #  - setuptools
-#
-#  # Testing
-#  - flake8
-#  - flake8-bugbear
-#  - black
+
+  # Testing
+  - flake8
+  - flake8-bugbear
+  - black
   - pytest
-#  - pytest-cov
+  - pytest-cov
