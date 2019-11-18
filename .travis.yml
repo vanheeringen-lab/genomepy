@@ -48,13 +48,13 @@ script:
 #  - black --check genomepy/ setup.py tests/
 #  - flake8 setup.py genomepy/ tests/
   - py.test -v tests/test_1_basics.py
-  - pytest --cov=genomepy tests/test_1_basics.py
+  - pytest --cov=genomepy --cov-report=xml tests/test_1_basics.py
 #  - coverage run tests/test_1_basics.py
 #  - genomepy providers
 
 # Pipe the coverage data to Code Climate
 after_script:
-  - ./cc-test-reporter after-build --debug --exit-code $TRAVIS_TEST_RESULT
+  - ./cc-test-reporter after-build --debug -t coverage.py --exit-code $TRAVIS_TEST_RESULT
 #  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter format-coverage -t simplecov -o coverage/codeclimate.backend.json coverage/backend/.resultset.json; fi # Format backend coverage
 #  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.frontend.json coverage/frontend/lcov.info; fi  # Format frontend coverage
 #  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter sum-coverage coverage/codeclimate.*.json -p 2; fi  # Sum both coverage parts into coverage/codeclimate.json
