@@ -2,26 +2,18 @@
 import bisect
 import os
 import glob
+import norns
 import random
 import re
-import subprocess as sp
-from collections.abc import Iterable
 
 from appdirs import user_config_dir
+from collections.abc import Iterable
 from pyfaidx import Fasta, Sequence
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
-from genomepy.utils import get_localname
-import norns
+from genomepy.utils import generate_gap_bed, get_localname
 
 config = norns.config("genomepy", default="cfg/default.yaml")
-
-# Python 2
-try:
-    FileNotFoundError
-except NameError:
-    # pylint: disable=redefined-builtin
-    FileNotFoundError = IOError
 
 
 def manage_config(cmd, *args):
@@ -114,7 +106,9 @@ def list_installed_genomes(genome_dir=None):
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
     genome_dir = os.path.expanduser(genome_dir)
 
-    return [f for f in os.listdir(genome_dir) if _is_genome_dir(genome_dir + "/" + f)]
+    return [
+        f for f in os.listdir(genome_dir) if _is_genome_dir(os.path.join(genome_dir, f))
+    ]
 
 
 def search(term, provider=None):
@@ -123,7 +117,7 @@ def search(term, provider=None):
 
      If provider is specified, search only that specific provider, else
      search all providers. Both the name and description are used for the
-     search. Seacrch term is case-insensitive.
+     search. Search term is case-insensitive.
 
     Parameters
     ----------
@@ -141,8 +135,10 @@ def search(term, provider=None):
     if provider:
         providers = [ProviderBase.create(provider)]
     else:
-        # if provider is not specified search all providers
-        providers = [ProviderBase.create(p) for p in ProviderBase.list_providers()]
+        # if provider is not specified search all providers (except direct url)
+        providers = [
+            ProviderBase.create(p) for p in ProviderBase.list_providers() if p != "url"
+        ]
     for p in providers:
         for row in p.search(term):
             yield [x.encode("latin-1") for x in [p.name] + list(row)]
@@ -151,14 +147,15 @@ def search(term, provider=None):
 def install_genome(
     name,
     provider,
-    version=None,
     genome_dir=None,
     localname=None,
     mask="soft",
     regex=None,
     invert_match=False,
-    annotation=False,
     bgzip=None,
+    annotation=False,
+    force=False,
+    **kwargs
 ):
     """
     Install a genome.
@@ -171,9 +168,6 @@ def install_genome(
     provider : str
         Provider name
 
-    version : str
-        Version (only for Ensembl)
-
     genome_dir : str , optional
         Where to store the fasta files
 
@@ -181,7 +175,7 @@ def install_genome(
         Custom name for this genome.
 
     mask : str , optional
-        Default is 'soft', specify 'hard' for hard masking.
+        Default is 'soft', choices 'hard'/'soft/'none' for respective masking level.
 
     regex : str , optional
         Regular expression to select specific chromosome / scaffold names.
@@ -189,12 +183,25 @@ def install_genome(
     invert_match : bool , optional
         Set to True to select all chromosomes that don't match the regex.
 
-    annotation : bool , optional
-        If set to True, download gene annotation in BED and GTF format.
-
     bgzip : bool , optional
         If set to True the genome FASTA file will be compressed using bgzip.
         If not specified, the setting from the configuration file will be used.
+
+    annotation : bool , optional
+        If set to True, download gene annotation in BED and GTF format.
+
+    force : bool , optional
+        Set to True to overwrite existing files.
+
+    kwargs : dict, optional
+        Provider specific options.
+        Ensembl:
+
+        toplevel : bool , optional
+            Ensembl only: Always download the toplevel genome. Ignores potential primary assembly.
+
+        version : int, optional
+            Ensembl only: Specify release version. Default is latest.
     """
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
@@ -203,28 +210,46 @@ def install_genome(
 
     genome_dir = os.path.expanduser(genome_dir)
     localname = get_localname(name, localname)
+    out_dir = os.path.join(genome_dir, localname)
 
-    # Download genome from provider
-    p = ProviderBase.create(provider)
-    p.download_genome(
-        name,
-        genome_dir,
-        version=version,
-        mask=mask,
-        localname=localname,
-        regex=regex,
-        invert_match=invert_match,
-        bgzip=bgzip,
+    # Check if genome already exists, or if downloading is forced
+    no_genome_found = not any(
+        os.path.exists(fname) for fname in glob_ext_files(out_dir, "fa")
     )
+    if no_genome_found or force:
+        # Download genome from provider
+        p = ProviderBase.create(provider)
+        p.download_genome(
+            name,
+            genome_dir,
+            mask=mask,
+            regex=regex,
+            invert_match=invert_match,
+            localname=localname,
+            bgzip=bgzip,
+            **kwargs
+        )
 
-    if annotation:
+    # If annotation is requested, check if annotation already exists, or if downloading is forced
+    no_annotation_found = not any(
+        os.path.exists(fname) for fname in glob_ext_files(out_dir, "gtf")
+    )
+    if annotation and (no_annotation_found or force):
         # Download annotation from provider
-        p.download_annotation(name, genome_dir, localname=localname, version=version)
+        p = ProviderBase.create(provider)
+        p.download_annotation(name, genome_dir, localname=localname, **kwargs)
 
+    # generates a Fasta object and the index file
     g = Genome(localname, genome_dir=genome_dir)
 
+    # Run all active plugins
     for plugin in get_active_plugins():
-        plugin.after_genome_download(g)
+        plugin.after_genome_download(g, force)
+
+    # Generate gap file if not found or if generation is forced
+    gap_file = os.path.join(out_dir, localname + ".gaps.bed")
+    if not os.path.exists(gap_file) or force:
+        generate_gap_bed(glob_ext_files(out_dir, "fa")[0], gap_file)
 
     generate_env()
 
@@ -291,26 +316,31 @@ def generate_env(fname=None):
                 fout.write("{}\n".format(env))
 
 
-def glob_fa_files(dirname):
+def glob_ext_files(dirname, ext="fa"):
     """
-    Return (gzipped) FASTA file name in directory.
+    Return (gzipped) file names in directory containing the given extension.
 
     Parameters
     ----------
     dirname: str
         Directory name.
 
+    ext: str
+        Filename extension (default: fa).
+
     Returns
     -------
         File names.
     """
-    fnames = glob.glob(os.path.join(dirname, "*.fa*"))
-    return [fname for fname in fnames if fname.endswith("fa") or fname.endswith("gz")]
+    fnames = glob.glob(os.path.join(dirname, "*." + ext + "*"))
+    return [fname for fname in fnames if fname.endswith(ext) or fname.endswith("gz")]
 
 
 class Genome(Fasta):
     """
     Get pyfaidx Fasta object of genome
+
+    Also generates an index file of the genome
 
     Parameters
     ----------
@@ -328,15 +358,16 @@ class Genome(Fasta):
     def __init__(self, name, genome_dir=None):
 
         try:
+            # generates the Fasta object and the index file
             super(Genome, self).__init__(name)
             self.name = os.path.basename(name)
         except Exception:
             if (
                 os.path.isdir(name)
-                and len(glob_fa_files(name)) == 1
+                and len(glob_ext_files(name)) == 1
                 and genome_dir is not None
             ):
-                fname = glob_fa_files(name)[0]
+                fname = glob_ext_files(name)[0]
                 name = os.path.basename(fname)
             else:
                 if not genome_dir:
@@ -352,7 +383,7 @@ class Genome(Fasta):
                         "genome_dir {} does not exist".format(genome_dir)
                     )
 
-                fnames = glob_fa_files(
+                fnames = glob_ext_files(
                     os.path.join(genome_dir, name.replace(".gz", ""))
                 )
                 if len(fnames) == 0:
@@ -372,8 +403,8 @@ class Genome(Fasta):
                 else:
                     fname = fnames[0]
 
+            # generates the Fasta object and the index file
             super(Genome, self).__init__(fname)
-
             self.name = name
 
         self._gap_sizes = None
@@ -499,6 +530,11 @@ class Genome(Fasta):
         """
         if not self._gap_sizes:
             gap_file = self.props["gaps"]["gaps"]
+
+            # generate gap file if not found
+            if not os.path.exists(gap_file):
+                generate_gap_bed(self.filename, gap_file)
+
             self._gap_sizes = {}
             with open(gap_file) as f:
                 for line in f:
@@ -558,7 +594,7 @@ class Genome(Fasta):
                 count[chrom] = 1
 
         for chrom in chroms:
-            for i in range(retries):
+            for _ in range(retries):
                 start = int(random.random() * (sizes[chrom] - length))
                 end = start + length
                 count_n = self[chrom][start:end].seq.upper().count("N")

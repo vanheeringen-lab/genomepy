@@ -1,10 +1,8 @@
+import os.path
 import re
 import sys
+from urllib.request import urlopen
 from genomepy.plugin import Plugin
-try:
-    from urllib.request import urlopen
-except ImportError:
-    from urllib import urlopen
 
 
 class BlacklistPlugin(Plugin):
@@ -18,25 +16,31 @@ class BlacklistPlugin(Plugin):
         "mm10": base_url + "mm10-mouse/mm10.blacklist.bed.gz",
     }
 
-    def after_genome_download(self, genome):
+    def after_genome_download(self, genome, force=False):
         props = self.get_properties(genome)
         fname = props["blacklist"]
+        if force and os.path.exists(fname):
+            # Start from scratch
+            os.remove(fname)
 
-        link = self.http_dict.get(genome.name)
-        if link is None:
-            sys.stderr.write("No blacklist found for {}\n".format(genome.name))
-            return
-        try:
-            sys.stderr.write("Downloading blacklist {}\n".format(link))
-            response = urlopen(link)
-            with open(fname, "wb") as bed:
-                bed.write(response.read())
-        except Exception as e:
-            print(e)
-            print("Could not download blacklist file from {}".format(link))
+        if not os.path.exists(fname):
+            link = self.http_dict.get(genome.name)
+            if link is None:
+                sys.stderr.write("No blacklist found for {}\n".format(genome.name))
+                return
+            try:
+                sys.stderr.write("Downloading blacklist {}\n".format(link))
+                response = urlopen(link)
+                with open(fname, "wb") as bed:
+                    bed.write(response.read())
+            except Exception as e:
+                sys.stderr.write(e)
+                sys.stderr.write(
+                    "Could not download blacklist file from {}".format(link)
+                )
 
     def get_properties(self, genome):
         props = {
-            "blacklist": re.sub(".fa(.gz)?$", ".blacklist.bed.gz", genome.filename),
+            "blacklist": re.sub(".fa(.gz)?$", ".blacklist.bed.gz", genome.filename)
         }
         return props
