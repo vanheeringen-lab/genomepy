@@ -428,6 +428,13 @@ black --check genomepy/ setup.py tests/
 flake8 setup.py genomepy/ tests/
 ```
 
+## Contributors
+
+- Simon van Heeringen - @simonvh
+- Siebren Frölich - @siebrenf
+- Maarten van der Sande - @Maarten-vd-Sande
+- Dohoon Lee - @dohlee
+
 ## License
 
 This module is licensed under the terms of the [MIT license](https://opensource.org/licenses/MIT).

@@ -6,13 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.7.0] - 2019-11-18
+
 ### Added
 - Direct downloading from url through url provider.
+- Added `--force` flag. Files will no longer be overwritten by default.
+- Provider specific options:
+  - `--ensembl-version`: specify release version.
+  - `--ensembl-toplevel`: by default, `genomepy install` will search for primary assemblies. 
+  This flag will only download toplevel assemblies.
+- Added STAR index plugin
 
 ### Changed
 - Providers are now case-insensitive.
+- Extended testing.
+- Increased minimal Python version to 3.6.
+- Removed gaps from plugins, added gaps to core functionality.
 
 ### Fixed
+- bugfix: NCBI will show all versions of an assembly (will no longer filter on BioSample ID, instead filters on asm_name).
+- fix: gaps file will be generated when needed.
 
 ## [0.6.1] - 2019-10-10
 
