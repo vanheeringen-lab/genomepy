@@ -34,7 +34,6 @@ dependencies:
 
   # Distribution
   - setuptools
-  - pypandoc
 
   # Testing
   - flake8

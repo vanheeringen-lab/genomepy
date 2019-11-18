@@ -33,8 +33,7 @@ Or via pip:
 $ pip install genomepy
 ```
 
-Installation via pip requires `pypandoc` installed. Additionally, 
-to enjoy the full capabilities of genomepy, you will have to install some dependencies.
+To enjoy the full capabilities of genomepy, you will have to install some dependencies.
 Make sure these dependencies are in your PATH.
 
 To read/write bgzipped genomes you will have to install `tabix`.

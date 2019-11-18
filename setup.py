@@ -1,6 +1,5 @@
 import os
 import sys
-import pypandoc
 from setuptools import setup
 
 # https://packaging.python.org/single_source_version/
@@ -10,10 +9,8 @@ if sys.argv[-1] == "publish":
     os.system("python setup.py sdist upload")
     sys.exit()
 
-# trick to get rst file for PyPi, see:
-# http://stackoverflow.com/questions/26737222/pypi-description-markdown-doesnt-work/26737672#26737672
-# For the recent versions of pandoc, pypandoc >=1.3.3 is needed.
-long_description = pypandoc.convert("README.md", "rst")
+with open('README.md') as f:
+    long_description = f.read()
 
 packages = ["genomepy", "genomepy/plugins"]
 
@@ -51,6 +48,7 @@ setup(
     version=__version__,  # noqa: F821
     description="Automatic downloading and processing of genomes and metadata in command line and Python",
     long_description=long_description,
+    long_description_content_type='text/markdown',
     packages=packages,
     package_data=package_data,
     entry_points=entry_points,
