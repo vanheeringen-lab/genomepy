@@ -17,26 +17,26 @@ dependencies:
   # Bgzip
   - tabix
 
-  # Annotation downloading
-  - ucsc-genepredtobed
-  - ucsc-genepredtogtf
-  - ucsc-bedtogenepred
-  - ucsc-gff3togenepred
-  - ucsc-gtftogenepred
-
-  # Plugins
-  - bwa
-  - star
-  - minimap2
-  - bowtie2
-  - hisat2
-  - gmap
-
-  # Distribution
-  - setuptools
-
-  # Testing
-  - flake8
-  - flake8-bugbear
-  - black
+#  # Annotation downloading
+#  - ucsc-genepredtobed
+#  - ucsc-genepredtogtf
+#  - ucsc-bedtogenepred
+#  - ucsc-gff3togenepred
+#  - ucsc-gtftogenepred
+#
+#  # Plugins
+#  - bwa
+#  - star
+#  - minimap2
+#  - bowtie2
+#  - hisat2
+#  - gmap
+#
+#  # Distribution
+#  - setuptools
+#
+#  # Testing
+#  - flake8
+#  - flake8-bugbear
+#  - black
   - pytest
