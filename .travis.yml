@@ -2,22 +2,21 @@
 language: minimal
 
 os:
-#  - osx
+  - osx
   - linux
 
 env:
   global:
       - CC_TEST_REPORTER_ID=b24ce37bbd695b5180b567c60d494dad8c391b07241e62ebe31c24fe421671ae
-#  - PYTHON_VERSION: "3.6"
+  - PYTHON_VERSION: "3.6"
 
 before_install:
   # install miniconda
-  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-#      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-#    else
-#      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
-#    fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+    fi
   - chmod +x miniconda.sh
   - ./miniconda.sh -b -p $HOME/miniconda -f
   - export PATH=$HOME/miniconda/bin:$PATH
@@ -25,36 +24,32 @@ before_install:
 
 install:
   # python version is specified in environment.yml
-  - conda env create -n genomepy python=3.6 -f environment.yml
-#  - conda env create -n genomepy python=$PYTHON_VERSION -f environment.yml
+#  - conda env create -n genomepy python=3.6 -f environment.yml
+  - conda env create -n genomepy python=$PYTHON_VERSION -f environment.yml
   - source activate genomepy
   - python setup.py develop
   - python setup.py build
   - pip install pytest-cov
-#  - pip install coverage
 
 before_script:
   # install codeclimate test coverage
-  - wget -O cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64;
-#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-#        wget -O cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64;
-#    else
-#        wget -O cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-darwin-amd64;
-#    fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+        wget -O cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64;
+    else
+        wget -O cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-darwin-amd64;
+    fi
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
 
 script:
-#  - black --check genomepy/ setup.py tests/
-#  - flake8 setup.py genomepy/ tests/
-#  - py.test -v tests/test_1_basics.py
+  - black --check genomepy/ setup.py tests/
+  - flake8 setup.py genomepy/ tests/
   - pytest -v --cov=genomepy --cov-report=xml tests/test_1_basics.py
-#  - coverage run tests/test_1_basics.py
-#  - genomepy providers
+  - genomepy providers
 
 # Pipe the coverage data to Code Climate
 after_script:
-  - ./cc-test-reporter after-build --debug -t coverage.py --exit-code $TRAVIS_TEST_RESULT
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT; fi
 #  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter format-coverage -t simplecov -o coverage/codeclimate.backend.json coverage/backend/.resultset.json; fi # Format backend coverage
 #  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.frontend.json coverage/frontend/lcov.info; fi  # Format frontend coverage
 #  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter sum-coverage coverage/codeclimate.*.json -p 2; fi  # Sum both coverage parts into coverage/codeclimate.json
