@@ -6,9 +6,9 @@ os:
   - linux
 
 env:
-  - global:
-#      - PYTHON_VERSION: "3.6"
+  global:
       - CC_TEST_REPORTER_ID=b24ce37bbd695b5180b567c60d494dad8c391b07241e62ebe31c24fe421671ae
+#  - PYTHON_VERSION: "3.6"
 
 before_install:
   # install miniconda
@@ -43,6 +43,8 @@ before_script:
   - ./cc-test-reporter before-build
 
 script:
+  - ./cc-test-reporter after-build --debug
+  - ./cc-test-reporter upload-coverage --debug
   - black --check genomepy/ setup.py tests/
   - flake8 setup.py genomepy/ tests/
   - py.test -v tests/test_1_basics.py
@@ -50,7 +52,7 @@ script:
 
 # Pipe the coverage data to Code Climate
 after_script:
-  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+  - ./cc-test-reporter after-build --debug --exit-code $TRAVIS_TEST_RESULT
 #  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter format-coverage -t simplecov -o coverage/codeclimate.backend.json coverage/backend/.resultset.json; fi # Format backend coverage
 #  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.frontend.json coverage/frontend/lcov.info; fi  # Format frontend coverage
 #  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter sum-coverage coverage/codeclimate.*.json -p 2; fi  # Sum both coverage parts into coverage/codeclimate.json
