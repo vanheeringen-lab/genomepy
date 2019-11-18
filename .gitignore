@@ -6,6 +6,7 @@
 *egg
 .cache
 .pytest_cache
+Log.out
 
 # Directories
 build
@@ -14,3 +15,4 @@ eggs
 tmp
 docs/_build
 .vscode
+.idea

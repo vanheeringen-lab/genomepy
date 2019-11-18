@@ -3,6 +3,7 @@ import errno
 import os
 import re
 import sys
+import urllib.request
 import subprocess as sp
 
 from pyfaidx import Fasta
@@ -22,18 +23,8 @@ def generate_gap_bed(fname, outname):
     f = Fasta(fname)
     with open(outname, "w") as bed:
         for chrom in f.keys():
-            for m in re.finditer(r'N+', f[chrom][:].seq):
+            for m in re.finditer(r"N+", f[chrom][:].seq):
                 bed.write("{}\t{}\t{}\n".format(chrom, m.start(0), m.end(0)))
-
-
-def generate_sizes(name, genome_dir):
-    """Generate a sizes file with length of sequences in FASTA file."""
-    fa = os.path.join(genome_dir, name, "{}.fa".format(name))
-    sizes = fa + ".sizes"
-    g = Fasta(fa)
-    with open(sizes, "w") as f:
-        for seqname in g.keys():
-            f.write("{}\t{}\n".format(seqname, len(g[seqname])))
 
 
 def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
@@ -71,7 +62,8 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
                 os.unlink(outfa + ".fai")
         else:
             raise ValueError(
-                "{} already exists, set force to True to overwrite".format(outfa))
+                "{} already exists, set force to True to overwrite".format(outfa)
+            )
 
     filt_function = re.compile(regex).search
     fa = Fasta(infa, filt_function=filt_function)
@@ -96,7 +88,7 @@ def mkdir_p(path):
     """ 'mkdir -p' in Python """
     try:
         os.makedirs(path)
-    except OSError as exc:  # Python >2.5
+    except OSError as exc:
         if exc.errno == errno.EEXIST and os.path.isdir(path):
             pass
         else:
@@ -104,14 +96,13 @@ def mkdir_p(path):
 
 
 def cmd_ok(cmd):
-    """Returns True if cmd can be run.
-    """
+    """Returns True if cmd can be run."""
     try:
         sp.check_call(cmd, stderr=sp.PIPE, stdout=sp.PIPE)
     except sp.CalledProcessError:
         # bwa gives return code of 1 with no argument
         pass
-    except:
+    except Exception:
         sys.stderr.write("{} not found, skipping\n".format(cmd))
         return False
     return True
@@ -125,13 +116,24 @@ def run_index_cmd(name, cmd):
     stdout, stderr = p.communicate()
     if p.returncode != 0:
         sys.stderr.write("Index for {} failed\n".format(name))
-        sys.stderr.write(stdout.decode('utf8'))
-        sys.stderr.write(stderr.decode('utf8'))
+        sys.stderr.write(stdout.decode("utf8"))
+        sys.stderr.write(stderr.decode("utf8"))
 
 
 def get_localname(name, localname):
-    """Returns localname if localname is not None, else returns name."""
+    """
+    Returns localname if localname is not None, else;
+      if name is an url (URL provider): Returns parsed filename from name
+      else: returns name
+    """
     if localname is None:
-        return name.replace(' ', '_')
+        try:
+            urllib.request.urlopen(name)
+        except (IOError, ValueError):
+            return name.replace(" ", "_")
+        else:
+            # try to get the name from the url
+            name = name[name.rfind("/") + 1 :]
+            return name[: name.find(".")]
     else:
         return localname.replace(" ", "_")
