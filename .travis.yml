@@ -47,8 +47,8 @@ before_script:
 script:
 #  - black --check genomepy/ setup.py tests/
 #  - flake8 setup.py genomepy/ tests/
-  - py.test -v tests/test_1_basics.py
-  - pytest --cov=genomepy --cov-report=xml tests/test_1_basics.py
+#  - py.test -v tests/test_1_basics.py
+  - pytest -v --cov=genomepy --cov-report=xml tests/test_1_basics.py
 #  - coverage run tests/test_1_basics.py
 #  - genomepy providers
 
