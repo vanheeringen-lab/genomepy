@@ -9,7 +9,7 @@ if sys.argv[-1] == "publish":
     os.system("python setup.py sdist upload")
     sys.exit()
 
-with open('README.md') as f:
+with open("README.md") as f:
     long_description = f.read()
 
 packages = ["genomepy", "genomepy/plugins"]
@@ -48,7 +48,7 @@ setup(
     version=__version__,  # noqa: F821
     description="Automatic downloading and processing of genomes and metadata in command line and Python",
     long_description=long_description,
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
     packages=packages,
     package_data=package_data,
     entry_points=entry_points,
