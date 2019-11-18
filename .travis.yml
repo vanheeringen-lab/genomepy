@@ -7,8 +7,9 @@ os:
 
 env:
   global:
-      - CC_TEST_REPORTER_ID=b24ce37bbd695b5180b567c60d494dad8c391b07241e62ebe31c24fe421671ae
-  - PYTHON_VERSION: "3.6"
+    - CC_TEST_REPORTER_ID=b24ce37bbd695b5180b567c60d494dad8c391b07241e62ebe31c24fe421671ae
+  jobs:
+    - PYTHON_VERSION: "3.6"
 
 before_install:
   # install miniconda
