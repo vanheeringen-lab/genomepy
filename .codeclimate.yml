@@ -1,0 +1,18 @@
+version: "2"
+checks:
+  argument-count:
+    enabled: false
+    config:
+      threshold: 4
+  file-lines:
+    enabled: false
+    config:
+      threshold: 250
+exclude_patterns:
+  - "*"
+  - "**/*.yaml"
+  - "**/__*"
+  - "genomepy/cli.py"
+  - "docs/*"
+  - "paper/*"
+  - "tests/*"
