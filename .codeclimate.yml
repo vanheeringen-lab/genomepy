@@ -9,7 +9,11 @@ checks:
     config:
       threshold: 250
 exclude_patterns:
-  - "*"
+  - ".*"
+  - "*.md"
+  - "*.yml"
+  - "setup.py"
+  - "LICENSE"
   - "**/*.yaml"
   - "**/__*"
   - "genomepy/cli.py"
