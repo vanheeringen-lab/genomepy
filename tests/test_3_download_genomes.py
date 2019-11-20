@@ -4,7 +4,6 @@ import pytest
 import os
 from tempfile import mkdtemp
 from platform import system
-from urllib.request import URLError
 
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 linux = system() == "Linux"
@@ -15,7 +14,6 @@ def zipped_genomes(request):
     return request.param
 
 
-@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_zipped_genomes(zipped_genomes):
     """Download a gzipped and a tar.gzipped genome"""
     genome = "ASM14646v1" if zipped_genomes == ".gz" else "sacCer3"
@@ -26,7 +24,6 @@ def test_zipped_genomes(zipped_genomes):
 
 
 @pytest.mark.skipif(travis, reason="Too slow for Travis")
-@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 @pytest.mark.slow
 def test_ensembl_genome(genome="KH", provider="Ensembl", version=98):
     """Test Ensembl.
@@ -43,7 +40,6 @@ def test_ensembl_genome(genome="KH", provider="Ensembl", version=98):
     shutil.rmtree(tmp)
 
 
-@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_ucsc_genome(genome="sacCer3", provider="UCSC"):
     """Test UCSC.
 
@@ -55,7 +51,6 @@ def test_ucsc_genome(genome="sacCer3", provider="UCSC"):
     assert str(seq) == "TTTGGTTGTTCCTCTTCCTT"
 
 
-@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_ncbi_genome(genome="ASM2732v1", provider="NCBI"):
     """Test NCBI.
 
@@ -70,7 +65,6 @@ def test_ncbi_genome(genome="ASM2732v1", provider="NCBI"):
     shutil.rmtree(tmp)
 
 
-@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_url_genome():
     """Test URL.
 

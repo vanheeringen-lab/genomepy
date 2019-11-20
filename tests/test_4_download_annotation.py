@@ -5,7 +5,6 @@ import os
 import pytest
 from tempfile import mkdtemp
 from platform import system
-from urllib.request import URLError
 
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 linux = system() == "Linux"
@@ -45,7 +44,6 @@ def validate_gzipped_bed(fname):
             break
 
 
-@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_ensembl_annotation(localname=None):
     """Test Ensembl annotation
 
@@ -70,7 +68,6 @@ def test_ensembl_annotation(localname=None):
 
 
 @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
-@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_ensemblgenomes_annotation(localname=None):
     """Test Ensembl annotation
 
@@ -92,7 +89,6 @@ def test_ensemblgenomes_annotation(localname=None):
     shutil.rmtree(tmp)
 
 
-@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_UCSC_annotation(localname=None):
     """Test UCSC annotation"""
     tmp = mkdtemp()
@@ -111,7 +107,6 @@ def test_UCSC_annotation(localname=None):
     shutil.rmtree(tmp)
 
 
-@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_NCBI_annotation(localname=None):
     """Test NCBI annotation"""
     tmp = mkdtemp()

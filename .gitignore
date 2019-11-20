@@ -10,8 +10,6 @@
 coverage.xml
 cc-test-reporter
 Log.out
-genomepy/cfg/default.yaml
-tests/data/small_genome.fa.gz
 
 # Directories
 build
