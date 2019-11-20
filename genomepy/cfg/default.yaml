@@ -2,4 +2,3 @@ bgzip: false
 genome_dir: ~/.local/share/genomes/
 plugin:
 - sizes
-- star
