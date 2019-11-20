@@ -2,11 +2,13 @@ import genomepy
 import pytest
 import os
 from platform import system
+from urllib.request import URLError
 
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 linux = system() == "Linux"
 
 
+@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_ensembl_genome_download_links():
     """Test Ensembl links for various genomes
 
@@ -23,6 +25,7 @@ def test_ensembl_genome_download_links():
 
 
 @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
+@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_ensemblgenomes_genome_download_links():
     """Test Ensembl FTP links for various genomes
 
@@ -49,6 +52,7 @@ def release_version(request):
     return request.param
 
 
+@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_ensembl_download_options(assembly, masking, release_version):
     """Test masking, as well as Ensembl specific options for assembly level and release versions"""
     p = genomepy.provider.ProviderBase.create("Ensembl")
@@ -62,6 +66,7 @@ def test_ensembl_download_options(assembly, masking, release_version):
     )
 
 
+@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_ucsc_genome_download_links(masking):
     """Test UCSC HTTP links for various genomes
 
@@ -72,6 +77,7 @@ def test_ucsc_genome_download_links(masking):
         p.get_genome_download_link(genome, mask=masking)
 
 
+@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_ncbi_genome_download_links(masking):
     """Test NCBI HTTPS links for various genomes
 

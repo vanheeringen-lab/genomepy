@@ -1,9 +1,10 @@
-from tempfile import mkdtemp, NamedTemporaryFile
 import genomepy
 import shutil
 import gzip
 import pytest
 import os
+from tempfile import mkdtemp, NamedTemporaryFile
+from urllib.request import URLError
 
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
@@ -23,6 +24,7 @@ def bgzip(request):
     return request.param
 
 
+@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_install_genome_options(
     force, localname, bgzip, genome="ASM2732v1", provider="NCBI"
 ):
@@ -77,6 +79,7 @@ def validate_gzipped_bed(fname):
             break
 
 
+@pytest.mark.xfail(raises=URLError, reason="Travis sometimes cannot connect")
 def test_install_annotation_options(
     force, localname, annotation=True, genome="ASM14646v1", provider="NCBI"
 ):
