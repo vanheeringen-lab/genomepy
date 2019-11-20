@@ -10,6 +10,8 @@ $ git flow release start ${new_version}
 
 3. Make sure `CHANGELOG.md` is up-to-date.
 
+* you can commit, but do not need to push to remote
+
 4. Make sure all tests pass.
 
 5. Check if release works on pypi
@@ -29,6 +31,12 @@ git flow release finish ${new_version}
 ```
 
 7. Push everything to github, including tags
+
+```
+git push --follow-tags origin develop
+```
+
+* start a PR to master
 
 8. <transfer to main repo>
   

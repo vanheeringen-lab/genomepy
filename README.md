@@ -18,7 +18,7 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 
 [![asciicast](https://asciinema.org/a/eZttBuf5ly0AnjFVBiEIybbjS.png)](https://asciinema.org/a/eZttBuf5ly0AnjFVBiEIybbjS)
 
-**Pssst, hey there!** Is genomepy not doing what you want? Does it fail? Is it clunky? Is the documentation unclear? Have any other ideas on how to improve it? Don't be shy and [let us know](https://github.com/simonvh/genomepy/issues)!
+**Pssst, hey there!** Is genomepy not doing what you want? Does it fail? Is it clunky? Is the documentation unclear? Have any other ideas on how to improve it? Don't be shy and [let us know](https://github.com/vanheeringen-lab/genomepy/issues)!
 
 
 ## Installation
@@ -414,13 +414,13 @@ If you use genomepy in your research, please cite it: [10.21105/joss.00320](http
 
 ## Getting help
 
-If you want to report a bug or issue, or have problems with installing or running the software please create [a new issue](https://github.com/simonvh/genomepy/issues). This is the preferred way of getting support. Alternatively, you can [mail me](mailto:simon.vanheeringen@gmail.com).
+If you want to report a bug or issue, or have problems with installing or running the software please create [a new issue](https://github.com/vanheeringen-lab/genomepy/issues). This is the preferred way of getting support. Alternatively, you can [mail me](mailto:simon.vanheeringen@gmail.com).
 
 ## Contributing
 
 Contributions welcome! Send me a pull request or get in [touch](mailto:simon.vanheeringen@gmail.com).
 
-When contributing a PR, please use the [develop](https://github.com/simonvh/genomepy/tree/develop) branch.
+When contributing a PR, please use the [develop](https://github.com/vanheeringen-lab/genomepy/tree/develop) branch.
 For style, code will be checked using flake8 and
 [black](https://github.com/psf/black). These modules can be
 installed via conda, `conda install black flake8 flake8-bugbear` or via pip `pip

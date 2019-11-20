@@ -55,7 +55,7 @@ setup(
     install_requires=requires,
     author=__author__,  # noqa: F821
     author_email="simon.vanheeringen@gmail.com",
-    url="https://github.com/simonvh/genomepy",
+    url="https://github.com/vanheeringen-lab/genomepy",
     license="MIT",
     classifiers=classifiers,
 )
