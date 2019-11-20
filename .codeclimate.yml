@@ -8,6 +8,11 @@ checks:
     enabled: false
     config:
       threshold: 250
+plugins:
+  duplication:
+    enabled: true
+    config:
+      count_threshold: 3
 exclude_patterns:
   - ".*"
   - "*.md"

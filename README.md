@@ -6,8 +6,8 @@
 [![Code Health](https://landscape.io/github/vanheeringen-lab/genomepy/master/landscape.svg?style=flat)](https://landscape.io/github/vanheeringen-lab/genomepy/master)
 
 [![Build Status](https://travis-ci.org/vanheeringen-lab/genomepy.svg?branch=master)](https://travis-ci.org/vanheeringen-lab/genomepy)
-[![Maintainability](https://api.codeclimate.com/v1/badges/d740d64120a2fc6c24b2/maintainability)](https://codeclimate.com/github/siebrenf/genomepy/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/d740d64120a2fc6c24b2/test_coverage)](https://codeclimate.com/github/siebrenf/genomepy/test_coverage)
+[![Maintainability](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/maintainability)](https://codeclimate.com/github/vanheeringen-lab/genomepy/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/test_coverage)](https://codeclimate.com/github/vanheeringen-lab/genomepy/test_coverage)
 
 [![status](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd/status.svg)](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.831969.svg)](https://doi.org/10.5281/zenodo.831969)
