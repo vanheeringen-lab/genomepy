@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.7.1] - 2019-11-20
+
+### Fixes
+- STAR is not longer enabled by default
+
 ## [0.7.0] - 2019-11-18
 
 ### Added

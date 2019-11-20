@@ -16,7 +16,10 @@ $ git flow release start ${new_version}
 
 ```
 python setup.py sdist bdist_wheel
-twine upload --repository-url https://test.pypi.org/legacy dist/genomepy-${version}*
+twine upload --repository-url https://test.pypi.org/legacy/ dist/genomepy-${version}*
+
+pip install --extra-index-url https://test.pypi.org/simple/ genomepy==${version}
+genomepy search xenopus_tropicalis
 ```
 
 6. Finish the release
@@ -43,4 +46,11 @@ twine upload dist/genomepy-${version}*
 * Attach downloaded tarball to release as binary.
 
 11. Update bioconda package
+
+* fork bioconda/bioconda-recipes
+* follow the steps in the [docs](https://bioconda.github.io/contributor/workflow.html)
+* update the [yaml file](https://github.com/bioconda/bioconda-recipes/blob/master/recipes/genomepy/meta.yaml) locally. 
+* get the hash from the tarbal using `sha256sum *genomepy-${version}.tar.gz`
+* push to a new branch on the fork
+* start a PR
 

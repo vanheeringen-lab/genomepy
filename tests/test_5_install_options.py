@@ -1,9 +1,11 @@
-from tempfile import mkdtemp, NamedTemporaryFile
 import genomepy
 import shutil
 import gzip
 import pytest
 import os
+from tempfile import mkdtemp, NamedTemporaryFile
+from time import sleep
+from platform import system
 
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
@@ -36,11 +38,15 @@ def test_install_genome_options(
         genome, provider, genome_dir=tmp, localname=localname, bgzip=bgzip, force=force
     )
 
+    # force test
     ext = ".fa.gz" if bgzip else ".fa"
     name = genomepy.utils.get_localname(genome, localname)
     path = os.path.join(tmp, name, name + ext)
-    t0 = os.path.getmtime(path)
 
+    t0 = os.path.getmtime(path)
+    # OSX rounds down getmtime to the second
+    if system() != "Linux":
+        sleep(1)
     genomepy.install_genome(
         genome, provider, genome_dir=tmp, localname=localname, bgzip=bgzip, force=force
     )
@@ -106,8 +112,11 @@ def test_install_annotation_options(
     bed = os.path.join(tmp, name, name + ".annotation.bed.gz")
     validate_gzipped_bed(bed)
 
+    # force test
     t0 = os.path.getmtime(gtf)
-
+    # OSX rounds down getmtime to the second
+    if system() != "Linux":
+        sleep(1)
     genomepy.install_genome(
         genome,
         provider,
