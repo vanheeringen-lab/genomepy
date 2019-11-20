@@ -16,7 +16,10 @@ $ git flow release start ${new_version}
 
 ```
 python setup.py sdist bdist_wheel
-twine upload --repository-url https://test.pypi.org/legacy dist/genomepy-${version}*
+twine upload --repository-url https://test.pypi.org/legacy/ dist/genomepy-${version}*
+
+pip install --extra-index-url https://test.pypi.org/simple/ genomepy==${version}
+genomepy search xenopus_tropicalis
 ```
 
 6. Finish the release
