@@ -2,10 +2,13 @@
 
 [![bioconda-badge](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io)
 [![PyPI version](https://badge.fury.io/py/genomepy.svg)](https://badge.fury.io/py/genomepy)
-[![Build Status](https://travis-ci.org/simonvh/genomepy.svg?branch=master)](https://travis-ci.org/simonvh/genomepy)
-[![Code Health](https://landscape.io/github/simonvh/genomepy/master/landscape.svg?style=flat)](https://landscape.io/github/simonvh/genomepy/master)
+[![star this repo](http://githubbadges.com/star.svg?user=vanheeringen-lab&repo=genomepy&style=flat)](https://github.com/vanheeringen-lab/genomepy)
 
- [![status](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd/status.svg)](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd)
+[![Build Status](https://travis-ci.org/vanheeringen-lab/genomepy.svg?branch=master)](https://travis-ci.org/vanheeringen-lab/genomepy)
+[![Maintainability](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/maintainability)](https://codeclimate.com/github/vanheeringen-lab/genomepy/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/test_coverage)](https://codeclimate.com/github/vanheeringen-lab/genomepy/test_coverage)
+
+[![status](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd/status.svg)](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.831969.svg)](https://doi.org/10.5281/zenodo.831969)
 
 Easily install and use genomes in Python and elsewhere!
