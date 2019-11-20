@@ -6,6 +6,9 @@
 *egg
 .cache
 .pytest_cache
+.coverage
+coverage.xml
+cc-test-reporter
 Log.out
 
 # Directories

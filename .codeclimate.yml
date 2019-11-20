@@ -1,0 +1,30 @@
+version: "2"
+
+plugins:
+  duplication:
+    enabled: true
+    config:
+      count_threshold: 3
+
+checks:
+  argument-count:
+    enabled: false
+    config:
+      threshold: 4
+  file-lines:
+    enabled: false
+    config:
+      threshold: 250
+
+exclude_patterns:
+  - ".*"
+  - "*.md"
+  - "*.yml"
+  - "setup.py"
+  - "LICENSE"
+  - "**/*.yaml"
+  - "**/__*"
+  - "genomepy/cli.py"
+  - "docs/*"
+  - "paper/*"
+  - "tests/*"
