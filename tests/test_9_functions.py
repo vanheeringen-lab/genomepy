@@ -1,6 +1,6 @@
 import pytest
-import os.path
-from appdirs import user_config_dir
+# import os.path
+# from appdirs import user_config_dir
 
 import genomepy.functions
 
@@ -18,7 +18,7 @@ def test_list_available_genomes(provider="ncbi"):
         break
 
     with pytest.raises(Exception):
-        g = genomepy.functions.list_available_genomes('not a provider')
+        g = genomepy.functions.list_available_genomes("not a provider")
         for row in g:
             print("\t".join(row))
             break
@@ -42,7 +42,9 @@ def test_list_installed_genomes():
 
 def test_search():
     # unrecognized provider/genome will cause an Exception or StopIteration respectively
-    assert isinstance(next(genomepy.functions.search("Xenopus Tropicalis", "NCBI")), list)
+    assert isinstance(
+        next(genomepy.functions.search("Xenopus Tropicalis", "NCBI")), list
+    )
 
 
 # skipping several large/vague functions
@@ -63,7 +65,9 @@ def test_generate_exports():
 
 
 def test_glob_ext_files():
-    assert 'tests/data/small_genome.fa.gz' in genomepy.functions.glob_ext_files("tests/data")
+    assert "tests/data/small_genome.fa.gz" in genomepy.functions.glob_ext_files(
+        "tests/data"
+    )
 
 
 def test_genome():

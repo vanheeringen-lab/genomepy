@@ -161,7 +161,6 @@ def bgrezip(bgzip, fname):
         ret = sp.check_call(["bgzip", fname])
         if ret != 0:
             raise Exception(
-                "Error bgzipping genome {}. ".format(fname)
-                + "Is tabix installed?"
+                "Error bgzipping genome {}. ".format(fname) + "Is tabix installed?"
             )
     return
