@@ -12,10 +12,11 @@ if sys.argv[-1] == "publish":
 with open("README.md") as f:
     long_description = f.read()
 
+# List of files and directories to include when packaging for release
 packages = ["genomepy", "genomepy/plugins"]
-
-# this replaces the PyPa MANIFEST.in
-package_data = {"genomepy": ["cfg/*.yaml"], "": ["LICENSE", "README.md"]}
+package_data = {"genomepy": ["cfg/*.yaml"]}
+# https://stackoverflow.com/questions/9977889/how-to-include-license-file-in-setup-py-script
+data_files = [("", ["LICENSE", "README.md", "CHANGELOG.md"])]
 
 entry_points = {"console_scripts": ["genomepy=genomepy.cli:cli"]}
 
@@ -51,6 +52,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=packages,
     package_data=package_data,
+    data_files=data_files,
     entry_points=entry_points,
     install_requires=requires,
     author=__author__,  # noqa: F821

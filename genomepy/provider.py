@@ -1064,7 +1064,9 @@ class NCBIProvider(ProviderBase):
                     "If you think the annotation should be there, "
                     + "please file a bug report at:\n"
                 )
-                sys.stderr.write("https://github.com/vanheeringen-lab/genomepy/issues\n")
+                sys.stderr.write(
+                    "https://github.com/vanheeringen-lab/genomepy/issues\n"
+                )
 
 
 @register_provider("URL")

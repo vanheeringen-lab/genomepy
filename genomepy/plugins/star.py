@@ -1,9 +1,7 @@
 import os
-import re
-import subprocess as sp
 from shutil import rmtree
 from genomepy.plugin import Plugin
-from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
+from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd, bgunzip_and_name, bgrezip
 
 
 class StarPlugin(Plugin):
@@ -20,15 +18,8 @@ class StarPlugin(Plugin):
         mkdir_p(index_dir)
 
         if not os.path.exists(index_name):
-            # If the genome is bgzipped it needs to be unzipped first
-            fname = genome.filename
-            bgzip = False
-            if fname.endswith(".gz"):
-                ret = sp.check_call(["gunzip", fname])
-                if ret != 0:
-                    raise Exception("Error gunzipping genome {}".format(fname))
-                fname = re.sub(".gz$", "", fname)
-                bgzip = True
+            # unzip genome if zipped and return up-to-date genome name
+            bgzip, fname = bgunzip_and_name(genome)
 
             # Create index
             cmd = "STAR --runMode genomeGenerate --genomeFastaFiles {} --genomeDir {} --outFileNamePrefix {}".format(
@@ -36,14 +27,8 @@ class StarPlugin(Plugin):
             )
             run_index_cmd("star", cmd)
 
-            # Rezip genome if it was bgzipped
-            if bgzip:
-                ret = sp.check_call(["bgzip", fname])
-                if ret != 0:
-                    raise Exception(
-                        "Error bgzipping genome {}. ".format(fname)
-                        + "Is tabix installed?"
-                    )
+            # re-zip genome if it was unzipped prior
+            bgrezip(bgzip, fname)
 
     def get_properties(self, genome):
         props = {

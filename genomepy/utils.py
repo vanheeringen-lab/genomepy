@@ -137,3 +137,31 @@ def get_localname(name, localname):
             return name[: name.find(".")]
     else:
         return localname.replace(" ", "_")
+
+
+def bgunzip_and_name(genome):
+    """
+    If the genome is bgzipped it needs to be unzipped first
+    Returns up to date fname and bgzip status
+    """
+    fname = genome.filename
+    bgzip = False
+    if fname.endswith(".gz"):
+        ret = sp.check_call(["gunzip", fname])
+        if ret != 0:
+            raise Exception("Error gunzipping genome {}".format(fname))
+        fname = re.sub(".gz$", "", fname)
+        bgzip = True
+    return bgzip, fname
+
+
+def bgrezip(bgzip, fname):
+    """Rezip genome if it was unzipped by bgunzip"""
+    if bgzip:
+        ret = sp.check_call(["bgzip", fname])
+        if ret != 0:
+            raise Exception(
+                "Error bgzipping genome {}. ".format(fname)
+                + "Is tabix installed?"
+            )
+    return

@@ -1,10 +1,8 @@
 import os.path
-import re
-import subprocess as sp
 from shutil import move, rmtree
 from tempfile import TemporaryDirectory
 from genomepy.plugin import Plugin
-from genomepy.utils import cmd_ok, run_index_cmd
+from genomepy.utils import cmd_ok, run_index_cmd, bgunzip_and_name, bgrezip
 
 
 class GmapPlugin(Plugin):
@@ -19,15 +17,8 @@ class GmapPlugin(Plugin):
             rmtree(index_dir, ignore_errors=True)
 
         if not os.path.exists(index_dir):
-            # If the genome is bgzipped it needs to be unzipped first
-            fname = genome.filename
-            bgzip = False
-            if fname.endswith(".gz"):
-                ret = sp.check_call(["gunzip", fname])
-                if ret != 0:
-                    raise Exception("Error gunzipping genome {}".format(fname))
-                fname = re.sub(".gz$", "", fname)
-                bgzip = True
+            # unzip genome if zipped and return up-to-date genome name
+            bgzip, fname = bgunzip_and_name(genome)
 
             # gmap outputs a folder named genome.name
             # its content is moved to index dir, consistent with other plugins
@@ -40,13 +31,8 @@ class GmapPlugin(Plugin):
                 src = os.path.join(tmpdir, genome.name)
                 move(src, index_dir)
 
-            if bgzip:
-                ret = sp.check_call(["bgzip", fname])
-                if ret != 0:
-                    raise Exception(
-                        "Error bgzipping genome {}. ".format(fname)
-                        + "Is tabix installed?"
-                    )
+            # re-zip genome if unzipped
+            bgrezip(bgzip, fname)
 
     def get_properties(self, genome):
         props = {

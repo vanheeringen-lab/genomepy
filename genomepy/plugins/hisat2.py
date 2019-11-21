@@ -1,9 +1,7 @@
 import os
-import re
-import subprocess as sp
 from shutil import rmtree
 from genomepy.plugin import Plugin
-from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
+from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd, bgunzip_and_name, bgrezip
 
 
 class Hisat2Plugin(Plugin):
@@ -20,27 +18,15 @@ class Hisat2Plugin(Plugin):
         mkdir_p(index_dir)
 
         if not any(fname.endswith(".ht2") for fname in os.listdir(index_dir)):
-            # If the genome is bgzipped it needs to be unzipped first
-            fname = genome.filename
-            bgzip = False
-            if fname.endswith(".gz"):
-                ret = sp.check_call(["gunzip", fname])
-                if ret != 0:
-                    raise Exception("Error gunzipping genome {}".format(fname))
-                fname = re.sub(".gz$", "", fname)
-                bgzip = True
+            # unzip genome if zipped and return up-to-date genome name
+            bgzip, fname = bgunzip_and_name(genome)
 
             # Create index
             cmd = "hisat2-build {} {}".format(fname, index_name)
             run_index_cmd("hisat2", cmd)
 
-            if bgzip:
-                ret = sp.check_call(["bgzip", fname])
-                if ret != 0:
-                    raise Exception(
-                        "Error bgzipping genome {}. ".format(fname)
-                        + "Is tabix installed?"
-                    )
+            # re-zip genome if unzipped
+            bgrezip(bgzip, fname)
 
     def get_properties(self, genome):
         props = {
