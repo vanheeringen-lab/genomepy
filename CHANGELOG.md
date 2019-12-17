@@ -5,6 +5,7 @@ Here, the changes to `genomepy` will be summarized.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+- Blacklists are automatically unzipped.
 
 ## [0.7.1] - 2019-11-20
 
