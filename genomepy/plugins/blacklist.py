@@ -27,7 +27,7 @@ class BlacklistPlugin(Plugin):
             os.remove(fname)
 
         if not os.path.exists(fname):
-            link = self.http_dict.get(genome.name)
+            link = self.http_dict.get(genome.name.split('.')[0])
             if link is None:
                 sys.stderr.write("No blacklist found for {}\n".format(genome.name))
                 return
@@ -38,7 +38,7 @@ class BlacklistPlugin(Plugin):
                     # unzip the response with some zlib magic
                     unzipped = zlib.decompress(
                         response.read(), 16 + zlib.MAX_WBITS
-                    ).decode("utf-8")
+                    )
                     bed.write(unzipped)
             except Exception as e:
                 sys.stderr.write(e)
