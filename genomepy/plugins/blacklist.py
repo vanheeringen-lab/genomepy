@@ -1,7 +1,10 @@
 import os.path
 import re
 import sys
+import zlib
+
 from urllib.request import urlopen
+
 from genomepy.plugin import Plugin
 
 
@@ -32,7 +35,11 @@ class BlacklistPlugin(Plugin):
                 sys.stderr.write("Downloading blacklist {}\n".format(link))
                 response = urlopen(link)
                 with open(fname, "wb") as bed:
-                    bed.write(response.read())
+                    # unzip the response with some zlib magic
+                    unzipped = zlib.decompress(
+                        response.read(), 16 + zlib.MAX_WBITS
+                    ).decode("utf-8")
+                    bed.write(unzipped)
             except Exception as e:
                 sys.stderr.write(e)
                 sys.stderr.write(
@@ -41,6 +48,6 @@ class BlacklistPlugin(Plugin):
 
     def get_properties(self, genome):
         props = {
-            "blacklist": re.sub(".fa(.gz)?$", ".blacklist.bed.gz", genome.filename)
+            "blacklist": re.sub(".fa(.gz)?$", ".blacklist.bed", genome.filename)
         }
         return props
