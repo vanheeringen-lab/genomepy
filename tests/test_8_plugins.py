@@ -81,7 +81,7 @@ def test_blacklist(genome, force):
     p = BlacklistPlugin()
 
     p.after_genome_download(genome, force=force)
-    fname = re.sub(".fa(.gz)?$", ".blacklist.bed.gz", genome.filename)
+    fname = re.sub(".fa(.gz)?$", ".blacklist.bed", genome.filename)
     assert os.path.exists(fname)
 
     force_test(p, fname, genome, force)
