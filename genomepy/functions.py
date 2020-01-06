@@ -252,9 +252,9 @@ def install_genome(
         generate_gap_bed(glob_ext_files(out_dir, "fa")[0], gap_file)
 
     # Generate sizes file if not found or if generation is forced
-    gap_file = os.path.join(out_dir, localname + ".fa.sizes")
-    if not os.path.exists(gap_file) or force:
-        generate_fa_sizes(glob_ext_files(out_dir, "fa")[0], gap_file)
+    sizes_file = os.path.join(out_dir, localname + ".fa.sizes")
+    if not os.path.exists(sizes_file) or force:
+        generate_fa_sizes(glob_ext_files(out_dir, "fa")[0], sizes_file)
     generate_env()
 
 

@@ -23,6 +23,4 @@ def test_sizes():
 
     result = open(tmp).read()
 
-    assert result == "chr1\t28\n" \
-                     "chr2\t45\n" \
-                     "chr3\t15\n"
+    assert result == "chr1\t28\nchr2\t45\nchr3\t15\n"
