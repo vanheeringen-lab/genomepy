@@ -5,7 +5,7 @@ channels:
 dependencies:
   # Also found in setup.py
   - click
-  - pyfaidx>=0.5.1
+  - pyfaidx>=0.5.7
   - norns>=0.1.5
   - bucketcache
   - xmltodict
