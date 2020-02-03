@@ -255,7 +255,6 @@ bwa
 gmap                
 hisat2              
 minimap2            
-sizes               *
 star
 ```
 
@@ -263,14 +262,14 @@ Enable plugins as follows:
 
 ```
 $ genomepy plugin enable bwa hisat2
-Enabled plugins: bwa, hisat2, sizes
+Enabled plugins: bwa, hisat2
 ```
 
 And disable like this:
 
 ```
 $ genomepy plugin disable bwa
-Enabled plugins: hisat2, sizes
+Enabled plugins: hisat2
 ```
 
 #### Search for a genome.
@@ -344,7 +343,7 @@ $ genomepy config show
 genome_dir: ~/.local/share/genomes/
 
 plugin:
- - sizes
+ - blacklist
 ```
 
 To generate a personal configuration file (existing file will be overwritten):
