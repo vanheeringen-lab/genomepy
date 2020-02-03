@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Changed
 - sizes no longer a plugin, but always gets executed
 
-### Fixed
+### Fixes
 - Fix minor issue with hg19 wrong blacklist url
 
 ## [0.7.1] - 2019-11-20
