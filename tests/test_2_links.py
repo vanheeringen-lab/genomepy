@@ -30,7 +30,7 @@ def test_ensemblgenomes_genome_download_links():
     """
     p = genomepy.provider.ProviderBase.create("Ensembl")
 
-    for genome in ["AgamP4", "WBcel235"]:
+    for genome in ["Amel_4.5", "WBcel235"]:
         p.get_genome_download_link(genome)
 
 
