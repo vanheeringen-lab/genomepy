@@ -1,28 +1,33 @@
+import os
 import pytest
+import shutil
 
 # import os.path
-# from appdirs import user_config_dir
+from appdirs import user_config_dir
 
 import genomepy.functions
 
 
 def test_manage_config():
     # will give a NameError if the config/config dir is missing
-    genomepy.functions.manage_config("file")
-    genomepy.functions.manage_config("show")
+    shutil.rmtree(user_config_dir("genomepy"))
+    for cmd in ["generate", "file", "show"]:
+        genomepy.functions.manage_config(cmd)
 
 
 def test_list_available_genomes(provider="ncbi"):
-    g = genomepy.functions.list_available_genomes(provider)
-    for row in g:
-        assert ("\t".join(row)).startswith(provider)
-        break
+    g = genomepy.functions.list_available_genomes
 
+    # any provider
+    assert isinstance(next(g()), list)
+    assert len(next(g())) == 3
+
+    # specific provider
+    assert next(g(provider))[0] == provider
+
+    # wrong provider, throw exception
     with pytest.raises(Exception):
-        g = genomepy.functions.list_available_genomes("not a provider")
-        for row in g:
-            print("\t".join(row))
-            break
+        next(g("not a provider"))
 
 
 def test_list_available_providers():
@@ -43,32 +48,37 @@ def test_list_installed_genomes():
 
 def test_search():
     # unrecognized provider/genome will cause an Exception or StopIteration respectively
-    assert isinstance(
-        next(genomepy.functions.search("Xenopus Tropicalis", "NCBI")), list
-    )
+    s = genomepy.functions.search
+    assert isinstance(next(s("Xenopus Tropicalis", "NCBI")), list)
+    assert isinstance(next(s("Xenopus Tropicalis")), list)
 
 
-# skipping several large/vague functions
+# install_genome is tested elsewhere
 
 
 def test_generate_exports():
+    genomepy.install_genome("ASM14646v1", "NCBI")
     assert isinstance(genomepy.functions.generate_exports(), list)
 
+    # genome_dir = os.path.expanduser(config.get("genome_dir", None))
+    # path = os.path.join(genome_dir, "ASM14646v1")
+    # shutil.rmtree(path)
 
-# def test_generate_env():
-#     genomepy.functions.generate_env("tests/data/gap.fa")
-#
-#     config_dir = str(user_config_dir("genomepy"))
-#     path = os.path.join(config_dir, "exports.txt")
-#     assert os.path.exists(path)
-#
-#     os.remove(path)
+
+def test_generate_env():
+    fname = "myenv.txt"
+    genomepy.functions.generate_env(fname)
+
+    config_dir = str(user_config_dir("genomepy"))
+    path = os.path.join(config_dir, fname)
+    assert os.path.exists(path)
+
+    os.remove(path)
 
 
 def test_glob_ext_files():
-    assert "tests/data/small_genome.fa.gz" in genomepy.functions.glob_ext_files(
-        "tests/data"
-    )
+    gef = genomepy.functions.glob_ext_files
+    assert "tests/data/small_genome.fa.gz" in gef("tests/data")
 
 
 def test_genome():
@@ -77,3 +87,5 @@ def test_genome():
 
 def test_manage_plugins():
     genomepy.functions.manage_plugins("list")
+    genomepy.functions.manage_plugins("enable", ["star"])
+    genomepy.functions.manage_plugins("disable", ["star"])
