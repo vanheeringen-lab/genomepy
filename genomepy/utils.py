@@ -1,5 +1,6 @@
 """Utility functions."""
 import errno
+import glob
 import os
 import re
 import sys
@@ -7,6 +8,24 @@ import urllib.request
 import subprocess as sp
 
 from pyfaidx import Fasta
+from tempfile import TemporaryDirectory
+
+
+def generate_size_file(fname, outname):
+    """ Generate a BED file with gap locations.
+
+    Parameters
+    ----------
+    fname : str
+        Filename of input FASTA file.
+
+    outname : str
+        Filename of output size file.
+    """
+    genome = Fasta(fname)
+    with open(outname, "w") as f:
+        for seqname in genome.keys():
+            f.write("{}\t{}\n".format(seqname, len(genome[seqname])))
 
 
 def generate_gap_bed(fname, outname):
@@ -163,4 +182,121 @@ def bgrezip(bgzip, fname):
             raise Exception(
                 "Error bgzipping genome {}. ".format(fname) + "Is tabix installed?"
             )
+    return
+
+
+def glob_ext_files(dirname, ext="fa"):
+    """
+    Return (gzipped) file names in directory containing the given extension.
+
+    Parameters
+    ----------
+    dirname: str
+        Directory name.
+
+    ext: str
+        Filename extension (default: fa).
+
+    Returns
+    -------
+        File names.
+    """
+    fnames = glob.glob(os.path.join(dirname, "*." + ext + "*"))
+    return [fname for fname in fnames if fname.endswith(ext) or fname.endswith("gz")]
+
+
+def sanitize_annotation(genome_dir, localname):
+    """
+    Matches the toplevel sequence names in annotation.gtf to those in the genome.fa.
+
+    genome_dir:
+        Save location for all genomes.
+
+    localname:
+        Custom name used for this genome.
+    """
+    out_dir = os.path.join(genome_dir, localname)
+
+    genome_file = glob_ext_files(out_dir, "fa")[0]
+    sizefile = genome_file + ".sizes"
+    gtf_file = os.path.join(out_dir, localname + ".annotation.gtf")
+
+    sp.check_call("gunzip -f {}".format(gtf_file + ".gz"), shell=True)
+
+    # Check if genome and annotation have matching chromosome/scaffold names
+    with open(gtf_file, "r") as gtf:
+        for line in gtf:
+            if not line.startswith("#"):
+                gtf_id = line.split("\t")[0]
+                break
+
+    with open(sizefile, "r") as sizes:
+        for line in sizes:
+            fa_id = line.split("\t")[0]
+            if fa_id == gtf_id:
+                sp.check_call("gzip -f {}".format(gtf_file), shell=True)
+
+                readme = os.path.join(out_dir, "README.txt")
+                with open(readme, "a") as f:
+                    f.write("genome and annotation have matching sequence names.\n")
+                return
+
+    # generate a gtf with matching scaffold/chromosome IDs
+    sys.stderr.write(
+        "Genome and annotation do not have matching sequence names! Creating matching annotation files...\n"
+    )
+
+    with TemporaryDirectory(dir=out_dir) as tmpdir:
+        # remove old files
+        old_gtf_file = os.path.join(tmpdir, os.path.basename(gtf_file))
+        bed_file = gtf_file.replace("gtf", "bed")
+        sp.check_call("mv {} {}".format(gtf_file, old_gtf_file), shell=True)
+        sp.check_call("rm {}".format(bed_file + ".gz"), shell=True)
+
+        # determine which element in the fasta's header
+        # contains the location identifiers used in the annotation.gtf
+        header = []
+        with open(genome_file, "r") as fa:
+            for line in fa:
+                if line.startswith(">"):
+                    header = line.strip(">\n").split(" ")
+                    break
+
+        with open(old_gtf_file, "r") as gtf:
+            for line in gtf:
+                if not line.startswith("#"):
+                    loc_id = line.strip().split("\t")[0]
+                    try:
+                        element = header.index(loc_id)
+                        break
+                    except ValueError:
+                        continue
+
+        # build a conversion table
+        ids = {}
+        with open(genome_file, "r") as fa:
+            for line in fa:
+                if line.startswith(">"):
+                    line = line.strip(">\n").split(" ")
+                    if line[element] not in ids.keys():
+                        ids.update({line[element]: line[0]})
+
+        # rename the location identifier in the gtf (using the conversion table)
+        with open(old_gtf_file, "r") as oldgtf, open(gtf_file, "w") as newgtf:
+            for line in oldgtf:
+                line = line.split("\t")
+                line[0] = ids[line[0]]
+                line = "\t".join(line)
+                newgtf.write(line)
+
+    # generate a bed with matching scaffold/chromosome IDs
+    cmd = (
+        "gtfToGenePred {0} /dev/stdout | " "genePredToBed /dev/stdin {1} && gzip -f {1}"
+    )
+    sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
+    sp.check_call("gzip -f {}".format(gtf_file), shell=True)
+
+    readme = os.path.join(out_dir, "README.txt")
+    with open(readme, "a") as f:
+        f.write("corrected annotation files generated succesfully.\n")
     return

@@ -11,7 +11,13 @@ from collections.abc import Iterable
 from pyfaidx import Fasta, Sequence
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
-from genomepy.utils import generate_gap_bed, get_localname
+from genomepy.utils import (
+    generate_size_file,
+    generate_gap_bed,
+    get_localname,
+    glob_ext_files,
+    sanitize_annotation,
+)
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -230,6 +236,19 @@ def install_genome(
             **kwargs
         )
 
+    # generates a Fasta object and the index file
+    g = Genome(localname, genome_dir=genome_dir)
+
+    # Generate size file if not found or if generation is forced
+    size_file = glob_ext_files(out_dir, "fa")[0] + ".sizes"
+    if not os.path.exists(size_file) or force:
+        generate_size_file(glob_ext_files(out_dir, "fa")[0], size_file)
+
+    # Generate gap file if not found or if generation is forced
+    gap_file = os.path.join(out_dir, localname + ".gaps.bed")
+    if not os.path.exists(gap_file) or force:
+        generate_gap_bed(glob_ext_files(out_dir, "fa")[0], gap_file)
+
     # If annotation is requested, check if annotation already exists, or if downloading is forced
     no_annotation_found = not any(
         os.path.exists(fname) for fname in glob_ext_files(out_dir, "gtf")
@@ -238,18 +257,11 @@ def install_genome(
         # Download annotation from provider
         p = ProviderBase.create(provider)
         p.download_annotation(name, genome_dir, localname=localname, **kwargs)
-
-    # generates a Fasta object and the index file
-    g = Genome(localname, genome_dir=genome_dir)
+        sanitize_annotation(genome_dir, localname)
 
     # Run all active plugins
     for plugin in get_active_plugins():
         plugin.after_genome_download(g, force)
-
-    # Generate gap file if not found or if generation is forced
-    gap_file = os.path.join(out_dir, localname + ".gaps.bed")
-    if not os.path.exists(gap_file) or force:
-        generate_gap_bed(glob_ext_files(out_dir, "fa")[0], gap_file)
 
     generate_env()
 
@@ -314,26 +326,6 @@ def generate_env(fname=None):
         with open(fname, "w") as fout:
             for env in generate_exports():
                 fout.write("{}\n".format(env))
-
-
-def glob_ext_files(dirname, ext="fa"):
-    """
-    Return (gzipped) file names in directory containing the given extension.
-
-    Parameters
-    ----------
-    dirname: str
-        Directory name.
-
-    ext: str
-        Filename extension (default: fa).
-
-    Returns
-    -------
-        File names.
-    """
-    fnames = glob.glob(os.path.join(dirname, "*." + ext + "*"))
-    return [fname for fname in fnames if fname.endswith(ext) or fname.endswith("gz")]
 
 
 class Genome(Fasta):
