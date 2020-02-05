@@ -71,6 +71,12 @@ general_install_options = {
         "help": "download annotation",
         "flag_value": True,
     },
+    "skip_sanitizing": {
+        "short": "s",
+        "long": "skip_sanitizing",
+        "help": "skip sanitizing of downloaded annotation",
+        "flag_value": True,
+    },
     "force": {
         "short": "f",
         "long": "force",
@@ -133,6 +139,7 @@ def install(
     invert_match,
     bgzip,
     annotation,
+    skip_sanitizing,
     force,
     **kwargs
 ):
@@ -147,6 +154,7 @@ def install(
         invert_match=invert_match,
         bgzip=bgzip,
         annotation=annotation,
+        skip_sanitizing=skip_sanitizing,
         force=force,
         **kwargs
     )

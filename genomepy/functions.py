@@ -160,6 +160,7 @@ def install_genome(
     invert_match=False,
     bgzip=None,
     annotation=False,
+    skip_sanitizing=False,
     force=False,
     **kwargs
 ):
@@ -195,6 +196,10 @@ def install_genome(
 
     annotation : bool , optional
         If set to True, download gene annotation in BED and GTF format.
+
+    skip_sanitizing : bool , optional
+        If set to True, downloaded annotation files whose sequence names do not match
+        with the (first header fields of) the genome.fa will not be corrected.
 
     force : bool , optional
         Set to True to overwrite existing files.
@@ -257,7 +262,8 @@ def install_genome(
         # Download annotation from provider
         p = ProviderBase.create(provider)
         p.download_annotation(name, genome_dir, localname=localname, **kwargs)
-        sanitize_annotation(genome_dir, localname)
+        if not skip_sanitizing:
+            sanitize_annotation(genome_dir, localname)
 
     # Run all active plugins
     for plugin in get_active_plugins():
