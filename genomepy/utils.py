@@ -247,12 +247,6 @@ def sanitize_annotation(genome_dir, localname):
     )
 
     with TemporaryDirectory(dir=out_dir) as tmpdir:
-        # remove old files
-        old_gtf_file = os.path.join(tmpdir, os.path.basename(gtf_file))
-        bed_file = gtf_file.replace("gtf", "bed")
-        sp.check_call("mv {} {}".format(gtf_file, old_gtf_file), shell=True)
-        sp.check_call("rm {}".format(bed_file + ".gz"), shell=True)
-
         # determine which element in the fasta's header
         # contains the location identifiers used in the annotation.gtf
         header = []
@@ -262,7 +256,7 @@ def sanitize_annotation(genome_dir, localname):
                     header = line.strip(">\n").split(" ")
                     break
 
-        with open(old_gtf_file, "r") as gtf:
+        with open(gtf_file, "r") as gtf:
             for line in gtf:
                 if not line.startswith("#"):
                     loc_id = line.strip().split("\t")[0]
@@ -271,6 +265,11 @@ def sanitize_annotation(genome_dir, localname):
                         break
                     except ValueError:
                         continue
+            else:
+                sys.stderr.write(
+                    "WARNING: Cannot correct annotation files automatically!"
+                )
+                return
 
         # build a conversion table
         ids = {}
@@ -281,7 +280,13 @@ def sanitize_annotation(genome_dir, localname):
                     if line[element] not in ids.keys():
                         ids.update({line[element]: line[0]})
 
-        # rename the location identifier in the gtf (using the conversion table)
+        # remove old files
+        old_gtf_file = os.path.join(tmpdir, os.path.basename(gtf_file))
+        bed_file = gtf_file.replace("gtf", "bed")
+        sp.check_call("mv {} {}".format(gtf_file, old_gtf_file), shell=True)
+        sp.check_call("rm {}".format(bed_file + ".gz"), shell=True)
+
+        # rename the location identifier in the new gtf (using the conversion table)
         with open(old_gtf_file, "r") as oldgtf, open(gtf_file, "w") as newgtf:
             for line in oldgtf:
                 line = line.split("\t")
