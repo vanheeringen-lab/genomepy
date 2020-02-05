@@ -1087,3 +1087,94 @@ class UrlProvider(ProviderBase):
         tuple (url, url)
         """
         return url, url
+
+    def download_annotation(self, url, genome_dir, localname=None, **kwargs):
+        """
+        Attempts to download a gtf file from the same location as the genome url
+
+        Parameters
+        ----------
+        url : str
+            url of where to download genome from
+
+        genome_dir : str
+            Directory to install annotation
+        """
+        name = get_localname(url, None)
+        urldir = os.path.dirname(url)
+        sys.stderr.write("Checking {} for annotation files...\n".format(urldir))
+
+        # try to find a GTF or GFF3 file
+        with urlopen(urldir) as f:
+            for urlline in f.readlines():
+                urlstr = str(urlline)
+                if any(
+                    substring in urlstr.lower()
+                    for substring in [".gtf", name + ".gff3"]
+                ):
+                    break
+
+        # retrieve the filename from the HTML line
+        for split in re.split('>|<|><|/|"', urlstr):
+            if split.lower().endswith(
+                (".gtf", ".gtf.gz", name + ".gff3", name + ".gff3.gz")
+            ):
+                fname = split
+                break
+        else:
+            sys.stderr.write("WARNING: Could not download annotation, skipping.\n")
+            return
+
+        # create output directory if missing
+        localname = get_localname(name, localname)
+        out_dir = os.path.join(genome_dir, localname)
+        if not os.path.exists(out_dir):
+            os.mkdir(out_dir)
+
+        # download to tmp dir. Move files on completion.
+        with TemporaryDirectory(dir=out_dir) as tmpdir:
+            annot_url = urldir + "/" + fname
+            ext = ".gtf" if ".gtf" in fname.lower() else ".gff3"
+            ext += ".gz" if fname.lower().endswith(".gz") else ""
+            gtf_file = os.path.join(tmpdir, localname + ".annotation" + ext)
+            sys.stderr.write("Using {}\n".format(annot_url))
+            urlretrieve(annot_url, gtf_file)
+
+            # process downloaded file
+            gz = True if fname.lower().endswith(".gz") else False
+            gff3 = True if ".gff3" in fname.lower() else False
+            if gz and gff3:
+                # unzip gff3.gz before conversion to gtf
+                sp.check_call("gunzip -f {}".format(gtf_file), shell=True)
+                gtf_file = gtf_file.strip(".gz")
+            if gff3:
+                # convert gff3 to gtf file
+                cmd = (
+                    "gff3ToGenePred -geneNameAttr=gene {0} /dev/stdout | "
+                    + "genePredToGtf file /dev/stdin {1}"
+                )
+                gff_file = gtf_file
+                gtf_file = gtf_file.replace("gff3", "gtf")
+                sp.check_call(cmd.format(gff_file, gtf_file), shell=True)
+            if not gz:
+                # zip gtf file
+                sp.check_call("gzip -f {}".format(gtf_file), shell=True)
+                gtf_file += ".gz"
+
+            # generate annotation.bed file
+            bed_file = gtf_file.replace("gtf.gz", "bed")
+            cmd = (
+                "gtfToGenePred {0} /dev/stdout | "
+                "genePredToBed /dev/stdin {1} && gzip -f {1}"
+            )
+            sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
+
+            # transfer the files from the tmpdir to the genome_dir
+            for f in [gtf_file, bed_file + ".gz"]:
+                src = f
+                dst = os.path.join(out_dir, os.path.basename(f))
+                shutil.move(src, dst)
+
+        readme = os.path.join(genome_dir, localname, "README.txt")
+        with open(readme, "a") as f:
+            f.write("annotation url: {}\n".format(annot_url))
