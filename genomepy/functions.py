@@ -12,8 +12,8 @@ from pyfaidx import Fasta, Sequence
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
 from genomepy.utils import (
-    generate_size_file,
     generate_gap_bed,
+    generate_fa_sizes,
     get_localname,
     glob_ext_files,
     sanitize_annotation,
@@ -239,10 +239,10 @@ def install_genome(
     # generates a Fasta object and the index file
     g = Genome(localname, genome_dir=genome_dir)
 
-    # Generate size file if not found or if generation is forced
-    size_file = glob_ext_files(out_dir, "fa")[0] + ".sizes"
-    if not os.path.exists(size_file) or force:
-        generate_size_file(glob_ext_files(out_dir, "fa")[0], size_file)
+    # Generate sizes file if not found or if generation is forced
+    sizes_file = os.path.join(out_dir, localname + ".fa.sizes")
+    if not os.path.exists(sizes_file) or force:
+        generate_fa_sizes(glob_ext_files(out_dir, "fa")[0], sizes_file)
 
     # Generate gap file if not found or if generation is forced
     gap_file = os.path.join(out_dir, localname + ".gaps.bed")

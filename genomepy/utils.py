@@ -11,23 +11,6 @@ from pyfaidx import Fasta
 from tempfile import TemporaryDirectory
 
 
-def generate_size_file(fname, outname):
-    """ Generate a BED file with gap locations.
-
-    Parameters
-    ----------
-    fname : str
-        Filename of input FASTA file.
-
-    outname : str
-        Filename of output size file.
-    """
-    genome = Fasta(fname)
-    with open(outname, "w") as f:
-        for seqname in genome.keys():
-            f.write("{}\t{}\n".format(seqname, len(genome[seqname])))
-
-
 def generate_gap_bed(fname, outname):
     """ Generate a BED file with gap locations.
 
@@ -44,6 +27,23 @@ def generate_gap_bed(fname, outname):
         for chrom in f.keys():
             for m in re.finditer(r"N+", f[chrom][:].seq):
                 bed.write("{}\t{}\t{}\n".format(chrom, m.start(0), m.end(0)))
+
+
+def generate_fa_sizes(fname, outname):
+    """ Generate a fa.sizes file.
+
+    Parameters
+    ----------
+    fname : str
+        Filename of input FASTA file.
+
+    outname : str
+        Filename of output BED file.
+    """
+    f = Fasta(fname)
+    with open(outname, "w") as sizes:
+        for seqname, seq in f.items():
+            sizes.write("{}\t{}\n".format(seqname, len(seq)))
 
 
 def filter_fasta(infa, outfa, regex=".*", v=False, force=False):

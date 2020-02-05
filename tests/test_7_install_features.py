@@ -6,6 +6,17 @@ from tempfile import NamedTemporaryFile, mkdtemp
 from tests.test_4_download_annotation import validate_gzipped_bed, validate_gzipped_gtf
 
 
+def test_sizes():
+    infa = "tests/data/gap.fa"
+
+    tmp = NamedTemporaryFile().name
+    genomepy.utils.generate_fa_sizes(infa, tmp)
+
+    result = open(tmp).read()
+
+    assert result == "chr1\t28\nchr2\t45\nchr3\t15\n"
+
+
 def test_gaps():
     infa = "tests/data/gap.fa"
     outbed = "tests/data/gap.bed"
