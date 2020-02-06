@@ -34,7 +34,7 @@ def test_sanitize_annotation(localname=None):
     """
     Test sanitizing of annotations
 
-    Requires the genome, sizefile and gtf to test
+    Requires the genome, sizes_file and gtf to test
     """
     tmp = mkdtemp()
     name = "ASM2732v1"

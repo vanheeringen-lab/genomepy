@@ -1,11 +1,11 @@
 import genomepy
 import shutil
-import gzip
 import pytest
 import os
 from tempfile import mkdtemp, NamedTemporaryFile
 from time import sleep
 from platform import system
+from tests.test_4_download_annotation import validate_gzipped_bed, validate_gzipped_gtf
 
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
@@ -57,32 +57,6 @@ def test_install_genome_options(
     shutil.rmtree(tmp)
 
 
-def validate_gzipped_gtf(fname):
-    assert os.path.exists(fname)
-    with gzip.open(fname, "r") as f:
-        for line in f:
-            line = line.decode()
-            if line.startswith("#"):
-                continue
-            vals = line.split("\t")
-            assert 9 == len(vals)
-            int(vals[3]), int(vals[4])
-            break
-
-
-def validate_gzipped_bed(fname):
-    assert os.path.exists(fname)
-    with gzip.open(fname, "r") as f:
-        for line in f:
-            line = line.decode()
-            if line.startswith("#"):
-                continue
-            vals = line.split("\t")
-            assert 12 == len(vals)
-            int(vals[1]), int(vals[2])
-            break
-
-
 def test_install_annotation_options(
     force, localname, annotation=True, genome="ASM14646v1", provider="NCBI"
 ):
@@ -103,6 +77,7 @@ def test_install_annotation_options(
         genome_dir=tmp,
         localname=localname,
         annotation=annotation,
+        skip_sanitizing=True,
         force=False,
     )
 

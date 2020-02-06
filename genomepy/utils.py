@@ -218,7 +218,7 @@ def sanitize_annotation(genome_dir, localname):
     out_dir = os.path.join(genome_dir, localname)
 
     genome_file = glob_ext_files(out_dir, "fa")[0]
-    sizefile = genome_file + ".sizes"
+    sizes_file = genome_file + ".sizes"
     gtf_file = os.path.join(out_dir, localname + ".annotation.gtf")
 
     sp.check_call("gunzip -f {}".format(gtf_file + ".gz"), shell=True)
@@ -230,7 +230,7 @@ def sanitize_annotation(genome_dir, localname):
                 gtf_id = line.split("\t")[0]
                 break
 
-    with open(sizefile, "r") as sizes:
+    with open(sizes_file, "r") as sizes:
         for line in sizes:
             fa_id = line.split("\t")[0]
             if fa_id == gtf_id:
@@ -246,41 +246,41 @@ def sanitize_annotation(genome_dir, localname):
         "Genome and annotation do not have matching sequence names! Creating matching annotation files...\n"
     )
 
-    with TemporaryDirectory(dir=out_dir) as tmpdir:
-        # determine which element in the fasta's header
-        # contains the location identifiers used in the annotation.gtf
-        header = []
-        with open(genome_file, "r") as fa:
-            for line in fa:
-                if line.startswith(">"):
-                    header = line.strip(">\n").split(" ")
+    # determine which element in the fasta header contains the location identifiers used in the annotation.gtf
+    header = []
+    with open(genome_file, "r") as fa:
+        for line in fa:
+            if line.startswith(">"):
+                header = line.strip(">\n").split(" ")
+                break
+
+    with open(gtf_file, "r") as gtf:
+        for line in gtf:
+            if not line.startswith("#"):
+                loc_id = line.strip().split("\t")[0]
+                try:
+                    element = header.index(loc_id)
                     break
+                except ValueError:
+                    continue
+        else:
+            sys.stderr.write(
+                "WARNING: Cannot correct annotation files automatically!\n"
+                + "Leaving original version in place."
+            )
+            return
 
-        with open(gtf_file, "r") as gtf:
-            for line in gtf:
-                if not line.startswith("#"):
-                    loc_id = line.strip().split("\t")[0]
-                    try:
-                        element = header.index(loc_id)
-                        break
-                    except ValueError:
-                        continue
-            else:
-                sys.stderr.write(
-                    "WARNING: Cannot correct annotation files automatically!"
-                )
-                return
+    # build a conversion table
+    ids = {}
+    with open(genome_file, "r") as fa:
+        for line in fa:
+            if line.startswith(">"):
+                line = line.strip(">\n").split(" ")
+                if line[element] not in ids.keys():
+                    ids.update({line[element]: line[0]})
 
-        # build a conversion table
-        ids = {}
-        with open(genome_file, "r") as fa:
-            for line in fa:
-                if line.startswith(">"):
-                    line = line.strip(">\n").split(" ")
-                    if line[element] not in ids.keys():
-                        ids.update({line[element]: line[0]})
-
-        # remove old files
+    # remove old files
+    with TemporaryDirectory(dir=out_dir) as tmpdir:
         old_gtf_file = os.path.join(tmpdir, os.path.basename(gtf_file))
         bed_file = gtf_file.replace("gtf", "bed")
         sp.check_call("mv {} {}".format(gtf_file, old_gtf_file), shell=True)
