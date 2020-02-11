@@ -263,7 +263,7 @@ def install_genome(
         p = ProviderBase.create(provider)
         p.download_annotation(name, genome_dir, localname=localname, **kwargs)
         if not skip_sanitizing:
-            sanitize_annotation(genome_dir, localname)
+            sanitize_annotation(g)
 
     # Run all active plugins
     for plugin in get_active_plugins():
