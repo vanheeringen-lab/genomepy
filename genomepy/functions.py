@@ -15,7 +15,6 @@ from genomepy.utils import (
     generate_gap_bed,
     generate_fa_sizes,
     get_localname,
-    glob_ext_files,
     sanitize_annotation,
 )
 
@@ -332,6 +331,26 @@ def generate_env(fname=None):
         with open(fname, "w") as fout:
             for env in generate_exports():
                 fout.write("{}\n".format(env))
+
+
+def glob_ext_files(dirname, ext="fa"):
+    """
+    Return (gzipped) file names in directory containing the given extension.
+
+    Parameters
+    ----------
+    dirname: str
+        Directory name.
+
+    ext: str
+        Filename extension (default: fa).
+
+    Returns
+    -------
+        File names.
+    """
+    fnames = glob.glob(os.path.join(dirname, "*." + ext + "*"))
+    return [fname for fname in fnames if fname.endswith(ext) or fname.endswith("gz")]
 
 
 class Genome(Fasta):

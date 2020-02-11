@@ -1,6 +1,5 @@
 """Utility functions."""
 import errno
-import glob
 import os
 import re
 import sys
@@ -183,26 +182,6 @@ def bgrezip(bgzip, fname):
                 "Error bgzipping genome {}. ".format(fname) + "Is tabix installed?"
             )
     return
-
-
-def glob_ext_files(dirname, ext="fa"):
-    """
-    Return (gzipped) file names in directory containing the given extension.
-
-    Parameters
-    ----------
-    dirname: str
-        Directory name.
-
-    ext: str
-        Filename extension (default: fa).
-
-    Returns
-    -------
-        File names.
-    """
-    fnames = glob.glob(os.path.join(dirname, "*." + ext + "*"))
-    return [fname for fname in fnames if fname.endswith(ext) or fname.endswith("gz")]
 
 
 def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
