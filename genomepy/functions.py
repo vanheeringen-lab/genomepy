@@ -1,15 +1,15 @@
 """Module-level functions."""
-# import bisect
+import bisect
 import os
 import glob
 import norns
-# import random
+import random
 import re
 
 from appdirs import user_config_dir
-# from collections.abc import Iterable
+from collections.abc import Iterable
 from shutil import rmtree
-from pyfaidx import Fasta  # , Sequence
+from pyfaidx import Fasta, Sequence
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
 from genomepy.utils import generate_gap_bed, generate_fa_sizes, get_localname
@@ -261,34 +261,35 @@ def install_genome(
     generate_env()
 
 
-# def get_track_type(track):
-#     region_p = re.compile(r"^(.+):(\d+)-(\d+)$")
-#     if not isinstance(track, (str, bytes)) and isinstance(track, Iterable):
-#         if isinstance(track[0], (str, bytes)) and region_p.search(track[0]):
-#             return "interval"
-#     with open(track) as fin:
-#         line = fin.readline().strip()
-#     if region_p.search(line):
-#         return "interval"
-#     return "bed"
+# TODO write test for the next 2 functions
+def get_track_type(track):
+    region_p = re.compile(r"^(.+):(\d+)-(\d+)$")
+    if not isinstance(track, (str, bytes)) and isinstance(track, Iterable):
+        if isinstance(track[0], (str, bytes)) and region_p.search(track[0]):
+            return "interval"
+    with open(track) as fin:
+        line = fin.readline().strip()
+    if region_p.search(line):
+        return "interval"
+    return "bed"
 
 
-# def _weighted_selection(l, n):
-#     """
-#         Selects  n random elements from a list of (weight, item) tuples.
-#         Based on code snippet by Nick Johnson
-#     """
-#     cuml = []
-#     items = []
-#     total_weight = 0.0
-#     for weight, item in l:
-#         total_weight += weight
-#         cuml.append(total_weight)
-#         items.append(item)
-#
-#     return [
-#         items[bisect.bisect(cuml, random.random() * total_weight)] for _ in range(n)
-#     ]
+def _weighted_selection(l, n):
+    """
+        Selects  n random elements from a list of (weight, item) tuples.
+        Based on code snippet by Nick Johnson
+    """
+    cuml = []
+    items = []
+    total_weight = 0.0
+    for weight, item in l:
+        total_weight += weight
+        cuml.append(total_weight)
+        items.append(item)
+
+    return [
+        items[bisect.bisect(cuml, random.random() * total_weight)] for _ in range(n)
+    ]
 
 
 def generate_exports():
@@ -429,201 +430,202 @@ class Genome(Fasta):
         for plugin in get_active_plugins():
             self.props[plugin.name()] = plugin.get_properties(self)
 
-    # def _bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
-    #     BUFSIZE = 10000
-    #     with open(track) as fin:
-    #         lines = fin.readlines(BUFSIZE)
-    #         while lines:
-    #             for line in lines:
-    #                 if line.startswith("#") or line.startswith("track"):
-    #                     continue
-    #
-    #                 vals = line.strip().split("\t")
-    #                 try:
-    #                     start, end = int(vals[1]), int(vals[2])
-    #                 except ValueError:
-    #                     raise
-    #
-    #                 rc = False
-    #                 if stranded:
-    #                     try:
-    #                         rc = vals[5] == "-"
-    #                     except IndexError:
-    #                         pass
-    #
-    #                 starts = [start]
-    #                 ends = [end]
-    #
-    #                 chrom = vals[0]
-    #
-    #                 # BED12
-    #                 if len(vals) == 12:
-    #                     starts = [int(x) for x in vals[11].split(",")[:-1]]
-    #                     sizes = [int(x) for x in vals[10].split(",")[:-1]]
-    #                     starts = [start + x for x in starts]
-    #                     ends = [start + size for start, size in zip(starts, sizes)]
-    #                 name = "{}:{}-{}".format(chrom, start, end)
-    #                 try:
-    #                     name = " ".join((name, vals[3]))
-    #                 except Exception:
-    #                     pass
-    #
-    #                 starts = [start + 1 for start in starts]
-    #
-    #                 # extend
-    #                 if extend_up:
-    #                     if rc:
-    #                         ends[-1] += extend_up
-    #                     else:
-    #                         starts[0] -= extend_up
-    #                 if extend_down:
-    #                     if rc:
-    #                         starts[0] -= extend_down
-    #                     else:
-    #                         ends[-1] += extend_down
-    #
-    #                 intervals = zip(starts, ends)
-    #                 seq = self.get_spliced_seq(chrom, intervals, rc)
-    #                 yield Sequence(name, seq.seq)
-    #
-    #             lines = fin.readlines(BUFSIZE)
+    # TODO write test for all functions inside the Genome class
+    def _bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
+        BUFSIZE = 10000
+        with open(track) as fin:
+            lines = fin.readlines(BUFSIZE)
+            while lines:
+                for line in lines:
+                    if line.startswith("#") or line.startswith("track"):
+                        continue
 
-    # def _region_to_seqs(self, track, extend_up=0, extend_down=0):
-    #     BUFSIZE = 10000
-    #     if isinstance(track, list):
-    #         for name in track:
-    #             chrom, coords = name.split(":")
-    #             start, end = [int(c) for c in coords.split("-")]
-    #             start += 1
-    #             start -= extend_up
-    #             end += extend_down
-    #             seq = self.get_seq(chrom, start, end)
-    #             yield Sequence(name, seq.seq)
-    #     else:
-    #         with open(track) as fin:
-    #             lines = fin.readlines(BUFSIZE)
-    #             while lines:
-    #                 for line in lines:
-    #                     name = line.strip()
-    #                     chrom, coords = name.split(":")
-    #                     start, end = [int(c) for c in coords.split("-")]
-    #                     start += 1
-    #                     start -= extend_up
-    #                     end += extend_down
-    #                     seq = self.get_seq(chrom, start, end)
-    #                     yield Sequence(name, seq.seq)
-    #
-    #                 lines = fin.readlines(BUFSIZE)
+                    vals = line.strip().split("\t")
+                    try:
+                        start, end = int(vals[1]), int(vals[2])
+                    except ValueError:
+                        raise
 
-    # def track2fasta(
-    #     self, track, fastafile=None, stranded=False, extend_up=0, extend_down=0
-    # ):
-    #     track_type = get_track_type(track)
-    #     if track_type == "interval":
-    #         seqqer = self._region_to_seqs(
-    #             track, extend_up=extend_up, extend_down=extend_down
-    #         )
-    #     else:
-    #         seqqer = self._bed_to_seqs(
-    #             track, stranded=stranded, extend_up=extend_up, extend_down=extend_down
-    #         )
-    #
-    #     if fastafile:
-    #         with open(fastafile, "w") as fout:
-    #             for seq in seqqer:
-    #                 fout.write("{}\n".format(seq.__repr__()))
-    #     else:
-    #         return [seq for seq in seqqer]
+                    rc = False
+                    if stranded:
+                        try:
+                            rc = vals[5] == "-"
+                        except IndexError:
+                            pass
 
-    # def gap_sizes(self):
-    #     """Return gap sizes per chromosome.
-    #
-    #     Returns
-    #     -------
-    #     gap_sizes : dict
-    #         a dictionary with chromosomes as key and the total number of
-    #         Ns as values
-    #     """
-    #     if not self._gap_sizes:
-    #         gap_file = self.props["gaps"]["gaps"]
-    #
-    #         # generate gap file if not found
-    #         if not os.path.exists(gap_file):
-    #             generate_gap_bed(self.filename, gap_file)
-    #
-    #         self._gap_sizes = {}
-    #         with open(gap_file) as f:
-    #             for line in f:
-    #                 chrom, start, end = line.strip().split("\t")
-    #                 start, end = int(start), int(end)
-    #                 self._gap_sizes[chrom] = self._gap_sizes.get(chrom, 0) + end - start
-    #     return self._gap_sizes
+                    starts = [start]
+                    ends = [end]
 
-    # def get_random_sequences(self, n=10, length=200, chroms=None, max_n=0.1):
-    #     """Return random genomic sequences.
-    #
-    #     Parameters
-    #     ----------
-    #     n : int , optional
-    #         Number of sequences to return.
-    #
-    #     length : int , optional
-    #         Length of sequences to return.
-    #
-    #     chroms : list , optional
-    #         Return sequences only from these chromosomes.
-    #
-    #     max_n : float , optional
-    #         Maximum fraction of Ns.
-    #
-    #     Returns
-    #     -------
-    #     coords : list
-    #         List with [chrom, start, end] genomic coordinates.
-    #     """
-    #     retries = 100
-    #     cutoff = length * max_n
-    #     if not chroms:
-    #         chroms = self.keys()
-    #
-    #     try:
-    #         gap_sizes = self.gap_sizes()
-    #     except Exception:
-    #         gap_sizes = {}
-    #     sizes = dict(
-    #         [(chrom, len(self[chrom]) - gap_sizes.get(chrom, 0)) for chrom in chroms]
-    #     )
-    #
-    #     lengths = [
-    #         (sizes[x], x)
-    #         for x in chroms
-    #         if sizes[x] / len(self[x]) > 0.1 and sizes[x] > 10 * length
-    #     ]
-    #     chroms = _weighted_selection(lengths, n)
-    #     coords = []
-    #
-    #     count = {}
-    #     for chrom in chroms:
-    #         if chrom in count:
-    #             count[chrom] += 1
-    #         else:
-    #             count[chrom] = 1
-    #
-    #     for chrom in chroms:
-    #         for _ in range(retries):
-    #             start = int(random.random() * (sizes[chrom] - length))
-    #             end = start + length
-    #             count_n = self[chrom][start:end].seq.upper().count("N")
-    #             if count_n <= cutoff:
-    #                 break
-    #         if count_n > cutoff:
-    #             raise ValueError(
-    #                 "Failed to find suitable non-N sequence for {}".format(chrom)
-    #             )
-    #
-    #         coords.append([chrom, start, end])
-    #
-    #     return coords
+                    chrom = vals[0]
+
+                    # BED12
+                    if len(vals) == 12:
+                        starts = [int(x) for x in vals[11].split(",")[:-1]]
+                        sizes = [int(x) for x in vals[10].split(",")[:-1]]
+                        starts = [start + x for x in starts]
+                        ends = [start + size for start, size in zip(starts, sizes)]
+                    name = "{}:{}-{}".format(chrom, start, end)
+                    try:
+                        name = " ".join((name, vals[3]))
+                    except Exception:
+                        pass
+
+                    starts = [start + 1 for start in starts]
+
+                    # extend
+                    if extend_up:
+                        if rc:
+                            ends[-1] += extend_up
+                        else:
+                            starts[0] -= extend_up
+                    if extend_down:
+                        if rc:
+                            starts[0] -= extend_down
+                        else:
+                            ends[-1] += extend_down
+
+                    intervals = zip(starts, ends)
+                    seq = self.get_spliced_seq(chrom, intervals, rc)
+                    yield Sequence(name, seq.seq)
+
+                lines = fin.readlines(BUFSIZE)
+
+    def _region_to_seqs(self, track, extend_up=0, extend_down=0):
+        BUFSIZE = 10000
+        if isinstance(track, list):
+            for name in track:
+                chrom, coords = name.split(":")
+                start, end = [int(c) for c in coords.split("-")]
+                start += 1
+                start -= extend_up
+                end += extend_down
+                seq = self.get_seq(chrom, start, end)
+                yield Sequence(name, seq.seq)
+        else:
+            with open(track) as fin:
+                lines = fin.readlines(BUFSIZE)
+                while lines:
+                    for line in lines:
+                        name = line.strip()
+                        chrom, coords = name.split(":")
+                        start, end = [int(c) for c in coords.split("-")]
+                        start += 1
+                        start -= extend_up
+                        end += extend_down
+                        seq = self.get_seq(chrom, start, end)
+                        yield Sequence(name, seq.seq)
+
+                    lines = fin.readlines(BUFSIZE)
+
+    def track2fasta(
+        self, track, fastafile=None, stranded=False, extend_up=0, extend_down=0
+    ):
+        track_type = get_track_type(track)
+        if track_type == "interval":
+            seqqer = self._region_to_seqs(
+                track, extend_up=extend_up, extend_down=extend_down
+            )
+        else:
+            seqqer = self._bed_to_seqs(
+                track, stranded=stranded, extend_up=extend_up, extend_down=extend_down
+            )
+
+        if fastafile:
+            with open(fastafile, "w") as fout:
+                for seq in seqqer:
+                    fout.write("{}\n".format(seq.__repr__()))
+        else:
+            return [seq for seq in seqqer]
+
+    def gap_sizes(self):
+        """Return gap sizes per chromosome.
+
+        Returns
+        -------
+        gap_sizes : dict
+            a dictionary with chromosomes as key and the total number of
+            Ns as values
+        """
+        if not self._gap_sizes:
+            gap_file = self.props["gaps"]["gaps"]
+
+            # generate gap file if not found
+            if not os.path.exists(gap_file):
+                generate_gap_bed(self.filename, gap_file)
+
+            self._gap_sizes = {}
+            with open(gap_file) as f:
+                for line in f:
+                    chrom, start, end = line.strip().split("\t")
+                    start, end = int(start), int(end)
+                    self._gap_sizes[chrom] = self._gap_sizes.get(chrom, 0) + end - start
+        return self._gap_sizes
+
+    def get_random_sequences(self, n=10, length=200, chroms=None, max_n=0.1):
+        """Return random genomic sequences.
+
+        Parameters
+        ----------
+        n : int , optional
+            Number of sequences to return.
+
+        length : int , optional
+            Length of sequences to return.
+
+        chroms : list , optional
+            Return sequences only from these chromosomes.
+
+        max_n : float , optional
+            Maximum fraction of Ns.
+
+        Returns
+        -------
+        coords : list
+            List with [chrom, start, end] genomic coordinates.
+        """
+        retries = 100
+        cutoff = length * max_n
+        if not chroms:
+            chroms = self.keys()
+
+        try:
+            gap_sizes = self.gap_sizes()
+        except Exception:
+            gap_sizes = {}
+        sizes = dict(
+            [(chrom, len(self[chrom]) - gap_sizes.get(chrom, 0)) for chrom in chroms]
+        )
+
+        lengths = [
+            (sizes[x], x)
+            for x in chroms
+            if sizes[x] / len(self[x]) > 0.1 and sizes[x] > 10 * length
+        ]
+        chroms = _weighted_selection(lengths, n)
+        coords = []
+
+        count = {}
+        for chrom in chroms:
+            if chrom in count:
+                count[chrom] += 1
+            else:
+                count[chrom] = 1
+
+        for chrom in chroms:
+            for _ in range(retries):
+                start = int(random.random() * (sizes[chrom] - length))
+                end = start + length
+                count_n = self[chrom][start:end].seq.upper().count("N")
+                if count_n <= cutoff:
+                    break
+            if count_n > cutoff:
+                raise ValueError(
+                    "Failed to find suitable non-N sequence for {}".format(chrom)
+                )
+
+            coords.append([chrom, start, end])
+
+        return coords
 
 
 def manage_plugins(command, plugin_names=None):
