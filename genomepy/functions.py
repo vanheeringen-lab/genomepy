@@ -30,7 +30,9 @@ def manage_config(cmd, *args):
         if os.path.exists(user_config_dir("genomepy")):
             rmtree(user_config_dir("genomepy"))
         os.makedirs(user_config_dir("genomepy"))
-        default_config = norns.config("genomepy", default="cfg/default.yaml").config_file
+        default_config = norns.config(
+            "genomepy", default="cfg/default.yaml"
+        ).config_file
 
         with open(fname, "w") as fout:
             with open(default_config) as fin:
