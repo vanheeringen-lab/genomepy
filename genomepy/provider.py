@@ -1028,21 +1028,21 @@ class NCBIProvider(ProviderBase):
                     )
                     return
                 else:
-                    # Convert to BED file
-                    bed_file = gff_file.replace("gff.gz", "bed")
-                    cmd = (
-                        "gff3ToGenePred -rnaNameAttr=gene {0} /dev/stdout | "
-                        "genePredToBed /dev/stdin {1} && gzip -f {1}"
-                    )
-                    sp.check_call(cmd.format(gff_file, bed_file), shell=True)
-
                     # Convert to GTF file
-                    gtf_file = gff_file.replace("gff.gz", "gtf")
                     cmd = (
                         "gff3ToGenePred -geneNameAttr=gene {0} /dev/stdout | "
                         + "genePredToGtf file /dev/stdin {1} && gzip -f {1}"
                     )
+                    gtf_file = gff_file.replace("gff.gz", "gtf")
                     sp.check_call(cmd.format(gff_file, gtf_file), shell=True)
+
+                    # Convert to BED file
+                    bed_file = gtf_file.replace("gtf", "bed")
+                    cmd = (
+                        "gtfToGenePred {0} /dev/stdout | "
+                        + "genePredToBed /dev/stdin {1} && gzip -f {1}"
+                    )
+                    sp.check_call(cmd.format(gtf_file + ".gz", bed_file), shell=True)
 
                 # transfer the genome from the tmpdir to the genome_dir
                 for f in [gtf_file + ".gz", bed_file + ".gz"]:
