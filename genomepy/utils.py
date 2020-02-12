@@ -27,6 +27,23 @@ def generate_gap_bed(fname, outname):
                 bed.write("{}\t{}\t{}\n".format(chrom, m.start(0), m.end(0)))
 
 
+def generate_fa_sizes(fname, outname):
+    """ Generate a fa.sizes file.
+
+    Parameters
+    ----------
+    fname : str
+        Filename of input FASTA file.
+
+    outname : str
+        Filename of output BED file.
+    """
+    f = Fasta(fname)
+    with open(outname, "w") as sizes:
+        for seqname, seq in f.items():
+            sizes.write("{}\t{}\n".format(seqname, len(seq)))
+
+
 def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
     """Filter fasta file based on regex.
 

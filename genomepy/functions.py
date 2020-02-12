@@ -13,7 +13,7 @@ from appdirs import user_config_dir
 from pyfaidx import Fasta  # , Sequence
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
-from genomepy.utils import generate_gap_bed, get_localname
+from genomepy.utils import generate_gap_bed, generate_fa_sizes, get_localname
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -253,6 +253,10 @@ def install_genome(
     if not os.path.exists(gap_file) or force:
         generate_gap_bed(glob_ext_files(out_dir, "fa")[0], gap_file)
 
+    # Generate sizes file if not found or if generation is forced
+    sizes_file = os.path.join(out_dir, localname + ".fa.sizes")
+    if not os.path.exists(sizes_file) or force:
+        generate_fa_sizes(glob_ext_files(out_dir, "fa")[0], sizes_file)
     generate_env()
 
 
