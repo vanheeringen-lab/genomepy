@@ -1,16 +1,16 @@
 import os
 import pytest
-import shutil
 
-# import os.path
 from appdirs import user_config_dir
+from shutil import rmtree
+from tempfile import mkdtemp
 
 import genomepy.functions
 
 
 def test_manage_config():
     # will give a NameError if the config/config dir is missing
-    shutil.rmtree(user_config_dir("genomepy"))
+    rmtree(user_config_dir("genomepy"))
     for cmd in ["generate", "file", "show"]:
         genomepy.functions.manage_config(cmd)
 
@@ -56,13 +56,11 @@ def test_search():
 # install_genome is tested elsewhere
 
 
-def test_generate_exports():
-    genomepy.install_genome("ASM14646v1", "NCBI")
+def test_generate_exports(genome="ASM14646v1", provider="NCBI"):
+    tmp = mkdtemp()
+    genomepy.install_genome(genome, provider, genome_dir=tmp)
     assert isinstance(genomepy.functions.generate_exports(), list)
-
-    # genome_dir = os.path.expanduser(config.get("genome_dir", None))
-    # path = os.path.join(genome_dir, "ASM14646v1")
-    # shutil.rmtree(path)
+    rmtree(tmp)
 
 
 def test_generate_env():

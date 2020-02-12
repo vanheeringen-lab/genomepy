@@ -3,13 +3,12 @@
 import os
 import glob
 import norns
-
 # import random
 import re
 
 from appdirs import user_config_dir
-
 # from collections.abc import Iterable
+from shutil import rmtree
 from pyfaidx import Fasta  # , Sequence
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
@@ -28,11 +27,13 @@ def manage_config(cmd, *args):
     elif cmd == "generate":
         fname = os.path.join(user_config_dir("genomepy"), "{}.yaml".format("genomepy"))
 
-        if not os.path.exists(user_config_dir("genomepy")):
-            os.makedirs(user_config_dir("genomepy"))
+        if os.path.exists(user_config_dir("genomepy")):
+            rmtree(user_config_dir("genomepy"))
+        os.makedirs(user_config_dir("genomepy"))
+        default_config = norns.config("genomepy", default="cfg/default.yaml").config_file
 
         with open(fname, "w") as fout:
-            with open(config.config_file) as fin:
+            with open(default_config) as fin:
                 fout.write(fin.read())
         print("Created config file {}".format(fname))
 
