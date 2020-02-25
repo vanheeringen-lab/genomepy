@@ -51,7 +51,7 @@ def test_search():
     for provider in ["Ensembl", "NCBI", "UCSC"]:
         for vals in genomepy.functions.search(8364, provider):
             assert len(vals) == 6
-            assert vals[3].decode('ascii') == "Xenopus tropicalis"
+            assert vals[3].decode("ascii") == "Xenopus tropicalis"
 
 
 # skipping several large/vague functions

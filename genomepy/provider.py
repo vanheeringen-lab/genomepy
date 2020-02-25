@@ -6,7 +6,6 @@ import os
 import norns
 import time
 import gzip
-import xmltodict
 import shutil
 import tarfile
 import subprocess as sp
@@ -370,7 +369,7 @@ class EnsemblProvider(ProviderBase):
             genome.get("assembly_accession", ""),
             genome.get("scientific_name", ""),
             str(genome.get("taxonomy_id", "")),
-            genome.get("genebuild", "")
+            genome.get("genebuild", ""),
         )
 
     def search(self, term):
@@ -661,7 +660,9 @@ class UcscProvider(ProviderBase):
                 ncbi_url = m.group(0)
                 text = read_url(ncbi_url)
                 lines = text.split("\n")
-                text = "\n".join([line for line in lines if "RefSeq assembly accession:" in line])
+                text = "\n".join(
+                    [line for line in lines if "RefSeq assembly accession:" in line]
+                )
                 m = p.search(text)
                 if m:
                     gca = m.group(0)
@@ -691,7 +692,7 @@ class UcscProvider(ProviderBase):
         Parameters
         ----------
         term : str
-            Search term, case-insensitive. Can be genome build id (mm10, hg38), 
+            Search term, case-insensitive. Can be genome build id (mm10, hg38),
             scientific name or taxonomy id.
 
         Yields
@@ -952,8 +953,8 @@ class NCBIProvider(ProviderBase):
                     genome.get("gbrs_paired_asm", ""),
                     genome.get("organism_name", ""),
                     str(genome.get("species_taxid", "")),
-                    genome.get("submitter", "")
-                    )
+                    genome.get("submitter", ""),
+                )
 
     def search(self, term):
         """
@@ -989,8 +990,8 @@ class NCBIProvider(ProviderBase):
                     genome.get("gbrs_paired_asm", ""),
                     genome.get("organism_name", ""),
                     str(genome.get("species_taxid", "")),
-                    genome.get("submitter", "")
-                    )
+                    genome.get("submitter", ""),
+                )
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
