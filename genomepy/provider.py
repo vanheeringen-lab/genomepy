@@ -229,7 +229,9 @@ class ProviderBase(object):
             f.write("original name: {}\n".format(dbname))
             f.write("original filename: {}\n".format(os.path.split(link)[-1]))
             if hasattr(self, "assembly_accession"):
-                f.write("assembly_accession: {}\n".format(self.assembly_accession(dbname)))
+                f.write(
+                    "assembly_accession: {}\n".format(self.assembly_accession(dbname))
+                )
             if hasattr(self, "genome_taxid"):
                 f.write("taxid: {}\n".format(self.genome_taxid(dbname)))
             f.write("url: {}\n".format(link))
@@ -355,13 +357,37 @@ class EnsemblProvider(ProviderBase):
 
     @cached(method=True)
     def assembly_accession(self, name):
+        """Return the assembly accession (GCA_*) for a genome.
+
+        Parameters
+        ----------
+        name : str
+            Genome name.
+
+        Yields
+        ------
+        str
+            Assembly accession.
+        """
         genome_info = self._get_genome_info(name)
         return genome_info.get("assembly_accession", "unknown")
 
     @cached(method=True)
     def genome_taxid(self, name):
+        """Return the taxonomy_id for a genome.
+
+        Parameters
+        ----------
+        name : str
+            Assembly name.
+
+        Yields
+        ------
+        int
+            Taxonomy id.
+        """
         genome_info = self._get_genome_info(name)
-        return genome_info.get("taxonomy_id", "unknown")
+        return genome_info.get("taxonomy_id", -1)
 
     def _genome_info_tuple(self, genome):
         return (
@@ -640,8 +666,24 @@ class UcscProvider(ProviderBase):
 
     @cached(method=True)
     def assembly_accession(self, genome_build):
-        # if genome_build not in genomes:
-        #    raise ValueError(f"Could not find genome build {genome_build}")
+        """Return the assembly accession (GCA_*) for a genome.
+
+        UCSC does not server the assembly accession through the REST API.
+        Therefore, the readme.html is scanned for a GCA assembly id. If it is
+        not found, the linked NCBI assembly page will be checked. Especially
+        for older genome builds, the GCA will not be present, in which case 
+        "na" will be returned.
+
+        Parameters
+        ----------
+        name : str
+            UCSC genome build name.
+
+        Yields
+        ------
+        str
+            Assembly accession.
+        """
         ucsc_url = (
             "https://hgdownload.soe.ucsc.edu/"
             + self._get_genomes()[genome_build]["htmlPath"]
@@ -651,14 +693,19 @@ class UcscProvider(ProviderBase):
         p_ncbi = re.compile(r"https://www.ncbi.nlm.nih.gov/assembly/\d+")
         text = read_url(ucsc_url)
         m = p.search(text)
-        gca = "unknown"
+        # Default, if not found. This matches NCBI, which will also return na.
+        gca = "na"
         if m:
+            # Get the GCA from the html
             gca = m.group(0)
         else:
+            # Search for an assembly link at NCBI
             m = p_ncbi.search(text)
             if m:
                 ncbi_url = m.group(0)
                 text = read_url(ncbi_url)
+                # We need to select the line that contains the assembly accession.
+                # The page will potentially contain many more links to newer assemblies
                 lines = text.split("\n")
                 text = "\n".join(
                     [line for line in lines if "RefSeq assembly accession:" in line]
@@ -670,6 +717,18 @@ class UcscProvider(ProviderBase):
 
     @cached(method=True)
     def genome_taxid(self, genome_build):
+        """Return the taxonomy_id for a genome.
+
+        Parameters
+        ----------
+        name : str
+            UCSC genome build name.
+
+        Yields
+        ------
+        int
+            Taxonomy id..
+        """
         return self._get_genomes()[genome_build]["taxId"]
 
     def _genome_info_tuple(self, name):
@@ -955,6 +1014,42 @@ class NCBIProvider(ProviderBase):
                     str(genome.get("species_taxid", "")),
                     genome.get("submitter", ""),
                 )
+
+    @cached(method=True)
+    def assembly_accession(self, name):
+        """Return the assembly accession (GCA_*) for a genome.
+
+        Parameters
+        ----------
+        name : str
+            Genome name.
+
+        Yields
+        ------
+        str
+            Assembly accession.
+        """
+        for genome in self._get_genomes():
+            if name in [genome["asm_name"], genome["asm_name"].replace(" ", "_")]:
+                return genome.get("gbrs_paired_asm", "na")
+
+    @cached(method=True)
+    def genome_taxid(self, name):
+        """Return the taxonomy_id for a genome.
+
+        Parameters
+        ----------
+        name : str
+            Assembly name.
+
+        Yields
+        ------
+        int
+            Taxonomy id.
+        """
+        for genome in self._get_genomes():
+            if name in [genome["asm_name"], genome["asm_name"].replace(" ", "_")]:
+                return genome.get("species_taxid", "na")
 
     def search(self, term):
         """
