@@ -184,6 +184,22 @@ def bgrezip(bgzip, fname):
     return
 
 
+def get_file_info(fname):
+    """
+    Returns the lower case file type of a file, and if it is gzipped
+
+    fname: str
+        filename
+    """
+    fname = fname.lower()
+    gz = False
+    if fname.endswith(".gz"):
+        gz = True
+        fname = fname[:-3]
+    split = os.path.splitext(fname)
+    return split[1], gz
+
+
 def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
     """
     Matches the toplevel sequence names in annotation.gtf to those in genome.fa.

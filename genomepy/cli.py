@@ -65,23 +65,41 @@ general_install_options = {
         "help": "bgzip genome",
         "flag_value": True,
     },
+    "force": {
+        "short": "f",
+        "long": "force",
+        "help": "overwrite existing files",
+        "flag_value": True,
+    },
+    "text_line1": {
+        "long": "Annotation options:",
+        "help": "",
+        "flag_value": True,
+        "text_line": True,
+    },
     "annotation": {
         "short": "a",
         "long": "annotation",
         "help": "download annotation",
         "flag_value": True,
     },
+    "only_annotation": {
+        "short": "o",
+        "long": "only_annotation",
+        "help": "only download annotation (sets -a)",
+        "flag_value": True,
+    },
     "skip_sanitizing": {
         "short": "s",
         "long": "skip_sanitizing",
-        "help": "skip sanitizing of downloaded annotation",
+        "help": "skip (check for) matching of contig names between annotation and fasta (sets -a)",
         "flag_value": True,
     },
-    "force": {
-        "short": "f",
-        "long": "force",
-        "help": "overwrite existing files",
+    "text_line2": {
+        "long": "Provider specific options:",
+        "help": "",
         "flag_value": True,
+        "text_line": True,
     },
 }
 
@@ -119,6 +137,10 @@ def custom_options(options):
             if "flag_value" in opt_params.keys():
                 attrs["flag_value"] = opt_params["flag_value"]
 
+            # can be used to add paragraphs to the --help menu
+            if "text_line" in opt_params.keys():
+                param_decls = deque(["\n" + opt_params["long"], opt_name])
+
             click.option(*param_decls, **attrs)(f)
         return f
 
@@ -139,6 +161,7 @@ def install(
     invert_match,
     bgzip,
     annotation,
+    only_annotation,
     skip_sanitizing,
     force,
     **kwargs
@@ -154,6 +177,7 @@ def install(
         invert_match=invert_match,
         bgzip=bgzip,
         annotation=annotation,
+        only_annotation=only_annotation,
         skip_sanitizing=skip_sanitizing,
         force=force,
         **kwargs

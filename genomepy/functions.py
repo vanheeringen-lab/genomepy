@@ -159,6 +159,7 @@ def install_genome(
     invert_match=False,
     bgzip=None,
     annotation=False,
+    only_annotation=False,
     skip_sanitizing=False,
     force=False,
     **kwargs
@@ -193,30 +194,39 @@ def install_genome(
         If set to True the genome FASTA file will be compressed using bgzip.
         If not specified, the setting from the configuration file will be used.
 
+    force : bool , optional
+        Set to True to overwrite existing files.
+
     annotation : bool , optional
         If set to True, download gene annotation in BED and GTF format.
+
+    only_annotation : bool , optional
+        If set to True, only download the annotation files.
 
     skip_sanitizing : bool , optional
         If set to True, downloaded annotation files whose sequence names do not match
         with the (first header fields of) the genome.fa will not be corrected.
 
-    force : bool , optional
-        Set to True to overwrite existing files.
-
     kwargs : dict, optional
         Provider specific options.
-        Ensembl:
-
         toplevel : bool , optional
             Ensembl only: Always download the toplevel genome. Ignores potential primary assembly.
 
         version : int, optional
             Ensembl only: Specify release version. Default is latest.
+
+        to_annotation : text , optional
+            URL only: direct link to annotation file.
+            Required if this is not the same directory as the fasta.
     """
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
+
+    # download annotation if any of the annotation related flags are given
+    if only_annotation or kwargs.get("to_annotation", False):
+        annotation = True
 
     genome_dir = os.path.expanduser(genome_dir)
     localname = get_localname(name, localname)
@@ -226,7 +236,7 @@ def install_genome(
     no_genome_found = not any(
         os.path.exists(fname) for fname in glob_ext_files(out_dir, "fa")
     )
-    if no_genome_found or force:
+    if (no_genome_found or force) and not only_annotation:
         # Download genome from provider
         p = ProviderBase.create(provider)
         p.download_genome(
@@ -240,24 +250,35 @@ def install_genome(
             **kwargs
         )
 
+    # annotation_only cannot use sanitizing if no genome (and sizes) file was made earlier. Warn the user about this.
+    no_annotation_found = not any(
+        os.path.exists(fname) for fname in glob_ext_files(out_dir, "gtf")
+    )
+    no_genome_found = not any(
+        os.path.exists(fname) for fname in glob_ext_files(out_dir, "fa")
+    )
+    if only_annotation and no_genome_found:
+        assert skip_sanitizing, (
+            "a genome file is required to sanitize your annotation (or check if it's required). "
+            "Use the skip sanitizing flag (-s) if you wish to skip this step."
+        )
+
     # generates a Fasta object and the index file
-    g = Genome(localname, genome_dir=genome_dir)
+    if not no_genome_found:
+        g = Genome(localname, genome_dir=genome_dir)
 
     # Generate sizes file if not found or if generation is forced
     sizes_file = os.path.join(out_dir, localname + ".fa.sizes")
-    if not os.path.exists(sizes_file) or force:
+    if (not os.path.exists(sizes_file) or force) and not only_annotation:
         generate_fa_sizes(glob_ext_files(out_dir, "fa")[0], sizes_file)
 
     # Generate gap file if not found or if generation is forced
     gap_file = os.path.join(out_dir, localname + ".gaps.bed")
-    if not os.path.exists(gap_file) or force:
+    if (not os.path.exists(gap_file) or force) and not only_annotation:
         generate_gap_bed(glob_ext_files(out_dir, "fa")[0], gap_file)
 
     # If annotation is requested, check if annotation already exists, or if downloading is forced
-    no_annotation_found = not any(
-        os.path.exists(fname) for fname in glob_ext_files(out_dir, "gtf")
-    )
-    if annotation and (no_annotation_found or force):
+    if (no_annotation_found or force) and annotation:
         # Download annotation from provider
         p = ProviderBase.create(provider)
         p.download_annotation(name, genome_dir, localname=localname, **kwargs)
