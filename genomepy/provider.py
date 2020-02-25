@@ -19,7 +19,7 @@ from pyfaidx import Fasta
 from appdirs import user_cache_dir
 
 from genomepy import exceptions
-from genomepy.utils import filter_fasta, get_localname
+from genomepy.utils import filter_fasta, get_localname, read_url
 from genomepy.__about__ import __version__
 
 my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
@@ -229,6 +229,10 @@ class ProviderBase(object):
             f.write("name: {}\n".format(myname))
             f.write("original name: {}\n".format(dbname))
             f.write("original filename: {}\n".format(os.path.split(link)[-1]))
+            if hasattr(self, "genome_accession"):
+                f.write("genome_accession: {}\n".format(self.genome_accession(dbname)))
+            if hasattr(self, "genome_taxid"):
+                f.write("taxid: {}\n".format(self.genome_taxid(dbname)))
             f.write("url: {}\n".format(link))
             f.write("mask: {}\n".format(mask))
             f.write("date: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S")))
@@ -584,7 +588,7 @@ class UcscProvider(ProviderBase):
     ucsc_url_masked = base_url + "/{0}/bigZips/chromFaMasked.tar.gz"
     alt_ucsc_url = base_url + "/{0}/bigZips/{0}.fa.gz"
     alt_ucsc_url_masked = base_url + "/{0}/bigZips/{0}.fa.masked.gz"
-    das_url = "http://genome.ucsc.edu/cgi-bin/das/dsn"
+    rest_url = "http://api.genome.ucsc.edu/list/ucscGenomes"
 
     def __init__(self):
         self.genomes = []
@@ -603,12 +607,53 @@ class UcscProvider(ProviderBase):
 
     @cached(method=True)
     def _get_genomes(self):
-        with urlopen(self.das_url) as response:
-            d = xmltodict.parse(response.read())
-        genomes = []
-        for genome in d["DASDSN"]["DSN"]:
-            genomes.append([genome["SOURCE"]["@id"], genome["DESCRIPTION"]])
+        r = requests.get(self.rest_url, headers={"Content-Type": "application/json"})
+        if not r.ok:
+            r.raise_for_status()
+        ucsc_json = r.json()
+        genomes = ucsc_json["ucscGenomes"]
         return genomes
+
+    @cached(method=True)
+    def genome_accession(self, genome_build):
+        # if genome_build not in genomes:
+        #    raise ValueError(f"Could not find genome build {genome_build}")
+        ucsc_url = (
+            "https://hgdownload.soe.ucsc.edu/"
+            + self._get_genomes()[genome_build]["htmlPath"]
+        )
+
+        p = re.compile(r"GCA_\d+\.\d+")
+        p_ncbi = re.compile(r"https://www.ncbi.nlm.nih.gov/assembly/\d+")
+        text = read_url(ucsc_url)
+        m = p.search(text)
+        gca = "unknown"
+        if m:
+            gca = m.group(0)
+        else:
+            m = p_ncbi.search(text)
+            if m:
+                ncbi_url = m.group(0)
+                text = read_url(ncbi_url)
+
+                m = p.search(text)
+                if m:
+                    gca = m.group(0)
+        return gca
+
+    @cached(method=True)
+    def genome_taxid(self, genome_build):
+        return self._get_genomes()[genome_build]["taxId"]
+
+    def _genome_info_tuple(self, name):
+        genome = self.list_available_genomes()[name]
+        return (
+            name,
+            str(self.genome_accession(name)),
+            genome["scientificName"],
+            str(genome["taxId"]),
+            genome["description"],
+        )
 
     def search(self, term):
         """
@@ -620,17 +665,39 @@ class UcscProvider(ProviderBase):
         Parameters
         ----------
         term : str
-            Search term, case-insensitive.
+            Search term, case-insensitive. Can be genome build id (mm10, hg38), 
+            scientific name or taxonomy id.
 
         Yields
         ------
         tuple
             genome information (name/identifier and description)
         """
-        term = term.lower()
-        for name, description in self.list_available_genomes():
-            if term in name.lower() or term in description.lower():
-                yield name, description
+        taxid = False
+        try:
+            term = int(term)
+            taxid = True
+        except ValueError:
+            term = term.lower().replace(" ", "_")
+            pass
+
+        genomes = self.list_available_genomes()
+        if taxid:
+            for name in genomes:
+                genome = genomes[name]
+                if term == genome["taxId"]:
+                    yield self._genome_info_tuple(name)
+        else:
+            print("not taxid!")
+            if term in genomes:
+                genome = genomes[term]
+                yield self._genome_info_tuple(term)
+            for name in genomes:
+                genome = genomes[name]
+                for field in ["description", "scientificName"]:
+                    # print(term, genome[field].lower().replace(" ", "_"))
+                    if term in genome[field].lower().replace(" ", "_"):
+                        yield self._genome_info_tuple(name)
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
