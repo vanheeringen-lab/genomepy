@@ -354,6 +354,25 @@ class EnsemblProvider(ProviderBase):
                     genome.get("name", ""),
                 )
 
+    @cached(method=True)
+    def genome_accession(self, name):
+        genome_info = self._get_genome_info(name)
+        return genome_info.get("assembly_accession", "unknown")
+
+    @cached(method=True)
+    def genome_taxid(self, name):
+        genome_info = self._get_genome_info(name)
+        return genome_info.get("taxonomy_id", "unknown")
+
+    def _genome_info_tuple(self, genome):
+        return (
+            self.safe(genome.get("assembly_name", "")),
+            genome.get("assembly_accession", ""),
+            genome.get("scientific_name", ""),
+            str(genome.get("taxonomy_id", "")),
+            genome.get("genebuild", "")
+        )
+
     def search(self, term):
         """
         Search for a genome at Ensembl.
@@ -371,13 +390,19 @@ class EnsemblProvider(ProviderBase):
         tuple
             genome information (name/identifier and description)
         """
-        term = term.lower()
+        taxid = False
+        try:
+            int(term)
+            taxid = True
+        except ValueError:
+            term = term.lower()
+
         for genome in self.list_available_genomes(as_dict=True):
-            if term in ",".join([str(v) for v in genome.values()]).lower():
-                yield (
-                    self.safe(genome.get("assembly_name", "")),
-                    genome.get("name", ""),
-                )
+            if taxid:
+                if str(term) == str(genome.get("taxonomy_id", "")):
+                    yield self._genome_info_tuple(genome)
+            elif term in ",".join([str(v) for v in genome.values()]).lower():
+                yield self._genome_info_tuple(genome)
 
     def _get_genome_info(self, name):
         """Get genome_info from json request."""
@@ -580,7 +605,7 @@ class UcscProvider(ProviderBase):
     """
     UCSC genome provider.
 
-    The UCSC DAS server is used to search and list genomes.
+    The UCSC API REST server is used to search and list genomes.
     """
 
     base_url = "http://hgdownload.soe.ucsc.edu/goldenPath"
@@ -635,7 +660,8 @@ class UcscProvider(ProviderBase):
             if m:
                 ncbi_url = m.group(0)
                 text = read_url(ncbi_url)
-
+                lines = text.split("\n")
+                text = "\n".join([line for line in lines if "RefSeq assembly accession:" in line])
                 m = p.search(text)
                 if m:
                     gca = m.group(0)
@@ -688,7 +714,6 @@ class UcscProvider(ProviderBase):
                 if term == genome["taxId"]:
                     yield self._genome_info_tuple(name)
         else:
-            print("not taxid!")
             if term in genomes:
                 genome = genomes[term]
                 yield self._genome_info_tuple(term)
@@ -924,10 +949,11 @@ class NCBIProvider(ProviderBase):
             else:
                 yield (
                     genome.get("asm_name", ""),
-                    "; ".join(
-                        (genome.get("organism_name", ""), genome.get("submitter", ""))
-                    ),
-                )
+                    genome.get("gbrs_paired_asm", ""),
+                    genome.get("organism_name", ""),
+                    str(genome.get("species_taxid", "")),
+                    genome.get("submitter", "")
+                    )
 
     def search(self, term):
         """
@@ -944,18 +970,27 @@ class NCBIProvider(ProviderBase):
         ------
         tuples with two items, name and description
         """
-        term = term.lower()
+        taxid = False
+        try:
+            int(term)
+            taxid = True
+        except ValueError:
+            term = term.lower()
 
         for genome in self.list_available_genomes(as_dict=True):
-            term_str = ";".join([repr(x) for x in genome.values()])
+            if taxid:
+                term_str = str(genome.get("species_taxid", ""))
+            else:
+                term_str = ";".join([repr(x) for x in genome.values()])
 
-            if term in term_str.lower():
+            if (taxid and term == term_str) or (not taxid and term in term_str.lower()):
                 yield (
                     genome.get("asm_name", ""),
-                    "; ".join(
-                        (genome.get("organism_name", ""), genome.get("submitter", ""))
-                    ),
-                )
+                    genome.get("gbrs_paired_asm", ""),
+                    genome.get("organism_name", ""),
+                    str(genome.get("species_taxid", "")),
+                    genome.get("submitter", "")
+                    )
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """

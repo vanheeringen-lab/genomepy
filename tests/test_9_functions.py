@@ -47,6 +47,12 @@ def test_search():
         next(genomepy.functions.search("Xenopus Tropicalis", "NCBI")), list
     )
 
+    # search by taxonomy_id should only return correct species
+    for provider in ["Ensembl", "NCBI", "UCSC"]:
+        for vals in genomepy.functions.search(8364, provider):
+            assert len(vals) == 6
+            assert vals[3].decode('ascii') == "Xenopus tropicalis"
+
 
 # skipping several large/vague functions
 
