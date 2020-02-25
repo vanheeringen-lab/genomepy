@@ -228,8 +228,8 @@ class ProviderBase(object):
             f.write("name: {}\n".format(myname))
             f.write("original name: {}\n".format(dbname))
             f.write("original filename: {}\n".format(os.path.split(link)[-1]))
-            if hasattr(self, "genome_accession"):
-                f.write("genome_accession: {}\n".format(self.genome_accession(dbname)))
+            if hasattr(self, "assembly_accession"):
+                f.write("assembly_accession: {}\n".format(self.assembly_accession(dbname)))
             if hasattr(self, "genome_taxid"):
                 f.write("taxid: {}\n".format(self.genome_taxid(dbname)))
             f.write("url: {}\n".format(link))
@@ -354,7 +354,7 @@ class EnsemblProvider(ProviderBase):
                 )
 
     @cached(method=True)
-    def genome_accession(self, name):
+    def assembly_accession(self, name):
         genome_info = self._get_genome_info(name)
         return genome_info.get("assembly_accession", "unknown")
 
@@ -639,7 +639,7 @@ class UcscProvider(ProviderBase):
         return genomes
 
     @cached(method=True)
-    def genome_accession(self, genome_build):
+    def assembly_accession(self, genome_build):
         # if genome_build not in genomes:
         #    raise ValueError(f"Could not find genome build {genome_build}")
         ucsc_url = (
@@ -676,7 +676,7 @@ class UcscProvider(ProviderBase):
         genome = self.list_available_genomes()[name]
         return (
             name,
-            str(self.genome_accession(name)),
+            str(self.assembly_accession(name)),
             genome["scientificName"],
             str(genome["taxId"]),
             genome["description"],
