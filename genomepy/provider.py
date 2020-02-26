@@ -1008,9 +1008,9 @@ class NCBIProvider(ProviderBase):
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
 
-        # download to tmp dir. Move genome on completion.
-        with TemporaryDirectory(dir=out_dir) as tmpdir:
-            try:
+        # download to tmp dir. Move files on completion.
+        try:
+            with TemporaryDirectory(dir=out_dir) as tmpdir:
                 # actual download
                 sys.stderr.write("Using {}\n".format(url))
                 gff_file = os.path.join(tmpdir, localname + ".annotation.gff.gz")
@@ -1023,50 +1023,47 @@ class NCBIProvider(ProviderBase):
                 out = sp.check_output(cmd.format(gff_file), shell=True)
                 if out.strip() == b"0":
                     sys.stderr.write(
-                        "WARNING: annotation from NCBI contains no genes, "
-                        + "skipping.\n"
+                        "WARNING: annotation from NCBI contains no genes, skipping.\n"
                     )
                     return
-                else:
-                    # Convert to BED file
-                    bed_file = gff_file.replace("gff.gz", "bed")
-                    cmd = (
-                        "gff3ToGenePred -rnaNameAttr=gene {0} /dev/stdout | "
-                        "genePredToBed /dev/stdin {1} && gzip -f {1}"
-                    )
-                    sp.check_call(cmd.format(gff_file, bed_file), shell=True)
 
-                    # Convert to GTF file
-                    gtf_file = gff_file.replace("gff.gz", "gtf")
-                    cmd = (
-                        "gff3ToGenePred -geneNameAttr=gene {0} /dev/stdout | "
-                        + "genePredToGtf file /dev/stdin {1} && gzip -f {1}"
-                    )
-                    sp.check_call(cmd.format(gff_file, gtf_file), shell=True)
+                # Convert to GTF file
+                cmd = (
+                    "gff3ToGenePred -geneNameAttr=gene {0} /dev/stdout | "
+                    + "genePredToGtf file /dev/stdin {1} && gzip -f {1}"
+                )
+                gtf_file = gff_file.replace("gff.gz", "gtf")
+                sp.check_call(cmd.format(gff_file, gtf_file), shell=True)
 
-                # transfer the genome from the tmpdir to the genome_dir
+                # Convert to BED file
+                cmd = (
+                    "gtfToGenePred {0} /dev/stdout | "
+                    + "genePredToBed /dev/stdin {1} && gzip -f {1}"
+                )
+                bed_file = gtf_file.replace("gtf", "bed")
+                sp.check_call(cmd.format(gtf_file + ".gz", bed_file), shell=True)
+
+                # transfer the files from the tmpdir to the genome_dir
                 for f in [gtf_file + ".gz", bed_file + ".gz"]:
                     src = f
                     dst = os.path.join(out_dir, os.path.basename(f))
                     shutil.move(src, dst)
 
-                readme = os.path.join(genome_dir, localname, "README.txt")
-                with open(readme, "a") as f:
-                    f.write("annotation url: {}\n".format(url))
+            readme = os.path.join(genome_dir, localname, "README.txt")
+            with open(readme, "a") as f:
+                f.write("annotation url: {}\n".format(url))
 
-            except Exception:
-                sys.stderr.write(
-                    "WARNING: Could not download annotation from NCBI, " + "skipping.\n"
-                )
-                sys.stderr.write("URL: {}\n".format(url))
+        except Exception:
+            sys.stderr.write(
+                "WARNING: Could not download annotation from NCBI, skipping.\n"
+            )
+            sys.stderr.write("URL: {}\n".format(url))
 
-                sys.stderr.write(
-                    "If you think the annotation should be there, "
-                    + "please file a bug report at:\n"
-                )
-                sys.stderr.write(
-                    "https://github.com/vanheeringen-lab/genomepy/issues\n"
-                )
+            sys.stderr.write(
+                "If you think the annotation should be there, "
+                + "please file a bug report at:\n"
+            )
+            sys.stderr.write("https://github.com/vanheeringen-lab/genomepy/issues\n")
 
 
 @register_provider("URL")
