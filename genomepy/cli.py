@@ -24,8 +24,14 @@ def cli():
 @click.option("-p", "--provider", help="provider")
 def search(term, provider=None):
     """Search for genomes that contain TERM in their name or description."""
+    data = []
     for row in genomepy.search(term, provider):
-        print("\t".join([x.decode("utf-8", "ignore") for x in row]))
+        data.append([x.decode("utf-8", "ignore") for x in row])
+
+    sizes = [max(len(row[i]) + 4 for row in data) for i in range(len(data[0]))]
+    fstring = "".join([f"{{: <{size}}}" for size in sizes])
+    for row in data:
+        print(fstring.format(*row))
 
 
 general_install_options = {
@@ -134,7 +140,7 @@ def install(
     bgzip,
     annotation,
     force,
-    **kwargs
+    **kwargs,
 ):
     """Install genome NAME from provider PROVIDER in directory GENOME_DIR."""
     genomepy.install_genome(
@@ -148,7 +154,7 @@ def install(
         bgzip=bgzip,
         annotation=annotation,
         force=force,
-        **kwargs
+        **kwargs,
     )
 
 
