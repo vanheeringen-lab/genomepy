@@ -1004,12 +1004,11 @@ class NCBIProvider(ProviderBase):
         return genomes
 
     def _genome_info_tuple(self, genome): 
-        # Consistency! This way we always get a GCA accession
-        # "assembly_accession will sometime contain a GCF and sometime
-        # a GCA.
-        accession = genome.get("gbrs_paired_asm", "na")
-        if accession == "na":
-            accession = genome.get("assembly_accession", "na")
+        # Consistency! This way we always either get a GCA accession or na
+        accessions = [genome.get(col) for col in ["gbrs_paired_asm","assembly_accession"]]
+        for accession in accessions + ["na"]:
+            if accession.startswith("GCA"):
+                break
 
         return (
                     genome.get("asm_name", ""),
@@ -1057,10 +1056,12 @@ class NCBIProvider(ProviderBase):
         """
         for genome in self._get_genomes():
             if name in [genome["asm_name"], genome["asm_name"].replace(" ", "_")]:
-                accession = genome.get("gbrs_paired_asm", "na")
-                if accession == "na":
-                    accession = genome.get("assembly_accession", "na")
-                return accession
+                accessions = [genome.get(col) for col in ["gbrs_paired_asm","assembly_accession"]]
+                for accession in accessions:
+                    if accession.startswith("GCA"):
+                        return accession
+                
+                return "na"
 
     @cached(method=True)
     def genome_taxid(self, name):
@@ -1082,7 +1083,7 @@ class NCBIProvider(ProviderBase):
 
     def search(self, term):
         """
-        Search for term in genome names and descriptions.
+        Search for term in genome names and descriptions of NCBI.
 
         The search is case-insensitive.
 
@@ -1100,13 +1101,13 @@ class NCBIProvider(ProviderBase):
             int(term)
             taxid = True
         except ValueError:
-            term = term.lower()
+            term = term.lower().replace(" ", "_")
 
         for genome in self.list_available_genomes(as_dict=True):
             if taxid:
                 term_str = str(genome.get("species_taxid", ""))
             else:
-                term_str = ";".join([repr(x) for x in genome.values()])
+                term_str = ";".join([repr(x).replace(" ", "_") for x in genome.values()])
 
             if (taxid and term == term_str) or (not taxid and term in term_str.lower()):
                 yield self._genome_info_tuple(genome)
