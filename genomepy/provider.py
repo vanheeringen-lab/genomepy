@@ -230,6 +230,7 @@ class ProviderBase(object):
         readme = os.path.join(genome_dir, myname, "README.txt")
         with open(readme, "w") as f:
             f.write("name: {}\n".format(myname))
+            f.write("provider: {}\n".format(self.name))
             f.write("original name: {}\n".format(dbname))
             f.write("original filename: {}\n".format(os.path.split(link)[-1]))
             if hasattr(self, "assembly_accession"):
@@ -701,9 +702,9 @@ class UcscProvider(ProviderBase):
             "https://hgdownload.soe.ucsc.edu/"
             + self._get_genomes()[genome_build]["htmlPath"]
         )
-
+        print(ucsc_url)
         p = re.compile(r"GCA_\d+\.\d+")
-        p_ncbi = re.compile(r"https://www.ncbi.nlm.nih.gov/assembly/\d+")
+        p_ncbi = re.compile(r"https?://www.ncbi.nlm.nih.gov/assembly/\d+")
         text = read_url(ucsc_url)
         m = p.search(text)
         # Default, if not found. This matches NCBI, which will also return na.
