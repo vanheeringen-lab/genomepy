@@ -280,7 +280,11 @@ class EnsemblProvider(ProviderBase):
     rest_url = "http://rest.ensembl.org/"
 
     def __init__(self):
+        # Necessary for bucketcache, otherwise methods will identical names
+        # from different classes will use the same cache :-O!
+        self.name = "Ensembl"
         self.genomes = None
+        self.list_available_genomes()
         self.version = None
 
     @cached(method=True)
@@ -335,7 +339,7 @@ class EnsemblProvider(ProviderBase):
         ------
         genomes : dictionary or tuple
         """
-        if not self.genomes:
+        if self.genomes is None or len(self.genomes) == 0:
             self.genomes = []
             divisions = self.request_json("info/divisions?")
             for division in divisions:
@@ -355,7 +359,29 @@ class EnsemblProvider(ProviderBase):
                     genome.get("name", ""),
                 )
 
-    @cached(method=True)
+    def _get_genome_info(self, name):
+        """Get genome_info from json request."""
+        try:
+            assembly_acc = ""
+            for genome in self.list_available_genomes(as_dict=True):
+                if self.safe(genome.get("assembly_name", "")) == self.safe(name):
+                    assembly_acc = genome.get("assembly_accession", "")
+                    break
+            if assembly_acc:
+                ext = "info/genomes/assembly/" + assembly_acc + "/?"
+                genome_info = self.request_json(ext)
+            else:
+                raise exceptions.GenomeDownloadError(
+                    "Could not download genome {} from Ensembl".format(name)
+                )
+        except requests.exceptions.HTTPError as e:
+            sys.stderr.write("Species not found: {}".format(e))
+            raise exceptions.GenomeDownloadError(
+                "Could not download genome {} from Ensembl".format(name)
+            )
+        return genome_info
+
+    # Doesn't need to be cached, quick enough
     def assembly_accession(self, name):
         """Return the assembly accession (GCA_*) for a genome.
 
@@ -372,7 +398,7 @@ class EnsemblProvider(ProviderBase):
         genome_info = self._get_genome_info(name)
         return genome_info.get("assembly_accession", "unknown")
 
-    @cached(method=True)
+    # Doesn't need to be cached, quick enough
     def genome_taxid(self, name):
         """Return the taxonomy_id for a genome.
 
@@ -428,28 +454,6 @@ class EnsemblProvider(ProviderBase):
                     yield self._genome_info_tuple(genome)
             elif term in ",".join([str(v) for v in genome.values()]).lower():
                 yield self._genome_info_tuple(genome)
-
-    def _get_genome_info(self, name):
-        """Get genome_info from json request."""
-        try:
-            assembly_acc = ""
-            for genome in self.list_available_genomes(as_dict=True):
-                if self.safe(genome.get("assembly_name", "")) == self.safe(name):
-                    assembly_acc = genome.get("assembly_accession", "")
-                    break
-            if assembly_acc:
-                ext = "info/genomes/assembly/" + assembly_acc + "/?"
-                genome_info = self.request_json(ext)
-            else:
-                raise exceptions.GenomeDownloadError(
-                    "Could not download genome {} from Ensembl".format(name)
-                )
-        except requests.exceptions.HTTPError as e:
-            sys.stderr.write("Species not found: {}".format(e))
-            raise exceptions.GenomeDownloadError(
-                "Could not download genome {} from Ensembl".format(name)
-            )
-        return genome_info
 
     def get_version(self, ftp_site):
         """Retrieve current version from Ensembl FTP.
@@ -641,7 +645,11 @@ class UcscProvider(ProviderBase):
     rest_url = "http://api.genome.ucsc.edu/list/ucscGenomes"
 
     def __init__(self):
-        self.genomes = []
+        # Necessary for bucketcache, otherwise methods will identical names
+        # from different classes will use the same cache :-O!
+        self.name = "UCSC"
+        # Populate on init, so that methods can be cached
+        self.genomes = self._get_genomes()
 
     def list_available_genomes(self):
         """
@@ -671,7 +679,7 @@ class UcscProvider(ProviderBase):
         UCSC does not server the assembly accession through the REST API.
         Therefore, the readme.html is scanned for a GCA assembly id. If it is
         not found, the linked NCBI assembly page will be checked. Especially
-        for older genome builds, the GCA will not be present, in which case 
+        for older genome builds, the GCA will not be present, in which case
         "na" will be returned.
 
         Parameters
@@ -956,7 +964,10 @@ class NCBIProvider(ProviderBase):
     assembly_url = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"
 
     def __init__(self):
-        self.genomes = None
+        # Necessary for bucketcache, otherwise methods will identical names
+        # from different classes will use the same cache :-O!
+        self.name = "NCBI"
+        self.genomes = self._get_genomes()
 
     @cached(method=True)
     def _get_genomes(self):
