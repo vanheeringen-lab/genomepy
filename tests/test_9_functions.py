@@ -12,10 +12,10 @@ def test_manage_config():
     genomepy.functions.manage_config("show")
 
 
-def test_list_available_genomes(provider="ncbi"):
+def test_list_available_genomes(provider="NCBI"):
     g = genomepy.functions.list_available_genomes(provider)
     for row in g:
-        assert ("\t".join(row)).startswith(provider)
+        assert "\t".join(row).lower().startswith(provider.lower())
         break
 
     with pytest.raises(Exception):
