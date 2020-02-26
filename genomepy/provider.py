@@ -370,7 +370,7 @@ class EnsemblProvider(ProviderBase):
             assembly_acc = ""
             for genome in self.list_available_genomes(as_dict=True):
                 if self.safe(genome.get("assembly_name", "")) == self.safe(name):
-                    assembly_acc = genome.get("assembly_accession", "")
+                    assembly_acc = genome.get("assembly_accession", "na")
                     break
             if assembly_acc:
                 ext = "info/genomes/assembly/" + assembly_acc + "/?"
@@ -423,7 +423,7 @@ class EnsemblProvider(ProviderBase):
     def _genome_info_tuple(self, genome):
         return (
             self.safe(genome.get("assembly_name", "")),
-            genome.get("assembly_accession", ""),
+            genome.get("assembly_accession", "na"),
             genome.get("scientific_name", ""),
             str(genome.get("taxonomy_id", "")),
             genome.get("genebuild", ""),
@@ -786,10 +786,10 @@ class UcscProvider(ProviderBase):
                 genome = genomes[name]
                 if term == genome["taxId"]:
                     yield self._genome_info_tuple(name)
+        elif term in genomes:
+            genome = genomes[term]
+            yield self._genome_info_tuple(term)
         else:
-            if term in genomes:
-                genome = genomes[term]
-                yield self._genome_info_tuple(term)
             for name in genomes:
                 genome = genomes[name]
                 for field in ["description", "scientificName"]:
@@ -1003,6 +1003,22 @@ class NCBIProvider(ProviderBase):
 
         return genomes
 
+    def _genome_info_tuple(self, genome): 
+        # Consistency! This way we always get a GCA accession
+        # "assembly_accession will sometime contain a GCF and sometime
+        # a GCA.
+        accession = genome.get("gbrs_paired_asm", "na")
+        if accession == "na":
+            accession = genome.get("assembly_accession", "na")
+
+        return (
+                    genome.get("asm_name", ""),
+                    accession,
+                    genome.get("organism_name", ""),
+                    str(genome.get("species_taxid", "")),
+                    genome.get("submitter", ""),
+                )
+
     def list_available_genomes(self, as_dict=False):
         """
         List all available genomes.
@@ -1023,14 +1039,8 @@ class NCBIProvider(ProviderBase):
             if as_dict:
                 yield genome
             else:
-                yield (
-                    genome.get("asm_name", ""),
-                    genome.get("gbrs_paired_asm", ""),
-                    genome.get("organism_name", ""),
-                    str(genome.get("species_taxid", "")),
-                    genome.get("submitter", ""),
-                )
-
+                yield self._genome_info_tuple(genome)
+                
     @cached(method=True)
     def assembly_accession(self, name):
         """Return the assembly accession (GCA_*) for a genome.
@@ -1047,7 +1057,10 @@ class NCBIProvider(ProviderBase):
         """
         for genome in self._get_genomes():
             if name in [genome["asm_name"], genome["asm_name"].replace(" ", "_")]:
-                return genome.get("gbrs_paired_asm", "na")
+                accession = genome.get("gbrs_paired_asm", "na")
+                if accession == "na":
+                    accession = genome.get("assembly_accession", "na")
+                return accession
 
     @cached(method=True)
     def genome_taxid(self, name):
@@ -1096,14 +1109,8 @@ class NCBIProvider(ProviderBase):
                 term_str = ";".join([repr(x) for x in genome.values()])
 
             if (taxid and term == term_str) or (not taxid and term in term_str.lower()):
-                yield (
-                    genome.get("asm_name", ""),
-                    genome.get("gbrs_paired_asm", ""),
-                    genome.get("organism_name", ""),
-                    str(genome.get("species_taxid", "")),
-                    genome.get("submitter", ""),
-                )
-
+                yield self._genome_info_tuple(genome)
+    
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
         Return NCBI ftp link to top-level genome sequence
