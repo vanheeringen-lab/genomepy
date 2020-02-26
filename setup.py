@@ -22,6 +22,7 @@ entry_points = {"console_scripts": ["genomepy=genomepy.cli:cli"]}
 
 requires = [
     "click",
+    "colorama",
     "pyfaidx>=0.5.7",
     "norns>=0.1.5",
     "xmltodict",

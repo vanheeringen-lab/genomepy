@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 import click
 import genomepy
+import sys
 
 from collections import deque
 
+from colorama import init, Fore, Style
+init(autoreset=True)
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -24,14 +27,20 @@ def cli():
 @click.option("-p", "--provider", help="provider")
 def search(term, provider=None):
     """Search for genomes that contain TERM in their name or description."""
-    data = []
+    data = [["name","provider","accession","species","tax_id", "other_info"]]
     for row in genomepy.search(term, provider):
         data.append([x.decode("utf-8", "ignore") for x in row])
-
-    sizes = [max(len(row[i]) + 4 for row in data) for i in range(len(data[0]))]
-    fstring = "".join([f"{{: <{size}}}" for size in sizes])
-    for row in data:
-        print(fstring.format(*row))
+    if len(data) > 0:
+        sizes = [max(len(row[i]) + 4 for row in data) for i in range(len(data[0]))]
+        fstring = "".join([f"{{: <{size}}}" for size in sizes])
+        for i,row in enumerate(data):
+            if i == 0:
+                print(Style.BRIGHT + fstring.format(*row))
+            else:
+                print(fstring.format(*row))
+    if sys.stdout.isatty():
+        print(Fore.GREEN + " ^")
+        print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")
 
 
 general_install_options = {
