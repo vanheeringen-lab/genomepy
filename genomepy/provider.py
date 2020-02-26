@@ -84,6 +84,17 @@ class ProviderBase(object):
         """List available providers."""
         return cls._providers.keys()
 
+    @classmethod
+    def list_install_options(cls, name=None):
+        """List provider specific install options"""
+        if name is None:
+            return {}
+        elif name.lower() not in cls._providers:
+            raise Exception("Unknown provider")
+        else:
+            provider = cls._providers[name.lower()]
+            return provider.list_install_options()
+
     def __hash__(self):
         return hash(str(self.__class__))
 
@@ -103,13 +114,6 @@ class ProviderBase(object):
                     for line in open(infile):
                         out.write(line)
                     os.unlink(infile)
-
-    def list_install_options(self):
-        """List provider specific install options"""
-
-        provider_specific_options = {}
-
-        return provider_specific_options
 
     def download_genome(
         self,
@@ -307,6 +311,7 @@ class EnsemblProvider(ProviderBase):
         """
         return name.replace(" ", "_")
 
+    @classmethod
     def list_install_options(self):
         """List provider specific install options"""
 
