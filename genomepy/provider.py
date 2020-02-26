@@ -1003,20 +1003,22 @@ class NCBIProvider(ProviderBase):
 
         return genomes
 
-    def _genome_info_tuple(self, genome): 
+    def _genome_info_tuple(self, genome):
         # Consistency! This way we always either get a GCA accession or na
-        accessions = [genome.get(col) for col in ["gbrs_paired_asm","assembly_accession"]]
+        accessions = [
+            genome.get(col) for col in ["gbrs_paired_asm", "assembly_accession"]
+        ]
         for accession in accessions + ["na"]:
             if accession.startswith("GCA"):
                 break
 
         return (
-                    genome.get("asm_name", ""),
-                    accession,
-                    genome.get("organism_name", ""),
-                    str(genome.get("species_taxid", "")),
-                    genome.get("submitter", ""),
-                )
+            genome.get("asm_name", ""),
+            accession,
+            genome.get("organism_name", ""),
+            str(genome.get("species_taxid", "")),
+            genome.get("submitter", ""),
+        )
 
     def list_available_genomes(self, as_dict=False):
         """
@@ -1039,7 +1041,7 @@ class NCBIProvider(ProviderBase):
                 yield genome
             else:
                 yield self._genome_info_tuple(genome)
-                
+
     @cached(method=True)
     def assembly_accession(self, name):
         """Return the assembly accession (GCA_*) for a genome.
@@ -1056,11 +1058,13 @@ class NCBIProvider(ProviderBase):
         """
         for genome in self._get_genomes():
             if name in [genome["asm_name"], genome["asm_name"].replace(" ", "_")]:
-                accessions = [genome.get(col) for col in ["gbrs_paired_asm","assembly_accession"]]
+                accessions = [
+                    genome.get(col) for col in ["gbrs_paired_asm", "assembly_accession"]
+                ]
                 for accession in accessions:
                     if accession.startswith("GCA"):
                         return accession
-                
+
                 return "na"
 
     @cached(method=True)
@@ -1107,11 +1111,13 @@ class NCBIProvider(ProviderBase):
             if taxid:
                 term_str = str(genome.get("species_taxid", ""))
             else:
-                term_str = ";".join([repr(x).replace(" ", "_") for x in genome.values()])
+                term_str = ";".join(
+                    [repr(x).replace(" ", "_") for x in genome.values()]
+                )
 
             if (taxid and term == term_str) or (not taxid and term in term_str.lower()):
                 yield self._genome_info_tuple(genome)
-    
+
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
         Return NCBI ftp link to top-level genome sequence

@@ -141,7 +141,9 @@ def search(term, provider=None):
         ]
     for p in providers:
         for row in p.search(term):
-            yield [x.encode("latin-1") for x in list(row[:1]) + [p.name] + list(row[1:])]
+            yield [
+                x.encode("latin-1") for x in list(row[:1]) + [p.name] + list(row[1:])
+            ]
 
 
 def install_genome(
