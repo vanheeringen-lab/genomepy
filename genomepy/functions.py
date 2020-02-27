@@ -5,6 +5,7 @@ import glob
 import norns
 import random
 import re
+import sys
 
 from appdirs import user_config_dir
 from collections.abc import Iterable
@@ -12,6 +13,7 @@ from pyfaidx import Fasta, Sequence
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
 from genomepy.utils import generate_gap_bed, generate_fa_sizes, get_localname
+from genomepy.exceptions import GenomeDownloadError
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -141,7 +143,9 @@ def search(term, provider=None):
         ]
     for p in providers:
         for row in p.search(term):
-            yield [x.encode("latin-1") for x in [p.name] + list(row)]
+            yield [
+                x.encode("latin-1") for x in list(row[:1]) + [p.name] + list(row[1:])
+            ]
 
 
 def install_genome(
@@ -155,7 +159,7 @@ def install_genome(
     bgzip=None,
     annotation=False,
     force=False,
-    **kwargs
+    **kwargs,
 ):
     """
     Install a genome.
@@ -227,7 +231,7 @@ def install_genome(
             invert_match=invert_match,
             localname=localname,
             bgzip=bgzip,
-            **kwargs
+            **kwargs,
         )
 
     # If annotation is requested, check if annotation already exists, or if downloading is forced
@@ -360,6 +364,7 @@ class Genome(Fasta):
     """
 
     def __init__(self, name, genome_dir=None):
+        metadata = {}
 
         try:
             # generates the Fasta object and the index file
@@ -410,12 +415,77 @@ class Genome(Fasta):
             # generates the Fasta object and the index file
             super(Genome, self).__init__(fname)
             self.name = name
+            self.genome_dir = genome_dir
+            metadata = self._read_metadata()
 
+        self.tax_id = metadata.get("tax_id")
+        self.assembly_accession = metadata.get("assembly_accession")
         self._gap_sizes = None
         self.props = {}
 
         for plugin in get_active_plugins():
             self.props[plugin.name()] = plugin.get_properties(self)
+
+    def _read_metadata(self):
+        """Read genome metadata from genome README.txt (if it exists).
+        """
+        metadata = {}
+        readme = os.path.join(self.genome_dir, self.name, "README.txt")
+        if os.path.exists(readme):
+            with open(readme) as f:
+                metadata = {}
+                with open(readme) as f:
+                    for line in f.readlines():
+                        vals = line.strip().split(":")
+                        metadata[vals[0].strip()] = (":".join(vals[1:])).strip()
+
+                update_metadata = False
+                if "provider" not in metadata:
+                    update_metadata = True
+                if "tax_id" not in metadata or "assembly_accession" not in metadata:
+                    update_metadata = True
+
+                if update_metadata:
+                    print(f"Updating metadata in README.txt", file=sys.stderr)
+                else:
+                    return metadata
+
+                if "provider" not in metadata:
+                    if "ensembl" in metadata.get("url", ""):
+                        metadata["provider"] = "Ensembl"
+                    elif "ucsc" in metadata.get("url", ""):
+                        metadata["provider"] = "UCSC"
+                    elif "ncbi" in metadata.get("url", ""):
+                        metadata["provider"] = "NCBI"
+                if metadata.get("provider", "").lower() in ["ensembl", "ucsc", "ncbi"]:
+                    if "tax_id" not in metadata or "assembly_accession" not in metadata:
+                        p = ProviderBase.create(metadata["provider"])
+
+                    if "tax_id" not in metadata:
+                        try:
+                            metadata["tax_id"] = p.genome_taxid(
+                                metadata["original name"]
+                            )
+                        except GenomeDownloadError:
+                            print(
+                                f"Could not update tax_id of {self.name}",
+                                file=sys.stderr,
+                            )
+                    if "assembly_accession" not in metadata:
+                        try:
+                            metadata["assembly_accession"] = p.assembly_accession(
+                                metadata["original name"]
+                            )
+                        except GenomeDownloadError:
+                            print(
+                                f"Could not update assembly_accession of {self.name}",
+                                file=sys.stderr,
+                            )
+
+            with open(readme, "w") as f:
+                for k, v in metadata.items():
+                    print(f"{k}: {v}", file=f)
+        return metadata
 
     def _bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
         BUFSIZE = 10000

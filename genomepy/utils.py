@@ -181,3 +181,11 @@ def bgrezip(bgzip, fname):
                 "Error bgzipping genome {}. ".format(fname) + "Is tabix installed?"
             )
     return
+
+
+def read_url(url):
+    """Read a text-based URL."""
+    response = urllib.request.urlopen(url)
+    data = response.read()
+    text = data.decode("utf-8")
+    return text
