@@ -451,13 +451,13 @@ class Genome(Fasta):
                     return metadata
 
                 if "provider" not in metadata:
-                    if "ensembl" in metadata["url"]:
+                    if "ensembl" in metadata.get("url", ""):
                         metadata["provider"] = "Ensembl"
-                    elif "ucsc" in metadata["url"]:
+                    elif "ucsc" in metadata.get("url", ""):
                         metadata["provider"] = "UCSC"
-                    elif "ncbi" in metadata["url"]:
+                    elif "ncbi" in metadata.get("url", ""):
                         metadata["provider"] = "NCBI"
-                if provider.lower() in ["ensembl", "ucsc", "ncbi"]:
+                if metadata["provider"].lower() in ["ensembl", "ucsc", "ncbi"]:
                     if "tax_id" not in metadata or "assembly_accession" not in metadata:
                         p = ProviderBase.create(metadata["provider"])
     
