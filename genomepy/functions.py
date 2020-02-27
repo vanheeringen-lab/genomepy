@@ -460,13 +460,16 @@ class Genome(Fasta):
                 if metadata.get("provider", "").lower() in ["ensembl", "ucsc", "ncbi"]:
                     if "tax_id" not in metadata or "assembly_accession" not in metadata:
                         p = ProviderBase.create(metadata["provider"])
-    
+
                     if "tax_id" not in metadata:
                         try:
-                            metadata["tax_id"] = p.genome_taxid(metadata["original name"])
+                            metadata["tax_id"] = p.genome_taxid(
+                                metadata["original name"]
+                            )
                         except GenomeDownloadError:
                             print(
-                                f"Could not update tax_id of {self.name}", file=sys.stderr
+                                f"Could not update tax_id of {self.name}",
+                                file=sys.stderr,
                             )
                     if "assembly_accession" not in metadata:
                         try:
@@ -478,7 +481,7 @@ class Genome(Fasta):
                                 f"Could not update assembly_accession of {self.name}",
                                 file=sys.stderr,
                             )
-    
+
             with open(readme, "w") as f:
                 for k, v in metadata.items():
                     print(f"{k}: {v}", file=f)
