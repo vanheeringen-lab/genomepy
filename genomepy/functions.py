@@ -420,6 +420,7 @@ class Genome(Fasta):
 
         self.tax_id = metadata.get("tax_id")
         self.assembly_accession = metadata.get("assembly_accession")
+        self.provider = metadata.get("provider")
         self._gap_sizes = None
         self.props = {}
 
