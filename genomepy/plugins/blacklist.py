@@ -16,7 +16,7 @@ class BlacklistPlugin(Plugin):
         "mm10": base_url + "mm10-mouse/mm10.blacklist.bed.gz",
     }
 
-    def after_genome_download(self, genome, force=False):
+    def after_genome_download(self, genome, threads=8, force=False):
         props = self.get_properties(genome)
         fname = props["blacklist"]
         if force and os.path.exists(fname):

@@ -7,7 +7,7 @@ from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
 
 
 class StarPlugin(Plugin):
-    def after_genome_download(self, genome, force=False):
+    def after_genome_download(self, genome, threads=8, force=False):
         if not cmd_ok("STAR"):
             return
 
@@ -31,8 +31,8 @@ class StarPlugin(Plugin):
                 bgzip = True
 
             # Create index
-            cmd = "STAR --runMode genomeGenerate --genomeFastaFiles {} --genomeDir {} --outFileNamePrefix {}".format(
-                fname, index_dir, index_dir
+            cmd = "STAR --runMode genomeGenerate --runThreadN {} --genomeFastaFiles {} --genomeDir {} --outFileNamePrefix {}".format(
+                threads, fname, index_dir, index_dir
             )
             run_index_cmd("star", cmd)
 

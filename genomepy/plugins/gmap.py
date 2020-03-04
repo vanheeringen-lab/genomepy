@@ -8,7 +8,7 @@ from genomepy.utils import cmd_ok, run_index_cmd
 
 
 class GmapPlugin(Plugin):
-    def after_genome_download(self, genome, force=False):
+    def after_genome_download(self, genome, threads=8, force=False):
         if not cmd_ok("gmap_build"):
             return
 

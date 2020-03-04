@@ -7,7 +7,7 @@ from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
 
 
 class Hisat2Plugin(Plugin):
-    def after_genome_download(self, genome, force=False):
+    def after_genome_download(self, genome, threads=8, force=False):
         if not cmd_ok("hisat2-build"):
             return
 
@@ -31,7 +31,7 @@ class Hisat2Plugin(Plugin):
                 bgzip = True
 
             # Create index
-            cmd = "hisat2-build {} {}".format(fname, index_name)
+            cmd = "hisat2-build -p {} {} {}".format(threads, fname, index_name)
             run_index_cmd("hisat2", cmd)
 
             if bgzip:

@@ -154,6 +154,7 @@ def install_genome(
     invert_match=False,
     bgzip=None,
     annotation=False,
+    threads=8,
     force=False,
     **kwargs
 ):
@@ -244,7 +245,7 @@ def install_genome(
 
     # Run all active plugins
     for plugin in get_active_plugins():
-        plugin.after_genome_download(g, force)
+        plugin.after_genome_download(g, threads, force)
 
     # Generate gap file if not found or if generation is forced
     gap_file = os.path.join(out_dir, localname + ".gaps.bed")
