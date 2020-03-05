@@ -5,7 +5,6 @@ import re
 import os
 import norns
 import time
-import xmltodict
 import shutil
 import tarfile
 import subprocess as sp
@@ -18,7 +17,7 @@ from pyfaidx import Fasta
 from appdirs import user_cache_dir
 
 from genomepy import exceptions
-from genomepy.utils import filter_fasta, get_localname, get_file_info
+from genomepy.utils import filter_fasta, get_localname, get_file_info, read_url
 from genomepy.__about__ import __version__
 
 my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
@@ -172,6 +171,17 @@ class ProviderBase(object):
         """List available providers."""
         return cls._providers.keys()
 
+    @classmethod
+    def list_install_options(cls, name=None):
+        """List provider specific install options"""
+        if name is None:
+            return {}
+        elif name.lower() not in cls._providers:
+            raise Exception("Unknown provider")
+        else:
+            provider = cls._providers[name.lower()]
+            return provider.list_install_options()
+
     def __hash__(self):
         return hash(str(self.__class__))
 
@@ -191,13 +201,6 @@ class ProviderBase(object):
                     for line in open(infile):
                         out.write(line)
                     os.unlink(infile)
-
-    def list_install_options(self):
-        """List provider specific install options"""
-
-        provider_specific_options = {}
-
-        return provider_specific_options
 
     def download_genome(
         self,
@@ -314,8 +317,15 @@ class ProviderBase(object):
         readme = os.path.join(genome_dir, myname, "README.txt")
         with open(readme, "w") as f:
             f.write("name: {}\n".format(myname))
+            f.write("provider: {}\n".format(self.name))
             f.write("original name: {}\n".format(dbname))
             f.write("original filename: {}\n".format(os.path.split(link)[-1]))
+            if hasattr(self, "assembly_accession"):
+                f.write(
+                    "assembly_accession: {}\n".format(self.assembly_accession(dbname))
+                )
+            if hasattr(self, "genome_taxid"):
+                f.write("taxid: {}\n".format(self.genome_taxid(dbname)))
             f.write("url: {}\n".format(link))
             f.write("mask: {}\n".format(mask))
             f.write("date: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S")))
@@ -362,7 +372,11 @@ class EnsemblProvider(ProviderBase):
     rest_url = "http://rest.ensembl.org/"
 
     def __init__(self):
+        # Necessary for bucketcache, otherwise methods will identical names
+        # from different classes will use the same cache :-O!
+        self.name = "Ensembl"
         self.genomes = None
+        self.list_available_genomes()
         self.version = None
 
     @cached(method=True)
@@ -385,6 +399,7 @@ class EnsemblProvider(ProviderBase):
         """
         return name.replace(" ", "_")
 
+    @classmethod
     def list_install_options(self):
         """List provider specific install options"""
 
@@ -417,7 +432,7 @@ class EnsemblProvider(ProviderBase):
         ------
         genomes : dictionary or tuple
         """
-        if not self.genomes:
+        if self.genomes is None or len(self.genomes) == 0:
             self.genomes = []
             divisions = self.request_json("info/divisions?")
             for division in divisions:
@@ -437,6 +452,71 @@ class EnsemblProvider(ProviderBase):
                     genome.get("name", ""),
                 )
 
+    def _get_genome_info(self, name):
+        """Get genome_info from json request."""
+        try:
+            assembly_acc = ""
+            for genome in self.list_available_genomes(as_dict=True):
+                if self.safe(genome.get("assembly_name", "")) == self.safe(name):
+                    assembly_acc = genome.get("assembly_accession", "na")
+                    break
+            if assembly_acc:
+                ext = "info/genomes/assembly/" + assembly_acc + "/?"
+                genome_info = self.request_json(ext)
+            else:
+                raise exceptions.GenomeDownloadError(
+                    "Could not download genome {} from Ensembl".format(name)
+                )
+        except requests.exceptions.HTTPError as e:
+            sys.stderr.write("Species not found: {}".format(e))
+            raise exceptions.GenomeDownloadError(
+                "Could not download genome {} from Ensembl".format(name)
+            )
+        return genome_info
+
+    # Doesn't need to be cached, quick enough
+    def assembly_accession(self, name):
+        """Return the assembly accession (GCA_*) for a genome.
+
+        Parameters
+        ----------
+        name : str
+            Genome name.
+
+        Yields
+        ------
+        str
+            Assembly accession.
+        """
+        genome_info = self._get_genome_info(name)
+        return genome_info.get("assembly_accession", "unknown")
+
+    # Doesn't need to be cached, quick enough
+    def genome_taxid(self, name):
+        """Return the taxonomy_id for a genome.
+
+        Parameters
+        ----------
+        name : str
+            Assembly name.
+
+        Yields
+        ------
+        int
+            Taxonomy id.
+        """
+        genome_info = self._get_genome_info(name)
+        return genome_info.get("taxonomy_id", -1)
+
+    def _genome_info_tuple(self, genome):
+        return (
+            self.safe(genome.get("assembly_name", "")),
+            genome.get("assembly_accession", "na"),
+            genome.get("scientific_name", ""),
+            str(genome.get("taxonomy_id", "")),
+            genome.get("genebuild", ""),
+        )
+
     def search(self, term):
         """
         Search for a genome at Ensembl.
@@ -454,35 +534,19 @@ class EnsemblProvider(ProviderBase):
         tuple
             genome information (name/identifier and description)
         """
-        term = term.lower()
-        for genome in self.list_available_genomes(as_dict=True):
-            if term in ",".join([str(v) for v in genome.values()]).lower():
-                yield (
-                    self.safe(genome.get("assembly_name", "")),
-                    genome.get("name", ""),
-                )
-
-    def _get_genome_info(self, name):
-        """Get genome_info from json request."""
+        taxid = False
         try:
-            assembly_acc = ""
-            for genome in self.list_available_genomes(as_dict=True):
-                if self.safe(genome.get("assembly_name", "")) == self.safe(name):
-                    assembly_acc = genome.get("assembly_accession", "")
-                    break
-            if assembly_acc:
-                ext = "info/genomes/assembly/" + assembly_acc + "/?"
-                genome_info = self.request_json(ext)
-            else:
-                raise exceptions.GenomeDownloadError(
-                    "Could not download genome {} from Ensembl".format(name)
-                )
-        except requests.exceptions.HTTPError as e:
-            sys.stderr.write("Species not found: {}".format(e))
-            raise exceptions.GenomeDownloadError(
-                "Could not download genome {} from Ensembl".format(name)
-            )
-        return genome_info
+            int(term)
+            taxid = True
+        except ValueError:
+            term = term.lower()
+
+        for genome in self.list_available_genomes(as_dict=True):
+            if taxid:
+                if str(term) == str(genome.get("taxonomy_id", "")):
+                    yield self._genome_info_tuple(genome)
+            elif term in ",".join([str(v) for v in genome.values()]).lower():
+                yield self._genome_info_tuple(genome)
 
     def get_version(self, ftp_site):
         """Retrieve current version from Ensembl FTP.
@@ -632,7 +696,7 @@ class UcscProvider(ProviderBase):
     """
     UCSC genome provider.
 
-    The UCSC DAS server is used to search and list genomes.
+    The UCSC API REST server is used to search and list genomes.
     """
 
     base_url = "http://hgdownload.soe.ucsc.edu/goldenPath"
@@ -640,10 +704,14 @@ class UcscProvider(ProviderBase):
     ucsc_url_masked = base_url + "/{0}/bigZips/chromFaMasked.tar.gz"
     alt_ucsc_url = base_url + "/{0}/bigZips/{0}.fa.gz"
     alt_ucsc_url_masked = base_url + "/{0}/bigZips/{0}.fa.masked.gz"
-    das_url = "http://genome.ucsc.edu/cgi-bin/das/dsn"
+    rest_url = "http://api.genome.ucsc.edu/list/ucscGenomes"
 
     def __init__(self):
-        self.genomes = []
+        # Necessary for bucketcache, otherwise methods will identical names
+        # from different classes will use the same cache :-O!
+        self.name = "UCSC"
+        # Populate on init, so that methods can be cached
+        self.genomes = self._get_genomes()
 
     def list_available_genomes(self):
         """
@@ -659,12 +727,89 @@ class UcscProvider(ProviderBase):
 
     @cached(method=True)
     def _get_genomes(self):
-        with urlopen(self.das_url) as response:
-            d = xmltodict.parse(response.read())
-        genomes = []
-        for genome in d["DASDSN"]["DSN"]:
-            genomes.append([genome["SOURCE"]["@id"], genome["DESCRIPTION"]])
+        r = requests.get(self.rest_url, headers={"Content-Type": "application/json"})
+        if not r.ok:
+            r.raise_for_status()
+        ucsc_json = r.json()
+        genomes = ucsc_json["ucscGenomes"]
         return genomes
+
+    @cached(method=True)
+    def assembly_accession(self, genome_build):
+        """Return the assembly accession (GCA_*) for a genome.
+
+        UCSC does not server the assembly accession through the REST API.
+        Therefore, the readme.html is scanned for a GCA assembly id. If it is
+        not found, the linked NCBI assembly page will be checked. Especially
+        for older genome builds, the GCA will not be present, in which case
+        "na" will be returned.
+
+        Parameters
+        ----------
+        name : str
+            UCSC genome build name.
+
+        Yields
+        ------
+        str
+            Assembly accession.
+        """
+        ucsc_url = (
+            "https://hgdownload.soe.ucsc.edu/"
+            + self._get_genomes()[genome_build]["htmlPath"]
+        )
+        print(ucsc_url)
+        p = re.compile(r"GCA_\d+\.\d+")
+        p_ncbi = re.compile(r"https?://www.ncbi.nlm.nih.gov/assembly/\d+")
+        text = read_url(ucsc_url)
+        m = p.search(text)
+        # Default, if not found. This matches NCBI, which will also return na.
+        gca = "na"
+        if m:
+            # Get the GCA from the html
+            gca = m.group(0)
+        else:
+            # Search for an assembly link at NCBI
+            m = p_ncbi.search(text)
+            if m:
+                ncbi_url = m.group(0)
+                text = read_url(ncbi_url)
+                # We need to select the line that contains the assembly accession.
+                # The page will potentially contain many more links to newer assemblies
+                lines = text.split("\n")
+                text = "\n".join(
+                    [line for line in lines if "RefSeq assembly accession:" in line]
+                )
+                m = p.search(text)
+                if m:
+                    gca = m.group(0)
+        return gca
+
+    @cached(method=True)
+    def genome_taxid(self, genome_build):
+        """Return the taxonomy_id for a genome.
+
+        Parameters
+        ----------
+        name : str
+            UCSC genome build name.
+
+        Yields
+        ------
+        int
+            Taxonomy id..
+        """
+        return self._get_genomes()[genome_build]["taxId"]
+
+    def _genome_info_tuple(self, name):
+        genome = self.list_available_genomes()[name]
+        return (
+            name,
+            str(self.assembly_accession(name)),
+            genome["scientificName"],
+            str(genome["taxId"]),
+            genome["description"],
+        )
 
     def search(self, term):
         """
@@ -676,17 +821,38 @@ class UcscProvider(ProviderBase):
         Parameters
         ----------
         term : str
-            Search term, case-insensitive.
+            Search term, case-insensitive. Can be genome build id (mm10, hg38),
+            scientific name or taxonomy id.
 
         Yields
         ------
         tuple
             genome information (name/identifier and description)
         """
-        term = term.lower()
-        for name, description in self.list_available_genomes():
-            if term in name.lower() or term in description.lower():
-                yield name, description
+        taxid = False
+        try:
+            term = int(term)
+            taxid = True
+        except ValueError:
+            term = term.lower().replace(" ", "_")
+            pass
+
+        genomes = self.list_available_genomes()
+        if taxid:
+            for name in genomes:
+                genome = genomes[name]
+                if term == genome["taxId"]:
+                    yield self._genome_info_tuple(name)
+        elif term in genomes:
+            genome = genomes[term]
+            yield self._genome_info_tuple(term)
+        else:
+            for name in genomes:
+                genome = genomes[name]
+                for field in ["description", "scientificName"]:
+                    # print(term, genome[field].lower().replace(" ", "_"))
+                    if term in genome[field].lower().replace(" ", "_"):
+                        yield self._genome_info_tuple(name)
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
@@ -809,7 +975,10 @@ class NCBIProvider(ProviderBase):
     assembly_url = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"
 
     def __init__(self):
-        self.genomes = None
+        # Necessary for bucketcache, otherwise methods will identical names
+        # from different classes will use the same cache :-O!
+        self.name = "NCBI"
+        self.genomes = self._get_genomes()
 
     @cached(method=True)
     def _get_genomes(self):
@@ -840,6 +1009,23 @@ class NCBIProvider(ProviderBase):
 
         return genomes
 
+    def _genome_info_tuple(self, genome):
+        # Consistency! This way we always either get a GCA accession or na
+        accessions = [
+            genome.get(col) for col in ["gbrs_paired_asm", "assembly_accession"]
+        ]
+        for accession in accessions + ["na"]:
+            if accession.startswith("GCA"):
+                break
+
+        return (
+            genome.get("asm_name", ""),
+            accession,
+            genome.get("organism_name", ""),
+            str(genome.get("species_taxid", "")),
+            genome.get("submitter", ""),
+        )
+
     def list_available_genomes(self, as_dict=False):
         """
         List all available genomes.
@@ -860,16 +1046,54 @@ class NCBIProvider(ProviderBase):
             if as_dict:
                 yield genome
             else:
-                yield (
-                    genome.get("asm_name", ""),
-                    "; ".join(
-                        (genome.get("organism_name", ""), genome.get("submitter", ""))
-                    ),
-                )
+                yield self._genome_info_tuple(genome)
+
+    @cached(method=True)
+    def assembly_accession(self, name):
+        """Return the assembly accession (GCA_*) for a genome.
+
+        Parameters
+        ----------
+        name : str
+            Genome name.
+
+        Yields
+        ------
+        str
+            Assembly accession.
+        """
+        for genome in self._get_genomes():
+            if name in [genome["asm_name"], genome["asm_name"].replace(" ", "_")]:
+                accessions = [
+                    genome.get(col) for col in ["gbrs_paired_asm", "assembly_accession"]
+                ]
+                for accession in accessions:
+                    if accession.startswith("GCA"):
+                        return accession
+
+                return "na"
+
+    @cached(method=True)
+    def genome_taxid(self, name):
+        """Return the taxonomy_id for a genome.
+
+        Parameters
+        ----------
+        name : str
+            Assembly name.
+
+        Yields
+        ------
+        int
+            Taxonomy id.
+        """
+        for genome in self._get_genomes():
+            if name in [genome["asm_name"], genome["asm_name"].replace(" ", "_")]:
+                return genome.get("species_taxid", "na")
 
     def search(self, term):
         """
-        Search for term in genome names and descriptions.
+        Search for term in genome names and descriptions of NCBI.
 
         The search is case-insensitive.
 
@@ -882,18 +1106,23 @@ class NCBIProvider(ProviderBase):
         ------
         tuples with two items, name and description
         """
-        term = term.lower()
+        taxid = False
+        try:
+            int(term)
+            taxid = True
+        except ValueError:
+            term = term.lower().replace(" ", "_")
 
         for genome in self.list_available_genomes(as_dict=True):
-            term_str = ";".join([repr(x) for x in genome.values()])
-
-            if term in term_str.lower():
-                yield (
-                    genome.get("asm_name", ""),
-                    "; ".join(
-                        (genome.get("organism_name", ""), genome.get("submitter", ""))
-                    ),
+            if taxid:
+                term_str = str(genome.get("species_taxid", ""))
+            else:
+                term_str = ";".join(
+                    [repr(x).replace(" ", "_") for x in genome.values()]
                 )
+
+            if (taxid and term == term_str) or (not taxid and term in term_str.lower()):
+                yield self._genome_info_tuple(genome)
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """

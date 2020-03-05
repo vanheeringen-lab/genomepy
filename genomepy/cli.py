@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 import click
 import genomepy
+import sys
 
 from collections import deque
 
+from colorama import init, Fore, Style
+
+init(autoreset=True)
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -24,8 +28,29 @@ def cli():
 @click.option("-p", "--provider", help="provider")
 def search(term, provider=None):
     """Search for genomes that contain TERM in their name or description."""
+    data = [["name", "provider", "accession", "species", "tax_id", "other_info"]]
     for row in genomepy.search(term, provider):
-        print("\t".join([x.decode("utf-8", "ignore") for x in row]))
+        data.append([x.decode("utf-8", "ignore") for x in row])
+    if len(data) == 1:
+        print("No genomes found!", file=sys.stderr)
+        return
+
+    # In case we print to a terminal, the output is aligned.
+    # Otherwise (file, pipe) we use tab-separated columns.
+    if sys.stdout.isatty():
+        sizes = [max(len(row[i]) + 4 for row in data) for i in range(len(data[0]))]
+        fstring = "".join([f"{{: <{size}}}" for size in sizes])
+    else:
+        fstring = "\t".join(["{}" for _ in range(len(data[0]))])
+
+    for i, row in enumerate(data):
+        if i == 0:
+            print(Style.BRIGHT + fstring.format(*row))
+        else:
+            print(fstring.format(*row))
+    if sys.stdout.isatty():
+        print(Fore.GREEN + " ^")
+        print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")
 
 
 general_install_options = {
@@ -111,8 +136,7 @@ def get_install_options():
     install_options = general_install_options
 
     for name in genomepy.provider.ProviderBase.list_providers():
-        p = genomepy.provider.ProviderBase.create(name)
-        p_dict = p.list_install_options()
+        p_dict = genomepy.provider.ProviderBase.list_install_options(name)
         for option in p_dict.keys():
             p_dict[option]["long"] = name + "-" + p_dict[option]["long"]
         install_options.update(p_dict)
@@ -164,7 +188,7 @@ def install(
     only_annotation,
     skip_sanitizing,
     force,
-    **kwargs
+    **kwargs,
 ):
     """Install genome NAME from provider PROVIDER in directory GENOME_DIR."""
     genomepy.install_genome(
@@ -180,7 +204,7 @@ def install(
         only_annotation=only_annotation,
         skip_sanitizing=skip_sanitizing,
         force=force,
-        **kwargs
+        **kwargs,
     )
 
 
