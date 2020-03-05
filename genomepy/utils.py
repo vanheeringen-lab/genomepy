@@ -183,14 +183,14 @@ def bgrezip(bgzip, fname):
             )
     return
 
-  
+
 def read_url(url):
     """Read a text-based URL."""
     response = urllib.request.urlopen(url)
     data = response.read()
     text = data.decode("utf-8")
     return text
-  
+
 
 def get_file_info(fname):
     """
