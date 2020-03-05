@@ -5,7 +5,7 @@ from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd, bgunzip_and_name, bgr
 
 
 class StarPlugin(Plugin):
-    def after_genome_download(self, genome, threads=8, force=False):
+    def after_genome_download(self, genome, threads=1, force=False):
         if not cmd_ok("STAR"):
             return
 

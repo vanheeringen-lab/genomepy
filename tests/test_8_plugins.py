@@ -73,7 +73,7 @@ def force_test(p, fname, genome, threads, force):
     assert t0 != t1 if force else t0 == t1
 
 
-def test_blacklist(genome, threads, force):
+def test_blacklist(genome, force, threads=2):
     """Create blacklist."""
     assert os.path.exists(genome.filename)
 
@@ -87,7 +87,7 @@ def test_blacklist(genome, threads, force):
     force_test(p, fname, genome, threads, force)
 
 
-def test_bwa(genome, threads, force):
+def test_bwa(genome, force, threads=2):
     """Create bwa index."""
     assert os.path.exists(genome.filename)
 
@@ -104,7 +104,7 @@ def test_bwa(genome, threads, force):
         force_test(p, fname, genome, threads, force)
 
 
-def test_minimap2(genome, threads, force):
+def test_minimap2(genome, force, threads=2):
     """Create minimap2 index."""
     assert os.path.exists(genome.filename)
 
@@ -121,7 +121,7 @@ def test_minimap2(genome, threads, force):
         force_test(p, fname, genome, threads, force)
 
 
-def test_bowtie2(genome, threads, force):
+def test_bowtie2(genome, force, threads=2):
     """Create bbowtie2 index."""
     assert os.path.exists(genome.filename)
 
@@ -138,7 +138,7 @@ def test_bowtie2(genome, threads, force):
         force_test(p, fname, genome, threads, force)
 
 
-def test_hisat2(genome, threads, force):
+def test_hisat2(genome, force, threads=2):
     """Create hisat2 index."""
     assert os.path.exists(genome.filename)
 
@@ -155,7 +155,7 @@ def test_hisat2(genome, threads, force):
         force_test(p, fname, genome, threads, force)
 
 
-def test_star(genome, threads, force):
+def test_star(genome, force, threads=2):
     """Create star index."""
     assert os.path.exists(genome.filename)
 
@@ -172,7 +172,7 @@ def test_star(genome, threads, force):
         force_test(p, fname, genome, threads, force)
 
 
-def test_gmap(genome, threads, force):
+def test_gmap(genome, force, threads=2):
     """Create gmap index."""
     assert os.path.exists(genome.filename)
 

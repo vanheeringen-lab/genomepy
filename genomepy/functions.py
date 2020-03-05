@@ -158,7 +158,7 @@ def install_genome(
     invert_match=False,
     bgzip=None,
     annotation=False,
-    threads=8,
+    threads=1,
     force=False,
     **kwargs,
 ):
@@ -196,7 +196,7 @@ def install_genome(
         If set to True, download gene annotation in BED and GTF format.
 
     threads : int, optional
-        Default is 8, build genome index using multi-thread when indexer support multi-thread
+        Build genome index using multithreading (if supported).
 
     force : bool , optional
         Set to True to overwrite existing files.
