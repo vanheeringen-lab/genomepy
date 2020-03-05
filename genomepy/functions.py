@@ -165,6 +165,7 @@ def install_genome(
     annotation=False,
     only_annotation=False,
     skip_sanitizing=False,
+    threads=1,
     force=False,
     **kwargs,
 ):
@@ -204,12 +205,20 @@ def install_genome(
     annotation : bool , optional
         If set to True, download gene annotation in BED and GTF format.
 
+<<<<<<< HEAD
     only_annotation : bool , optional
         If set to True, only download the annotation files.
 
     skip_sanitizing : bool , optional
         If set to True, downloaded annotation files whose sequence names do not match
         with the (first header fields of) the genome.fa will not be corrected.
+=======
+    threads : int, optional
+        Build genome index using multithreading (if supported).
+
+    force : bool , optional
+        Set to True to overwrite existing files.
+>>>>>>> develop
 
     kwargs : dict, optional
         Provider specific options.
@@ -291,7 +300,7 @@ def install_genome(
 
     # Run all active plugins
     for plugin in get_active_plugins():
-        plugin.after_genome_download(g, force)
+        plugin.after_genome_download(g, threads, force)
 
     generate_env()
 

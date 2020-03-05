@@ -2,6 +2,7 @@
 import click
 import genomepy
 import sys
+import os
 
 from collections import deque
 
@@ -53,6 +54,7 @@ def search(term, provider=None):
         print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")
 
 
+default_cores = min(os.cpu_count(), 8)
 general_install_options = {
     "genome_dir": {
         "short": "g",
@@ -89,6 +91,12 @@ general_install_options = {
         "long": "bgzip",
         "help": "bgzip genome",
         "flag_value": True,
+    },
+    "threads": {
+        "short": "t",
+        "long": "threads",
+        "help": "build index using multithreading",
+        "default": default_cores,
     },
     "force": {
         "short": "f",
@@ -187,6 +195,7 @@ def install(
     annotation,
     only_annotation,
     skip_sanitizing,
+    threads,
     force,
     **kwargs,
 ):
@@ -203,6 +212,7 @@ def install(
         annotation=annotation,
         only_annotation=only_annotation,
         skip_sanitizing=skip_sanitizing,
+        threads=threads,
         force=force,
         **kwargs,
     )
