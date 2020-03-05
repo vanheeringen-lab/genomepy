@@ -96,6 +96,12 @@ general_install_options = {
         "help": "download annotation",
         "flag_value": True,
     },
+    "threads": {
+        "short": "t",
+        "long": "threads",
+        "help": "build index using multi-thread",
+        "flag_value": 8,
+    },
     "force": {
         "short": "f",
         "long": "force",
@@ -157,6 +163,7 @@ def install(
     invert_match,
     bgzip,
     annotation,
+    threads,
     force,
     **kwargs,
 ):
@@ -171,6 +178,7 @@ def install(
         invert_match=invert_match,
         bgzip=bgzip,
         annotation=annotation,
+        threads=threads,
         force=force,
         **kwargs,
     )

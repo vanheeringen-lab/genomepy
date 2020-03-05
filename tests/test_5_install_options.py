@@ -10,6 +10,11 @@ from platform import system
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
+@pytest.fixture(scope="module", params=[1, 2])
+def threads(request):
+    return request.param
+
+
 @pytest.fixture(scope="module", params=["no-overwrite", "overwrite"])
 def force(request):
     return request.param
@@ -26,7 +31,7 @@ def bgzip(request):
 
 
 def test_install_genome_options(
-    force, localname, bgzip, genome="ASM2732v1", provider="NCBI"
+    threads, force, localname, bgzip, genome="ASM2732v1", provider="NCBI"
 ):
     """Test force, localname and bgzip"""
     tmp = mkdtemp()
@@ -35,7 +40,13 @@ def test_install_genome_options(
     bgzip = False if bgzip == "unzipped" else True
 
     genomepy.install_genome(
-        genome, provider, genome_dir=tmp, localname=localname, bgzip=bgzip, force=force
+        genome,
+        provider,
+        genome_dir=tmp,
+        localname=localname,
+        bgzip=bgzip,
+        threads=threads,
+        force=force,
     )
 
     # force test
@@ -48,7 +59,13 @@ def test_install_genome_options(
     if system() != "Linux":
         sleep(1)
     genomepy.install_genome(
-        genome, provider, genome_dir=tmp, localname=localname, bgzip=bgzip, force=force
+        genome,
+        provider,
+        genome_dir=tmp,
+        localname=localname,
+        bgzip=bgzip,
+        threads=threads,
+        force=force,
     )
 
     t1 = os.path.getmtime(path)
@@ -84,7 +101,7 @@ def validate_gzipped_bed(fname):
 
 
 def test_install_annotation_options(
-    force, localname, annotation=True, genome="ASM14646v1", provider="NCBI"
+    threads, force, localname, annotation=True, genome="ASM14646v1", provider="NCBI"
 ):
     """Test force and localname with annotations"""
     tmp = mkdtemp()
@@ -103,6 +120,7 @@ def test_install_annotation_options(
         genome_dir=tmp,
         localname=localname,
         annotation=annotation,
+        threads=threads,
         force=False,
     )
 
@@ -123,6 +141,7 @@ def test_install_annotation_options(
         genome_dir=tmp,
         localname=localname,
         annotation=annotation,
+        threads=threads,
         force=force,
     )
 

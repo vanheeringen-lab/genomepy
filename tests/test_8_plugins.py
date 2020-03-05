@@ -62,128 +62,128 @@ def force(request):
     return request.param
 
 
-def force_test(p, fname, genome, force):
+def force_test(p, fname, genome, threads, force):
     """check if a plugin file was properly overwritten (or not) depending on force flag"""
     t0 = os.path.getmtime(fname)
     # OSX rounds down getmtime to the second
     if system() != "Linux":
         sleep(1)
-    p.after_genome_download(genome, force=force)
+    p.after_genome_download(genome, threads=threads, force=force)
     t1 = os.path.getmtime(fname)
     assert t0 != t1 if force else t0 == t1
 
 
-def test_blacklist(genome, force):
+def test_blacklist(genome, threads, force):
     """Create blacklist."""
     assert os.path.exists(genome.filename)
 
     force = True if force == "overwrite" else False
     p = BlacklistPlugin()
 
-    p.after_genome_download(genome, force=force)
+    p.after_genome_download(genome, threads=threads, force=force)
     fname = re.sub(".fa(.gz)?$", ".blacklist.bed", genome.filename)
     assert os.path.exists(fname)
 
-    force_test(p, fname, genome, force)
+    force_test(p, fname, genome, threads, force)
 
 
-def test_bwa(genome, force):
+def test_bwa(genome, threads, force):
     """Create bwa index."""
     assert os.path.exists(genome.filename)
 
     force = True if force == "overwrite" else False
     if cmd_ok("bwa"):
         p = BwaPlugin()
-        p.after_genome_download(genome, force=force)
+        p.after_genome_download(genome, threads=threads, force=force)
         dirname = os.path.dirname(genome.filename)
         index_dir = os.path.join(dirname, "index", "bwa")
         fname = os.path.join(index_dir, "{}.fa.sa".format(genome.name))
         assert os.path.exists(index_dir)
         assert os.path.exists(fname)
 
-        force_test(p, fname, genome, force)
+        force_test(p, fname, genome, threads, force)
 
 
-def test_minimap2(genome, force):
+def test_minimap2(genome, threads, force):
     """Create minimap2 index."""
     assert os.path.exists(genome.filename)
 
     force = True if force == "overwrite" else False
     if cmd_ok("minimap2"):
         p = Minimap2Plugin()
-        p.after_genome_download(genome, force=force)
+        p.after_genome_download(genome, threads=threads, force=force)
         dirname = os.path.dirname(genome.filename)
         index_dir = os.path.join(dirname, "index", "minimap2")
         fname = os.path.join(index_dir, "{}.mmi".format(genome.name))
         assert os.path.exists(index_dir)
         assert os.path.exists(fname)
 
-        force_test(p, fname, genome, force)
+        force_test(p, fname, genome, threads, force)
 
 
-def test_bowtie2(genome, force):
+def test_bowtie2(genome, threads, force):
     """Create bbowtie2 index."""
     assert os.path.exists(genome.filename)
 
     force = True if force == "overwrite" else False
     if cmd_ok("bowtie2"):
         p = Bowtie2Plugin()
-        p.after_genome_download(genome, force=force)
+        p.after_genome_download(genome, threads=threads, force=force)
         dirname = os.path.dirname(genome.filename)
         index_dir = os.path.join(dirname, "index", "bowtie2")
         fname = os.path.join(index_dir, "{}.1.bt2".format(genome.name))
         assert os.path.exists(index_dir)
         assert os.path.exists(fname)
 
-        force_test(p, fname, genome, force)
+        force_test(p, fname, genome, threads, force)
 
 
-def test_hisat2(genome, force):
+def test_hisat2(genome, threads, force):
     """Create hisat2 index."""
     assert os.path.exists(genome.filename)
 
     force = True if force == "overwrite" else False
     if cmd_ok("hisat2-build"):
         p = Hisat2Plugin()
-        p.after_genome_download(genome)
+        p.after_genome_download(genome, threads=threads)
         dirname = os.path.dirname(genome.filename)
         index_dir = os.path.join(dirname, "index", "hisat2")
         fname = os.path.join(index_dir, "{}.1.ht2".format(genome.name))
         assert os.path.exists(index_dir)
         assert os.path.exists(fname)
 
-        force_test(p, fname, genome, force)
+        force_test(p, fname, genome, threads, force)
 
 
-def test_star(genome, force):
+def test_star(genome, threads, force):
     """Create star index."""
     assert os.path.exists(genome.filename)
 
     force = True if force == "overwrite" else False
     if cmd_ok("STAR"):
         p = StarPlugin()
-        p.after_genome_download(genome)
+        p.after_genome_download(genome, threads=threads)
         dirname = os.path.dirname(genome.filename)
         index_dir = os.path.join(dirname, "index", "star")
         fname = os.path.join(index_dir, "SA")
         assert os.path.exists(index_dir)
         assert os.path.exists(fname)
 
-        force_test(p, fname, genome, force)
+        force_test(p, fname, genome, threads, force)
 
 
-def test_gmap(genome, force):
+def test_gmap(genome, threads, force):
     """Create gmap index."""
     assert os.path.exists(genome.filename)
 
     force = True if force == "overwrite" else False
     if cmd_ok("gmap"):
         p = GmapPlugin()
-        p.after_genome_download(genome, force=force)
+        p.after_genome_download(genome, threads=threads, force=force)
         dirname = os.path.dirname(genome.filename)
         index_dir = os.path.join(dirname, "index", "gmap")
         fname = os.path.join(index_dir, "{}.maps".format(genome.name))
         assert os.path.exists(index_dir)
         assert os.path.exists(fname)
 
-        force_test(p, fname, genome, force)
+        force_test(p, fname, genome, threads, force)
