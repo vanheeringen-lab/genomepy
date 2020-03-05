@@ -199,26 +199,21 @@ def install_genome(
         If set to True the genome FASTA file will be compressed using bgzip.
         If not specified, the setting from the configuration file will be used.
 
+    threads : int, optional
+        Build genome index using multithreading (if supported).
+
     force : bool , optional
         Set to True to overwrite existing files.
 
     annotation : bool , optional
         If set to True, download gene annotation in BED and GTF format.
 
-<<<<<<< HEAD
     only_annotation : bool , optional
         If set to True, only download the annotation files.
 
     skip_sanitizing : bool , optional
         If set to True, downloaded annotation files whose sequence names do not match
         with the (first header fields of) the genome.fa will not be corrected.
-=======
-    threads : int, optional
-        Build genome index using multithreading (if supported).
-
-    force : bool , optional
-        Set to True to overwrite existing files.
->>>>>>> develop
 
     kwargs : dict, optional
         Provider specific options.
