@@ -585,7 +585,7 @@ class EnsemblProvider(ProviderBase):
 
         ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
         if division == "vertebrates":
-            ftp_site = "https://ftp.ensembl.org/pub"
+            ftp_site = "http://ftp.ensembl.org/pub"
 
         version = self.version
         if kwargs.get("version", None):
@@ -661,7 +661,7 @@ class EnsemblProvider(ProviderBase):
         # Get the base link depending on division
         ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
         if division == "vertebrates":
-            ftp_site = "https://ftp.ensembl.org/pub"
+            ftp_site = "http://ftp.ensembl.org/pub"
 
         version = self.version
         if kwargs.get("version", None):
