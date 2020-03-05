@@ -3,7 +3,7 @@ import os
 import genomepy
 
 from tempfile import NamedTemporaryFile, mkdtemp
-from tests.test_4_download_annotation import validate_gzipped_bed, validate_gzipped_gtf
+from tests.test_04_download_annotation import validate_gzipped_bed, validate_gzipped_gtf
 
 
 def test_sizes():

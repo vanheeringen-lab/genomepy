@@ -5,7 +5,7 @@ import os
 from tempfile import mkdtemp, NamedTemporaryFile
 from time import sleep
 from platform import system
-from tests.test_4_download_annotation import validate_gzipped_bed, validate_gzipped_gtf
+from tests.test_04_download_annotation import validate_gzipped_bed, validate_gzipped_gtf
 
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
