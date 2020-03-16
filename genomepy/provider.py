@@ -5,20 +5,19 @@ import re
 import os
 import norns
 import time
-import gzip
 import shutil
 import tarfile
 import subprocess as sp
 
 from psutil import virtual_memory
-from tempfile import NamedTemporaryFile, TemporaryDirectory
+from tempfile import TemporaryDirectory
 from urllib.request import urlopen, urlretrieve, urlcleanup, URLError
 from bucketcache import Bucket
 from pyfaidx import Fasta
 from appdirs import user_cache_dir
 
 from genomepy import exceptions
-from genomepy.utils import filter_fasta, get_localname, read_url
+from genomepy.utils import filter_fasta, get_localname, get_file_info, read_url
 from genomepy.__about__ import __version__
 
 my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
@@ -29,6 +28,94 @@ if not os.path.exists(my_cache_dir):
 cached = Bucket(my_cache_dir, days=7)
 
 config = norns.config("genomepy", default="cfg/default.yaml")
+
+
+def download_and_generate_annotation(genome_dir, annot_url, localname):
+    """download annotation file, convert to intermediate file and generate output files"""
+
+    # create output directory if missing
+    out_dir = os.path.join(genome_dir, localname)
+    if not os.path.exists(out_dir):
+        os.mkdir(out_dir)
+
+    # download to tmp dir. Move files on completion.
+    with TemporaryDirectory(dir=out_dir) as tmpdir:
+        ext, gz = get_file_info(annot_url)
+        annot_file = os.path.join(tmpdir, localname + ".annotation" + ext)
+        urlretrieve(annot_url, annot_file)
+
+        # unzip input file (if needed)
+        if gz:
+            cmd = "mv {0} {1} && gunzip -f {1}"
+            sp.check_call(cmd.format(annot_file, annot_file + ".gz"), shell=True)
+
+        # generate intermediate file (GenePred)
+        pred_file = annot_file.replace(ext, ".gp")
+        if "bed" in ext:
+            cmd = "bedToGenePred {0} {1}"
+        elif "gff" in ext:
+            cmd = "gff3ToGenePred -geneNameAttr=gene {0} {1}"
+        elif "gtf" in ext:
+            cmd = "gtfToGenePred {0} {1}"
+        elif "txt" in ext:
+            # UCSC annotations only
+            with open(annot_file) as f:
+                cols = f.readline().split("\t")
+
+            start_col = 1
+            for i, col in enumerate(cols):
+                if col == "+" or col == "-":
+                    start_col = i - 1
+                    break
+            end_col = start_col + 10
+
+            cmd = f"cat {{0}} | cut -f{start_col}-{end_col} > {{1}}"
+        sp.check_call(cmd.format(annot_file, pred_file), shell=True)
+
+        # generate gzipped gtf file (if required)
+        gtf_file = annot_file.replace(ext, ".gtf")
+        if "gtf" not in ext:
+            cmd = "genePredToGtf file {0} {1} && gzip -f {1}"
+            sp.check_call(cmd.format(pred_file, gtf_file), shell=True)
+
+        # generate gzipped bed file (if required)
+        bed_file = annot_file.replace(ext, ".bed")
+        if "bed" not in ext:
+            cmd = "genePredToBed {0} {1} && gzip -f {1}"
+            sp.check_call(cmd.format(pred_file, bed_file), shell=True)
+
+        # if input file was gtf/bed, gzip it
+        if ext in [".gtf", ".bed"]:
+            cmd = "gzip -f {}"
+            sp.check_call(cmd.format(annot_file), shell=True)
+
+        # transfer the files from the tmpdir to the genome_dir
+        for f in [gtf_file + ".gz", bed_file + ".gz"]:
+            src = f
+            dst = os.path.join(out_dir, os.path.basename(f))
+            shutil.move(src, dst)
+
+
+def attempt_download_and_report_back(genome_dir, annot_url, localname):
+    try:
+        sys.stderr.write("Using {}\n".format(annot_url))
+        download_and_generate_annotation(
+            genome_dir=genome_dir, annot_url=annot_url, localname=localname
+        )
+        sys.stderr.write("Annotation download successful\n")
+
+        # add log entry
+        readme = os.path.join(genome_dir, localname, "README.txt")
+        with open(readme, "a") as f:
+            f.write("Annotation url: {}\n".format(annot_url))
+
+    except Exception:
+        sys.stderr.write(
+            "\nCould not download {}\n".format(annot_url)
+            + "If you think the annotation should be there, please file a bug report at:\n"
+            + "https://github.com/vanheeringen-lab/genomepy/issues\n"
+        )
+        raise
 
 
 class ProviderBase(object):
@@ -124,7 +211,7 @@ class ProviderBase(object):
         regex=None,
         invert_match=False,
         bgzip=None,
-        **kwargs
+        **kwargs,
     ):
         """
         Download a (gzipped) genome file to a specific directory
@@ -590,7 +677,7 @@ class EnsemblProvider(ProviderBase):
         safe_name = name.replace(" ", "_")
         safe_name = re.sub(r"\.p\d+$", "", safe_name)
 
-        ftp_link = base_url.format(
+        annot_url = base_url.format(
             version,
             genome_info["url_name"].lower(),
             genome_info["url_name"].capitalize(),
@@ -598,40 +685,9 @@ class EnsemblProvider(ProviderBase):
             version,
         )
 
-        out_dir = os.path.join(genome_dir, localname)
-        if not os.path.exists(out_dir):
-            os.mkdir(out_dir)
-
-        # download to tmp dir. Move genome on completion.
-        with TemporaryDirectory(dir=out_dir) as tmpdir:
-            try:
-                # actual download
-                sys.stderr.write("Using {}\n".format(ftp_link))
-                with urlopen(ftp_link) as response:
-                    gtf_file = os.path.join(tmpdir, localname + ".annotation.gtf.gz")
-                    with open(gtf_file, "wb") as f:
-                        f.write(response.read())
-
-                bed_file = gtf_file.replace("gtf.gz", "bed")
-                cmd = (
-                    "gtfToGenePred {0} /dev/stdout | "
-                    "genePredToBed /dev/stdin {1} && gzip -f {1}"
-                )
-                sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
-
-                # transfer the genome from the tmpdir to the genome_dir
-                for f in [gtf_file, bed_file + ".gz"]:
-                    src = f
-                    dst = os.path.join(out_dir, os.path.basename(f))
-                    shutil.move(src, dst)
-
-                readme = os.path.join(out_dir, "README.txt")
-                with open(readme, "a") as f:
-                    f.write("annotation url: {}\n".format(ftp_link))
-
-            except Exception:
-                sys.stderr.write("\nCould not download {}\n".format(ftp_link))
-                raise
+        attempt_download_and_report_back(
+            genome_dir=genome_dir, annot_url=annot_url, localname=localname
+        )
 
 
 @register_provider("UCSC")
@@ -887,9 +943,6 @@ class UcscProvider(ProviderBase):
 
         UCSC_GENE_URL = "http://hgdownload.cse.ucsc.edu/goldenPath/{}/database/"
         ANNOS = ["knownGene.txt.gz", "ensGene.txt.gz", "refGene.txt.gz"]
-        pred = "genePredToBed"
-
-        tmp = NamedTemporaryFile(delete=False, suffix=".gz")
 
         anno = []
         p = re.compile(r"\w+.Gene.txt.gz")
@@ -899,63 +952,15 @@ class UcscProvider(ProviderBase):
                 if m:
                     anno.append(m.group(0))
 
-        url = ""
+        annot_url = ""
         for a in ANNOS:
             if a in anno:
-                url = UCSC_GENE_URL.format(name) + a
+                annot_url = UCSC_GENE_URL.format(name) + a
                 break
 
-        out_dir = os.path.join(genome_dir, localname)
-        if not os.path.exists(out_dir):
-            os.mkdir(out_dir)
-
-        # download to tmp dir. Move genome on completion.
-        with TemporaryDirectory(dir=out_dir) as tmpdir:
-            try:
-                if url == "":
-                    raise Exception
-                sys.stderr.write("Using {}\n".format(url))
-                urlretrieve(url, tmp.name)
-
-                with gzip.open(tmp.name) as f:
-                    cols = f.readline().decode(errors="ignore").split("\t")
-
-                start_col = 1
-                for i, col in enumerate(cols):
-                    if col == "+" or col == "-":
-                        start_col = i - 1
-                        break
-                end_col = start_col + 10
-
-                # Convert to BED file
-                bed_file = os.path.join(tmpdir, localname + ".annotation.bed")
-                cmd = "zcat {} | cut -f{}-{} | {} /dev/stdin {} && gzip -f {}"
-                sp.call(
-                    cmd.format(tmp.name, start_col, end_col, pred, bed_file, bed_file),
-                    shell=True,
-                )
-
-                # Convert to GTF file
-                gtf_file = bed_file.replace(".bed", ".gtf")
-                cmd = (
-                    "bedToGenePred {0}.gz /dev/stdout | "
-                    "genePredToGtf file /dev/stdin /dev/stdout -utr -honorCdsStat | "
-                    "sed 's/.dev.stdin/UCSC/' > {1} && gzip -f {1}"
-                )
-                sp.check_call(cmd.format(bed_file, gtf_file), shell=True)
-
-                # transfer the genome from the tmpdir to the genome_dir
-                for f in [gtf_file + ".gz", bed_file + ".gz"]:
-                    src = f
-                    dst = os.path.join(out_dir, os.path.basename(f))
-                    shutil.move(src, dst)
-
-                readme = os.path.join(genome_dir, localname, "README.txt")
-                with open(readme, "a") as f:
-                    f.write("annotation url: {}\n".format(url))
-
-            except Exception:
-                sys.stderr.write("No annotation found!")
+        attempt_download_and_report_back(
+            genome_dir=genome_dir, annot_url=annot_url, localname=localname
+        )
 
 
 @register_provider("NCBI")
@@ -1229,70 +1234,14 @@ class NCBIProvider(ProviderBase):
 
         for genome in self.genomes:
             if name in [genome["asm_name"], genome["asm_name"].replace(" ", "_")]:
-                url = genome["ftp_path"]
-                url = url.replace("ftp://", "https://")
-                url += "/" + url.split("/")[-1] + "_genomic.gff.gz"
+                annot_url = genome["ftp_path"]
+                annot_url = annot_url.replace("ftp://", "https://")
+                annot_url += "/" + annot_url.split("/")[-1] + "_genomic.gff.gz"
+                break
 
-        out_dir = os.path.join(genome_dir, localname)
-        if not os.path.exists(out_dir):
-            os.mkdir(out_dir)
-
-        # download to tmp dir. Move files on completion.
-        try:
-            with TemporaryDirectory(dir=out_dir) as tmpdir:
-                # actual download
-                sys.stderr.write("Using {}\n".format(url))
-                gff_file = os.path.join(tmpdir, localname + ".annotation.gff.gz")
-                with urlopen(url) as response:
-                    with open(gff_file, "wb") as f:
-                        f.write(response.read())
-
-                # check gff for genes
-                cmd = "gff3ToGenePred {0} /dev/stdout | wc -l"
-                out = sp.check_output(cmd.format(gff_file), shell=True)
-                if out.strip() == b"0":
-                    sys.stderr.write(
-                        "WARNING: annotation from NCBI contains no genes, skipping.\n"
-                    )
-                    return
-
-                # Convert to GTF file
-                cmd = (
-                    "gff3ToGenePred -geneNameAttr=gene {0} /dev/stdout | "
-                    + "genePredToGtf file /dev/stdin {1} && gzip -f {1}"
-                )
-                gtf_file = gff_file.replace("gff.gz", "gtf")
-                sp.check_call(cmd.format(gff_file, gtf_file), shell=True)
-
-                # Convert to BED file
-                cmd = (
-                    "gtfToGenePred {0} /dev/stdout | "
-                    + "genePredToBed /dev/stdin {1} && gzip -f {1}"
-                )
-                bed_file = gtf_file.replace("gtf", "bed")
-                sp.check_call(cmd.format(gtf_file + ".gz", bed_file), shell=True)
-
-                # transfer the files from the tmpdir to the genome_dir
-                for f in [gtf_file + ".gz", bed_file + ".gz"]:
-                    src = f
-                    dst = os.path.join(out_dir, os.path.basename(f))
-                    shutil.move(src, dst)
-
-            readme = os.path.join(genome_dir, localname, "README.txt")
-            with open(readme, "a") as f:
-                f.write("annotation url: {}\n".format(url))
-
-        except Exception:
-            sys.stderr.write(
-                "WARNING: Could not download annotation from NCBI, skipping.\n"
-            )
-            sys.stderr.write("URL: {}\n".format(url))
-
-            sys.stderr.write(
-                "If you think the annotation should be there, "
-                + "please file a bug report at:\n"
-            )
-            sys.stderr.write("https://github.com/vanheeringen-lab/genomepy/issues\n")
+        attempt_download_and_report_back(
+            genome_dir=genome_dir, annot_url=annot_url, localname=localname
+        )
 
 
 @register_provider("URL")
@@ -1313,3 +1262,98 @@ class UrlProvider(ProviderBase):
         tuple (url, url)
         """
         return url, url
+
+    def list_install_options(self):
+        """List provider specific install options"""
+
+        provider_specific_options = {
+            "to_annotation": {
+                "long": "to-annotation",
+                "help": "link to the annotation file, required if this is not in the same directory as the fasta file",
+                "default": None,
+            },
+        }
+
+        return provider_specific_options
+
+    def download_annotation(self, url, genome_dir, localname=None, **kwargs):
+        """
+        Attempts to download a gtf or gff3 file from the same location as the genome url
+
+        Parameters
+        ----------
+        url : str
+            url of where to download genome from
+
+        genome_dir : str
+            Directory to install annotation
+
+        kwargs: dict , optional:
+            Provider specific options.
+
+            to_annotation : str , optional
+                url to annotation file (only required if this not located in the same directory as the fasta)
+        """
+        # to download the file we need annot_url, ext and gz
+        # if a direct annotation URL is provided, this can be parsed
+        # else we search the fasta directory
+        direct_link = kwargs.get("to_annotation", None)
+        if direct_link:
+            sys.stderr.write("Downloading annotation from provided url\n")
+
+            # set variables for downloading
+            annot_url = direct_link
+            ext = get_file_info(annot_url)[0]
+            if ext not in [".gtf", ".gff", ".gff3", ".bed"]:
+                sys.stderr.write(
+                    "WARNING: Only (gzipped) gtf, gff and bed files are currently supported. Skipping\n"
+                )
+                return
+
+        else:
+            urldir = os.path.dirname(url)
+            sys.stderr.write(
+                "You have requested gene annotation to be downloaded.\n"
+                "Genomepy will check the remote directory:\n"
+                "{} for annotation files...\n".format(urldir)
+            )
+
+            # try to find a GTF or GFF3 file
+            name = get_localname(url, None)
+            with urlopen(urldir) as f:
+                for urlline in f.readlines():
+                    urlstr = str(urlline)
+                    if any(
+                        substring in urlstr.lower()
+                        for substring in [".gtf", name + ".gff"]
+                    ):
+                        break
+
+            # retrieve the filename from the HTML line
+            for split in re.split('>|<|><|/|"', urlstr):
+                if split.lower().endswith(
+                    (
+                        ".gtf",
+                        ".gtf.gz",
+                        name + ".gff",
+                        name + ".gff.gz",
+                        name + ".gff3",
+                        name + ".gff3.gz",
+                    )
+                ):
+                    fname = split
+                    break
+            else:
+                sys.stderr.write(
+                    "WARNING: Could not find gene annotation file, skipping.\n"
+                )
+                return
+
+            # set variables for downloading
+            annot_url = urldir + "/" + fname
+
+        name = get_localname(url, None)
+        localname = get_localname(name, localname)
+        attempt_download_and_report_back(
+            genome_dir=genome_dir, annot_url=annot_url, localname=localname
+        )

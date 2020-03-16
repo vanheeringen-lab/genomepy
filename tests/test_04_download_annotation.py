@@ -123,3 +123,21 @@ def test_NCBI_annotation(localname=None):
     validate_gzipped_bed(bed)
 
     shutil.rmtree(tmp)
+
+
+def test_url_annotation(localname=None):
+    """Test url annotation"""
+    tmp = mkdtemp()
+    p = genomepy.provider.ProviderBase.create("URL")
+    name = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XT9_1.fa.gz"
+
+    p.download_annotation(name, tmp, localname=localname)
+
+    localname = genomepy.utils.get_localname(name, localname)
+    gtf = os.path.join(tmp, localname, localname + ".annotation.gtf.gz")
+    validate_gzipped_gtf(gtf)
+
+    bed = os.path.join(tmp, localname, localname + ".annotation.bed.gz")
+    validate_gzipped_bed(bed)
+
+    shutil.rmtree(tmp)
