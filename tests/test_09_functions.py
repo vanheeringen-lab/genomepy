@@ -15,10 +15,20 @@ def test_manage_config():
         genomepy.functions.manage_config(cmd)
 
 
-def test_list_available_genomes(provider="ncbi"):
-    g = genomepy.functions.list_available_genomes
+def test_list_available_genomes(provider="NCBI"):
+    g = genomepy.functions.list_available_genomes(provider)
+    for row in g:
+        assert "\t".join(row).lower().startswith(provider.lower())
+        break
+
+    with pytest.raises(Exception):
+        g = genomepy.functions.list_available_genomes("not a provider")
+        for row in g:
+            print("\t".join(row))
+            break
 
     # any provider
+    g = genomepy.functions.list_available_genomes
     assert isinstance(next(g()), list)
     assert len(next(g())) == 3
 
@@ -51,6 +61,12 @@ def test_search():
     s = genomepy.functions.search
     assert isinstance(next(s("Xenopus Tropicalis", "NCBI")), list)
     assert isinstance(next(s("Xenopus Tropicalis")), list)
+
+    # search by taxonomy_id should only return correct species
+    for provider in ["Ensembl", "NCBI", "UCSC"]:
+        for vals in genomepy.functions.search(8364, provider):
+            assert len(vals) == 6
+            assert vals[3].decode("ascii") == "Xenopus tropicalis"
 
 
 # install_genome is tested elsewhere

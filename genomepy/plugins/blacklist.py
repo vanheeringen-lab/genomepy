@@ -14,12 +14,13 @@ class BlacklistPlugin(Plugin):
         "ce10": base_url + "ce10-C.elegans/ce10-blacklist.bed.gz",
         "dm3": base_url + "dm3-D.melanogaster/dm3-blacklist.bed.gz",
         "hg38": base_url + "hg38-human/hg38.blacklist.bed.gz",
-        "hg19": base_url + "hg19-human/hg19.blacklist.bed.gz",
+        "hg19": base_url
+        + "hg19-human/wgEncodeHg19ConsensusSignalArtifactRegions.bed.gz",
         "mm9": base_url + "mm9-mouse/mm9-blacklist.bed.gz",
         "mm10": base_url + "mm10-mouse/mm10.blacklist.bed.gz",
     }
 
-    def after_genome_download(self, genome, force=False):
+    def after_genome_download(self, genome, threads=1, force=False):
         props = self.get_properties(genome)
         fname = props["blacklist"]
         if force and os.path.exists(fname):

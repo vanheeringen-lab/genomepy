@@ -5,6 +5,7 @@ import glob
 import norns
 import random
 import re
+import sys
 
 from appdirs import user_config_dir
 from collections.abc import Iterable
@@ -12,7 +13,13 @@ from shutil import rmtree
 from pyfaidx import Fasta, Sequence
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
-from genomepy.utils import generate_gap_bed, generate_fa_sizes, get_localname
+from genomepy.utils import (
+    generate_gap_bed,
+    generate_fa_sizes,
+    get_localname,
+    sanitize_annotation,
+)
+from genomepy.exceptions import GenomeDownloadError
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -146,7 +153,9 @@ def search(term, provider=None):
         ]
     for p in providers:
         for row in p.search(term):
-            yield [x.encode("latin-1") for x in [p.name] + list(row)]
+            yield [
+                x.encode("latin-1") for x in list(row[:1]) + [p.name] + list(row[1:])
+            ]
 
 
 def install_genome(
@@ -159,8 +168,11 @@ def install_genome(
     invert_match=False,
     bgzip=None,
     annotation=False,
+    only_annotation=False,
+    skip_sanitizing=False,
+    threads=1,
     force=False,
-    **kwargs
+    **kwargs,
 ):
     """
     Install a genome.
@@ -192,26 +204,42 @@ def install_genome(
         If set to True the genome FASTA file will be compressed using bgzip.
         If not specified, the setting from the configuration file will be used.
 
-    annotation : bool , optional
-        If set to True, download gene annotation in BED and GTF format.
+    threads : int, optional
+        Build genome index using multithreading (if supported).
 
     force : bool , optional
         Set to True to overwrite existing files.
 
+    annotation : bool , optional
+        If set to True, download gene annotation in BED and GTF format.
+
+    only_annotation : bool , optional
+        If set to True, only download the annotation files.
+
+    skip_sanitizing : bool , optional
+        If set to True, downloaded annotation files whose sequence names do not match
+        with the (first header fields of) the genome.fa will not be corrected.
+
     kwargs : dict, optional
         Provider specific options.
-        Ensembl:
-
         toplevel : bool , optional
             Ensembl only: Always download the toplevel genome. Ignores potential primary assembly.
 
         version : int, optional
             Ensembl only: Specify release version. Default is latest.
+
+        to_annotation : text , optional
+            URL only: direct link to annotation file.
+            Required if this is not the same directory as the fasta.
     """
     if not genome_dir:
         genome_dir = config.get("genome_dir", None)
     if not genome_dir:
         raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
+
+    # download annotation if any of the annotation related flags are given
+    if only_annotation or kwargs.get("to_annotation", False):
+        annotation = True
 
     genome_dir = os.path.expanduser(genome_dir)
     localname = get_localname(name, localname)
@@ -221,7 +249,7 @@ def install_genome(
     no_genome_found = not any(
         os.path.exists(fname) for fname in glob_ext_files(out_dir, "fa")
     )
-    if no_genome_found or force:
+    if (no_genome_found or force) and not only_annotation:
         # Download genome from provider
         p = ProviderBase.create(provider)
         p.download_genome(
@@ -232,34 +260,48 @@ def install_genome(
             invert_match=invert_match,
             localname=localname,
             bgzip=bgzip,
-            **kwargs
+            **kwargs,
         )
 
-    # If annotation is requested, check if annotation already exists, or if downloading is forced
+    # annotation_only cannot use sanitizing if no genome (and sizes) file was made earlier. Warn the user about this.
     no_annotation_found = not any(
         os.path.exists(fname) for fname in glob_ext_files(out_dir, "gtf")
     )
-    if annotation and (no_annotation_found or force):
-        # Download annotation from provider
-        p = ProviderBase.create(provider)
-        p.download_annotation(name, genome_dir, localname=localname, **kwargs)
+    no_genome_found = not any(
+        os.path.exists(fname) for fname in glob_ext_files(out_dir, "fa")
+    )
+    if only_annotation and no_genome_found:
+        assert skip_sanitizing, (
+            "a genome file is required to sanitize your annotation (or check if it's required). "
+            "Use the skip sanitizing flag (-s) if you wish to skip this step."
+        )
 
     # generates a Fasta object and the index file
-    g = Genome(localname, genome_dir=genome_dir)
-
-    # Run all active plugins
-    for plugin in get_active_plugins():
-        plugin.after_genome_download(g, force)
-
-    # Generate gap file if not found or if generation is forced
-    gap_file = os.path.join(out_dir, localname + ".gaps.bed")
-    if not os.path.exists(gap_file) or force:
-        generate_gap_bed(glob_ext_files(out_dir, "fa")[0], gap_file)
+    if not no_genome_found:
+        g = Genome(localname, genome_dir=genome_dir)
 
     # Generate sizes file if not found or if generation is forced
     sizes_file = os.path.join(out_dir, localname + ".fa.sizes")
-    if not os.path.exists(sizes_file) or force:
+    if (not os.path.exists(sizes_file) or force) and not only_annotation:
         generate_fa_sizes(glob_ext_files(out_dir, "fa")[0], sizes_file)
+
+    # Generate gap file if not found or if generation is forced
+    gap_file = os.path.join(out_dir, localname + ".gaps.bed")
+    if (not os.path.exists(gap_file) or force) and not only_annotation:
+        generate_gap_bed(glob_ext_files(out_dir, "fa")[0], gap_file)
+
+    # If annotation is requested, check if annotation already exists, or if downloading is forced
+    if (no_annotation_found or force) and annotation:
+        # Download annotation from provider
+        p = ProviderBase.create(provider)
+        p.download_annotation(name, genome_dir, localname=localname, **kwargs)
+        if not skip_sanitizing:
+            sanitize_annotation(g)
+
+    # Run all active plugins
+    for plugin in get_active_plugins():
+        plugin.after_genome_download(g, threads, force)
+
     generate_env()
 
 
@@ -375,6 +417,7 @@ class Genome(Fasta):
     """
 
     def __init__(self, name, genome_dir=None):
+        metadata = {}
 
         try:
             # generates the Fasta object and the index file
@@ -425,14 +468,78 @@ class Genome(Fasta):
             # generates the Fasta object and the index file
             super(Genome, self).__init__(fname)
             self.name = name
+            self.genome_dir = genome_dir
+            metadata = self._read_metadata()
 
-        # self._gap_sizes = None
+        self.tax_id = metadata.get("tax_id")
+        self.assembly_accession = metadata.get("assembly_accession")
         self.props = {}
 
         for plugin in get_active_plugins():
             self.props[plugin.name()] = plugin.get_properties(self)
 
     # TODO write test for all functions inside the Genome class
+    def _read_metadata(self):
+        """Read genome metadata from genome README.txt (if it exists).
+        """
+        metadata = {}
+        readme = os.path.join(self.genome_dir, self.name, "README.txt")
+        if os.path.exists(readme):
+            with open(readme) as f:
+                metadata = {}
+                with open(readme) as f:
+                    for line in f.readlines():
+                        vals = line.strip().split(":")
+                        metadata[vals[0].strip()] = (":".join(vals[1:])).strip()
+
+                update_metadata = False
+                if "provider" not in metadata:
+                    update_metadata = True
+                if "tax_id" not in metadata or "assembly_accession" not in metadata:
+                    update_metadata = True
+
+                if update_metadata:
+                    print(f"Updating metadata in README.txt", file=sys.stderr)
+                else:
+                    return metadata
+
+                if "provider" not in metadata:
+                    if "ensembl" in metadata.get("url", ""):
+                        metadata["provider"] = "Ensembl"
+                    elif "ucsc" in metadata.get("url", ""):
+                        metadata["provider"] = "UCSC"
+                    elif "ncbi" in metadata.get("url", ""):
+                        metadata["provider"] = "NCBI"
+                if metadata.get("provider", "").lower() in ["ensembl", "ucsc", "ncbi"]:
+                    if "tax_id" not in metadata or "assembly_accession" not in metadata:
+                        p = ProviderBase.create(metadata["provider"])
+
+                    if "tax_id" not in metadata:
+                        try:
+                            metadata["tax_id"] = p.genome_taxid(
+                                metadata["original name"]
+                            )
+                        except GenomeDownloadError:
+                            print(
+                                f"Could not update tax_id of {self.name}",
+                                file=sys.stderr,
+                            )
+                    if "assembly_accession" not in metadata:
+                        try:
+                            metadata["assembly_accession"] = p.assembly_accession(
+                                metadata["original name"]
+                            )
+                        except GenomeDownloadError:
+                            print(
+                                f"Could not update assembly_accession of {self.name}",
+                                file=sys.stderr,
+                            )
+
+            with open(readme, "w") as f:
+                for k, v in metadata.items():
+                    print(f"{k}: {v}", file=f)
+        return metadata
+
     def _bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
         BUFSIZE = 10000
         with open(track) as fin:
