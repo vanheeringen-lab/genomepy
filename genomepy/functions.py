@@ -379,7 +379,57 @@ def glob_ext_files(dirname, ext="fa"):
         File names.
     """
     fnames = glob.glob(os.path.join(dirname, "*." + ext + "*"))
-    return [fname for fname in fnames if fname.endswith(ext) or fname.endswith("gz")]
+    return [
+        fname for fname in fnames if fname.endswith(ext) or fname.endswith(ext + ".gz")
+    ]
+
+
+def _get_name_and_filename(name, genome_dir=None):
+    """
+    name can just a name (e.g. hg38) or an abspath to a fasta file or the fasta's folder
+
+    returns the name and the abspath to the (closest) fasta file
+    """
+    stipped_name = name.replace(".fa", "").replace(".gz", "")
+    if os.path.isfile(name):
+        filename = name
+        name = os.path.basename(stipped_name)
+    elif os.path.isdir(name) and glob_ext_files(name)[0].startswith(
+        os.path.basename(name) + ".fa"
+    ):
+        filename = glob_ext_files(name)[0]
+        name = os.path.basename(stipped_name)
+    else:
+        # import genome_dir
+        if not genome_dir:
+            genome_dir = config.get("genome_dir", None)
+        if not genome_dir:
+            raise norns.exceptions.ConfigError(
+                "Please provide or configure a genome_dir"
+            )
+
+        # check the genome_dir
+        genome_dir = os.path.expanduser(genome_dir)
+        if not os.path.exists(genome_dir):
+            raise FileNotFoundError(f"genome_dir {genome_dir} does not exist")
+
+        # obtain filename
+        fasta_dir = os.path.join(genome_dir, stipped_name)
+        filenames = glob_ext_files(fasta_dir)
+        if len(filenames) == 1:
+            filename = filenames[0]
+        elif len(filenames) == 0:
+            raise FileNotFoundError(f"no *.fa files found in genome_dir {fasta_dir}")
+        else:
+            filename = os.path.join(fasta_dir, stipped_name + ".fa")
+            if filename not in filenames:
+                filename += ".gz"
+            if filename not in filenames:
+                raise Exception(
+                    f"Multiple fasta files found, but not {stipped_name}.fa!"
+                )
+
+    return [name, filename]
 
 
 class Genome(Fasta):
@@ -402,59 +452,11 @@ class Genome(Fasta):
     """
 
     def __init__(self, name, genome_dir=None):
-        metadata = {}
-
-        try:
-            # generates the Fasta object and the index file
-            super(Genome, self).__init__(name)
-            self.name = os.path.basename(name)
-        except Exception:
-            if (
-                os.path.isdir(name)
-                and len(glob_ext_files(name)) == 1
-                and genome_dir is not None
-            ):
-                fname = glob_ext_files(name)[0]
-                name = os.path.basename(fname)
-            else:
-                if not genome_dir:
-                    genome_dir = config.get("genome_dir", None)
-                if not genome_dir:
-                    raise norns.exceptions.ConfigError(
-                        "Please provide or configure a genome_dir"
-                    )
-                genome_dir = os.path.expanduser(genome_dir)
-
-                if not os.path.exists(genome_dir):
-                    raise FileNotFoundError(
-                        "genome_dir {} does not exist".format(genome_dir)
-                    )
-
-                fnames = glob_ext_files(
-                    os.path.join(genome_dir, name.replace(".gz", ""))
-                )
-                if len(fnames) == 0:
-                    raise FileNotFoundError(
-                        "no *.fa files found in genome_dir {}".format(
-                            os.path.join(genome_dir, name)
-                        )
-                    )
-                elif len(fnames) > 1:
-                    fname = os.path.join(genome_dir, name, "{}.fa".format(name))
-                    if fname not in fnames:
-                        fname += ".gz"
-                        if fname not in fnames:
-                            raise Exception(
-                                "More than one FASTA file found, no {}.fa!".format(name)
-                            )
-                else:
-                    fname = fnames[0]
-
-            # generates the Fasta object and the index file
-            super(Genome, self).__init__(fname)
-            self.name = name
-            self.genome_dir = genome_dir
-            metadata = self._read_metadata()
+        name, filename = _get_name_and_filename(name, genome_dir)
+        super(Genome, self).__init__(filename)
+        self.name = name
+        self.genome_dir = genome_dir
+        metadata = self._read_metadata()
 
         self.tax_id = metadata.get("tax_id")
         self.assembly_accession = metadata.get("assembly_accession")
@@ -465,7 +467,8 @@ class Genome(Fasta):
             self.props[plugin.name()] = plugin.get_properties(self)
 
     def _read_metadata(self):
-        """Read genome metadata from genome README.txt (if it exists).
+        """
+        Read genome metadata from genome README.txt (if it exists).
         """
         metadata = {}
         readme = os.path.join(self.genome_dir, self.name, "README.txt")
