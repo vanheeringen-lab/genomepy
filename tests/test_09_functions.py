@@ -1,9 +1,6 @@
 import pytest
-
-# import os.path
-# from appdirs import user_config_dir
-
 import genomepy.functions
+import genomepy.genome
 
 
 def test_manage_config():
@@ -78,7 +75,7 @@ def test_glob_ext_files():
 
 
 def test_genome():
-    genomepy.functions.Genome("tests/data/gap.fa")
+    genomepy.genome.Genome("tests/data/gap.fa")
 
 
 def test_manage_plugins():
