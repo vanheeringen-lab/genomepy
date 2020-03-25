@@ -171,21 +171,26 @@ class ProviderBase(object):
         """List available providers."""
         return cls._providers.keys()
 
-    @classmethod
-    def list_install_options(cls, name=None):
+    def list_install_options(self, name=None):
         """List provider specific install options"""
         if name is None:
             return {}
-        elif name.lower() not in cls._providers:
+        elif name.lower() not in self._providers:
             raise Exception("Unknown provider")
         else:
-            provider = cls._providers[name.lower()]
-            return provider.list_install_options()
+            provider = self._providers[name.lower()]
+            return provider.list_install_options(self)
 
     def __hash__(self):
         return hash(str(self.__class__))
 
-    def tar_to_bigfile(self, fname, outfile):
+    @staticmethod
+    def safe(name):
+        """Replace spaces with undescores."""
+        return name.replace(" ", "_")
+
+    @staticmethod
+    def tar_to_bigfile(fname, outfile):
         """Convert tar of multiple FASTAs to one file."""
         fnames = []
         with TemporaryDirectory() as tmpdir:
@@ -355,6 +360,9 @@ class ProviderBase(object):
         """
         raise NotImplementedError()
 
+    def get_genome_download_link(self, name, mask="soft", **kwargs):
+        raise NotImplementedError()
+
 
 register_provider = ProviderBase.register_provider
 
@@ -394,14 +402,8 @@ class EnsemblProvider(ProviderBase):
 
         return r.json()
 
-    def safe(self, name):
-        """Replace spaces with undescores.
-        """
-        return name.replace(" ", "_")
-
-    @classmethod
-    def list_install_options(self):
-        """List provider specific install options"""
+    def list_install_options(self, name=None):
+        """List Ensembl specific install options"""
 
         provider_specific_options = {
             "toplevel": {
@@ -571,6 +573,9 @@ class EnsemblProvider(ProviderBase):
             Genome name. Current implementation will fail if exact
             name is not found.
 
+        mask : str , optional
+            Masking level. Options: soft, hard or none. Defaults to soft.
+
         Returns
         ------
         tuple (name, link) where name is the Ensembl dbname identifier
@@ -611,24 +616,25 @@ class EnsemblProvider(ProviderBase):
             elif mask == "hard":
                 pattern = "dna_rm.{}".format(level)
 
-            asm_url = "{}/{}.{}.{}.fa.gz".format(
+            _asm_url = "{}/{}.{}.{}.fa.gz".format(
                 url,
                 genome_info["url_name"].capitalize(),
                 re.sub(r"\.p\d+$", "", self.safe(genome_info["assembly_name"])),
                 pattern,
             )
-            return asm_url
+            return _asm_url
 
         # first try the (much smaller) primary assembly, otherwise use the toplevel assembly
-        try:
-            if kwargs.get("toplevel", False):
-                raise URLError("skipping primary assembly check")
-            asm_url = get_url("primary_assembly")
-            with urlopen(asm_url):
-                None
-
-        except URLError:
+        if kwargs.get("toplevel", False):
+            sys.stderr.write("skipping primary assembly check\n")
             asm_url = get_url()
+        else:
+            try:
+                asm_url = get_url("primary_assembly")
+                with urlopen(asm_url):
+                    pass
+            except URLError:
+                asm_url = get_url()
 
         return self.safe(genome_info["assembly_name"]), asm_url
 
@@ -642,6 +648,8 @@ class EnsemblProvider(ProviderBase):
             Ensembl genome name.
         genome_dir : str
             Genome directory.
+        localname : str , optional
+            Alternative name for the genome
         kwargs: dict , optional:
             Provider specific options.
 
@@ -746,7 +754,7 @@ class UcscProvider(ProviderBase):
 
         Parameters
         ----------
-        name : str
+        genome_build : str
             UCSC genome build name.
 
         Yields
@@ -791,7 +799,7 @@ class UcscProvider(ProviderBase):
 
         Parameters
         ----------
-        name : str
+        genome_build : str
             UCSC genome build name.
 
         Yields
@@ -844,13 +852,11 @@ class UcscProvider(ProviderBase):
                 if term == genome["taxId"]:
                     yield self._genome_info_tuple(name)
         elif term in genomes:
-            genome = genomes[term]
             yield self._genome_info_tuple(term)
         else:
             for name in genomes:
                 genome = genomes[name]
                 for field in ["description", "scientificName"]:
-                    # print(term, genome[field].lower().replace(" ", "_"))
                     if term in genome[field].lower().replace(" ", "_"):
                         yield self._genome_info_tuple(name)
 
@@ -863,6 +869,9 @@ class UcscProvider(ProviderBase):
         name : str
             Genome build name. Current implementation will fail if exact
             name is not found.
+
+        mask : str , optional
+            Masking level. Options: soft, hard or none. Defaults to soft.
 
         Returns
         ------
@@ -887,7 +896,8 @@ class UcscProvider(ProviderBase):
             "Could not download genome {} from UCSC".format(name)
         )
 
-    def _post_process_download(self, name, localname, out_dir, mask="soft"):
+    @staticmethod
+    def _post_process_download(name, localname, out_dir, mask="soft"):
         """
         Unmask a softmasked genome if required
 
@@ -909,7 +919,7 @@ class UcscProvider(ProviderBase):
 
             sys.stderr.write("UCSC genomes are softmasked by default. Unmasking...\n")
 
-            # Use a tmp file and replace the names
+            # write in a tmp file
             new_fa = os.path.join(
                 out_dir, localname, ".process.{}.fa".format(localname)
             )
@@ -921,7 +931,7 @@ class UcscProvider(ProviderBase):
                         else:
                             new.write(line)
 
-            # Rename tmp file to real genome file
+            # overwrite original file with tmp file
             shutil.move(new_fa, fa)
 
     def download_annotation(self, name, genome_dir, localname=None, **kwargs):
@@ -936,26 +946,28 @@ class UcscProvider(ProviderBase):
             UCSC genome name.
         genome_dir : str
             Genome directory.
+        localname : str , optional
+            Custom name for your genome
         """
         sys.stderr.write("Downloading gene annotation...\n")
 
         localname = get_localname(name, localname)
 
-        UCSC_GENE_URL = "http://hgdownload.cse.ucsc.edu/goldenPath/{}/database/"
-        ANNOS = ["knownGene.txt.gz", "ensGene.txt.gz", "refGene.txt.gz"]
+        ucsc_gene_url = "http://hgdownload.cse.ucsc.edu/goldenPath/{}/database/"
+        annos = ["knownGene.txt.gz", "ensGene.txt.gz", "refGene.txt.gz"]
 
         anno = []
         p = re.compile(r"\w+.Gene.txt.gz")
-        with urlopen(UCSC_GENE_URL.format(name)) as f:
+        with urlopen(ucsc_gene_url.format(name)) as f:
             for line in f.readlines():
                 m = p.search(line.decode())
                 if m:
                     anno.append(m.group(0))
 
         annot_url = ""
-        for a in ANNOS:
+        for a in annos:
             if a in anno:
-                annot_url = UCSC_GENE_URL.format(name) + a
+                annot_url = ucsc_gene_url.format(name) + a
                 break
 
         attempt_download_and_report_back(
@@ -964,7 +976,7 @@ class UcscProvider(ProviderBase):
 
 
 @register_provider("NCBI")
-class NCBIProvider(ProviderBase):
+class NcbiProvider(ProviderBase):
 
     """
     NCBI genome provider.
@@ -1009,14 +1021,17 @@ class NCBIProvider(ProviderBase):
 
         return genomes
 
-    def _genome_info_tuple(self, genome):
+    @staticmethod
+    def _genome_info_tuple(genome):
         # Consistency! This way we always either get a GCA accession or na
         accessions = [
             genome.get(col) for col in ["gbrs_paired_asm", "assembly_accession"]
         ]
-        for accession in accessions + ["na"]:
+        for accession in accessions:
             if accession.startswith("GCA"):
                 break
+        else:
+            accession = "na"
 
         return (
             genome.get("asm_name", ""),
@@ -1134,6 +1149,9 @@ class NCBIProvider(ProviderBase):
             Genome name. Current implementation will fail if exact
             name is not found.
 
+        mask : str , optional
+            Masking level. Options: soft, hard or none. Defaults to soft.
+
         Returns
         ------
         tuple (name, link) where name is the NCBI asm_name identifier
@@ -1173,6 +1191,8 @@ class NCBIProvider(ProviderBase):
                 url += "/" + url.split("/")[-1] + "_assembly_report.txt"
                 url = url.replace("ftp://", "https://")
                 break
+        else:
+            raise Exception("Genome {} not found in NCBI genomes".format(name))
 
         # Create mapping of accessions to names
         tr = {}
@@ -1225,6 +1245,9 @@ class NCBIProvider(ProviderBase):
 
         genome_dir : str
             Directory to install annotation
+
+        localname : str , optional
+            Custom name for your genome
         """
         sys.stderr.write("Downloading gene annotation...\n")
 
@@ -1238,6 +1261,8 @@ class NCBIProvider(ProviderBase):
                 annot_url = annot_url.replace("ftp://", "https://")
                 annot_url += "/" + annot_url.split("/")[-1] + "_genomic.gff.gz"
                 break
+        else:
+            raise Exception("Genome {} not found in NCBI genomes".format(name))
 
         attempt_download_and_report_back(
             genome_dir=genome_dir, annot_url=annot_url, localname=localname
@@ -1257,14 +1282,17 @@ class UrlProvider(ProviderBase):
         url : str
             url of where to download genome from
 
+        mask : str , optional
+            Masking level. Not available for URL
+
         Returns
         ------
         tuple (url, url)
         """
         return url, url
 
-    def list_install_options(self):
-        """List provider specific install options"""
+    def list_install_options(self, name=None):
+        """List URL specific install options"""
 
         provider_specific_options = {
             "to_annotation": {
@@ -1287,6 +1315,9 @@ class UrlProvider(ProviderBase):
 
         genome_dir : str
             Directory to install annotation
+
+        localname : str , optional
+            Custom name for your genome
 
         kwargs: dict , optional:
             Provider specific options.
@@ -1319,7 +1350,7 @@ class UrlProvider(ProviderBase):
             )
 
             # try to find a GTF or GFF3 file
-            name = get_localname(url, None)
+            name = get_localname(url)
             with urlopen(urldir) as f:
                 for urlline in f.readlines():
                     urlstr = str(urlline)
@@ -1352,7 +1383,7 @@ class UrlProvider(ProviderBase):
             # set variables for downloading
             annot_url = urldir + "/" + fname
 
-        name = get_localname(url, None)
+        name = get_localname(url)
         localname = get_localname(name, localname)
         attempt_download_and_report_back(
             genome_dir=genome_dir, annot_url=annot_url, localname=localname

@@ -27,5 +27,5 @@ def test_track_type():
     ]
 
     for track, track_type in tracks:
-        result = genomepy.functions.get_track_type(track)
+        result = genomepy.Genome.get_track_type(track)
         assert result == track_type

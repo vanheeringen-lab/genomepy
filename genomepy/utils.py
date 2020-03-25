@@ -1,13 +1,17 @@
 """Utility functions."""
 import errno
 import os
+import norns
 import re
 import sys
 import urllib.request
 import subprocess as sp
 
+from glob import glob
 from pyfaidx import Fasta
 from tempfile import TemporaryDirectory
+
+config = norns.config("genomepy", default="cfg/default.yaml")
 
 
 def generate_gap_bed(fname, outname):
@@ -138,7 +142,43 @@ def run_index_cmd(name, cmd):
         sys.stderr.write(stderr.decode("utf8"))
 
 
-def get_localname(name, localname):
+def glob_ext_files(dirname, ext="fa"):
+    """
+    Return (gzipped) file names in directory containing the given extension.
+
+    Parameters
+    ----------
+    dirname: str
+        Directory name.
+
+    ext: str
+        Filename extension (default: fa).
+
+    Returns
+    -------
+        File names.
+    """
+    fnames = glob(os.path.join(dirname, "*." + ext + "*"))
+    return [
+        fname for fname in fnames if fname.endswith(ext) or fname.endswith(ext + ".gz")
+    ]
+
+
+def get_genome_dir(genome_dir=None):
+    """import genome_dir if none is given, and check validity"""
+    if not genome_dir:
+        genome_dir = config.get("genome_dir", None)
+    if not genome_dir:
+        raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
+
+    genome_dir = os.path.expanduser(genome_dir)
+    if not os.path.exists(genome_dir):
+        raise FileNotFoundError(f"genome_dir {genome_dir} does not exist")
+
+    return genome_dir
+
+
+def get_localname(name, localname=None):
     """
     Returns localname if localname is not None, else;
       if name is an url (URL provider): Returns parsed filename from name
@@ -148,13 +188,13 @@ def get_localname(name, localname):
         try:
             urllib.request.urlopen(name)
         except (IOError, ValueError):
-            return name.replace(" ", "_")
+            return name.strip().replace(" ", "_")
         else:
             # try to get the name from the url
             name = name[name.rfind("/") + 1 :]
-            return name[: name.find(".")]
+            return name[: name.find(".")].strip()
     else:
-        return localname.replace(" ", "_")
+        return localname.strip().replace(" ", "_")
 
 
 def bgunzip_and_name(genome):

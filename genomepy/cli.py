@@ -5,7 +5,6 @@ import sys
 import os
 
 from collections import deque
-
 from colorama import init, Fore, Style
 
 init(autoreset=True)
@@ -24,37 +23,29 @@ def cli():
     pass
 
 
-@click.command("search", short_help="search for genomes")
-@click.argument("term")
+@click.command("config", short_help="manage configuration")
+@click.argument("command")
+def config(command):
+    """Manage configuration
+
+    genomepy config file    return config filepath
+
+    genomepy config show    return config content
+
+    genomepy config generate    create config file
+    """
+    genomepy.manage_config(command)
+
+
+@click.command("genomes", short_help="list available genomes")
 @click.option("-p", "--provider", help="provider")
-def search(term, provider=None):
-    """Search for genomes that contain TERM in their name or description."""
-    data = [["name", "provider", "accession", "species", "tax_id", "other_info"]]
-    for row in genomepy.search(term, provider):
-        data.append([x.decode("utf-8", "ignore") for x in row])
-    if len(data) == 1:
-        print("No genomes found!", file=sys.stderr)
-        return
-
-    # In case we print to a terminal, the output is aligned.
-    # Otherwise (file, pipe) we use tab-separated columns.
-    if sys.stdout.isatty():
-        sizes = [max(len(row[i]) + 4 for row in data) for i in range(len(data[0]))]
-        fstring = "".join([f"{{: <{size}}}" for size in sizes])
-    else:
-        fstring = "\t".join(["{}" for _ in range(len(data[0]))])
-
-    for i, row in enumerate(data):
-        if i == 0:
-            print(Style.BRIGHT + fstring.format(*row))
-        else:
-            print(fstring.format(*row))
-    if sys.stdout.isatty():
-        print(Fore.GREEN + " ^")
-        print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")
+def genomes(provider=None):
+    """List all available genomes."""
+    for row in genomepy.list_available_genomes(provider):
+        print("\t".join(row))
 
 
-default_cores = min(os.cpu_count(), 8)
+# extended options for genomepy install
 general_install_options = {
     "genome_dir": {
         "short": "g",
@@ -96,7 +87,7 @@ general_install_options = {
         "short": "t",
         "long": "threads",
         "help": "build index using multithreading",
-        "default": default_cores,
+        "default": min(os.cpu_count(), 8),
     },
     "force": {
         "short": "f",
@@ -143,8 +134,8 @@ def get_install_options():
     add provider in front of the provider specific options to prevent overlap"""
     install_options = general_install_options
 
-    for name in genomepy.provider.ProviderBase.list_providers():
-        p_dict = genomepy.provider.ProviderBase.create(name).list_install_options()
+    for name in genomepy.ProviderBase.list_providers():
+        p_dict = genomepy.ProviderBase.create(name).list_install_options()
         for option in p_dict.keys():
             p_dict[option]["long"] = name + "-" + p_dict[option]["long"]
         install_options.update(p_dict)
@@ -218,12 +209,19 @@ def install(
     )
 
 
-@click.command("genomes", short_help="list available genomes")
-@click.option("-p", "--provider", help="provider")
-def genomes(provider=None):
-    """List all available genomes."""
-    for row in genomepy.list_available_genomes(provider):
-        print("\t".join(row))
+@click.command("plugin", short_help="manage plugins")
+@click.argument("command")
+@click.argument("name", nargs=-1)
+def plugin(command, name):
+    """Enable or disable plugins
+
+    genomepy plugin list               show plugins and status
+
+    genomepy plugin enable  NAME(S)    enable plugins
+
+    genomepy plugin disable NAME(S)    disable plugins
+    """
+    genomepy.manage_plugins(command, name)
 
 
 @click.command("providers", short_help="list available providers")
@@ -233,31 +231,42 @@ def providers():
         print(p)
 
 
-@click.command("plugin", short_help="manage plugins")
-@click.argument("command")
-@click.argument("name", nargs=-1)
-def plugin(command, name):
-    """Enable or disable plugins
+@click.command("search", short_help="search for genomes")
+@click.argument("term")
+@click.option("-p", "--provider", help="provider")
+def search(term, provider=None):
+    """Search for genomes that contain TERM in their name or description."""
+    data = [["name", "provider", "accession", "species", "tax_id", "other_info"]]
+    for row in genomepy.search(term, provider):
+        data.append([x.decode("utf-8", "ignore") for x in row])
+    if len(data) == 1:
+        print("No genomes found!", file=sys.stderr)
+        return
 
-    Use 'genomepy plugin list' to show all available plugins
+    # In case we print to a terminal, the output is aligned.
+    # Otherwise (file, pipe) we use tab-separated columns.
+    if sys.stdout.isatty():
+        sizes = [max(len(row[i]) + 4 for row in data) for i in range(len(data[0]))]
+        fstring = "".join([f"{{: <{size}}}" for size in sizes])
+    else:
+        fstring = "\t".join(["{}" for _ in range(len(data[0]))])
 
-    Use 'genomepy plugin enable/disable [NAME]' to (dis)able plugins"""
-    genomepy.functions.manage_plugins(command, name)
+    for i, row in enumerate(data):
+        if i == 0:
+            print(Style.BRIGHT + fstring.format(*row))
+        else:
+            print(fstring.format(*row))
+    if sys.stdout.isatty():
+        print(Fore.GREEN + " ^")
+        print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")
 
 
-@click.command("config", short_help="manage configuration")
-@click.argument("command")
-def config(command):
-    """Manage configuration"""
-    genomepy.functions.manage_config(command)
-
-
-cli.add_command(search)
-cli.add_command(install)
-cli.add_command(genomes)
-cli.add_command(providers)
-cli.add_command(plugin)
 cli.add_command(config)
+cli.add_command(genomes)
+cli.add_command(install)
+cli.add_command(plugin)
+cli.add_command(providers)
+cli.add_command(search)
 
 if __name__ == "__main__":
     cli()

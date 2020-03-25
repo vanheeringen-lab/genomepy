@@ -15,22 +15,19 @@ with open("README.md") as f:
 # List of files and directories to include when packaging for release
 packages = ["genomepy", "genomepy/plugins"]
 package_data = {"genomepy": ["cfg/*.yaml"]}
-# https://stackoverflow.com/questions/9977889/how-to-include-license-file-in-setup-py-script
 data_files = [("", ["LICENSE", "README.md", "CHANGELOG.md"])]
 
 entry_points = {"console_scripts": ["genomepy=genomepy.cli:cli"]}
 
 requires = [
+    "appdirs",
+    "bucketcache",
     "click",
     "colorama",
-    "pyfaidx>=0.5.7",
     "norns>=0.1.5",
-    "xmltodict",
-    "bucketcache",
-    "requests",
-    "biopython>=1.73",
-    "appdirs",
     "psutil",
+    "pyfaidx>=0.5.7",
+    "requests",
 ]
 
 classifiers = [
