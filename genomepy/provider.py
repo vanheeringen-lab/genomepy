@@ -23,6 +23,7 @@ from genomepy.utils import (
     get_file_info,
     read_url,
     safe,
+    mkdir_p,
 )
 from genomepy.__about__ import __version__
 
@@ -42,7 +43,7 @@ def download_and_generate_annotation(genome_dir, annot_url, localname):
     # create output directory if missing
     out_dir = os.path.join(genome_dir, localname)
     if not os.path.exists(out_dir):
-        os.mkdir(out_dir)
+        mkdir_p(out_dir)
 
     # download to tmp dir. Move files on completion.
     with TemporaryDirectory(dir=out_dir) as tmpdir:
@@ -248,7 +249,7 @@ class ProviderBase(object):
         """
         genome_dir = os.path.expanduser(genome_dir)
         if not os.path.exists(genome_dir):
-            os.makedirs(genome_dir)
+            mkdir_p(genome_dir)
 
         dbname, link = self.get_genome_download_link(name, mask=mask, **kwargs)
         localname = get_localname(dbname, localname)

@@ -5,7 +5,7 @@ import pytest
 def test_basic():
     cfg = genomepy.functions.config
     print(cfg)
-    assert len(cfg.keys()) == 2
+    assert len(cfg.keys()) == 3
 
 
 def test_genome_dir_not_found():
