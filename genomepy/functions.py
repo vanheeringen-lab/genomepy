@@ -15,6 +15,7 @@ from genomepy.utils import (
     sanitize_annotation,
     get_genome_dir,
     glob_ext_files,
+    mkdir_p,
 )
 
 config = norns.config("genomepy", default="cfg/default.yaml")
@@ -28,11 +29,11 @@ def manage_config(cmd):
         with open(config.config_file) as f:
             print(f.read())
     elif cmd == "generate":
-        fname = os.path.join(user_config_dir("genomepy"), "{}.yaml".format("genomepy"))
+        config_dir = user_config_dir("genomepy")
+        if not os.path.exists(config_dir):
+            mkdir_p(config_dir)
 
-        if not os.path.exists(user_config_dir("genomepy")):
-            os.makedirs(user_config_dir("genomepy"))
-
+        fname = os.path.join(config_dir, "{}.yaml".format("genomepy"))
         with open(fname, "w") as fout:
             with open(config.config_file) as fin:
                 fout.write(fin.read())
@@ -128,7 +129,7 @@ def generate_env(fname=None):
         fname = os.path.join(config_dir, "exports.txt")
     fname = os.path.expanduser(fname)
     if not os.path.exists(config_dir):
-        raise Exception(f"config directory {config_dir} does not exist!")
+        manage_config("generate")
 
     with open(fname, "w") as fout:
         for env in generate_exports():
