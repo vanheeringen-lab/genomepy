@@ -64,17 +64,6 @@ def list_available_genomes(provider=None):
             yield [p.name] + list(row)
 
 
-def list_available_providers():
-    """
-    List all available providers.
-
-    Returns
-    -------
-    list with provider names
-    """
-    return ProviderBase.list_providers()
-
-
 def _is_genome_dir(dirname):
     """
     Check if a directory contains a fasta file
@@ -104,50 +93,46 @@ def list_installed_genomes(genome_dir=None):
     -------
     list with genome names
     """
-    if not genome_dir:
-        genome_dir = config.get("genome_dir", None)
-    if not genome_dir:
-        raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
-    genome_dir = os.path.expanduser(genome_dir)
+    genome_dir = get_genome_dir(genome_dir)
 
     return [
         f for f in os.listdir(genome_dir) if _is_genome_dir(os.path.join(genome_dir, f))
     ]
 
 
-def search(term, provider=None):
-    """
-    Search for a genome.
+def generate_exports():
+    """Print export commands for setting environment variables."""
+    env = []
+    for name in list_installed_genomes():
+        try:
+            g = Genome(name)
+            env_name = re.sub(r"[^\w]+", "_", name).upper()
+            env.append("export {}={}".format(env_name, g.filename))
+        except Exception:
+            pass
+    return env
 
-     If provider is specified, search only that specific provider, else
-     search all providers. Both the name and description are used for the
-     search. Search term is case-insensitive.
+
+def generate_env(fname=None):
+    """Generate file with exports.
+
+    By default this is in .config/genomepy/exports.txt.
 
     Parameters
     ----------
-    term : str
-        Search term, case-insensitive.
-
-    provider : str , optional
-        Provider name
-
-    Yields
-    ------
-    tuple
-        genome information (name/identfier and description)
+    fname: strs, optional
+        Name of the output file.
     """
-    if provider:
-        providers = [ProviderBase.create(provider)]
-    else:
-        # if provider is not specified search all providers (except direct url)
-        providers = [
-            ProviderBase.create(p) for p in ProviderBase.list_providers() if p != "url"
-        ]
-    for p in providers:
-        for row in p.search(term):
-            yield [
-                x.encode("latin-1") for x in list(row[:1]) + [p.name] + list(row[1:])
-            ]
+    if fname is None:
+        config_dir = user_config_dir("genomepy")
+        fname = os.path.join(config_dir, "exports.txt")
+    fname = os.path.expanduser(fname)
+    if not os.path.exists(config_dir):
+        raise Exception(f"config directory {config_dir} does not exist!")
+
+    with open(fname, "w") as fout:
+        for env in generate_exports():
+            fout.write("{}\n".format(env))
 
 
 def install_genome(
@@ -228,15 +213,11 @@ def install_genome(
     localname = get_localname(name, localname)
     out_dir = os.path.join(genome_dir, localname)
 
-    # download annotation if any of the annotation related flags are given
-    if only_annotation or kwargs.get("to_annotation", False):
-        annotation = True
-
     # Check if genome already exists, or if downloading is forced
-    no_genome_found = not any(
-        os.path.exists(fname) for fname in glob_ext_files(out_dir, "fa")
+    genome_found = (
+        len([f for f in glob_ext_files(out_dir) if f"{localname}.fa" in f]) >= 1
     )
-    if (no_genome_found or force) and not only_annotation:
+    if (not genome_found or force) and not only_annotation:
         # Download genome from provider
         p = ProviderBase.create(provider)
         p.download_genome(
@@ -249,82 +230,41 @@ def install_genome(
             bgzip=bgzip,
             **kwargs,
         )
+        genome_found = True
 
-    # annotation_only cannot use sanitizing if no genome (and sizes) file was made earlier. Warn the user about this.
-    no_annotation_found = not any(
-        os.path.exists(fname) for fname in glob_ext_files(out_dir, "gtf")
-    )
-    no_genome_found = not any(
-        os.path.exists(fname) for fname in glob_ext_files(out_dir, "fa")
-    )
-    if only_annotation and no_genome_found:
-        assert skip_sanitizing, (
-            "a genome file is required to sanitize your annotation (or check if it's required). "
-            "Use the skip sanitizing flag (-s) if you wish to skip this step."
-        )
+        # Export installed genome(s)
+        generate_env()
 
-    # generates a Fasta object and the index file
-    if not no_genome_found:
+    # Generates a Fasta object and the index file
+    if genome_found:
         g = Genome(localname, genome_dir=genome_dir)
 
-    # Generate sizes file if not found or if generation is forced
+    # Generate sizes file (if not found or if generation is forced)
     sizes_file = os.path.join(out_dir, localname + ".fa.sizes")
     if (not os.path.exists(sizes_file) or force) and not only_annotation:
         generate_fa_sizes(glob_ext_files(out_dir, "fa")[0], sizes_file)
 
-    # Generate gap file if not found or if generation is forced
+    # Generate gap file (if not found or if generation is forced)
     gap_file = os.path.join(out_dir, localname + ".gaps.bed")
     if (not os.path.exists(gap_file) or force) and not only_annotation:
         generate_gap_bed(glob_ext_files(out_dir, "fa")[0], gap_file)
 
-    # If annotation is requested, check if annotation already exists, or if downloading is forced
-    if (no_annotation_found or force) and annotation:
+    # Check if any annotation flags are given, if annotation already exists, or if downloading is forced
+    if any([annotation, only_annotation, kwargs.get("to_annotation", False)]):
+        annotation = True
+    annotation_found = len(glob_ext_files(out_dir, "gtf")) >= 1
+    if (not annotation_found or force) and annotation:
         # Download annotation from provider
         p = ProviderBase.create(provider)
         p.download_annotation(name, genome_dir, localname=localname, **kwargs)
-        if not skip_sanitizing:
+        # Sanitize annotation if needed (requires genome)
+        if not skip_sanitizing and genome_found:
             sanitize_annotation(g)
 
-    # Run all active plugins
-    for plugin in get_active_plugins():
-        plugin.after_genome_download(g, threads, force)
-
-    generate_env()
-
-
-def generate_exports():
-    """Print export commands for setting environment variables."""
-    env = []
-    for name in list_installed_genomes():
-        try:
-            g = Genome(name)
-            env_name = re.sub(r"[^\w]+", "_", name).upper()
-            env.append("export {}={}".format(env_name, g.filename))
-        except Exception:
-            pass
-    return env
-
-
-def generate_env(fname=None):
-    """Generate file with exports.
-
-    By default this is in .config/genomepy/exports.txt.
-
-    Parameters
-    ----------
-    fname: strs, optional
-        Name of the output file.
-    """
-    if fname is None:
-        config_dir = user_config_dir("genomepy")
-        fname = os.path.join(config_dir, "exports.txt")
-    fname = os.path.expanduser(fname)
-    if not os.path.exists(config_dir):
-        raise Exception(f"config directory {config_dir} does not exist!")
-
-    with open(fname, "w") as fout:
-        for env in generate_exports():
-            fout.write("{}\n".format(env))
+    if genome_found:
+        # Run all active plugins (requires genome)
+        for plugin in get_active_plugins():
+            plugin.after_genome_download(g, threads, force)
 
 
 def manage_plugins(command, plugin_names=None):
@@ -359,3 +299,49 @@ def manage_plugins(command, plugin_names=None):
 
     if command in ["enable", "disable"]:
         print("Enabled plugins: {}".format(", ".join(sorted(active_plugins))))
+
+
+def list_available_providers():
+    """
+    List all available providers.
+
+    Returns
+    -------
+    list with provider names
+    """
+    return ProviderBase.list_providers()
+
+
+def search(term, provider=None):
+    """
+    Search for a genome.
+
+     If provider is specified, search only that specific provider, else
+     search all providers. Both the name and description are used for the
+     search. Search term is case-insensitive.
+
+    Parameters
+    ----------
+    term : str
+        Search term, case-insensitive.
+
+    provider : str , optional
+        Provider name
+
+    Yields
+    ------
+    tuple
+        genome information (name/identfier and description)
+    """
+    if provider:
+        providers = [ProviderBase.create(provider)]
+    else:
+        # if provider is not specified search all providers (except direct url)
+        providers = [
+            ProviderBase.create(p) for p in ProviderBase.list_providers() if p != "url"
+        ]
+    for p in providers:
+        for row in p.search(term):
+            yield [
+                x.encode("latin-1") for x in list(row[:1]) + [p.name] + list(row[1:])
+            ]

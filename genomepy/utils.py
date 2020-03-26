@@ -173,9 +173,14 @@ def get_genome_dir(genome_dir=None):
 
     genome_dir = os.path.expanduser(genome_dir)
     if not os.path.exists(genome_dir):
-        raise FileNotFoundError(f"genome_dir {genome_dir} does not exist")
+        raise FileNotFoundError(f"Genome_dir {genome_dir} does not exist!")
 
     return genome_dir
+
+
+def safe(name):
+    """Replace spaces with undescores."""
+    return name.strip().replace(" ", "_")
 
 
 def get_localname(name, localname=None):
@@ -188,13 +193,13 @@ def get_localname(name, localname=None):
         try:
             urllib.request.urlopen(name)
         except (IOError, ValueError):
-            return name.strip().replace(" ", "_")
+            return safe(name)
         else:
             # try to get the name from the url
             name = name[name.rfind("/") + 1 :]
-            return name[: name.find(".")].strip()
+            return safe(name[: name.find(".")])
     else:
-        return localname.strip().replace(" ", "_")
+        return safe(localname)
 
 
 def bgunzip_and_name(genome):

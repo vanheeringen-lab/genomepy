@@ -18,22 +18,6 @@ from genomepy.utils import (
 )
 
 
-def _weighted_selection(l, n):
-    """
-    Selects  n random elements from a list of (weight, item) tuples.
-    Based on code snippet by Nick Johnson
-    """
-    cuml = []
-    items = []
-    total_weight = 0.0
-    for weight, item in l:
-        total_weight += weight
-        cuml.append(total_weight)
-        items.append(item)
-
-    return [items[bisect(cuml, random() * total_weight)] for _ in range(n)]
-
-
 class Genome(Fasta):
     """
     Get pyfaidx Fasta object of genome
@@ -312,6 +296,22 @@ class Genome(Fasta):
                     self._gap_sizes[chrom] = self._gap_sizes.get(chrom, 0) + end - start
         return self._gap_sizes
 
+    @staticmethod
+    def _weighted_selection(l, n):
+        """
+        Selects  n random elements from a list of (weight, item) tuples.
+        Based on code snippet by Nick Johnson
+        """
+        cuml = []
+        items = []
+        total_weight = 0.0
+        for weight, item in l:
+            total_weight += weight
+            cuml.append(total_weight)
+            items.append(item)
+
+        return [items[bisect(cuml, random() * total_weight)] for _ in range(n)]
+
     def get_random_sequences(self, n=10, length=200, chroms=None, max_n=0.1):
         """Return random genomic sequences.
 
@@ -353,7 +353,7 @@ class Genome(Fasta):
             for x in chroms
             if sizes[x] / len(self[x]) > 0.1 and sizes[x] > 10 * length
         ]
-        chroms = _weighted_selection(lengths, n)
+        chroms = self._weighted_selection(lengths, n)
         coords = []
 
         count = {}
