@@ -159,7 +159,7 @@ class ProviderBase(object):
         try:
             return cls._providers[name.lower()]()
         except KeyError:
-            raise Exception("Unknown provider")
+            raise ValueError("Unknown provider")
 
     @classmethod
     def register_provider(cls, provider):
@@ -183,7 +183,7 @@ class ProviderBase(object):
         if name is None:
             return {}
         elif name.lower() not in self._providers:
-            raise Exception("Unknown provider")
+            raise ValueError("Unknown provider")
         else:
             provider = self._providers[name.lower()]
             return provider.list_install_options(self)
@@ -467,12 +467,12 @@ class EnsemblProvider(ProviderBase):
                 genome_info = self.request_json(ext)
             else:
                 raise exceptions.GenomeDownloadError(
-                    "Could not download genome {} from Ensembl".format(name)
+                    f"Could not download genome {name} from Ensembl"
                 )
         except requests.exceptions.HTTPError as e:
-            sys.stderr.write("Species not found: {}".format(e))
+            sys.stderr.write(f"Species not found: {e}\n")
             raise exceptions.GenomeDownloadError(
-                "Could not download genome {} from Ensembl".format(name)
+                f"Could not download genome {name} from Ensembl"
             )
         return genome_info
 
@@ -893,7 +893,7 @@ class UcscProvider(ProviderBase):
                 return name, remote
 
         raise exceptions.GenomeDownloadError(
-            "Could not download genome {} from UCSC".format(name)
+            f"Could not download genome {name} from UCSC"
         )
 
     @staticmethod
@@ -915,7 +915,7 @@ class UcscProvider(ProviderBase):
             # Check of the original genome fasta exists
             fa = os.path.join(out_dir, f"{localname}.fa")
             if not os.path.exists(fa):
-                raise Exception(f"Genome fasta file not found, {fa}")
+                raise FileNotFoundError(f"Genome fasta file not found, {fa}")
 
             sys.stderr.write("UCSC genomes are softmasked by default. Unmasking...\n")
 
@@ -1166,7 +1166,9 @@ class NcbiProvider(ProviderBase):
                 url = url.replace("ftp://", "https://")
                 url += "/" + url.split("/")[-1] + "_genomic.fna.gz"
                 return name, url
-        raise exceptions.GenomeDownloadError("Could not download genome from NCBI")
+        raise exceptions.GenomeDownloadError(
+            f"Could not download genome {name} from NCBI"
+        )
 
     def _post_process_download(self, name, localname, out_dir, mask="soft"):
         """
@@ -1189,7 +1191,7 @@ class NcbiProvider(ProviderBase):
                 url = url.replace("ftp://", "https://")
                 break
         else:
-            raise Exception("Genome {} not found in NCBI genomes".format(name))
+            raise Exception(f"Genome {name} not found in NCBI genomes")
 
         # Create mapping of accessions to names
         tr = {}
@@ -1205,7 +1207,7 @@ class NcbiProvider(ProviderBase):
         # Check of the original genome fasta exists
         fa = os.path.join(out_dir, f"{localname}.fa")
         if not os.path.exists(fa):
-            raise Exception(f"Genome fasta file not found, {fa}")
+            raise FileNotFoundError(f"Genome fasta file not found, {fa}")
 
         # Use a tmp file and replace the names
         with TemporaryDirectory(dir=out_dir) as tmpdir:
@@ -1259,7 +1261,7 @@ class NcbiProvider(ProviderBase):
                 annot_url += "/" + annot_url.split("/")[-1] + "_genomic.gff.gz"
                 break
         else:
-            raise Exception("Genome {} not found in NCBI genomes".format(name))
+            raise Exception(f"Genome {name} not found in NCBI genomes")
 
         attempt_download_and_report_back(
             genome_dir=genome_dir, annot_url=annot_url, localname=localname

@@ -1,7 +1,8 @@
 import genomepy
-import shutil
-import pytest
 import os
+import pytest
+import shutil
+
 from tempfile import mkdtemp
 from platform import system
 

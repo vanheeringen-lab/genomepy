@@ -1,6 +1,6 @@
-import shutil
-import os
 import genomepy
+import os
+import shutil
 
 from tempfile import NamedTemporaryFile, mkdtemp
 from tests.test_04_download_annotation import validate_gzipped_bed, validate_gzipped_gtf

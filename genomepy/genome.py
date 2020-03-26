@@ -373,9 +373,7 @@ class Genome(Fasta):
             else:
                 raise Exception("Unexpected error")
             if count_n > cutoff:
-                raise ValueError(
-                    "Failed to find suitable non-N sequence for {}".format(chrom)
-                )
+                raise ValueError(f"Failed to find suitable non-N sequence for {chrom}")
 
             coords.append([chrom, start, end])
 

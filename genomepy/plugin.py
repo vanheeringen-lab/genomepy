@@ -87,7 +87,7 @@ def activate(name):
     if name in plugins:
         plugins[name].activate()
     else:
-        raise Exception("plugin {} not found".format(name))
+        raise ValueError(f"plugin {name} not found")
 
 
 def deactivate(name):
@@ -101,7 +101,7 @@ def deactivate(name):
     if name in plugins:
         plugins[name].deactivate()
     else:
-        raise Exception("plugin {} not found".format(name))
+        raise ValueError(f"plugin {name} not found")
 
 
 def get_active_plugins():

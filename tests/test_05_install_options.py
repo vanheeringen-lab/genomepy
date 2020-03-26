@@ -1,7 +1,8 @@
 import genomepy
-import shutil
-import pytest
 import os
+import pytest
+import shutil
+
 from tempfile import mkdtemp, NamedTemporaryFile
 from time import sleep
 from platform import system

@@ -83,8 +83,8 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
             if os.path.exists(outfa + ".fai"):
                 os.unlink(outfa + ".fai")
         else:
-            raise ValueError(
-                "{} already exists, set force to True to overwrite".format(outfa)
+            raise FileExistsError(
+                f"{outfa} already exists, set force to True to overwrite"
             )
 
     filt_function = re.compile(regex).search
@@ -96,7 +96,7 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
         fa = original_fa
 
     if len(seqs) == 0:
-        raise ValueError("No sequences left after filtering!")
+        raise Exception("No sequences left after filtering!")
 
     with open(outfa, "w") as out:
         for chrom in seqs:
@@ -125,7 +125,7 @@ def cmd_ok(cmd):
         # bwa gives return code of 1 with no argument
         pass
     except Exception:
-        sys.stderr.write("{} not found, skipping\n".format(cmd))
+        sys.stderr.write(f"{cmd} not found, skipping\n")
         return False
     return True
 
@@ -212,7 +212,7 @@ def bgunzip_and_name(genome):
     if fname.endswith(".gz"):
         ret = sp.check_call(["gunzip", fname])
         if ret != 0:
-            raise Exception("Error gunzipping genome {}".format(fname))
+            raise Exception(f"Error gunzipping genome {fname}")
         fname = re.sub(".gz$", "", fname)
         bgzip = True
     return bgzip, fname
@@ -223,9 +223,7 @@ def bgrezip(bgzip, fname):
     if bgzip:
         ret = sp.check_call(["bgzip", fname])
         if ret != 0:
-            raise Exception(
-                "Error bgzipping genome {}. ".format(fname) + "Is tabix installed?"
-            )
+            raise Exception(f"Error bgzipping genome {fname}. Is tabix installed?")
     return
 
 

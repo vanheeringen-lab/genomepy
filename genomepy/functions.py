@@ -278,7 +278,7 @@ def manage_plugins(command, plugin_names=None):
     if command == "enable":
         for name in plugin_names:
             if name not in plugins:
-                raise ValueError("Unknown plugin: {}".format(name))
+                raise ValueError(f"Unknown plugin: {name}")
             if name not in active_plugins:
                 active_plugins.append(name)
     elif command == "disable":
