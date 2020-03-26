@@ -21,6 +21,7 @@ entry_points = {"console_scripts": ["genomepy=genomepy.cli:cli"]}
 
 requires = [
     "appdirs",
+    "biopython>=1.73",
     "bucketcache",
     "click",
     "colorama",

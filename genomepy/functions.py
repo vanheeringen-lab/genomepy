@@ -209,7 +209,7 @@ def install_genome(
             URL only: direct link to annotation file.
             Required if this is not the same directory as the fasta.
     """
-    genome_dir = get_genome_dir(genome_dir)
+    genome_dir = get_genome_dir(genome_dir, check_exist=False)
     localname = get_localname(name, localname)
     out_dir = os.path.join(genome_dir, localname)
 

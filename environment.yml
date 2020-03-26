@@ -6,6 +6,7 @@ channels:
 dependencies:
   # Also found in setup.py
   - appdirs
+  - biopython>=1.73  # for pyfaidx
   - bucketcache
   - click
   - colorama
