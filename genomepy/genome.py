@@ -157,60 +157,60 @@ class Genome(Fasta):
         bufsize = 10000
         with open(track) as fin:
             lines = fin.readlines(bufsize)
-            while lines:
-                for line in lines:
-                    if line.startswith("#") or line.startswith("track"):
-                        continue
+            # while lines:  # not sure why there was both a while and a for loop(?)
+            for line in lines:
+                if line.startswith("#") or line.startswith("track"):
+                    continue
 
-                    vals = line.strip().split("\t")
+                vals = line.strip().split("\t")
+                try:
+                    start, end = int(vals[1]), int(vals[2])
+                except ValueError:
+                    raise
+
+                rc = False
+                if stranded:
                     try:
-                        start, end = int(vals[1]), int(vals[2])
-                    except ValueError:
-                        raise
-
-                    rc = False
-                    if stranded:
-                        try:
-                            rc = vals[5] == "-"
-                        except IndexError:
-                            pass
-
-                    starts = [start]
-                    ends = [end]
-
-                    chrom = vals[0]
-
-                    # BED12
-                    if len(vals) == 12:
-                        starts = [int(x) for x in vals[11].split(",")[:-1]]
-                        sizes = [int(x) for x in vals[10].split(",")[:-1]]
-                        starts = [start + x for x in starts]
-                        ends = [start + size for start, size in zip(starts, sizes)]
-                    name = "{}:{}-{}".format(chrom, start, end)
-                    try:
-                        name = " ".join((name, vals[3]))
-                    except Exception:
+                        rc = vals[5] == "-"
+                    except IndexError:
                         pass
 
-                    starts = [start + 1 for start in starts]
+                starts = [start]
+                ends = [end]
 
-                    # extend
-                    if extend_up:
-                        if rc:
-                            ends[-1] += extend_up
-                        else:
-                            starts[0] -= extend_up
-                    if extend_down:
-                        if rc:
-                            starts[0] -= extend_down
-                        else:
-                            ends[-1] += extend_down
+                chrom = vals[0]
 
-                    intervals = zip(starts, ends)
-                    seq = self.get_spliced_seq(chrom, intervals, rc)
-                    yield Sequence(name, seq.seq)
+                # BED12
+                if len(vals) == 12:
+                    starts = [int(x) for x in vals[11].split(",")[:-1]]
+                    sizes = [int(x) for x in vals[10].split(",")[:-1]]
+                    starts = [start + x for x in starts]
+                    ends = [start + size for start, size in zip(starts, sizes)]
+                name = "{}:{}-{}".format(chrom, start, end)
+                try:
+                    name = " ".join((name, vals[3]))
+                except Exception:
+                    pass
 
-                lines = fin.readlines(bufsize)
+                starts = [start + 1 for start in starts]
+
+                # extend
+                if extend_up:
+                    if rc:
+                        ends[-1] += extend_up
+                    else:
+                        starts[0] -= extend_up
+                if extend_down:
+                    if rc:
+                        starts[0] -= extend_down
+                    else:
+                        ends[-1] += extend_down
+
+                intervals = zip(starts, ends)
+                seq = self.get_spliced_seq(chrom, intervals, rc)
+                yield Sequence(name, seq.seq)
+
+            lines = fin.readlines(bufsize)
 
     def _region_to_seqs(self, track, extend_up=0, extend_down=0):
         bufsize = 10000
@@ -267,7 +267,7 @@ class Genome(Fasta):
         if fastafile:
             with open(fastafile, "w") as fout:
                 for seq in seqqer:
-                    fout.write("{}\n".format(seq.__repr__()))
+                    fout.write(f"{seq.__repr__()}\n")
         else:
             return [seq for seq in seqqer]
 

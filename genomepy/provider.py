@@ -909,28 +909,29 @@ class UcscProvider(ProviderBase):
         out_dir : str
             Output directory
         """
-        if mask not in ["hard", "soft"]:
-            localname = get_localname(name, localname)
+        if mask in ["hard", "soft"]:
+            return
 
-            # Check of the original genome fasta exists
-            fa = os.path.join(out_dir, f"{localname}.fa")
-            if not os.path.exists(fa):
-                raise FileNotFoundError(f"Genome fasta file not found, {fa}")
+        # Check of the original genome fasta exists
+        localname = get_localname(name, localname)
+        fa = os.path.join(out_dir, f"{localname}.fa")
+        if not os.path.exists(fa):
+            raise FileNotFoundError(f"Genome fasta file not found, {fa}")
 
-            sys.stderr.write("UCSC genomes are softmasked by default. Unmasking...\n")
+        sys.stderr.write("UCSC genomes are softmasked by default. Unmasking...\n")
 
-            # write in a tmp file
-            with TemporaryDirectory(dir=out_dir) as tmpdir:
-                new_fa = os.path.join(tmpdir, f"{localname}.fa")
-                with open(fa) as old, open(new_fa, "w") as new:
-                    for line in old:
-                        if line.startswith(">"):
-                            new.write(line)
-                        else:
-                            new.write(line.upper())
+        # write in a tmp file
+        with TemporaryDirectory(dir=out_dir) as tmpdir:
+            new_fa = os.path.join(tmpdir, f"{localname}.fa")
+            with open(fa) as old, open(new_fa, "w") as new:
+                for line in old:
+                    if line.startswith(">"):
+                        new.write(line)
+                    else:
+                        new.write(line.upper())
 
-                # overwrite original file with tmp file
-                shutil.move(new_fa, fa)
+            # overwrite original file with tmp file
+            shutil.move(new_fa, fa)
 
     def download_annotation(self, name, genome_dir, localname=None, **kwargs):
         """
