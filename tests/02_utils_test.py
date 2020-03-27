@@ -155,7 +155,7 @@ def test_sanitize_annotation(genome="tests/data/small_genome.fa.gz"):
     sp.check_call(f"gunzip -f {genome}", shell=True)
     sizes_file = genome[:-2] + "sizes"
     genomepy.utils.generate_fa_sizes(genome[:-3], sizes_file)
-    sp.check_call(f"gzip -f {genome[:-3]}", shell=True)
+    sp.check_call(f"bgzip -f {genome[:-3]}", shell=True)
 
     # generate gtf file
     gtf_file = genome[:-5] + "annotation.gtf"

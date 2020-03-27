@@ -1,8 +1,6 @@
 import genomepy
 import pytest
 import norns
-import os
-import re
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -21,7 +19,7 @@ def test_convert(name="TestName", expected="test_name"):
 def test_init_plugins():
     # returns dict of all plugins and their functions
     p = genomepy.plugin.init_plugins()
-    expected = ['minimap2', 'bowtie2', 'gmap', 'hisat2', 'star', 'blacklist', 'bwa']
+    expected = ["minimap2", "bowtie2", "gmap", "hisat2", "star", "blacklist", "bwa"]
     assert isinstance(p, dict)
     assert list(p.keys()) == expected
 
@@ -55,7 +53,13 @@ def test_deactivate():
 
 def test_plugin():
     p = genomepy.plugin.Plugin()
-    for class_method in ["name", "activate", "deactivate", "after_genome_download", "get_properties"]:
+    for class_method in [
+        "name",
+        "activate",
+        "deactivate",
+        "after_genome_download",
+        "get_properties",
+    ]:
         assert class_method in dir(p)
 
     # test name method
