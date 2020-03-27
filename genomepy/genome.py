@@ -163,35 +163,29 @@ class Genome(Fasta):
                     continue
 
                 vals = line.strip().split("\t")
-                try:
-                    start, end = int(vals[1]), int(vals[2])
-                except ValueError:
-                    raise
+                chrom, start, end = str(vals[0]), int(vals[1]), int(vals[2])
+                name = f"{chrom}:{start}-{end}"
 
-                rc = False
-                if stranded:
-                    try:
-                        rc = vals[5] == "-"
-                    except IndexError:
-                        pass
-
+                # there might be more...
                 starts = [start]
                 ends = [end]
 
-                chrom = vals[0]
+                # BED4: add name column to name
+                if len(vals) >= 4:
+                    name = " ".join((name, vals[3]))
 
-                # BED12
-                if len(vals) == 12:
+                # BED5: check strandedness
+                rc = False
+                if stranded and len(vals) >= 6:
+                    rc = vals[5] == "-"
+
+                # BED12: get all blocks
+                if len(vals) >= 12:
                     starts = [int(x) for x in vals[11].split(",")[:-1]]
                     sizes = [int(x) for x in vals[10].split(",")[:-1]]
                     starts = [start + x for x in starts]
                     ends = [start + size for start, size in zip(starts, sizes)]
-                name = "{}:{}-{}".format(chrom, start, end)
-                try:
-                    name = " ".join((name, vals[3]))
-                except Exception:
-                    pass
-
+                # convert to 1-based counting
                 starts = [start + 1 for start in starts]
 
                 # extend
@@ -210,34 +204,36 @@ class Genome(Fasta):
                 seq = self.get_spliced_seq(chrom, intervals, rc)
                 yield Sequence(name, seq.seq)
 
-            lines = fin.readlines(bufsize)
+                # load more lines if needed
+                lines += fin.readlines(1)
+            # lines = fin.readlines(bufsize)
 
-    def _region_to_seqs(self, track, extend_up=0, extend_down=0):
-        bufsize = 10000
+    def _region_to_seq(self, region, extend_up=0, extend_down=0):
+        chrom, coords = region.strip().split(":")
+        start, end = [int(c) for c in coords.split("-")]
+        start += 1
+        start -= extend_up
+        end += extend_down
+        seq = self.get_seq(chrom, start, end)
+        return seq.seq
+
+    def _regions_to_seqs(self, track, extend_up=0, extend_down=0):
         if isinstance(track, list):
-            for name in track:
-                chrom, coords = name.split(":")
-                start, end = [int(c) for c in coords.split("-")]
-                start += 1
-                start -= extend_up
-                end += extend_down
-                seq = self.get_seq(chrom, start, end)
-                yield Sequence(name, seq.seq)
+            for region in track:
+                name = region.strip()
+                seq = self._region_to_seq(region, extend_up, extend_down)
+                yield Sequence(name, seq)
         else:
             with open(track) as fin:
+                bufsize = 10000
                 lines = fin.readlines(bufsize)
-                while lines:
-                    for line in lines:
-                        name = line.strip()
-                        chrom, coords = name.split(":")
-                        start, end = [int(c) for c in coords.split("-")]
-                        start += 1
-                        start -= extend_up
-                        end += extend_down
-                        seq = self.get_seq(chrom, start, end)
-                        yield Sequence(name, seq.seq)
+                for region in lines:
+                    name = region.strip()
+                    seq = self._region_to_seq(region, extend_up, extend_down)
+                    yield Sequence(name, seq)
 
-                    lines = fin.readlines(bufsize)
+                    # load more lines if needed
+                    lines += fin.readlines()
 
     @staticmethod
     def get_track_type(track):
@@ -256,7 +252,7 @@ class Genome(Fasta):
     ):
         track_type = self.get_track_type(track)
         if track_type == "interval":
-            seqqer = self._region_to_seqs(
+            seqqer = self._regions_to_seqs(
                 track, extend_up=extend_up, extend_down=extend_down
             )
         else:
