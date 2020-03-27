@@ -1,4 +1,6 @@
 import genomepy
+import pytest
+import norns
 
 
 def test_import():
@@ -9,7 +11,11 @@ def test_import():
     assert genomepy.__author__ == "Simon van Heeringen"
 
 
+def test_exceptions():
+    with pytest.raises(genomepy.exceptions.GenomeDownloadError):
+        raise genomepy.exceptions.GenomeDownloadError
+
+
 def test_config():
-    cfg = genomepy.functions.config
-    print(cfg)
-    assert len(cfg.keys()) == 3
+    config = norns.config("genomepy", default="cfg/default.yaml")
+    assert len(config.keys()) == 3
