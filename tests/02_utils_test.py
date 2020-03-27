@@ -82,7 +82,7 @@ def test_run_index_cmd(capsys, name="tests", good_cmd="ls", bad_cmd="asd"):
 
 def test_glob_ext_files(file="tests/data/small_genome.fa"):
     assert file not in genomepy.utils.glob_ext_files("tests/data")
-    assert file+".gz" in genomepy.utils.glob_ext_files("tests/data")
+    assert file + ".gz" in genomepy.utils.glob_ext_files("tests/data")
     assert len(genomepy.utils.glob_ext_files("tests/data", "fake_ext")) == 0
 
 
@@ -130,7 +130,9 @@ def test_bgrezip(bgzip=True, fname="tests/data/small_genome.fa"):
         genomepy.utils.bgrezip(bgzip, fname)
 
 
-def test_read_url(url="http://ftp.xenbase.org/pub/Genomics/JGI/README", expected="The data"):
+def test_read_url(
+    url="http://ftp.xenbase.org/pub/Genomics/JGI/README", expected="The data"
+):
     text = genomepy.utils.read_url(url)
     assert text.startswith(expected)
 
@@ -139,7 +141,7 @@ def test_get_file_info(fname="tests/data/small_genome.fa.gz"):
     ext, gz = genomepy.utils.get_file_info(fname)
     assert ext == ".fa" and gz
 
-    ext, gz = genomepy.utils.get_file_info(fname[:-2]+"fai")
+    ext, gz = genomepy.utils.get_file_info(fname[:-2] + "fai")
     assert ext == ".fai" and not gz
 
 
@@ -151,12 +153,12 @@ def test_sanitize_annotation(genome="tests/data/small_genome.fa.gz"):
 
     # generate sizes file (already tested)
     sp.check_call(f"gunzip -f {genome}", shell=True)
-    sizes_file = genome[:-2]+"sizes"
+    sizes_file = genome[:-2] + "sizes"
     genomepy.utils.generate_fa_sizes(genome[:-3], sizes_file)
     sp.check_call(f"gzip -f {genome[:-3]}", shell=True)
 
     # generate gtf file
-    gtf_file = genome[:-5]+"annotation.gtf"
+    gtf_file = genome[:-5] + "annotation.gtf"
     with open(gtf_file, "w") as f:
         f.write("# skip this line\n")
         f.write(
