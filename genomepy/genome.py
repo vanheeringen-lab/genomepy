@@ -221,7 +221,7 @@ class Genome(Fasta):
         if isinstance(track, list):
             for region in track:
                 name = region.strip()
-                seq = self._region_to_seq(region, extend_up, extend_down)
+                seq = self._region_to_seq(name, extend_up, extend_down)
                 yield Sequence(name, seq)
         else:
             with open(track) as fin:
@@ -229,7 +229,7 @@ class Genome(Fasta):
                 lines = fin.readlines(bufsize)
                 for region in lines:
                     name = region.strip()
-                    seq = self._region_to_seq(region, extend_up, extend_down)
+                    seq = self._region_to_seq(name, extend_up, extend_down)
                     yield Sequence(name, seq)
 
                     # load more lines if needed
@@ -250,6 +250,24 @@ class Genome(Fasta):
     def track2fasta(
         self, track, fastafile=None, stranded=False, extend_up=0, extend_down=0
     ):
+        """
+        Return a list of fasta sequences as Sequence objects
+        as directed from the track(s).
+
+        Params:
+        track: list/region file/bed file
+            region(s) you wish to translate to fasta.
+            Example input files can be found in genomepy/tests/data/regions.*
+
+        fastafile: bool , optional
+            return Sequences as list or save to file? (default: list)
+
+        stranded: bool , optional
+            return sequences for both strands? Required BED6 (or higher) as input (default: False)
+
+        extend up/down: int , optional
+            extend the sequences to either side? (command is strand sensitive, default: 0)
+        """
         track_type = self.get_track_type(track)
         if track_type == "interval":
             seqqer = self._regions_to_seqs(
@@ -277,7 +295,6 @@ class Genome(Fasta):
             Ns as values
         """
         if not self._gap_sizes:
-            # gap_file = self.props["gaps"]["gaps"]
             gap_file = self.filename + ".sizes"
 
             # generate gap file if not found

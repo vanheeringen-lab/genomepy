@@ -101,8 +101,25 @@ def test_get_track_type():
         assert result == track_type
 
 
-def test_track2fasta():
-    pass
+def test_track2fasta(genome="tests/data/small_genome.fa.gz"):
+    tracks = [
+        ("tests/data/regions.txt", "interval"),
+        ("tests/data/regions.bed", "bed"),
+    ]
+    g = genomepy.Genome(genome)
+
+    for i, track in enumerate(tracks):
+        seq = g.track2fasta(
+            track=track[0], fastafile=None, stranded=False, extend_up=i, extend_down=i+1
+        )
+
+        # default sequence:       CCCACACACC
+        if i == 0:  # extend up +0, down -1
+            assert seq[0].seq == "CCCACACACCC"
+            assert seq[1].seq == "TCCTCCAAGCC"
+        else:       # extend up +1, down -4
+            assert seq[0].seq == "ACCCACACACCCA"
+            assert seq[1].seq == "CTCCTCCAAGCCC"
 
 
 def test_gap_sizes(genome="tests/data/gap.fa"):
@@ -116,7 +133,9 @@ def test_gap_sizes(genome="tests/data/gap.fa"):
     os.unlink(genome + ".sizes")
 
 
-def test__weighted_selection():
+def test__weighted_selection(genome="tests/data/gap.fa"):
+    # g = genomepy.Genome(genome)
+    # ws = g._weighted_selection()
     pass
 
 
