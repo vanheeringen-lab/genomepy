@@ -19,9 +19,10 @@ def test_convert(name="TestName", expected="test_name"):
 def test_init_plugins():
     # returns dict of all plugins and their functions
     p = genomepy.plugin.init_plugins()
-    expected = ["minimap2", "bowtie2", "gmap", "hisat2", "star", "blacklist", "bwa"]
+    result = sorted(list(p.keys()))
+    expected = ["blacklist", "bowtie2", "bwa", "gmap", "hisat2", "minimap2", "star"]
     assert isinstance(p, dict)
-    assert list(p.keys()) == expected
+    assert result == expected
 
 
 def test_get_active_plugins():
