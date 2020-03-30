@@ -75,8 +75,10 @@ def download_and_generate_annotation(genome_dir, annot_url, localname):
                     start_col = i - 1
                     break
             end_col = start_col + 10
-
             cmd = f"cat {{0}} | cut -f{start_col}-{end_col} > {{1}}"
+        else:
+            raise TypeError(f"file type extension {ext} not recognized!")
+
         sp.check_call(cmd.format(annot_file, pred_file), shell=True)
 
         # generate gzipped gtf file (if required)
@@ -276,7 +278,7 @@ class ProviderBase(object):
                     shutil.copyfileobj(response, f_out, chunk_size)
 
             # unzip genome
-            if link.endswith("tar.gz"):
+            if link.endswith(".tar.gz"):
                 self.tar_to_bigfile(fname, fname)
             elif link.endswith(".gz"):
                 # gunzip will only work with files ending with ".gz"
