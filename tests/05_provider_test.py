@@ -152,7 +152,3 @@ def test_tar_to_bigfile():
 
 def test_download_genome():
     pass
-
-
-
-
