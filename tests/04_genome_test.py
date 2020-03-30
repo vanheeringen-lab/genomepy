@@ -1,7 +1,6 @@
 import genomepy
 import os
 import pytest
-import shutil
 
 
 # to ignore file changes
@@ -17,6 +16,10 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
     with pytest.raises(FileNotFoundError):
         genomepy.Genome("unknown", "unknown")
 
+    # create genome_dir (normally done by downloading the genome)
+    gd = genomepy.utils.get_genome_dir()
+    genomepy.utils.mkdir_p(os.path.join(gd, "small_genome"))
+
     # initialize the class (creates the index file)
     index_file = genome + ".fai"
     if os.path.exists(index_file):
@@ -29,9 +32,10 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
 def test__read_metadata(capsys, genome="tests/data/small_genome.fa.gz"):
     # create a README.txt
     g = genomepy.Genome(genome)
-    genome_dir = os.path.join(g.genome_dir, g.name)
-    readme = os.path.join(genome_dir, "README.txt")
-    genomepy.utils.mkdir_p(genome_dir)
+    readme = os.path.join(g.genome_dir, g.name, "README.txt")
+    # genome_dir = os.path.join(g.genome_dir, g.name)
+    # readme = os.path.join(genome_dir, "README.txt")
+    # genomepy.utils.mkdir_p(genome_dir)
 
     # check 1: no provider recognized
     with open(readme, "w") as f:
@@ -71,9 +75,6 @@ def test__read_metadata(capsys, genome="tests/data/small_genome.fa.gz"):
     assert metadata["assembly_accession"] == "GCA_000146465.1"
 
     # note: lookup of "tax_id" and "assembly_accession" requires provider -> tested later.
-
-    # cleanup
-    shutil.rmtree(genome_dir)
 
 
 def test__bed_to_seqs(
