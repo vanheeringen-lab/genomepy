@@ -77,7 +77,10 @@ def test_run_index_cmd(capsys, name="tests", good_cmd="ls", bad_cmd="bad_cmd"):
     # bad_command not found error
     genomepy.utils.run_index_cmd(name=name, cmd=bad_cmd)
     captured = capsys.readouterr().err
-    assert str(captured).strip().endswith(f"{bad_cmd}: not found")
+
+    result = captured.strip().split("\n")[-1]
+    expected = f"{bad_cmd}: not found"
+    assert result.endswith(expected)
 
 
 def test_glob_ext_files(file="tests/data/small_genome.fa"):

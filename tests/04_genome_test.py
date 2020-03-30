@@ -17,7 +17,7 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
         genomepy.Genome("unknown", "unknown")
 
     # create genome_dir (normally done by downloading the genome)
-    gd = genomepy.utils.get_genome_dir()
+    gd = genomepy.utils.get_genome_dir(check_exist=False)
     genomepy.utils.mkdir_p(os.path.join(gd, "small_genome"))
 
     # initialize the class (creates the index file)
