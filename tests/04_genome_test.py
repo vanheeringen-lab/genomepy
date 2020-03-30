@@ -1,6 +1,7 @@
 import genomepy
 import os
 import pytest
+import shutil
 
 
 # to ignore file changes
@@ -23,11 +24,56 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
 
     genomepy.Genome(genome)
     assert os.path.exists(index_file)
-    os.unlink(index_file)  # TODO: remove?
 
 
-def test__read_metadata(genome="tests/data/small_genome.fa.gz"):
-    pass
+def test__read_metadata(capsys, genome="tests/data/small_genome.fa.gz"):
+    # create a README.txt
+    g = genomepy.Genome(genome)
+    genome_dir = os.path.join(g.genome_dir, g.name)
+    readme = os.path.join(genome_dir, "README.txt")
+    genomepy.utils.mkdir_p(genome_dir)
+
+    # check 1: no provider recognized
+    with open(readme, "w") as f:
+        f.writelines("nothing important here\n")
+    genomepy.Genome(genome)
+
+    with open(readme) as f:
+        metadata = {}
+        for line in f.readlines():
+            vals = line.strip().split(":")
+            metadata[vals[0].strip()] = (":".join(vals[1:])).strip()
+
+    assert metadata["provider"] == "Unknown"
+
+    # check 2: no lookups required
+    with open(readme, "w") as f:
+        f.writelines("provider: NCBI\n")
+        f.writelines("original name: ASM14646v1\n")
+        f.writelines("tax_id: 58839\n")
+        f.writelines("assembly_accession: GCA_000146465.1\n")
+    genomepy.Genome(genome)
+
+    # exactly this (one) message to stderr
+    captured = capsys.readouterr()
+    assert captured.err.strip() == "Updating metadata in README.txt"
+
+    # no changes to metadata
+    with open(readme) as f:
+        metadata = {}
+        for line in f.readlines():
+            vals = line.strip().split(":")
+            metadata[vals[0].strip()] = (":".join(vals[1:])).strip()
+
+    assert metadata["provider"] == "NCBI"
+    assert metadata["original name"] == "ASM14646v1"
+    assert metadata["tax_id"] == "58839"
+    assert metadata["assembly_accession"] == "GCA_000146465.1"
+
+    # note: lookup of "tax_id" and "assembly_accession" requires provider -> tested later.
+
+    # cleanup
+    shutil.rmtree(genome_dir)
 
 
 def test__bed_to_seqs(
@@ -110,14 +156,18 @@ def test_track2fasta(genome="tests/data/small_genome.fa.gz"):
 
     for i, track in enumerate(tracks):
         seq = g.track2fasta(
-            track=track[0], fastafile=None, stranded=False, extend_up=i, extend_down=i+1
+            track=track[0],
+            fastafile=None,
+            stranded=False,
+            extend_up=i,
+            extend_down=i + 1,
         )
 
         # default sequence:       CCCACACACC
         if i == 0:  # extend up +0, down -1
             assert seq[0].seq == "CCCACACACCC"
             assert seq[1].seq == "TCCTCCAAGCC"
-        else:       # extend up +1, down -4
+        else:  # extend up +1, down -4
             assert seq[0].seq == "ACCCACACACCCA"
             assert seq[1].seq == "CTCCTCCAAGCCC"
 
@@ -129,20 +179,47 @@ def test_gap_sizes(genome="tests/data/gap.fa"):
     assert isinstance(g._gap_sizes, dict)
     assert list(g._gap_sizes.keys()) == ["chr1", "chr3"]
 
-    os.unlink(genome + ".fai")
-    os.unlink(genome + ".sizes")
+
+def test__weighted_selection(n=2):
+    tuples = [(1, "one"), (2, "two"), (3, "three")]
+    ws = genomepy.Genome._weighted_selection(tuples, n)
+
+    assert len(ws) == n
+    assert isinstance(ws[0], str)
+    assert tuples[0][1] in ws or tuples[1][1] in ws or tuples[2][1] in ws
 
 
-def test__weighted_selection(genome="tests/data/gap.fa"):
-    # g = genomepy.Genome(genome)
-    # ws = g._weighted_selection()
-    pass
+def test_get_random_sequences(genome="tests/data/small_genome.fa.gz"):
+    g = genomepy.Genome(genome)
+    n = 2
+    length = 200  # default
+    chroms = ["chrI", "chrII"]
+    max_n = 0.1  # default
+    rs = g.get_random_sequences(n=n, length=length, chroms=chroms, max_n=max_n)
+
+    # check that the output has the right length, content, types, and sequence length
+    assert len(rs) == n
+    for i in range(n):
+        assert rs[i][0] in chroms
+        assert (
+            isinstance(rs[i][0], str)
+            and isinstance(rs[i][1], int)
+            and isinstance(rs[i][2], int)
+        )
+        assert rs[i][2] - rs[i][1] == length
+
+    # check that the max Ns are lower than the expected cutoff
+    rs = g.get_random_sequences(n=1, chroms=chroms, outtype="string")
+    assert str(g.track2fasta(rs[0])[0].seq).upper().count("N") <= length * max_n
 
 
-def test_get_random_sequences():
-    pass
-
-
-def test_delete_index(genome="tests/data/small_genome.fa.gz"):
-    index_file = genome + ".fai"
-    os.unlink(index_file)
+def test_delete_test_files():
+    for genome in [
+        "tests/data/small_genome.fa.gz",
+        "tests/data/small_genome.fa",
+        "tests/data/gap.fa",
+    ]:
+        for ext in [".fai", ".sizes"]:
+            file = genome + ext
+            if os.path.exists(file):
+                os.unlink(file)

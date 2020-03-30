@@ -9,16 +9,13 @@ coverage.xml
 cc-test-reporter
 Log.out
 genomepy/cfg/default.yaml
-tests/data/gap.fa.fai
-tests/data/small_genome.fa.gz
-tests/data/small_genome.fa.fai
-tests/data/small_genome.fa.sizes
 
 # Directories
 .pytest_cache
 build
 docs/_build
 genomepy.egg-info
+tests/data
 dist
 eggs
 tmp
