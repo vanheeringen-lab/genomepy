@@ -2,7 +2,6 @@ import os.path
 import re
 import sys
 
-from collections.abc import Iterable
 from bisect import bisect
 from pyfaidx import Fasta, Sequence
 from random import random
@@ -121,32 +120,31 @@ class Genome(Fasta):
                 elif "ncbi" in metadata.get("url", ""):
                     metadata["provider"] = "NCBI"
                 else:
-                    metadata["provider"] = "URL"
+                    metadata["provider"] = "Unknown"
 
             if metadata.get("provider", "").lower() in ["ensembl", "ucsc", "ncbi"]:
-                if "tax_id" not in metadata or "assembly_accession" not in metadata:
-                    p = ProviderBase.create(metadata["provider"])
+                if "tax_id" not in metadata:
+                    try:
+                        p = ProviderBase.create(metadata["provider"])
+                        metadata["tax_id"] = p.genome_taxid(metadata["original name"])
+                    except GenomeDownloadError:
+                        print(
+                            f"Could not update tax_id of {self.name}", file=sys.stderr,
+                        )
+                        metadata["tax_id"] = "Unknown"
 
-                    if "tax_id" not in metadata:
-                        try:
-                            metadata["tax_id"] = p.genome_taxid(
-                                metadata["original name"]
-                            )
-                        except GenomeDownloadError:
-                            print(
-                                f"Could not update tax_id of {self.name}",
-                                file=sys.stderr,
-                            )
-                    if "assembly_accession" not in metadata:
-                        try:
-                            metadata["assembly_accession"] = p.assembly_accession(
-                                metadata["original name"]
-                            )
-                        except GenomeDownloadError:
-                            print(
-                                f"Could not update assembly_accession of {self.name}",
-                                file=sys.stderr,
-                            )
+                if "assembly_accession" not in metadata:
+                    try:
+                        p = ProviderBase.create(metadata["provider"])
+                        metadata["assembly_accession"] = p.assembly_accession(
+                            metadata["original name"]
+                        )
+                    except GenomeDownloadError:
+                        print(
+                            f"Could not update assembly_accession of {self.name}",
+                            file=sys.stderr,
+                        )
+                        metadata["assembly_accession"] = "Unknown"
 
             with open(readme, "w") as f:
                 for k, v in metadata.items():
@@ -237,8 +235,9 @@ class Genome(Fasta):
 
     @staticmethod
     def get_track_type(track):
+        # region_p example: "chr1:123-456"
         region_p = re.compile(r"^(.+):(\d+)-(\d+)$")
-        if not isinstance(track, (str, bytes)) and isinstance(track, Iterable):
+        if not isinstance(track, (str, bytes)) and isinstance(track, (list, tuple)):
             if isinstance(track[0], (str, bytes)) and region_p.search(track[0]):
                 return "interval"
         with open(track) as fin:
@@ -312,7 +311,7 @@ class Genome(Fasta):
     @staticmethod
     def _weighted_selection(l, n):
         """
-        Selects  n random elements from a list of (weight, item) tuples.
+        Selects n random elements from a list of (weight, item) tuples.
         Based on code snippet by Nick Johnson
         """
         cuml = []
@@ -325,7 +324,9 @@ class Genome(Fasta):
 
         return [items[bisect(cuml, random() * total_weight)] for _ in range(n)]
 
-    def get_random_sequences(self, n=10, length=200, chroms=None, max_n=0.1):
+    def get_random_sequences(
+        self, n=10, length=200, chroms=None, max_n=0.1, outtype="list"
+    ):
         """Return random genomic sequences.
 
         Parameters
@@ -342,18 +343,23 @@ class Genome(Fasta):
         max_n : float , optional
             Maximum fraction of Ns.
 
+        outtype : string , optional
+            return the output as list or string.
+            Options: "list" or "string", default: "list".
+
         Returns
         -------
-        coords : list
+        coords : list of lists/strings
             List with [chrom, start, end] genomic coordinates.
+            String with "chrom:start-end" genomic coordinates
+            (can be used as input for track2fasta).
         """
-        retries = 100
-        cutoff = length * max_n
         if not chroms:
             chroms = self.keys()
-
         if self._gap_sizes is None:
             self.gap_sizes()
+
+        # dict of chromosome sizes after subtracting the number of Ns
         sizes = dict(
             [
                 (chrom, len(self[chrom]) - self._gap_sizes.get(chrom, 0))
@@ -361,21 +367,22 @@ class Genome(Fasta):
             ]
         )
 
+        # list of (tuples with) chromosomes and their size
+        # (if that size is long enough for random sequence selection)
         lengths = [
             (sizes[x], x)
             for x in chroms
             if sizes[x] / len(self[x]) > 0.1 and sizes[x] > 10 * length
         ]
+        if len(lengths) == 0:
+            raise Exception("No contigs/chromosomes found of sufficient size.")
+
+        # random list of chromosomes from lengths (can have duplicates)
         chroms = self._weighted_selection(lengths, n)
+
         coords = []
-
-        count = {}
-        for chrom in chroms:
-            if chrom in count:
-                count[chrom] += 1
-            else:
-                count[chrom] = 1
-
+        retries = 100
+        cutoff = length * max_n
         for chrom in chroms:
             for _ in range(retries):
                 start = int(random() * (sizes[chrom] - length))
@@ -384,10 +391,18 @@ class Genome(Fasta):
                 if count_n <= cutoff:
                     break
             else:
-                raise Exception("Unexpected error")
-            if count_n > cutoff:
-                raise ValueError(f"Failed to find suitable non-N sequence for {chrom}")
+                raise Exception(
+                    f"Random subset ran {retries} times, "
+                    f"but could not find a sequence with less than {cutoff} N's in {chrom}.\n"
+                    "You may specify contigs/chromosome with the chroms argument."
+                )
 
+            # list output example ["chr1", 123, 456]
             coords.append([chrom, start, end])
+
+        if outtype != "list":
+            # bed output example: "chr1:123-456"
+            for i, region in enumerate(coords):
+                coords[i] = [f"{region[0]}:{region[1]}-{region[2]}"]
 
         return coords
