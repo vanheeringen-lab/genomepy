@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.7.2] - 2019-03-31
+
+### Fixes
+- Fix minor issue with hg19 wrong blacklist url
+- Ensembl downloads over http instead of https (release 99 no longer has https)
+
 ## [0.7.1] - 2019-11-20
 
 ### Fixes
