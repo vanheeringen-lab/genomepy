@@ -33,9 +33,6 @@ def test__read_metadata(capsys, genome="tests/data/small_genome.fa.gz"):
     # create a README.txt
     g = genomepy.Genome(genome)
     readme = os.path.join(g.genome_dir, g.name, "README.txt")
-    # genome_dir = os.path.join(g.genome_dir, g.name)
-    # readme = os.path.join(genome_dir, "README.txt")
-    # genomepy.utils.mkdir_p(genome_dir)
 
     # check 1: no provider recognized
     with open(readme, "w") as f:
@@ -75,6 +72,7 @@ def test__read_metadata(capsys, genome="tests/data/small_genome.fa.gz"):
     assert metadata["assembly_accession"] == "GCA_000146465.1"
 
     # note: lookup of "tax_id" and "assembly_accession" requires provider -> tested later.
+    # TODO: add anyway with a note?
 
 
 def test__bed_to_seqs(

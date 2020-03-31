@@ -249,14 +249,13 @@ class ProviderBase(object):
             If set to True the genome FASTA file will be compressed using bgzip.
             If not specified, the setting from the configuration file will be used.
         """
-        genome_dir = os.path.expanduser(genome_dir)
-        if not os.path.exists(genome_dir):
-            mkdir_p(genome_dir)
-
         dbname, link = self.get_genome_download_link(name, mask=mask, **kwargs)
+
+        genome_dir = os.path.expanduser(genome_dir)
         localname = get_localname(dbname, localname)
-        if not os.path.exists(os.path.join(genome_dir, localname)):
-            os.makedirs(os.path.join(genome_dir, localname))
+        outdir = os.path.join(genome_dir, localname)
+        if not os.path.exists(outdir):
+            mkdir_p(outdir)
 
         sys.stderr.write(f"Downloading genome from {link}...\n")
 
@@ -459,18 +458,18 @@ class EnsemblProvider(ProviderBase):
     def _get_genome_info(self, name):
         """Get genome_info from json request."""
         try:
-            assembly_acc = ""
             for genome in self.list_available_genomes(as_dict=True):
                 if safe(genome.get("assembly_name", "")) == safe(name):
                     assembly_acc = genome.get("assembly_accession", "na")
                     break
-            if assembly_acc:
-                ext = "info/genomes/assembly/" + assembly_acc + "/?"
-                genome_info = self.request_json(ext)
             else:
                 raise exceptions.GenomeDownloadError(
-                    f"Could not download genome {name} from Ensembl"
+                    f"Could not fine genome {name} on Ensembl"
                 )
+
+            ext = "info/genomes/assembly/" + assembly_acc + "/?"
+            genome_info = self.request_json(ext)
+
         except requests.exceptions.HTTPError as e:
             sys.stderr.write(f"Species not found: {e}\n")
             raise exceptions.GenomeDownloadError(
@@ -768,7 +767,7 @@ class UcscProvider(ProviderBase):
             "https://hgdownload.soe.ucsc.edu/"
             + self._get_genomes()[genome_build]["htmlPath"]
         )
-        print(ucsc_url)
+
         p = re.compile(r"GCA_\d+\.\d+")
         p_ncbi = re.compile(r"https?://www.ncbi.nlm.nih.gov/assembly/\d+")
         text = read_url(ucsc_url)
