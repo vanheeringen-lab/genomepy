@@ -1,6 +1,15 @@
 import genomepy
-import pytest
 import norns
+import os
+import pytest
+import subprocess as sp
+
+travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+
+
+@pytest.mark.skipif(travis, reason="format before committing!")
+def test_black_formatting():
+    sp.check_call("black setup.py genomepy/ tests/", shell=True)
 
 
 def test_import():
