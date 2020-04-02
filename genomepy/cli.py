@@ -2,6 +2,7 @@
 import click
 import genomepy
 import sys
+import os
 
 from collections import deque
 
@@ -53,6 +54,7 @@ def search(term, provider=None):
         print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")
 
 
+default_cores = min(os.cpu_count(), 8)
 general_install_options = {
     "genome_dir": {
         "short": "g",
@@ -90,17 +92,47 @@ general_install_options = {
         "help": "bgzip genome",
         "flag_value": True,
     },
-    "annotation": {
-        "short": "a",
-        "long": "annotation",
-        "help": "download annotation",
-        "flag_value": True,
+    "threads": {
+        "short": "t",
+        "long": "threads",
+        "help": "build index using multithreading",
+        "default": default_cores,
     },
     "force": {
         "short": "f",
         "long": "force",
         "help": "overwrite existing files",
         "flag_value": True,
+    },
+    "text_line1": {
+        "long": "Annotation options:",
+        "help": "",
+        "flag_value": True,
+        "text_line": True,
+    },
+    "annotation": {
+        "short": "a",
+        "long": "annotation",
+        "help": "download annotation",
+        "flag_value": True,
+    },
+    "only_annotation": {
+        "short": "o",
+        "long": "only_annotation",
+        "help": "only download annotation (sets -a)",
+        "flag_value": True,
+    },
+    "skip_sanitizing": {
+        "short": "s",
+        "long": "skip_sanitizing",
+        "help": "skip (check for) matching of contig names between annotation and fasta (sets -a)",
+        "flag_value": True,
+    },
+    "text_line2": {
+        "long": "Provider specific options:",
+        "help": "",
+        "flag_value": True,
+        "text_line": True,
     },
 }
 
@@ -112,7 +144,7 @@ def get_install_options():
     install_options = general_install_options
 
     for name in genomepy.provider.ProviderBase.list_providers():
-        p_dict = genomepy.provider.ProviderBase.list_install_options(name)
+        p_dict = genomepy.provider.ProviderBase.create(name).list_install_options()
         for option in p_dict.keys():
             p_dict[option]["long"] = name + "-" + p_dict[option]["long"]
         install_options.update(p_dict)
@@ -137,6 +169,10 @@ def custom_options(options):
             if "flag_value" in opt_params.keys():
                 attrs["flag_value"] = opt_params["flag_value"]
 
+            # can be used to add paragraphs to the --help menu
+            if "text_line" in opt_params.keys():
+                param_decls = deque(["\n" + opt_params["long"], opt_name])
+
             click.option(*param_decls, **attrs)(f)
         return f
 
@@ -157,6 +193,9 @@ def install(
     invert_match,
     bgzip,
     annotation,
+    only_annotation,
+    skip_sanitizing,
+    threads,
     force,
     **kwargs,
 ):
@@ -171,6 +210,9 @@ def install(
         invert_match=invert_match,
         bgzip=bgzip,
         annotation=annotation,
+        only_annotation=only_annotation,
+        skip_sanitizing=skip_sanitizing,
+        threads=threads,
         force=force,
         **kwargs,
     )

@@ -21,7 +21,7 @@ class Plugin(object):
     def deactivate(self):
         self.active = False
 
-    def after_genome_download(self, genome, force):
+    def after_genome_download(self, genome, threads, force):
         raise NotImplementedError("plugin should implement this method")
 
     def get_properties(self, genome):

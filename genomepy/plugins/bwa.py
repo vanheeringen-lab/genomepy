@@ -5,7 +5,7 @@ from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
 
 
 class BwaPlugin(Plugin):
-    def after_genome_download(self, genome, force=False):
+    def after_genome_download(self, genome, threads=1, force=False):
         if not cmd_ok("bwa"):
             return
 

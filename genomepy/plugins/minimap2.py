@@ -5,7 +5,7 @@ from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
 
 
 class Minimap2Plugin(Plugin):
-    def after_genome_download(self, genome, force=False):
+    def after_genome_download(self, genome, threads=1, force=False):
         if not cmd_ok("minimap2"):
             return
 
@@ -19,7 +19,7 @@ class Minimap2Plugin(Plugin):
 
         if not any(fname.endswith(".mmi") for fname in os.listdir(index_dir)):
             # Create index
-            cmd = "minimap2 -d {} {}".format(index_name, genome.filename)
+            cmd = "minimap2 -t {} -d {} {}".format(threads, index_name, genome.filename)
             run_index_cmd("minimap2", cmd)
 
     def get_properties(self, genome):
