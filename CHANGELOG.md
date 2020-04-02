@@ -17,9 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `genomepy install --help` menu now contains paragraphs
 
 ### Fixes
-- Fix minor issue with hg19 wrong blacklist url
 - tests now use double digits to preserve testing order
-- ensembl downloads over http instead of https (as release 99 does no longer have https)
+
+## [0.7.2] - 2019-03-31
+
+### Fixes
+- Fix minor issue with hg19 wrong blacklist url
+- Ensembl downloads over http instead of https (release 99 no longer has https)
 
 ## [0.7.1] - 2019-11-20
 
