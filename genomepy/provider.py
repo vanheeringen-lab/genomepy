@@ -722,6 +722,15 @@ class UcscProvider(ProviderBase):
         # Populate on init, so that methods can be cached
         self.genomes = self._get_genomes()
 
+    @cached(method=True)
+    def _get_genomes(self):
+        r = requests.get(self.rest_url, headers={"Content-Type": "application/json"})
+        if not r.ok:
+            r.raise_for_status()
+        ucsc_json = r.json()
+        genomes = ucsc_json["ucscGenomes"]
+        return genomes
+
     def list_available_genomes(self):
         """
         List all available genomes.
@@ -733,15 +742,6 @@ class UcscProvider(ProviderBase):
         self.genomes = self._get_genomes()
 
         return self.genomes
-
-    @cached(method=True)
-    def _get_genomes(self):
-        r = requests.get(self.rest_url, headers={"Content-Type": "application/json"})
-        if not r.ok:
-            r.raise_for_status()
-        ucsc_json = r.json()
-        genomes = ucsc_json["ucscGenomes"]
-        return genomes
 
     @cached(method=True)
     def assembly_accession(self, genome_build):
