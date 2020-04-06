@@ -54,14 +54,14 @@ def test_request_json():
         p.request_json("error")
 
 
-def test_ensembl_list_install_options():
+def test_list_install_options():
     p = genomepy.provider.EnsemblProvider()
     result = sorted(list(p.list_install_options(name="ensembl").keys()))
     expected = ["toplevel", "version"]
     assert result == expected
 
 
-def test_ensembl_list_available_genomes():
+def test_list_available_genomes():
     p = genomepy.provider.EnsemblProvider()
 
     # test dict for essential terms
@@ -93,7 +93,7 @@ def test_ensembl_list_available_genomes():
             break
 
 
-def test_ensembl__get_genome_info(name="KH"):
+def test__get_genome_info(name="KH"):
     p = genomepy.provider.EnsemblProvider()
     g = p._get_genome_info(name)
 
@@ -105,21 +105,21 @@ def test_ensembl__get_genome_info(name="KH"):
         p._get_genome_info("error")
 
 
-def test_ensembl_assembly_accession(name="KH"):
+def test_assembly_accession(name="KH"):
     p = genomepy.provider.EnsemblProvider()
     a = p.assembly_accession(name)
 
     assert a == "GCA_000224145.1"
 
 
-def test_ensembl_genome_taxid(name="KH"):
+def test_genome_taxid(name="KH"):
     p = genomepy.provider.EnsemblProvider()
     t = p.genome_taxid(name)
 
     assert t == 7719
 
 
-def test_ensembl__genome_info_tuple():
+def test__genome_info_tuple():
     p = genomepy.provider.EnsemblProvider()
     g = p.list_available_genomes(as_dict=True)
 
@@ -132,7 +132,7 @@ def test_ensembl__genome_info_tuple():
             break
 
 
-def test_ensembl_search():
+def test_search():
     p = genomepy.provider.EnsemblProvider()
     for method in ["7719", "KH"]:
         s = p.search(method)
@@ -143,7 +143,7 @@ def test_ensembl_search():
                 break
 
 
-def test_ensembl_get_version():
+def test_get_version():
     p = genomepy.provider.EnsemblProvider()
     ftp_site = "http://ftp.ensembl.org/pub"
     v = p.get_version(ftp_site)
@@ -152,7 +152,7 @@ def test_ensembl_get_version():
     assert v == "99"
 
 
-def test_ensembl_get_genome_download_link(name="KH"):
+def test_get_genome_download_link(name="KH"):
     p = genomepy.provider.EnsemblProvider()
     link = p.get_genome_download_link(name)
 
@@ -165,7 +165,7 @@ def test_ensembl_get_genome_download_link(name="KH"):
 
 
 @pytest.mark.skipif(not travis, reason="slow")
-def test_ensembl_download_annotation(name="KH", version=98):
+def test_download_annotation(name="KH", version=98):
     """Test Ensembl annotation
 
     This annotation is hosted on https://ftp.ensembl.org.
