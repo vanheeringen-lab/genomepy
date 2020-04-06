@@ -149,7 +149,9 @@ def load_mapping(genome_name):
 
 
 @cached
-def map_gene_dataframe(df: pd.DataFrame, genome: str, gene_field: str, product: str = "protein") -> pd.DataFrame:
+def map_gene_dataframe(
+    df: pd.DataFrame, genome: str, gene_field: str, product: str = "protein"
+) -> pd.DataFrame:
     """Use mygene.info to map identifiers
 
     If the identifier can't be mapped, it will be dropped from the resulting
