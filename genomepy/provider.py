@@ -260,7 +260,9 @@ class ProviderBase(object):
                 chunk_size = None if file_size < cutoff else cutoff
                 with open(fname, "wb") as f_out:
                     shutil.copyfileobj(response, f_out, chunk_size)
-            sys.stderr.write("Genome download successful, starting post processing...\n")
+            sys.stderr.write(
+                "Genome download successful, starting post processing...\n"
+            )
 
             # unzip genome
             if link.endswith(".tar.gz"):
@@ -273,7 +275,9 @@ class ProviderBase(object):
 
             # process genome (e.g. masking)
             if hasattr(self, "_post_process_download"):
-                self._post_process_download(name=name, localname=localname, out_dir=tmp_dir, mask=mask)
+                self._post_process_download(
+                    name=name, localname=localname, out_dir=tmp_dir, mask=mask
+                )
 
             if regex:
                 os.rename(fname, fname + "_to_regex")
@@ -309,7 +313,11 @@ class ProviderBase(object):
             f.write("provider: {}\n".format(self.name))
             f.write("original name: {}\n".format(original_name))
             f.write("original filename: {}\n".format(os.path.split(link)[-1]))
-            f.write("assembly_accession: {}\n".format(self.assembly_accession(self.genomes[name])))
+            f.write(
+                "assembly_accession: {}\n".format(
+                    self.assembly_accession(self.genomes[name])
+                )
+            )
             f.write("tax_id: {}\n".format(self.genome_taxid(self.genomes[name])))
             f.write("url: {}\n".format(link))
             f.write("mask: {}\n".format(mask))
@@ -508,7 +516,12 @@ class EnsemblProvider(ProviderBase):
         self.genomes = self._get_genomes()
         self.accession_fields = ["assembly_accession"]
         self.taxid_fields = ["taxonomy_id"]
-        self.description_fields = ["name", "scientific_name", "url_name", "display_name"]
+        self.description_fields = [
+            "name",
+            "scientific_name",
+            "url_name",
+            "display_name",
+        ]
         self.version = None
 
     @cached(method=True)
@@ -528,9 +541,7 @@ class EnsemblProvider(ProviderBase):
 
     @cached(method=True)
     def _get_genomes(self):
-        sys.stderr.write(
-            "Downloading assembly summaries from Ensembl\n"
-        )
+        sys.stderr.write("Downloading assembly summaries from Ensembl\n")
 
         genomes = {}
         divisions = self._request_json("info/divisions?")
@@ -628,9 +639,13 @@ class EnsemblProvider(ProviderBase):
             version = self.get_version(ftp_site)
 
         # division dependent url format
-        ftp_dir = "{}/release-{}/fasta/{}/dna".format(division, version, genome["url_name"].lower())
+        ftp_dir = "{}/release-{}/fasta/{}/dna".format(
+            division, version, genome["url_name"].lower()
+        )
         if division == "vertebrates":
-            ftp_dir = "release-{}/fasta/{}/dna".format(version, genome["url_name"].lower())
+            ftp_dir = "release-{}/fasta/{}/dna".format(
+                version, genome["url_name"].lower()
+            )
         url = f"{ftp_site}/{ftp_dir}"
 
         # masking and assembly level
@@ -737,9 +752,7 @@ class UcscProvider(ProviderBase):
 
     @cached(method=True)
     def _get_genomes(self):
-        sys.stderr.write(
-            "Downloading assembly summaries from UCSC\n"
-        )
+        sys.stderr.write("Downloading assembly summaries from UCSC\n")
 
         r = requests.get(self.rest_url, headers={"Content-Type": "application/json"})
         if not r.ok:
@@ -768,10 +781,7 @@ class UcscProvider(ProviderBase):
         str
             Assembly accession.
         """
-        ucsc_url = (
-            "https://hgdownload.soe.ucsc.edu/"
-            + genome["htmlPath"]
-        )
+        ucsc_url = "https://hgdownload.soe.ucsc.edu/" + genome["htmlPath"]
 
         p = re.compile(r"GCA_\d+\.\d+")
         p_ncbi = re.compile(r"https?://www.ncbi.nlm.nih.gov/assembly/\d+")
@@ -1040,21 +1050,20 @@ class NcbiProvider(ProviderBase):
 
         # mask sequence if required
         if mask == "soft":
+
             def mask_cmd(txt):
                 return txt
+
         elif mask == "hard":
             sys.stderr.write(
-                "\nNCBI genomes are softmasked by default. "
-                "Hard masking...\n"
+                "\nNCBI genomes are softmasked by default. Hard masking...\n"
             )
 
             def mask_cmd(txt):
                 return re.sub("[actg]", "N", txt)
+
         else:
-            sys.stderr.write(
-                "\nNCBI genomes are softmasked by default. "
-                "Unmasking...\n"
-            )
+            sys.stderr.write("\nNCBI genomes are softmasked by default. Unmasking...\n")
 
             def mask_cmd(txt):
                 return txt.upper()
@@ -1144,7 +1153,9 @@ class UrlProvider(ProviderBase):
         if link:
             ext = get_file_info(link)[0]
             if ext not in [".gtf", ".gff", ".gff3", ".bed"]:
-                raise TypeError("Only (gzipped) gtf, gff and bed files are supported.\n")
+                raise TypeError(
+                    "Only (gzipped) gtf, gff and bed files are supported.\n"
+                )
 
             if check_url(link):
                 return link
@@ -1165,8 +1176,7 @@ class UrlProvider(ProviderBase):
             for urlline in f.readlines():
                 urlstr = str(urlline)
                 if any(
-                        substring in urlstr.lower()
-                        for substring in [".gtf", name + ".gff"]
+                    substring in urlstr.lower() for substring in [".gtf", name + ".gff"]
                 ):
                     break
 
@@ -1174,14 +1184,14 @@ class UrlProvider(ProviderBase):
         fname = ""
         for split in re.split('>|<|><|/|"', urlstr):
             if split.lower().endswith(
-                    (
-                            ".gtf",
-                            ".gtf.gz",
-                            name + ".gff",
-                            name + ".gff.gz",
-                            name + ".gff3",
-                            name + ".gff3.gz",
-                    )
+                (
+                    ".gtf",
+                    ".gtf.gz",
+                    name + ".gff",
+                    name + ".gff.gz",
+                    name + ".gff3",
+                    name + ".gff3.gz",
+                )
             ):
                 fname = split
                 break

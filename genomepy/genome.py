@@ -124,11 +124,14 @@ class Genome(Fasta):
 
             if "tax_id" not in metadata or "assembly_accession" not in metadata:
                 name = metadata.get("original name")
-                genome = None
-                p = ProviderBase.create(metadata["provider"])
                 if name:
                     name = safe(name)
-                    if name in p.genomes:
+
+                p = None
+                genome = None
+                if metadata["provider"] != "Unknown":
+                    p = ProviderBase.create(metadata["provider"])
+                    if name and name in p.genomes:
                         genome = p.genomes[name]
 
                 if "tax_id" not in metadata:
