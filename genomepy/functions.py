@@ -124,8 +124,8 @@ def generate_env(fname=None):
     fname: strs, optional
         Name of the output file.
     """
+    config_dir = user_config_dir("genomepy")
     if fname is None:
-        config_dir = user_config_dir("genomepy")
         fname = os.path.join(config_dir, "exports.txt")
     fname = os.path.expanduser(fname)
     if not os.path.exists(config_dir):
@@ -258,8 +258,10 @@ def install_genome(
         # Download annotation from provider
         p = ProviderBase.create(provider)
         p.download_annotation(name, genome_dir, localname=localname, **kwargs)
+
         # Sanitize annotation if needed (requires genome)
-        if not skip_sanitizing and genome_found:
+        annotation_found = len(glob_ext_files(out_dir, "gtf")) >= 1
+        if genome_found and annotation_found and not skip_sanitizing:
             sanitize_annotation(g)
 
     if genome_found:

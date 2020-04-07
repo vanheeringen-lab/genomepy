@@ -6,7 +6,6 @@ from bisect import bisect
 from pyfaidx import Fasta, Sequence
 from random import random
 
-from genomepy.exceptions import GenomeDownloadError
 from genomepy.plugin import get_active_plugins
 from genomepy.provider import ProviderBase
 from genomepy.utils import (
@@ -14,6 +13,7 @@ from genomepy.utils import (
     get_localname,
     glob_ext_files,
     generate_gap_bed,
+    safe,
 )
 
 
@@ -122,29 +122,27 @@ class Genome(Fasta):
                 else:
                     metadata["provider"] = "Unknown"
 
-            if metadata.get("provider", "").lower() in ["ensembl", "ucsc", "ncbi"]:
+            if "tax_id" not in metadata or "assembly_accession" not in metadata:
+                name = metadata.get("original name")
+                genome = None
+                p = ProviderBase.create(metadata["provider"])
+                if name:
+                    name = safe(name)
+                    if name in p.genomes:
+                        genome = p.genomes[name]
+
                 if "tax_id" not in metadata:
-                    try:
-                        p = ProviderBase.create(metadata["provider"])
-                        metadata["tax_id"] = p.genome_taxid(metadata["original name"])
-                    except GenomeDownloadError:
-                        print(
-                            f"Could not update tax_id of {self.name}", file=sys.stderr,
-                        )
-                        metadata["tax_id"] = "Unknown"
+                    metadata["tax_id"] = "na"
+                    if genome:
+                        taxid = p.genome_taxid(genome)
+                        taxid = str(taxid) if taxid != 0 else "na"
+                        metadata["tax_id"] = taxid
 
                 if "assembly_accession" not in metadata:
-                    try:
-                        p = ProviderBase.create(metadata["provider"])
-                        metadata["assembly_accession"] = p.assembly_accession(
-                            metadata["original name"]
-                        )
-                    except GenomeDownloadError:
-                        print(
-                            f"Could not update assembly_accession of {self.name}",
-                            file=sys.stderr,
-                        )
-                        metadata["assembly_accession"] = "Unknown"
+                    metadata["assembly_accession"] = "na"
+                    if genome:
+                        accession = p.assembly_accession(genome)
+                        metadata["assembly_accession"] = accession
 
             with open(readme, "w") as f:
                 for k, v in metadata.items():

@@ -227,6 +227,23 @@ def bgrezip(bgzip, fname):
     return
 
 
+def is_number(term):
+    """check if term is a number. Returns bool"""
+    if isinstance(term, int) or term.isdigit():
+        return True
+
+
+def check_url(url):
+    """Check if URL works. Returns bool"""
+    try:
+        ret = urllib.request.urlopen(url)
+        # check return code for http(s) urls
+        if url.startswith("ftp") or ret.getcode() == 200:
+            return True
+    except urllib.request.URLError:
+        return False
+
+
 def read_url(url):
     """Read a text-based URL."""
     response = urllib.request.urlopen(url)
@@ -306,7 +323,7 @@ def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
 
     # generate a gtf with matching scaffold/chromosome IDs
     sys.stderr.write(
-        "Genome and annotation do not have matching sequence names! Creating matching annotation files...\n"
+        "\nGenome and annotation do not have matching sequence names! Creating matching annotation files...\n"
     )
 
     # unzip genome if zipped and return up-to-date genome name
