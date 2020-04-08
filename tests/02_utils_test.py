@@ -137,6 +137,17 @@ def test_bgrezip(bgzip=True, fname="tests/data/small_genome.fa"):
         genomepy.utils.bgrezip(bgzip, fname)
 
 
+def test_is_number():
+    assert genomepy.utils.is_number("1234")
+    assert genomepy.utils.is_number(1234)
+    assert not genomepy.utils.is_number("abcd")
+
+
+def test_check_url():
+    assert genomepy.utils.check_url("http://ftp.xenbase.org/pub/Genomics/JGI/README")
+    assert not genomepy.utils.check_url("http://not_an_url")
+
+
 def test_read_url(
     url="http://ftp.xenbase.org/pub/Genomics/JGI/README", expected="The data"
 ):

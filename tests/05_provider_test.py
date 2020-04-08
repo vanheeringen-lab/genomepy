@@ -37,41 +37,189 @@ def validate_gzipped_bed(fname):
             break
 
 
-def test_download_and_generate_annotation():
-    out_dir = os.getcwd()
-    localname = "my_annot"
-
-    # unrecognized file type extension
-    annot_url = "https://www.google.com"
-    with pytest.raises(TypeError), TemporaryDirectory(dir=out_dir) as tmpdir:
-        genomepy.provider.download_and_generate_annotation(
-            genome_dir=tmpdir, annot_url=annot_url, localname=localname
-        )
+@pytest.fixture(scope="module")
+def p():
+    return genomepy.provider.ProviderBase()
 
 
-def test_attempt_download_and_report_back(capsys):
-    out_dir = os.getcwd()
-    localname = "my_annot"
-    annot_url = "https://www.google.com"
-    with pytest.raises(TypeError), TemporaryDirectory(dir=out_dir) as tmpdir:
-        genomepy.provider.attempt_download_and_report_back(tmpdir, annot_url, localname)
+def test_providerbase__init__(p):
+    assert list(p._providers) == ["ensembl", "ucsc", "ncbi", "url"]
+    assert p.name is None
+    assert isinstance(p.genomes, dict)
+    assert isinstance(p.accession_fields, list)
 
-    captured = capsys.readouterr().err.strip()
-    assert captured.startswith(f"Using {annot_url}") and captured.endswith(
-        "https://github.com/vanheeringen-lab/genomepy/issues"
-    )
+
+def test_create(p):
+    p.create("Ensembl")
+
+    with pytest.raises(ValueError):
+        p.create("error")
+
+
+def test_register_provider_and_list_providers(p):
+    assert isinstance(p._providers, dict)
+
+    providers = ["ensembl", "ucsc", "ncbi", "url"]
+    for provider in providers:
+        assert provider in list(p.list_providers())
+
+
+def test_list_install_options(p):
+    assert isinstance(p.list_install_options(), dict)
+    assert len(p.list_install_options()) == 0
+
+    with pytest.raises(ValueError):
+        p.list_install_options(name="error")
+
+    result = sorted(list(p.list_install_options(name="ensembl").keys()))
+    expected = ["toplevel", "version"]
+    assert result == expected
+
+
+def test__genome_info_tuple(p):
+    with pytest.raises(NotImplementedError):
+        p._genome_info_tuple(None)
+
+
+def test_list_available_genomes(p):
+    p.list_available_genomes()
+
+
+def test_check_name(p):
+    p = p.create("Ensembl")
+    p.check_name("KH")
+
+    with pytest.raises(genomepy.exceptions.GenomeDownloadError):
+        p.check_name("not_a_real_genome")
+
+
+def get_genome_download_link(p):
+    with pytest.raises(NotImplementedError):
+        p.get_genome_download_link()
+
+
+def test_tar_to_bigfile(p):
+    fname = "tests/data/tar2.fa.tar.gz"
+    outname = "tests/data/tar2.fa"
+    p.tar_to_bigfile(fname, outname)
+
+    assert os.path.exists(outname)
+    # tar2.fa is a copy of tar1.fa. Check if they are identical after untarring.
+    assert filecmp.cmp(outname, "tests/data/tar1.fa")
+    os.unlink(outname)
+
+
+def test_genome_taxid(p):
+    p = p.create("Ensembl")
+    taxid = p.genome_taxid(p.genomes["KH"])
+    assert taxid == 7719
+
+
+def test_assembly_accession(p):
+    p = p.create("Ensembl")
+    accession = p.assembly_accession(p.genomes["KH"])
+    assert accession == "GCA_000224145.1"
 
 
 @pytest.mark.skipif(not travis, reason="slow")
-def test_download_and_generate_annotation_and_attempt_download_and_report_back():
+def test_download_genome(
+    p,
+    name="sacCer3",
+    localname="my_genome",
+    mask="soft",
+    regex="MT",
+    invert_match=True,
+    bgzip=True,
+):
+    p = p.create("UCSC")
+    out_dir = os.getcwd()
+
+    with TemporaryDirectory(dir=out_dir) as tmpdir:
+        p.download_genome(
+            name,
+            genome_dir=tmpdir,
+            localname=localname,
+            mask=mask,
+            regex=regex,
+            invert_match=invert_match,
+            bgzip=bgzip,
+        )
+
+        genome = os.path.join(tmpdir, localname, localname + ".fa.gz")
+        assert os.path.exists(genome)
+
+        readme = os.path.join(os.path.dirname(genome), "README.txt")
+        with open(readme) as f:
+            metadata = {}
+            for line in f.readlines():
+                vals = line.strip().split(":")
+                metadata[vals[0].strip()] = (":".join(vals[1:])).strip()
+
+        assert metadata["name"] == localname
+        assert metadata["mask"] == mask
+
+
+def test_get_annotation_download_link(p):
+    with pytest.raises(NotImplementedError):
+        p.get_annotation_download_link(None)
+
+
+@pytest.mark.skipif(not travis, reason="slow")
+def test_download_and_generate_annotation(p):
     out_dir = os.getcwd()
     localname = "my_annot"
 
-    # fr3 from UCSC
+    annot_url = "https://www.google.com"
+    with pytest.raises(TypeError), TemporaryDirectory(dir=out_dir) as tmpdir:
+        p.download_and_generate_annotation(
+            genome_dir=tmpdir, annot_url=annot_url, localname=localname
+        )
+
     annot_url = "http://hgdownload.cse.ucsc.edu/goldenPath/fr3/database/ensGene.txt.gz"
     with TemporaryDirectory(dir=out_dir) as tmpdir:
-        genomepy.provider.attempt_download_and_report_back(
+        p.download_and_generate_annotation(
             genome_dir=tmpdir, annot_url=annot_url, localname=localname
+        )
+
+        fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf.gz")
+        validate_gzipped_gtf(fname)
+
+        fname = os.path.join(tmpdir, localname, localname + ".annotation.bed.gz")
+        validate_gzipped_bed(fname)
+
+
+def test_attempt_and_report(p, capsys):
+    out_dir = os.getcwd()
+    localname = "my_annot"
+    name = "test"
+
+    p.attempt_and_report(name, localname, None, None)
+    captured = capsys.readouterr().err.strip()
+    assert captured.startswith(f"Could not download genome annotation for {name} from")
+
+    annot_url = "https://www.google.com"
+    with pytest.raises(genomepy.exceptions.GenomeDownloadError), TemporaryDirectory(
+        dir=out_dir
+    ) as tmpdir:
+        p.attempt_and_report(name, localname, annot_url, tmpdir)
+
+    captured = capsys.readouterr().err.strip()
+    assert captured.startswith(f"Downloading annotation from {annot_url}")
+
+
+@pytest.mark.skipif(not travis, reason="slow")
+def test_download_annotation(p):
+    out_dir = os.getcwd()
+    localname = "my_annot"
+
+    p = p.create("Ensembl")
+    name = "KH"
+    kwargs = {"version": 98}
+
+    annot_url = "http://ftp.ensembl.org/pub/release-98/gtf/ciona_intestinalis/Ciona_intestinalis.KH.98.gtf.gz"
+    with TemporaryDirectory(dir=out_dir) as tmpdir:
+        p.download_annotation(
+            name=name, genome_dir=tmpdir, localname=localname, **kwargs
         )
 
         # check download_and_generate_annotation output
@@ -87,99 +235,25 @@ def test_download_and_generate_annotation_and_attempt_download_and_report_back()
             assert f.readline() == f"Annotation url: {annot_url}\n"
 
 
-def test_providerbase__init__():
-    p = genomepy.provider.ProviderBase()
-
-    result = sorted([x for x in dir(p) if not x.startswith("__")])
-    expected = [
-        "_providers",
-        "create",
-        "download_annotation",
-        "download_genome",
-        "get_genome_download_link",
-        "list_install_options",
-        "list_providers",
-        "name",
-        "register_provider",
-        "tar_to_bigfile",
-    ]
-
-    assert result == expected
-    assert p.name is None
+def test__search_taxids(p):
+    p = p.create("Ensembl")
+    assert not p._search_taxids(p.genomes["KH"], "not_an_id")
+    assert p._search_taxids(p.genomes["KH"], "7719")
 
 
-def test_create():
-    p = genomepy.provider.ProviderBase()
-    p.create("Ensembl")
+def test__search_descriptions(p):
+    p = p.create("Ensembl")
+    assert "scientific_name" in p.description_fields
+    assert p.genomes["KH"]["scientific_name"] == "Ciona intestinalis"
+    desc = genomepy.utils.safe("Ciona intestinalis").lower()
+    assert p._search_descriptions(p.genomes["KH"], desc)
 
-    with pytest.raises(ValueError):
-        p.create("error")
-
-
-def test_register_provider_and_list_providers():
-    p = genomepy.provider.ProviderBase()
-    assert isinstance(p._providers, dict)
-
-    providers = ["ensembl", "ucsc", "ncbi", "url"]
-    for provider in providers:
-        assert provider in list(p.list_providers())
+    assert not p._search_descriptions(p.genomes["KH"], "not_in_description")
 
 
-def test_list_install_options():
-    p = genomepy.provider.ProviderBase()
-    assert isinstance(p.list_install_options(), dict)
-    assert len(p.list_install_options()) == 0
-
-    with pytest.raises(ValueError):
-        p.list_install_options(name="error")
-
-    result = sorted(list(p.list_install_options(name="ensembl").keys()))
-    expected = ["toplevel", "version"]
-    assert result == expected
-
-
-def test_tar_to_bigfile():
-    p = genomepy.provider.ProviderBase()
-    fname = "tests/data/tar.fa.tar.gz"
-    outname = "tests/data/tar.fa"
-    p.tar_to_bigfile(fname, outname)
-
-    assert os.path.exists(outname)
-    # tar.fa is a copy of gap.fa. Check if they are identical after untarring.
-    assert filecmp.cmp(outname, "tests/data/gap.fa")
-    os.unlink(outname)
-
-
-@pytest.mark.skipif(not travis, reason="slow")
-def test_download_genome(
-    name="fr3", localname="my_genome", mask="soft", regex="MT", invert_match=True
-):
-    # this test requires a provider
-    p = genomepy.provider.ProviderBase.create("UCSC")
-    out_dir = os.getcwd()
-
-    # Only test on vertebrates as these are downloaded over HTTP.
-    # All others are downloaded over FTP, which is unreliable on Travis.
-    with TemporaryDirectory(dir=out_dir) as tmpdir:
-        p.download_genome(
-            name,
-            genome_dir=tmpdir,
-            localname=localname,
-            mask=mask,
-            regex=regex,
-            invert_match=invert_match,
-            bgzip=True,
-        )
-
-        genome = os.path.join(tmpdir, localname, localname + ".fa.gz")
-        assert os.path.exists(genome)
-
-        readme = os.path.join(os.path.dirname(genome), "README.txt")
-        with open(readme) as f:
-            metadata = {}
-            for line in f.readlines():
-                vals = line.strip().split(":")
-                metadata[vals[0].strip()] = (":".join(vals[1:])).strip()
-
-        assert metadata["name"] == localname
-        assert metadata["mask"] == mask
+def test_search(p, capsys):
+    p = p.create("Ensembl")
+    for method in ["KH", "7719", "Ciona intestinalis"]:
+        genomes = p.search(method)
+        for genome in genomes:
+            assert genome[0] == "KH"
