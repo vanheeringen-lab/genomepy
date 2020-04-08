@@ -4,7 +4,6 @@ import os
 import pytest
 import requests
 
-from tempfile import TemporaryDirectory
 from platform import system
 
 linux = system() == "Linux"
@@ -37,151 +36,120 @@ def validate_gzipped_bed(fname):
             break
 
 
-def test_ensemblprovider__init__():
-    p = genomepy.provider.EnsemblProvider()
+@pytest.fixture(scope="module")
+def p():
+    return genomepy.provider.EnsemblProvider()
+
+
+def test_ensemblprovider__init__(p):
     p2 = genomepy.provider.ProviderBase().create("Ensembl")
-    assert p2.name == p.name == "Ensembl"
+    assert p.name == p2.name == "Ensembl"
+    assert p.taxid_fields == ["taxonomy_id"]
 
 
-def test_request_json():
-    p = genomepy.provider.EnsemblProvider()
-    divisions = p.request_json("info/divisions?")
+def test__request_json(p):
+    divisions = p._request_json("info/divisions?")
     assert isinstance(divisions, list)
     assert "EnsemblVertebrates" in divisions
 
     # test not r.ok
     with pytest.raises(requests.exceptions.HTTPError):
-        p.request_json("error")
+        p._request_json("error")
 
 
-def test_list_install_options():
-    p = genomepy.provider.EnsemblProvider()
+def test__get_genomes(p):
+    assert isinstance(p.genomes, dict)
+    assert "KH" in p.genomes
+    genome = p.genomes["KH"]
+    assert isinstance(genome, dict)
+    for field in p.accession_fields + p.taxid_fields + p.description_fields:
+        assert field in genome
+    assert genome["taxonomy_id"] == 7719
+
+
+def test_list_install_options(p):
     result = sorted(list(p.list_install_options(name="ensembl").keys()))
     expected = ["toplevel", "version"]
     assert result == expected
 
 
-def test_list_available_genomes():
-    p = genomepy.provider.EnsemblProvider()
-
-    # test dict for essential terms
-    g = p.list_available_genomes(as_dict=True)
-    g1 = next(g)
-    result = sorted(list(g1.keys()))
-    expected = [
-        "assembly_accession",
-        "assembly_name",
-        "division",
-        "genebuild",
-        "name",
-        "scientific_name",
-        "taxonomy_id",
-        "url_name",
-    ]
-
-    assert isinstance(g1, dict)
-    for key in expected:
-        assert key in result
-
-    # test tuple
-    g = p.list_available_genomes(as_dict=False)
-    for genome in g:
-        assert isinstance(genome, tuple)
-        # for the (currently) first genome in the list: check for matching output
-        if genome[0] == "ENA_1":
-            assert genome[1] == "albugo_laibachii"
-            break
+def test_genome_info_tuple(p):
+    t = p._genome_info_tuple("KH")
+    assert isinstance(t, tuple)
+    assert t[2:4] == ("Ciona intestinalis", "7719")
 
 
-def test__get_genome_info(name="KH"):
-    p = genomepy.provider.EnsemblProvider()
-    g = p._get_genome_info(name)
-
-    assert g["assembly_name"] == name
-    assert g["assembly_accession"] == "GCA_000224145.1"
-    assert g["taxonomy_id"] == 7719
-
-    with pytest.raises(genomepy.exceptions.GenomeDownloadError):
-        p._get_genome_info("error")
-
-
-def test_assembly_accession(name="KH"):
-    p = genomepy.provider.EnsemblProvider()
-    a = p.assembly_accession(name)
-
-    assert a == "GCA_000224145.1"
-
-
-def test_genome_taxid(name="KH"):
-    p = genomepy.provider.EnsemblProvider()
-    t = p.genome_taxid(name)
-
-    assert t == 7719
-
-
-def test__genome_info_tuple():
-    p = genomepy.provider.EnsemblProvider()
-    g = p.list_available_genomes(as_dict=True)
-
-    for genome in g:
-        t = p._genome_info_tuple(genome)
-        assert isinstance(t, tuple)
-        # for the (currently) first genome in the list: check for matching output
-        if t[0] == "ENA_1":
-            assert t[2] == "Albugo laibachii"
-            break
-
-
-def test_search():
-    p = genomepy.provider.EnsemblProvider()
-    for method in ["7719", "KH"]:
-        s = p.search(method)
-        for genome in s:
-            if genome[0] == "KH":
-                assert genome[1] == "GCA_000224145.1"
-                assert genome[3] == "7719"
-                break
-
-
-def test_get_version():
-    p = genomepy.provider.EnsemblProvider()
+def test_get_version(p):
+    # note: this test will break every time ensembl releases a new version
     ftp_site = "http://ftp.ensembl.org/pub"
     v = p.get_version(ftp_site)
-
-    # note: this test will break every time ensembl releases a new version
     assert v == "99"
 
+    ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
+    v = p.get_version(ftp_site)
+    assert v == "46"
 
-def test_get_genome_download_link(name="KH"):
-    p = genomepy.provider.EnsemblProvider()
-    link = p.get_genome_download_link(name)
 
-    assert link[0] == name
+def test_get_genome_download_link(p):
+    # non vertebrate: soft masked
+    link = p.get_genome_download_link("TAIR10", mask="soft", **{"version": 46})
     assert (
-        link[1]
-        == "http://ftp.ensembl.org/pub//release-99/fasta/ciona_intestinalis"
-        + "/dna//Ciona_intestinalis.KH.dna_sm.toplevel.fa.gz"
+        link
+        == "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
+        + "fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz"
     )
 
+    # vertebrate with primary assembly: unmasked
+    link = p.get_genome_download_link("GRCz11", mask="none", **{"version": 98})
+    assert (
+        link
+        == "http://ftp.ensembl.org/pub/release-98/fasta/"
+        + "danio_rerio/dna/Danio_rerio.GRCz11.dna.primary_assembly.fa.gz"
+    )
 
-@pytest.mark.skipif(not travis, reason="slow")
-def test_download_annotation(name="KH", version=98):
-    """Test Ensembl annotation
+    # vertebrate with primary assembly: hard masked and toplevel only
+    link = p.get_genome_download_link(
+        "GRCz11", mask="hard", **{"version": 98, "toplevel": True}
+    )
+    assert (
+        link
+        == "http://ftp.ensembl.org/pub/release-98/fasta/"
+        + "danio_rerio/dna/Danio_rerio.GRCz11.dna_rm.toplevel.fa.gz"
+    )
 
-    This annotation is hosted on https://ftp.ensembl.org.
-    """
-    p = genomepy.provider.EnsemblProvider()
-    out_dir = os.getcwd()
-    localname = "my_annot"
+    # vertebrate: any version
+    p.version = None
+    link = p.get_genome_download_link("GRCz11", **{"toplevel": True})
+    for substring in [
+        "http://ftp.ensembl.org/pub/release-",
+        "/fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna_sm.toplevel.fa.gz",
+    ]:
+        assert substring in link
 
-    # Only test on vertebrates as these are downloaded over HTTP.
-    # All others are downloaded over FTP, which is unreliable on Travis.
-    with TemporaryDirectory(dir=out_dir) as tmpdir:
-        p.download_annotation(name, tmpdir, localname=localname, version=version)
 
-        # check download_and_generate_annotation output
-        fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf.gz")
-        validate_gzipped_gtf(fname)
+def test_get_annotation_download_link(p):
+    # non vertebrate
+    link = p.get_annotation_download_link("TAIR10", **{"version": 46})
+    assert (
+        link
+        == "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
+        + "gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.46.gtf.gz"
+    )
 
-        fname = os.path.join(tmpdir, localname, localname + ".annotation.bed.gz")
-        validate_gzipped_bed(fname)
+    # vertebrate
+    link = p.get_annotation_download_link("GRCz11", **{"version": 98})
+    assert (
+        link
+        == "http://ftp.ensembl.org/pub/release-98/gtf/"
+        + "danio_rerio/Danio_rerio.GRCz11.98.gtf.gz"
+    )
+
+    # vertebrate: any version
+    p.version = None
+    link = p.get_annotation_download_link("GRCz11")
+    for substring in [
+        "http://ftp.ensembl.org/pub/release-",
+        "/gtf/danio_rerio/Danio_rerio.GRCz11.",
+        ".gtf.gz",
+    ]:
+        assert substring in link

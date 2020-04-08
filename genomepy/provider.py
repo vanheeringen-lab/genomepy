@@ -678,9 +678,7 @@ class EnsemblProvider(ProviderBase):
 
     def get_annotation_download_link(self, name, **kwargs):
         """
-        Parse and test the link to the UCSC annotation file.
-
-        Will check UCSC, Ensembl and RefSeq annotation, respectively.
+        Parse and test the link to the Ensembl annotation file.
 
         Parameters
         ----------
