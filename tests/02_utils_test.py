@@ -1,3 +1,4 @@
+import filecmp
 import genomepy
 import pytest
 import os
@@ -117,6 +118,17 @@ def test_get_localname(name="XT9_1", localname="my genome"):
     url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XT9_1.fa.gz"
     result = genomepy.utils.get_localname(name=url, localname=None)
     assert result == name
+
+
+def test_tar_to_bigfile():
+    fname = "tests/data/tar2.fa.tar.gz"
+    outname = "tests/data/tar2.fa"
+    genomepy.utils.tar_to_bigfile(fname, outname)
+
+    assert os.path.exists(outname)
+    # tar2.fa is a copy of tar1.fa. Check if they are identical after untarring.
+    assert filecmp.cmp(outname, "tests/data/tar1.fa")
+    os.unlink(outname)
 
 
 def test_bgunzip_and_name(genome="tests/data/small_genome.fa.gz"):

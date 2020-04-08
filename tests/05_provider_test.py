@@ -1,4 +1,3 @@
-import filecmp
 import genomepy
 import gzip
 import os
@@ -64,14 +63,14 @@ def test_register_provider_and_list_providers(p):
         assert provider in list(p.list_providers())
 
 
-def test_list_install_options(p):
-    assert isinstance(p.list_install_options(), dict)
-    assert len(p.list_install_options()) == 0
+def test__list_install_options(p):
+    assert isinstance(p._list_install_options(), dict)
+    assert len(p._list_install_options()) == 0
 
     with pytest.raises(ValueError):
-        p.list_install_options(name="error")
+        p._list_install_options(name="error")
 
-    result = sorted(list(p.list_install_options(name="ensembl").keys()))
+    result = sorted(list(p._list_install_options(name="ensembl").keys()))
     expected = ["toplevel", "version"]
     assert result == expected
 
@@ -98,17 +97,6 @@ def get_genome_download_link(p):
         p.get_genome_download_link()
 
 
-def test_tar_to_bigfile(p):
-    fname = "tests/data/tar2.fa.tar.gz"
-    outname = "tests/data/tar2.fa"
-    p.tar_to_bigfile(fname, outname)
-
-    assert os.path.exists(outname)
-    # tar2.fa is a copy of tar1.fa. Check if they are identical after untarring.
-    assert filecmp.cmp(outname, "tests/data/tar1.fa")
-    os.unlink(outname)
-
-
 def test_genome_taxid(p):
     p = p.create("Ensembl")
     taxid = p.genome_taxid(p.genomes["KH"])
@@ -121,7 +109,7 @@ def test_assembly_accession(p):
     assert accession.startswith("GCA_000224145")
 
 
-@pytest.mark.skipif(not travis, reason="slow")
+@pytest.mark.skipif(not travis or not linux, reason="slow")
 def test_download_genome(
     p,
     name="sacCer3",
@@ -164,7 +152,7 @@ def test_get_annotation_download_link(p):
         p.get_annotation_download_link(None)
 
 
-@pytest.mark.skipif(not travis, reason="slow")
+@pytest.mark.skipif(not travis or not linux, reason="slow")
 def test_download_and_generate_annotation(p):
     out_dir = os.getcwd()
     localname = "my_annot"
@@ -175,7 +163,10 @@ def test_download_and_generate_annotation(p):
             genome_dir=tmpdir, annot_url=annot_url, localname=localname
         )
 
-    annot_url = "http://hgdownload.cse.ucsc.edu/goldenPath/fr3/database/ensGene.txt.gz"
+    annot_url = (
+        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/"
+        + "GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz"
+    )
     with TemporaryDirectory(dir=out_dir) as tmpdir:
         p.download_and_generate_annotation(
             genome_dir=tmpdir, annot_url=annot_url, localname=localname
@@ -207,7 +198,7 @@ def test_attempt_and_report(p, capsys):
     assert captured.startswith(f"Downloading annotation from {annot_url}")
 
 
-@pytest.mark.skipif(not travis, reason="slow")
+@pytest.mark.skipif(not travis or not linux, reason="slow")
 def test_download_annotation(p):
     out_dir = os.getcwd()
     localname = "my_annot"

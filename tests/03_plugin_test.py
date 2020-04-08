@@ -28,8 +28,10 @@ def test_init_plugins():
 def test_get_active_plugins():
     # returns list of all active plugins
     plugins = genomepy.plugin.get_active_plugins()
+    current_plugins = genomepy.plugin.init_plugins()
     assert isinstance(plugins, list)
-    assert config["plugin"] == plugins
+    for plugin in plugins:
+        assert plugin not in current_plugins
 
 
 def test_activate():

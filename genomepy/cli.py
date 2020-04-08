@@ -135,7 +135,7 @@ def get_install_options():
     install_options = general_install_options
 
     for name in genomepy.ProviderBase.list_providers():
-        p_dict = genomepy.ProviderBase.create(name).list_install_options()
+        p_dict = genomepy.ProviderBase.create(name)._list_install_options()
         for option in p_dict.keys():
             p_dict[option]["long"] = name + "-" + p_dict[option]["long"]
         install_options.update(p_dict)

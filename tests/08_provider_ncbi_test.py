@@ -39,83 +39,72 @@ def validate_gzipped_bed(fname):
 
 @pytest.fixture(scope="module")
 def p():
-    return genomepy.provider.UcscProvider()
+    return genomepy.provider.NcbiProvider()
 
 
-def test_ensemblprovider__init__(p):
-    p2 = genomepy.provider.ProviderBase().create("UCSC")
-    assert p.name == p2.name == "UCSC"
-    assert p.taxid_fields == ["taxId"]
+def test_ncbiprovider__init__(p):
+    p2 = genomepy.provider.ProviderBase().create("NCBI")
+    assert p2.name == p.name == "NCBI"
+    assert p.taxid_fields == ["species_taxid", "taxid"]
 
 
 def test__get_genomes(p):
     assert isinstance(p.genomes, dict)
-    assert "ailMel1" in p.genomes
-    genome = p.genomes["ailMel1"]
+    assert "ASM2732v1" in p.genomes
+    genome = p.genomes["ASM2732v1"]
     assert isinstance(genome, dict)
     for field in p.accession_fields + p.taxid_fields + p.description_fields:
         assert field in genome
-    assert genome["taxId"] == 9646
-
-
-def test_assembly_accession(p):
-    genome = p.genomes["sacCer3"]
-    accession = p.assembly_accession(genome)
-
-    assert accession.startswith("GCA_000146055")
+    assert genome["species_taxid"] == "2097"
+    assert genome["taxid"] == "243273"
 
 
 def test_genome_info_tuple(p):
-    t = p._genome_info_tuple("sacCer3")
+    t = p._genome_info_tuple("ASM2732v1")
     assert isinstance(t, tuple)
-    assert t[2:4] == ("Saccharomyces cerevisiae", "559292")
+    assert t[2:4] == ("Mycoplasma genitalium G37", "2097")
 
 
 def test_get_genome_download_link(p):
-    link = p.get_genome_download_link("sacCer3", mask="soft")
+    link = p.get_genome_download_link("ASM2732v1")
     assert (
         link
-        == "http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz"
-    )
-
-    link = p.get_genome_download_link("danRer7", mask="hard")
-    assert (
-        link
-        == "http://hgdownload.soe.ucsc.edu/goldenPath/danRer7/bigZips/danRer7.fa.masked.gz"
+        == "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/"
+        + "325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.fna.gz"
     )
 
 
 def test__post_process_download(p):
+    name = "ASM2732v1"
     localname = "tmp"
     out_dir = os.getcwd()
     with TemporaryDirectory(dir=out_dir) as tmpdir:
-        # this should skip without error
-        p._post_process_download(
-            name=None, localname=localname, out_dir=tmpdir, mask="soft"
-        )
-        p._post_process_download(
-            name=None, localname=localname, out_dir=tmpdir, mask="hard"
-        )
-        p._post_process_download(
-            name=None, localname=localname, out_dir=tmpdir, mask="???"
-        )
-
         # copy fa file for unmasking
         g = os.path.join(tmpdir, localname + ".fa")
         shutil.copyfile("tests/data/gap.fa", g)
 
         p._post_process_download(
-            name=None, localname=localname, out_dir=tmpdir, mask="none"
+            name=name, localname=localname, out_dir=tmpdir, mask="hard"
         )
         assert os.path.exists(g)
         with open(g) as f:
+            ln = 0
             for line in f:
-                assert "a" not in line
+                if line.startswith(">"):
+                    # test sequence names (should remain identical here)
+                    names = line[1:].strip().split(" ")
+                    assert names[0] == names[1]
+                elif ln == 9:
+                    # test masking
+                    assert line.strip() == "ANNNNNNNA"
+                ln += 1
 
 
 def test_get_annotation_download_link(p):
-    link = p.get_annotation_download_link("sacCer3")
+    link = p.get_annotation_download_link("ASM2732v1")
     assert (
         link
-        == "http://hgdownload.cse.ucsc.edu/goldenPath/sacCer3/database/ensGene.txt.gz"
+        == "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/"
+        + "000/027/325/GCF_000027325.1_ASM2732v1/"
+        + "GCF_000027325.1_ASM2732v1_genomic.gff.gz"
     )

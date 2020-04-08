@@ -6,6 +6,7 @@ import re
 import sys
 import urllib.request
 import subprocess as sp
+import tarfile
 
 from glob import glob
 from pyfaidx import Fasta
@@ -200,6 +201,24 @@ def get_localname(name, localname=None):
             return safe(name[: name.find(".")])
     else:
         return safe(localname)
+
+
+def tar_to_bigfile(fname, outfile):
+    """Convert tar of multiple FASTAs to one file."""
+    fnames = []
+    with TemporaryDirectory() as tmpdir:
+        # Extract files to temporary directory
+        with tarfile.open(fname) as tar:
+            tar.extractall(path=tmpdir)
+        for root, _, files in os.walk(tmpdir):
+            fnames += [os.path.join(root, fname) for fname in files]
+
+        # Concatenate
+        with open(outfile, "w") as out:
+            for infile in fnames:
+                for line in open(infile):
+                    out.write(line)
+                os.unlink(infile)
 
 
 def bgunzip_and_name(genome):

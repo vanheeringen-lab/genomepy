@@ -6,7 +6,6 @@ import os
 import norns
 import time
 import shutil
-import tarfile
 import subprocess as sp
 
 from psutil import virtual_memory
@@ -20,6 +19,7 @@ from genomepy import exceptions
 from genomepy.utils import (
     filter_fasta,
     get_localname,
+    tar_to_bigfile,
     get_file_info,
     read_url,
     safe,
@@ -99,7 +99,7 @@ class ProviderBase(object):
     def __hash__(self):
         return hash(str(self.__class__))
 
-    def list_install_options(self, name=None):
+    def _list_install_options(self, name=None):
         """List provider specific install options"""
         if name is None:
             return {}
@@ -107,7 +107,7 @@ class ProviderBase(object):
             raise ValueError("Unknown provider")
         else:
             provider = self._providers[name.lower()]
-            return provider.list_install_options(self)
+            return provider._list_install_options(self)
 
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
@@ -135,24 +135,6 @@ class ProviderBase(object):
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         raise NotImplementedError()
-
-    @staticmethod
-    def tar_to_bigfile(fname, outfile):
-        """Convert tar of multiple FASTAs to one file."""
-        fnames = []
-        with TemporaryDirectory() as tmpdir:
-            # Extract files to temporary directory
-            with tarfile.open(fname) as tar:
-                tar.extractall(path=tmpdir)
-            for root, _, files in os.walk(tmpdir):
-                fnames += [os.path.join(root, fname) for fname in files]
-
-            # Concatenate
-            with open(outfile, "w") as out:
-                for infile in fnames:
-                    for line in open(infile):
-                        out.write(line)
-                    os.unlink(infile)
 
     def genome_taxid(self, genome):
         """Return the taxonomy_id for a genome.
@@ -266,7 +248,7 @@ class ProviderBase(object):
 
             # unzip genome
             if link.endswith(".tar.gz"):
-                self.tar_to_bigfile(fname, fname)
+                tar_to_bigfile(fname, fname)
             elif link.endswith(".gz"):
                 os.rename(fname, fname + ".gz")
                 ret = sp.check_call(["gunzip", "-f", fname])
@@ -555,7 +537,7 @@ class EnsemblProvider(ProviderBase):
                 genomes[safe(genome["assembly_name"])] = genome
         return genomes
 
-    def list_install_options(self, name=None):
+    def _list_install_options(self, name=None):
         """List Ensembl specific install options"""
 
         provider_specific_options = {
@@ -744,7 +726,7 @@ class UcscProvider(ProviderBase):
         self.name = "UCSC"
         # Populate on init, so that methods can be cached
         self.genomes = self._get_genomes()
-        self.accession_fields = None
+        self.accession_fields = []
         self.taxid_fields = ["taxId"]
         self.description_fields = ["description", "scientificName"]
 
@@ -759,7 +741,8 @@ class UcscProvider(ProviderBase):
         genomes = ucsc_json["ucscGenomes"]
         return genomes
 
-    # @cached(method=True)  # TODO find out how to cache this again
+    # staticmethod, but the decorators cannot be combined
+    @cached(method=True)
     def assembly_accession(self, genome):
         """Return the assembly accession (GCA_*) for a genome.
 
@@ -810,10 +793,6 @@ class UcscProvider(ProviderBase):
                     gca = m.group(0)
         return gca
 
-    # assembly_accession (UCSC specific version) cannot be cached,
-    # (because the decorators conflict)
-    # instead store this function, which uses it
-    @cached(method=True)
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
         genome = self.genomes[name]
@@ -883,6 +862,7 @@ class UcscProvider(ProviderBase):
         mask : str , optional
             masking level: soft/hard/none, default=soft
         """
+        del name
         if mask != "none":
             return
 
@@ -1017,6 +997,8 @@ class NcbiProvider(ProviderBase):
         """
         Replace accessions with sequence names in fasta file.
 
+        Applies masking.
+
         Parameters
         ----------
         name : str
@@ -1118,7 +1100,7 @@ class UrlProvider(ProviderBase):
     def search(self, term):
         yield
 
-    def list_install_options(self, name=None):
+    def _list_install_options(self, name=None):
         """List URL specific install options"""
 
         provider_specific_options = {

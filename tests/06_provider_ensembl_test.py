@@ -67,8 +67,8 @@ def test__get_genomes(p):
     assert genome["taxonomy_id"] == 7719
 
 
-def test_list_install_options(p):
-    result = sorted(list(p.list_install_options(name="ensembl").keys()))
+def test__list_install_options(p):
+    result = sorted(list(p._list_install_options(name="ensembl").keys()))
     expected = ["toplevel", "version"]
     assert result == expected
 
@@ -85,19 +85,21 @@ def test_get_version(p):
     v = p.get_version(ftp_site)
     assert v == "99"
 
-    ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
-    v = p.get_version(ftp_site)
-    assert v == "46"
+    if not travis and linux:
+        ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
+        v = p.get_version(ftp_site)
+        assert v == "46"
 
 
 def test_get_genome_download_link(p):
-    # non vertebrate: soft masked
-    link = p.get_genome_download_link("TAIR10", mask="soft", **{"version": 46})
-    assert (
-        link
-        == "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
-        + "fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz"
-    )
+    if not travis and linux:
+        # non vertebrate: soft masked
+        link = p.get_genome_download_link("TAIR10", mask="soft", **{"version": 46})
+        assert (
+            link
+            == "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
+            + "fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz"
+        )
 
     # vertebrate with primary assembly: unmasked
     link = p.get_genome_download_link("GRCz11", mask="none", **{"version": 98})
@@ -128,13 +130,14 @@ def test_get_genome_download_link(p):
 
 
 def test_get_annotation_download_link(p):
-    # non vertebrate
-    link = p.get_annotation_download_link("TAIR10", **{"version": 46})
-    assert (
-        link
-        == "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
-        + "gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.46.gtf.gz"
-    )
+    if not travis and linux:
+        # non vertebrate
+        link = p.get_annotation_download_link("TAIR10", **{"version": 46})
+        assert (
+            link
+            == "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
+            + "gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.46.gtf.gz"
+        )
 
     # vertebrate
     link = p.get_annotation_download_link("GRCz11", **{"version": 98})
