@@ -41,7 +41,7 @@ before_script:
 script:
   - black --check setup.py genomepy/ tests/
   - flake8 setup.py genomepy/ tests/
-  - pytest -v --disable-pytest-warnings --cov=genomepy --cov-report=xml tests/0*
+  - pytest -v --disable-pytest-warnings --cov=genomepy --cov-report=xml tests/0* tests/1*
 
 after_script:
   # send the coverage data to Code Climate
