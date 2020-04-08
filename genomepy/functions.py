@@ -30,14 +30,19 @@ def manage_config(cmd):
             print(f.read())
     elif cmd == "generate":
         config_dir = user_config_dir("genomepy")
-        if not os.path.exists(config_dir):
+        if os.path.exists(config_dir):
             mkdir_p(config_dir)
 
-        fname = os.path.join(config_dir, "{}.yaml".format("genomepy"))
+        fname = os.path.join(config_dir, "genomepy.yaml")
+        if os.path.exists(fname):
+            os.unlink(fname)
+        default_config = norns.config(
+            "genomepy", default="cfg/default.yaml"
+        ).config_file
         with open(fname, "w") as fout:
-            with open(config.config_file) as fin:
+            with open(default_config) as fin:
                 fout.write(fin.read())
-        print("Created config file {}".format(fname))
+        print(f"Created config file {fname}")
 
 
 def list_available_genomes(provider=None):
@@ -117,23 +122,28 @@ def generate_exports():
 def generate_env(fname=None):
     """Generate file with exports.
 
-    By default this is in .config/genomepy/exports.txt.
+    By default this is .config/genomepy/exports.txt.
+
+    An alternative file name or absolute path is accepted too.
 
     Parameters
     ----------
     fname: strs, optional
         Name of the output file.
     """
-    config_dir = user_config_dir("genomepy")
-    if fname is None:
-        fname = os.path.join(config_dir, "exports.txt")
-    fname = os.path.expanduser(fname)
-    if not os.path.exists(config_dir):
-        manage_config("generate")
+    if fname and os.path.isabs(fname):
+        absname = fname
+    else:
+        config_dir = user_config_dir("genomepy")
+        if not os.path.exists(config_dir):
+            manage_config("generate")
 
-    with open(fname, "w") as fout:
+        name = "exports.txt" if fname is None else fname
+        absname = os.path.join(config_dir, name)
+
+    with open(absname, "w") as fout:
         for env in generate_exports():
-            fout.write("{}\n".format(env))
+            fout.write(f"{env}\n")
 
 
 def install_genome(
