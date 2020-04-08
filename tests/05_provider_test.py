@@ -87,7 +87,6 @@ def test_list_available_genomes(p):
 def test_check_name(p):
     p = p.create("Ensembl")
     p.check_name("KH")
-
     with pytest.raises(genomepy.exceptions.GenomeDownloadError):
         p.check_name("not_a_real_genome")
 
@@ -203,15 +202,14 @@ def test_download_annotation(p):
     out_dir = os.getcwd()
     localname = "my_annot"
 
-    p = p.create("Ensembl")
-    name = "KH"
-    kwargs = {"version": 98}
+    p = p.create("UCSC")
+    name = "sacCer3"
 
-    annot_url = "http://ftp.ensembl.org/pub/release-98/gtf/ciona_intestinalis/Ciona_intestinalis.KH.98.gtf.gz"
+    annot_url = (
+        "http://hgdownload.cse.ucsc.edu/goldenPath/sacCer3/database/ensGene.txt.gz"
+    )
     with TemporaryDirectory(dir=out_dir) as tmpdir:
-        p.download_annotation(
-            name=name, genome_dir=tmpdir, localname=localname, **kwargs
-        )
+        p.download_annotation(name=name, genome_dir=tmpdir, localname=localname)
 
         # check download_and_generate_annotation output
         fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf.gz")
@@ -238,7 +236,6 @@ def test__search_descriptions(p):
     assert p.genomes["KH"]["scientific_name"] == "Ciona intestinalis"
     desc = genomepy.utils.safe("Ciona intestinalis").lower()
     assert p._search_descriptions(p.genomes["KH"], desc)
-
     assert not p._search_descriptions(p.genomes["KH"], "not_in_description")
 
 

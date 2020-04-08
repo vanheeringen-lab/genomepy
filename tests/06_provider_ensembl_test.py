@@ -68,7 +68,7 @@ def test__get_genomes(p):
 
 
 def test__list_install_options(p):
-    result = sorted(list(p._list_install_options(name="ensembl").keys()))
+    result = sorted(list(p._list_install_options()))
     expected = ["toplevel", "version"]
     assert result == expected
 
