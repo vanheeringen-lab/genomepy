@@ -4,9 +4,6 @@ import os
 import pytest
 import requests
 
-from platform import system
-
-linux = system() == "Linux"
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
@@ -85,14 +82,14 @@ def test_get_version(p):
     v = p.get_version(ftp_site)
     assert v == "99"
 
-    if not travis and linux:
+    if not travis:
         ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
         v = p.get_version(ftp_site)
         assert v == "46"
 
 
 def test_get_genome_download_link(p):
-    if not travis and linux:
+    if not travis:
         # non vertebrate: soft masked
         link = p.get_genome_download_link("TAIR10", mask="soft", **{"version": 46})
         assert (
@@ -130,7 +127,7 @@ def test_get_genome_download_link(p):
 
 
 def test_get_annotation_download_link(p):
-    if not travis and linux:
+    if not travis:
         # non vertebrate
         link = p.get_annotation_download_link("TAIR10", **{"version": 46})
         assert (

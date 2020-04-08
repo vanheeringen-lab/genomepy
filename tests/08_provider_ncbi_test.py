@@ -5,10 +5,6 @@ import pytest
 import shutil
 
 from tempfile import TemporaryDirectory
-from platform import system
-
-linux = system() == "Linux"
-travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
 def validate_gzipped_gtf(fname):
