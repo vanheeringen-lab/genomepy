@@ -19,6 +19,16 @@ linux = system() == "Linux"
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
+def test_plugins():
+    # activate and check all plugins
+    for p in init_plugins():
+        if p not in ["blacklist", "star"]:
+            assert genomepy.utils.cmd_ok(p)
+        elif p == "star":
+            assert genomepy.utils.cmd_ok(p.upper())
+        activate(p)
+
+
 @pytest.fixture(scope="module", params=["unzipped", "bgzipped"])
 def genome(request):
     """Create a test genome and location"""
@@ -37,16 +47,6 @@ def genome(request):
         sp.check_call(["gunzip", fname])
 
     return genomepy.Genome(name, genome_dir=genome_dir)
-
-
-def test_plugins():
-    # activate and check all plugins
-    for p in init_plugins():
-        if p not in ["blacklist", "star"]:
-            assert genomepy.utils.cmd_ok(p)
-        elif p == "star":
-            assert genomepy.utils.cmd_ok(p.upper())
-        activate(p)
 
 
 def test_blacklist(genome):
