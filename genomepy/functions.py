@@ -42,6 +42,7 @@ def manage_config(cmd):
         ).config_file
         with open(new_config, "w") as fout, open(default_config) as fin:
             fout.write(fin.read())
+        config.config_file = new_config
         print(f"Created config file {new_config}")
 
 
