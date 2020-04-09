@@ -15,7 +15,9 @@ def test_manage_config(capsys):
     assert captured.startswith("Created config file")
 
     # check where it is found
-    fname = os.path.expanduser("~/.config/genomepy/genomepy.yaml")
+    fname = os.path.expanduser("~/Library/Application Support/genomepy/genomepy.yaml")
+    if linux:
+        fname = os.path.expanduser("~/.config/genomepy/genomepy.yaml")
     genomepy.functions.manage_config("file")
     captured = capsys.readouterr().out.strip()
     assert captured == fname
