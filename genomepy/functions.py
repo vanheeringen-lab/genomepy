@@ -30,19 +30,19 @@ def manage_config(cmd):
             print(f.read())
     elif cmd == "generate":
         config_dir = user_config_dir("genomepy")
-        if os.path.exists(config_dir):
+        if not os.path.exists(config_dir):
             mkdir_p(config_dir)
 
-        fname = os.path.join(config_dir, "genomepy.yaml")
-        if os.path.exists(fname):
-            os.unlink(fname)
+        new_config = os.path.join(config_dir, "genomepy.yaml")
+        # existing config must be removed before norns picks up the default again
+        if os.path.exists(new_config):
+            os.unlink(new_config)
         default_config = norns.config(
             "genomepy", default="cfg/default.yaml"
         ).config_file
-        with open(fname, "w") as fout:
-            with open(default_config) as fin:
-                fout.write(fin.read())
-        print(f"Created config file {fname}")
+        with open(new_config, "w") as fout, open(default_config) as fin:
+            fout.write(fin.read())
+        print(f"Created config file {new_config}")
 
 
 def list_available_genomes(provider=None):
