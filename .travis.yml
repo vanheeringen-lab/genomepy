@@ -37,12 +37,13 @@ before_script:
       ./cc-test-reporter before-build;
     fi
 
-# TODO: remove 0* from pytest
 script:
   - black --check setup.py genomepy/ tests/
   - flake8 setup.py genomepy/ tests/
-  - pytest -v --disable-pytest-warnings --cov=genomepy --cov-report=xml tests/0* tests/1*
+  - pytest -vv --disable-pytest-warnings --cov=genomepy --cov-report=xml tests/*
 
 after_script:
   # send the coverage data to Code Climate
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT;
+    fi
