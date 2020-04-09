@@ -9,6 +9,12 @@ travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
 def test_manage_config(capsys):
+    # make a new config
+    genomepy.functions.manage_config("generate")
+    captured = capsys.readouterr().out.strip()
+    assert captured.startswith("Created config file")
+
+    # check where it is found
     fname = os.path.expanduser("~/.config/genomepy/genomepy.yaml")
     genomepy.functions.manage_config("file")
     captured = capsys.readouterr().out.strip()
