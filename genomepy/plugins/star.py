@@ -1,4 +1,5 @@
 import os
+import subprocess as sp
 from shutil import rmtree
 from genomepy.plugin import Plugin
 from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd, bgunzip_and_name, bgrezip
@@ -20,15 +21,31 @@ class StarPlugin(Plugin):
         if not os.path.exists(index_name):
             # unzip genome if zipped and return up-to-date genome name
             bgzip, fname = bgunzip_and_name(genome)
+            # unzip annotation if found
+            annot = fname[:-2] + "annotation.gtf.gz"
+            rezip = False
+            if os.path.exists(annot):
+                sp.check_call(f"gunzip -f {annot}", shell=True)
+                rezip = True
+            annot = annot[:-3]
 
             # Create index
-            cmd = "STAR --runMode genomeGenerate --runThreadN {} --genomeFastaFiles {} --genomeDir {} --outFileNamePrefix {}".format(
-                threads, fname, index_dir, index_dir
+            cmd = (
+                f"STAR --runMode genomeGenerate --runThreadN {threads} "
+                + f"--genomeFastaFiles {fname} --genomeDir {index_dir} "
+                + f"--outFileNamePrefix {index_dir}"
             )
+            if os.path.exists(annot):
+                cmd += f" --sjdbGTFfile {annot}"
+            else:
+                print("\nGenerating STAR index without annotation file.\n\n")
             run_index_cmd("star", cmd)
 
             # re-zip genome if it was unzipped prior
             bgrezip(bgzip, fname)
+            # re-zip annotation if it was unzipped prior
+            if rezip:
+                sp.check_call(f"gzip {annot}", shell=True)
 
     def get_properties(self, genome):
         props = {

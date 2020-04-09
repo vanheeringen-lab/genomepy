@@ -22,7 +22,7 @@ class Hisat2Plugin(Plugin):
             bgzip, fname = bgunzip_and_name(genome)
 
             # Create index
-            cmd = "hisat2-build -p {} {} {}".format(threads, fname, index_name)
+            cmd = f"hisat2-build -p {threads} {fname} {index_name}"
             run_index_cmd("hisat2", cmd)
 
             # re-zip genome if unzipped

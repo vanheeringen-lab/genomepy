@@ -30,7 +30,7 @@ def generate_gap_bed(fname, outname):
     with open(outname, "w") as bed:
         for chrom in f.keys():
             for m in re.finditer(r"N+", f[chrom][:].seq):
-                bed.write("{}\t{}\t{}\n".format(chrom, m.start(0), m.end(0)))
+                bed.write(f"{chrom}\t{m.start(0)}\t{m.end(0)}\n")
 
 
 def generate_fa_sizes(fname, outname):
@@ -47,7 +47,7 @@ def generate_fa_sizes(fname, outname):
     f = Fasta(fname)
     with open(outname, "w") as sizes:
         for seqname, seq in f.items():
-            sizes.write("{}\t{}\n".format(seqname, len(seq)))
+            sizes.write(f"{seqname}\t{len(seq)}\n")
 
 
 def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
@@ -101,8 +101,8 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
 
     with open(outfa, "w") as out:
         for chrom in seqs:
-            out.write(">{}\n".format(fa[chrom].name))
-            out.write("{}\n".format(fa[chrom][:].seq))
+            out.write(f">{fa[chrom].name}\n")
+            out.write(f"{fa[chrom][:].seq}\n")
 
     return Fasta(outfa)
 
@@ -133,12 +133,12 @@ def cmd_ok(cmd):
 
 def run_index_cmd(name, cmd):
     """Run command, show errors if the returncode is non-zero."""
-    sys.stderr.write("Creating {} index...\n".format(name))
+    sys.stderr.write(f"Creating {name} index...\n")
     # Create index
     p = sp.Popen(cmd, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
     stdout, stderr = p.communicate()
     if p.returncode != 0:
-        sys.stderr.write("Index for {} failed\n".format(name))
+        sys.stderr.write(f"Index for {name} failed\n")
         sys.stderr.write(stdout.decode("utf8"))
         sys.stderr.write(stderr.decode("utf8"))
 
@@ -319,7 +319,7 @@ def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
 
     # unzip gtf if zipped and return up-to-date name
     if gtf_file.endswith(".gz"):
-        sp.check_call("gunzip -f {}".format(gtf_file), shell=True)
+        sp.check_call(f"gunzip -f {gtf_file}", shell=True)
         gtf_file = gtf_file[:-3]
 
     # Check if genome and annotation have matching chromosome/scaffold names
@@ -333,7 +333,7 @@ def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
         for line in sizes:
             fa_id = line.split("\t")[0]
             if fa_id == gtf_id:
-                sp.check_call("gzip -f {}".format(gtf_file), shell=True)
+                sp.check_call(f"gzip -f {gtf_file}", shell=True)
 
                 readme = os.path.join(out_dir, "README.txt")
                 with open(readme, "a") as f:
@@ -391,8 +391,8 @@ def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
     with TemporaryDirectory(dir=out_dir) as tmpdir:
         old_gtf_file = os.path.join(tmpdir, os.path.basename(gtf_file))
         bed_file = gtf_file.replace("gtf", "bed")
-        sp.check_call("mv {} {}".format(gtf_file, old_gtf_file), shell=True)
-        sp.check_call("rm {}".format(bed_file + ".gz"), shell=True)
+        sp.check_call(f"mv {gtf_file} {old_gtf_file}", shell=True)
+        sp.check_call(f"rm {bed_file}.gz", shell=True)
 
         # rename the location identifier in the new gtf (using the conversion table)
         with open(old_gtf_file, "r") as oldgtf, open(gtf_file, "w") as newgtf:
@@ -407,7 +407,7 @@ def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
         "gtfToGenePred {0} /dev/stdout | " "genePredToBed /dev/stdin {1} && gzip -f {1}"
     )
     sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
-    sp.check_call("gzip -f {}".format(gtf_file), shell=True)
+    sp.check_call(f"gzip -f {gtf_file}", shell=True)
 
     readme = os.path.join(out_dir, "README.txt")
     with open(readme, "a") as f:

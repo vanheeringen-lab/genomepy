@@ -25,15 +25,15 @@ class BlacklistPlugin(Plugin):
         fname = props["blacklist"]
         if force and os.path.exists(fname):
             # Start from scratch
-            os.remove(fname)
+            os.unlink(fname)
 
         if not os.path.exists(fname):
             link = self.http_dict.get(genome.name.split(".")[0])
             if link is None:
-                sys.stderr.write("No blacklist found for {}\n".format(genome.name))
+                sys.stderr.write(f"No blacklist found for {genome.name}\n")
                 return
             try:
-                sys.stderr.write("Downloading blacklist {}\n".format(link))
+                sys.stderr.write(f"Downloading blacklist {link}\n")
                 response = urlopen(link)
                 with open(fname, "wb") as bed:
                     # unzip the response with some zlib magic
@@ -41,9 +41,7 @@ class BlacklistPlugin(Plugin):
                     bed.write(unzipped)
             except Exception as e:
                 sys.stderr.write(e)
-                sys.stderr.write(
-                    "Could not download blacklist file from {}".format(link)
-                )
+                sys.stderr.write(f"Could not download blacklist file from {link}")
 
     def get_properties(self, genome):
         props = {"blacklist": re.sub(".fa(.gz)?$", ".blacklist.bed", genome.filename)}

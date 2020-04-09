@@ -35,7 +35,7 @@ def find_plugins():
     plugin_dir = os.path.join(plugin_dir, "plugins")
     plugin_files = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
     for plugin in plugin_files:
-        __import__("genomepy.plugins.{}".format(plugin))
+        __import__(f"genomepy.plugins.{plugin}")
 
 
 def convert(name):
