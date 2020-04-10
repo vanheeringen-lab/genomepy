@@ -4,6 +4,11 @@ import os
 import pytest
 import subprocess as sp
 
+from shutil import rmtree
+from bucketcache import Bucket
+from appdirs import user_cache_dir
+from genomepy.__about__ import __version__
+
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
@@ -28,3 +33,25 @@ def test_exceptions():
 def test_config():
     config = norns.config("genomepy", default="cfg/default.yaml")
     assert len(config.keys()) == 3
+
+
+def test_cache(capsys):
+    my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
+    if os.path.exists(my_cache_dir):
+        rmtree(my_cache_dir)
+    os.makedirs(my_cache_dir)
+    cached = Bucket(my_cache_dir, days=7)
+
+    @cached
+    def expensive_method():
+        print("Method called.")
+
+    @expensive_method.callback
+    def expensive_method(callinfo):
+        print("Cache used.")
+
+    expensive_method()
+    expensive_method()
+
+    captured = capsys.readouterr().out.strip().split("\n")
+    assert captured == ["Method called.", "Cache used."]
