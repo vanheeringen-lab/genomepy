@@ -220,8 +220,8 @@ def test_download_annotation(p):
 
         # check attempt_download_and_report_back output
         readme = os.path.join(tmpdir, localname, "README.txt")
-        with open(readme, "r") as f:
-            assert f.readline() == f"Annotation url: {annot_url}\n"
+        metadata, lines = genomepy.utils.read_readme(readme)
+        assert metadata["annotation url"] == annot_url
 
 
 def test__search_taxids(p):

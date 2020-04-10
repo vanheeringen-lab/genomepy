@@ -102,14 +102,14 @@ def test_search_url_for_annotation(p):
 @pytest.mark.skipif(not travis or not linux, reason="slow")
 def test_download_annotation(p):
     out_dir = os.getcwd()
-    url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_Xenbase.gtf"
+    annot_url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_Xenbase.gtf"
     localname = "my_annot"
     with TemporaryDirectory(dir=out_dir) as tmpdir:
         p.download_annotation(
             url="string",
             genome_dir=tmpdir,
             localname=localname,
-            **{"to_annotation": url},
+            **{"to_annotation": annot_url},
         )
 
         # check download_and_generate_annotation output
@@ -121,5 +121,5 @@ def test_download_annotation(p):
 
         # check attempt_download_and_report_back output
         readme = os.path.join(tmpdir, localname, "README.txt")
-        with open(readme, "r") as f:
-            assert f.readline() == f"Annotation url: {url}\n"
+        metadata, lines = genomepy.utils.read_readme(readme)
+        assert metadata["annotation url"] == annot_url
