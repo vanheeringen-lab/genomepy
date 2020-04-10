@@ -34,7 +34,7 @@ from genomepy.__about__ import __version__
 # store the output of slow commands (marked with @cached) for fast reuse
 my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
 if not os.path.exists(my_cache_dir):
-    mkdir_p(my_cache_dir)
+    os.makedirs(my_cache_dir)
 cached = Bucket(my_cache_dir, days=7)
 
 config = norns.config("genomepy", default="cfg/default.yaml")
