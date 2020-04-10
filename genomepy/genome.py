@@ -9,6 +9,8 @@ from random import random
 from genomepy.plugin import get_active_plugins
 from genomepy.provider import ProviderBase
 from genomepy.utils import (
+    read_readme,
+    write_readme,
     get_genome_dir,
     get_localname,
     glob_ext_files,
@@ -38,8 +40,8 @@ class Genome(Fasta):
 
     def __init__(self, name, genome_dir=None):
         self.genome_dir = get_genome_dir(genome_dir)
-        self.name, filename = self._get_name_and_filename(name)
-        super(Genome, self).__init__(filename)
+        self.name, self.filename = self._get_name_and_filename(name)
+        super(Genome, self).__init__(self.filename)
 
         metadata = self._read_metadata()
         self.tax_id = metadata.get("tax_id")
@@ -57,8 +59,7 @@ class Genome(Fasta):
         returns the name and the abspath to the (closest) fasta file
         """
         stripped_name = get_localname(name)
-        stripped_name = re.sub(".gz$", "", stripped_name)
-        stripped_name = re.sub(".fa$", "", stripped_name)
+        stripped_name = re.sub(".fa(.gz)?$", "", stripped_name)
 
         if os.path.isfile(name):
             filename = name
@@ -93,70 +94,57 @@ class Genome(Fasta):
         """
         Read genome metadata from genome README.txt (if it exists).
         """
-        metadata = {}
         readme = os.path.join(self.genome_dir, self.name, "README.txt")
-        if os.path.exists(readme):
-            with open(readme) as f:
-                metadata = {}
-                for line in f.readlines():
-                    vals = line.strip().split(":")
-                    metadata[vals[0].strip()] = (":".join(vals[1:])).strip()
+        metadata, lines = read_readme(readme)
 
-            update_metadata = False
+        update_metadata = False
+        if metadata["genome url"] != "na":
             for key in ["provider", "tax_id", "assembly_accession"]:
                 if key not in metadata:
                     update_metadata = True
                     break
-            if not update_metadata:
-                return metadata
+        if not update_metadata:
+            return metadata
 
-            print(f"Updating metadata in README.txt", file=sys.stderr)
+        print(f"Updating metadata in README.txt", file=sys.stderr)
 
-            if "provider" not in metadata:
-                if "ensembl" in metadata.get("url", ""):
-                    metadata["provider"] = "Ensembl"
-                elif "ucsc" in metadata.get("url", ""):
-                    metadata["provider"] = "UCSC"
-                elif "ncbi" in metadata.get("url", ""):
-                    metadata["provider"] = "NCBI"
-                else:
-                    metadata["provider"] = "Unknown"
+        if "provider" not in metadata:
+            url = metadata.get("genome url", "").lower()
+            for provider in ["Ensembl", "UCSC", "NCBI"]:
+                if provider.lower() in url:
+                    metadata["provider"] = provider
+            else:
+                metadata["provider"] = "Unknown"
 
-            if "tax_id" not in metadata or "assembly_accession" not in metadata:
-                name = metadata.get("original name")
-                if name:
-                    name = safe(name)
+        if "tax_id" not in metadata or "assembly_accession" not in metadata:
+            name = safe(metadata.get("original name", ""))
+            p = None
+            genome = None
+            if metadata["provider"] != "Unknown":
+                p = ProviderBase.create(metadata["provider"])
+                if name and name in p.genomes:
+                    genome = p.genomes[name]
 
-                p = None
-                genome = None
-                if metadata["provider"] != "Unknown":
-                    p = ProviderBase.create(metadata["provider"])
-                    if name and name in p.genomes:
-                        genome = p.genomes[name]
+            if "tax_id" not in metadata:
+                metadata["tax_id"] = "na"
+                if genome:
+                    taxid = p.genome_taxid(genome)
+                    taxid = str(taxid) if taxid != 0 else "na"
+                    metadata["tax_id"] = taxid
 
-                if "tax_id" not in metadata:
-                    metadata["tax_id"] = "na"
-                    if genome:
-                        taxid = p.genome_taxid(genome)
-                        taxid = str(taxid) if taxid != 0 else "na"
-                        metadata["tax_id"] = taxid
+            if "assembly_accession" not in metadata:
+                metadata["assembly_accession"] = "na"
+                if genome:
+                    accession = p.assembly_accession(genome)
+                    metadata["assembly_accession"] = accession
 
-                if "assembly_accession" not in metadata:
-                    metadata["assembly_accession"] = "na"
-                    if genome:
-                        accession = p.assembly_accession(genome)
-                        metadata["assembly_accession"] = accession
-
-            with open(readme, "w") as f:
-                for k, v in metadata.items():
-                    print(f"{k}: {v}", file=f)
+        write_readme(readme, metadata, lines)
         return metadata
 
     def _bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
         bufsize = 10000
         with open(track) as fin:
             lines = fin.readlines(bufsize)
-            # while lines:  # not sure why there was both a while and a for loop(?)
             for line in lines:
                 if line.startswith("#") or line.startswith("track"):
                     continue
@@ -205,7 +193,6 @@ class Genome(Fasta):
 
                 # load more lines if needed
                 lines += fin.readlines(1)
-            # lines = fin.readlines(bufsize)
 
     def _region_to_seq(self, region, extend_up=0, extend_down=0):
         chrom, coords = region.strip().split(":")
@@ -376,7 +363,7 @@ class Genome(Fasta):
             if sizes[x] / len(self[x]) > 0.1 and sizes[x] > 10 * length
         ]
         if len(lengths) == 0:
-            raise Exception("No contigs/chromosomes found of sufficient size.")
+            raise Exception("No contigs of sufficient size were found.")
 
         # random list of chromosomes from lengths (can have duplicates)
         chroms = self._weighted_selection(lengths, n)
@@ -395,7 +382,7 @@ class Genome(Fasta):
                 raise Exception(
                     f"Random subset ran {retries} times, "
                     f"but could not find a sequence with less than {cutoff} N's in {chrom}.\n"
-                    "You may specify contigs/chromosome with the chroms argument."
+                    "You can specify contigs using the CHROMS argument."
                 )
 
             # list output example ["chr1", 123, 456]

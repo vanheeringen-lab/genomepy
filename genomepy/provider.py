@@ -15,8 +15,10 @@ from bucketcache import Bucket
 from pyfaidx import Fasta
 from appdirs import user_cache_dir
 
-from genomepy import exceptions
+from genomepy.exceptions import GenomeDownloadError
 from genomepy.utils import (
+    read_readme,
+    write_readme,
     filter_fasta,
     get_localname,
     tar_to_bigfile,
@@ -29,18 +31,18 @@ from genomepy.utils import (
 )
 from genomepy.__about__ import __version__
 
+# store the output of slow commands (marked with @cached) for fast reuse
 my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
-# Create .cache dir if it does not exist
 if not os.path.exists(my_cache_dir):
-    os.makedirs(my_cache_dir)
-
+    mkdir_p(my_cache_dir)
 cached = Bucket(my_cache_dir, days=7)
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
 
 class ProviderBase(object):
-    """Provider base class.
+    """
+    Provider base class.
 
     Use to get a list of available providers:
     >>> ProviderBase.list_providers()
@@ -54,6 +56,7 @@ class ProviderBase(object):
     """
 
     _providers = {}
+    # class variables set by child classes:
     name = None
     genomes = {}
     accession_fields = []
@@ -99,15 +102,15 @@ class ProviderBase(object):
     def __hash__(self):
         return hash(str(self.__class__))
 
-    def _list_install_options(self, name=None):
+    def list_install_options(self, name=None):
         """List provider specific install options"""
         if name is None:
             return {}
         elif name.lower() not in self._providers:
-            raise ValueError("Unknown provider")
+            raise ValueError(f"Unknown provider: {name}")
         else:
             provider = self._providers[name.lower()]
-            return provider._list_install_options(self)
+            return provider.list_install_options(self)
 
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
@@ -119,15 +122,16 @@ class ProviderBase(object):
 
         Yields
         ------
-        genomes : dictionary or tuple
+        genomes : list of tuples
+            tuples with assembly name, accession, scientific_name, taxonomy id and description
         """
         for genome in self.genomes:
             yield self._genome_info_tuple(genome)
 
     def check_name(self, name):
-        """check if (genome) name can be found for provider"""
+        """check if genome name can be found for provider"""
         if not safe(name) in self.genomes:
-            raise exceptions.GenomeDownloadError(
+            raise GenomeDownloadError(
                 f"Could not download genome {name} from {self.name}.\n\n"
                 "Check for typos or try\n"
                 f"  genomepy search {name} -p {self.name}\n"
@@ -290,28 +294,27 @@ class ProviderBase(object):
 
         # Create readme with information
         readme = os.path.join(genome_dir, localname, "README.txt")
-        with open(readme, "w") as f:
-            f.write("name: {}\n".format(localname))
-            f.write("provider: {}\n".format(self.name))
-            f.write("original name: {}\n".format(original_name))
-            f.write("original filename: {}\n".format(os.path.split(link)[-1]))
-            f.write(
-                "assembly_accession: {}\n".format(
-                    self.assembly_accession(self.genomes[name])
-                )
-            )
-            f.write("tax_id: {}\n".format(self.genome_taxid(self.genomes[name])))
-            f.write("url: {}\n".format(link))
-            f.write("mask: {}\n".format(mask))
-            f.write("date: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S")))
-            if regex:
-                if invert_match:
-                    f.write("regex: {} (inverted match)\n".format(regex))
-                else:
-                    f.write("regex: {}\n".format(regex))
-                f.write("sequences that were excluded:\n")
-                for seq in not_included:
-                    f.write("\t{}\n".format(seq))
+        metadata = {
+            "name": localname,
+            "provider": self.name,
+            "original name": original_name,
+            "original filename": os.path.split(link)[-1],
+            "assembly_accession": self.assembly_accession(self.genomes[name]),
+            "tax_id": self.genome_taxid(self.genomes[name]),
+            "mask": mask,
+            "genome url": link,
+            "annotation url": "na",
+            "date": time.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        lines = []
+        if regex:
+            regex_line = f"regex: {regex}"
+            if invert_match:
+                regex_line += " (inverted match)"
+            lines += ["", regex_line, "sequences that were excluded:"]
+            for seq in not_included:
+                lines.append(f"\t{seq}")
+        write_readme(readme, metadata, lines)
 
     def get_annotation_download_link(self, name, **kwargs):
         raise NotImplementedError()
@@ -395,7 +398,7 @@ class ProviderBase(object):
         try:
             self.download_and_generate_annotation(genome_dir, link, localname)
         except Exception:
-            raise exceptions.GenomeDownloadError(
+            raise GenomeDownloadError(
                 f"\nCould not download annotation for {name} from {self.name}\n"
                 "If you think the annotation should be there, please file a bug report at:\n"
                 "https://github.com/vanheeringen-lab/genomepy/issues\n"
@@ -404,10 +407,11 @@ class ProviderBase(object):
         # TODO sanity check for genes
         sys.stderr.write(f"Annotation download successful\n")
 
-        # Create readme with information
+        # Update readme annotation URL, or make a new
         readme = os.path.join(genome_dir, localname, "README.txt")
-        with open(readme, "a") as f:
-            f.write(f"Annotation url: {link}\n")
+        metadata, lines = read_readme(readme)
+        metadata["annotation url"] = link
+        write_readme(readme, metadata, lines)
 
     def download_annotation(self, name, genome_dir, localname=None, **kwargs):
         """
@@ -458,12 +462,12 @@ class ProviderBase(object):
         ------
         tuples with name and metadata
         """
+        term = str(term)
         genomes = self.genomes
         if safe(term) in genomes:
             yield self._genome_info_tuple(term)
 
         elif is_number(term):
-            term = str(term)
             for name in genomes:
                 if self._search_taxids(genome=genomes[name], term=term):
                     yield self._genome_info_tuple(name)
@@ -480,7 +484,6 @@ register_provider = ProviderBase.register_provider
 
 @register_provider("Ensembl")
 class EnsemblProvider(ProviderBase):
-
     """
     Ensembl genome provider.
 
@@ -537,7 +540,7 @@ class EnsemblProvider(ProviderBase):
                 genomes[safe(genome["assembly_name"])] = genome
         return genomes
 
-    def _list_install_options(self, name=None):
+    def list_install_options(self, name=None):
         """List Ensembl specific install options"""
 
         provider_specific_options = {
@@ -574,7 +577,6 @@ class EnsemblProvider(ProviderBase):
     def get_version(self, ftp_site):
         """Retrieve current version from Ensembl FTP.
         """
-        print("README", ftp_site)
         with urlopen(ftp_site + "/current_README") as response:
             p = re.compile(r"Ensembl (Genomes|Release) (\d+)")
             m = p.search(response.read().decode())
@@ -586,7 +588,7 @@ class EnsemblProvider(ProviderBase):
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
-        Return Ensembl ftp link to the genome sequence
+        Return Ensembl http or ftp link to the genome sequence
 
         Parameters
         ----------
@@ -595,12 +597,11 @@ class EnsemblProvider(ProviderBase):
             name is not found.
 
         mask : str , optional
-            Masking level. Options: soft, hard or none. Defaults to soft.
+            Masking level. Options: soft, hard or none. Default is soft.
 
         Returns
         ------
-        tuple (name, link) where name is the Ensembl dbname identifier
-        and link is a str with the ftp download link.
+        str with the http/ftp download link.
         """
         genome = self.genomes[safe(name)]
 
@@ -652,7 +653,7 @@ class EnsemblProvider(ProviderBase):
         if check_url(link):
             return link
 
-        raise exceptions.GenomeDownloadError(
+        raise GenomeDownloadError(
             f"Could not download genome {name} from {self.name}.\n"
             "URL is broken. Select another genome or provider.\n"
             f"Broken URL: {link}"
@@ -706,7 +707,6 @@ class EnsemblProvider(ProviderBase):
 
 @register_provider("UCSC")
 class UcscProvider(ProviderBase):
-
     """
     UCSC genome provider.
 
@@ -815,16 +815,15 @@ class UcscProvider(ProviderBase):
         Parameters
         ----------
         name : str
-            Genome build name. Current implementation will fail if exact
+            Genome name. Current implementation will fail if exact
             name is not found.
 
         mask : str , optional
-            Masking level. Options: soft, hard or none. Defaults to soft.
+            Masking level. Options: soft, hard or none. Default is soft.
 
         Returns
         ------
-        tuple (name, link) where name is the genome build identifier
-        and link is a str with the http download link.
+        str with the http/ftp download link.
         """
         # soft masked genomes. can be unmasked in _post _process_download
         urls = [self.ucsc_url, self.alt_ucsc_url]
@@ -837,10 +836,10 @@ class UcscProvider(ProviderBase):
             if check_url(link):
                 return link
 
-        raise exceptions.GenomeDownloadError(
+        raise GenomeDownloadError(
             f"Could not download genome {name} from {self.name}.\n"
             "URLs are broken. Select another genome or provider.\n"
-            f"Broken URLs: {','.join([urls[0].format(name), urls[1].format(name)])}"
+            f"Broken URLs: {', '.join([url.format(name) for url in urls])}"
         )
 
     @staticmethod
@@ -900,7 +899,6 @@ class UcscProvider(ProviderBase):
 
 @register_provider("NCBI")
 class NcbiProvider(ProviderBase):
-
     """
     NCBI genome provider.
 
@@ -923,7 +921,7 @@ class NcbiProvider(ProviderBase):
     def _get_genomes(self):
         """Parse genomes from assembly summary txt files."""
         sys.stderr.write(
-            "Downloading assembly summaries from NCBI, " + "this will take a while...\n"
+            "Downloading assembly summaries from NCBI, this will take a while...\n"
         )
 
         genomes = {}
@@ -970,12 +968,11 @@ class NcbiProvider(ProviderBase):
             name is not found.
 
         mask : str , optional
-            Masking level. Options: soft, hard or none. Defaults to soft.
+            Masking level. Options: soft, hard or none. Default is soft.
 
         Returns
         ------
-        tuple (name, link) where name is the NCBI asm_name identifier
-        and link is a str with the ftp download link.
+        str with the http/ftp download link.
         """
         genome = self.genomes[safe(name)]
 
@@ -987,7 +984,7 @@ class NcbiProvider(ProviderBase):
         if check_url(link):
             return link
 
-        raise exceptions.GenomeDownloadError(
+        raise GenomeDownloadError(
             f"Could not download genome {name} from {self.name}.\n"
             "URL is broken. Select another genome or provider.\n"
             f"Broken URL: {link}"
@@ -1098,9 +1095,11 @@ class UrlProvider(ProviderBase):
         return "na"
 
     def search(self, term):
-        yield
+        """return an empty generator,
+        same as if no genomes were found at the other providers"""
+        yield from ()
 
-    def _list_install_options(self, name=None):
+    def list_install_options(self, name=None):
         """List URL specific install options"""
 
         provider_specific_options = {
@@ -1114,21 +1113,12 @@ class UrlProvider(ProviderBase):
         return provider_specific_options
 
     def get_genome_download_link(self, url, mask=None, **kwargs):
-        """
-        url : str
-            url of where to download genome from
-
-        mask : str , optional
-            Masking level. Not available for URL
-
-        Returns
-        ------
-        tuple (url, url)
-        """
         return url
 
     def get_annotation_download_link(self, name, **kwargs):
-        """check if annotation file is supported (gtf/gff3/bed)"""
+        """
+        check if the linked annotation file is of a supported file type (gtf/gff3/bed)
+        """
         link = kwargs.get("to_annotation")
         if link:
             ext = get_file_info(link)[0]

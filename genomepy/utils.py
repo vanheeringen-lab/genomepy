@@ -7,12 +7,71 @@ import sys
 import urllib.request
 import subprocess as sp
 import tarfile
+import time
 
 from glob import glob
 from pyfaidx import Fasta
 from tempfile import TemporaryDirectory
 
 config = norns.config("genomepy", default="cfg/default.yaml")
+
+
+def read_readme(readme):
+    """
+    parse readme file
+
+    Parameters
+    ----------
+    readme: str
+        filename
+
+    Returns
+    -------
+    tuple
+        metadata : dict with genome metadata
+        lines: list with non-metadata text (such as regex info)
+    """
+    metadata = {
+        "name": "na",
+        "provider": "na",
+        "original name": "na",
+        "original filename": "na",
+        "assembly_accession": "na",
+        "tax_id": "na",
+        "mask": "na",
+        "genome url": "na",
+        "annotation url": "na",
+        "sanitized annotation": "no",
+        "date": time.strftime("%Y-%m-%d %H:%M:%S"),
+    }
+    lines = []
+
+    # if the readme exists, overwrite all metadata fields found
+    if os.path.exists(readme):
+        with open(readme) as f:
+            for line in f.readlines():
+                if ": " in line:
+                    vals = line.strip().split(": ")
+                    metadata[vals[0].strip()] = (": ".join(vals[1:])).strip()
+                else:
+                    line = line.strip("\n").strip(" ")
+                    if not (
+                        line == ""
+                        and len(lines) > 0
+                        and lines[len(lines) - 1].strip() == ""
+                    ):
+                        lines.append(line)
+
+    return metadata, lines
+
+
+def write_readme(readme, metadata, lines):
+    """Create a new readme with updated information"""
+    with open(readme, "w") as f:
+        for k, v in metadata.items():
+            print(f"{k}: {v}", file=f)
+        for line in lines:
+            print(line, file=f)
 
 
 def generate_gap_bed(fname, outname):
@@ -186,9 +245,9 @@ def safe(name):
 
 def get_localname(name, localname=None):
     """
-    Returns localname if localname is not None, else;
-      if name is an url (URL provider): Returns parsed filename from name
-      else: returns name
+    Returns the safe version of the given localname, if provided.
+    If not localname is provided, return the safe version of the name.
+    If the name is a working URL, return the safe version of the filename.
     """
     if localname is None:
         try:
@@ -316,6 +375,7 @@ def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
         gtf_file = os.path.join(out_dir, genome.name + ".annotation.gtf.gz")
     if sizes_file is None:
         sizes_file = os.path.join(out_dir, genome.name + ".fa.sizes")
+    readme = os.path.join(out_dir, "README.txt")
 
     # unzip gtf if zipped and return up-to-date name
     if gtf_file.endswith(".gz"):
@@ -335,20 +395,22 @@ def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
             if fa_id == gtf_id:
                 sp.check_call(f"gzip -f {gtf_file}", shell=True)
 
-                readme = os.path.join(out_dir, "README.txt")
-                with open(readme, "a") as f:
-                    f.write("genome and annotation have matching sequence names.\n")
+                metadata, lines = read_readme(readme)
+                metadata["sanitized annotation"] = "not required"
+                write_readme(readme, metadata, lines)
                 return
 
     # generate a gtf with matching scaffold/chromosome IDs
     sys.stderr.write(
-        "\nGenome and annotation do not have matching sequence names! Creating matching annotation files...\n"
+        "\nGenome and annotation do not have matching sequence names! "
+        "Creating matching annotation files...\n"
     )
 
     # unzip genome if zipped and return up-to-date genome name
     bgzip, genome_file = bgunzip_and_name(genome)
 
-    # determine which element in the fasta header contains the location identifiers used in the annotation.gtf
+    # determine which element in the fasta header contains the location
+    # identifiers used in the annotation.gtf
     header = []
     with open(genome_file, "r") as fa:
         for line in fa:
@@ -369,9 +431,13 @@ def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
             # re-zip genome if unzipped
             bgrezip(bgzip, genome_file)
 
+            metadata, lines = read_readme(readme)
+            metadata["sanitized annotation"] = "not possible"
+            write_readme(readme, metadata, lines)
+
             sys.stderr.write(
                 "WARNING: Cannot correct annotation files automatically!\n"
-                + "Leaving original version in place."
+                + "Leaving original version in place.\n"
             )
             return
 
@@ -409,7 +475,7 @@ def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
     sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
     sp.check_call(f"gzip -f {gtf_file}", shell=True)
 
-    readme = os.path.join(out_dir, "README.txt")
-    with open(readme, "a") as f:
-        f.write("corrected annotation files generated succesfully.\n")
+    metadata, lines = read_readme(readme)
+    metadata["sanitized annotation"] = "yes"
+    write_readme(readme, metadata, lines)
     return

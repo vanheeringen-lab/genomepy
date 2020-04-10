@@ -63,14 +63,14 @@ def test_register_provider_and_list_providers(p):
         assert provider in list(p.list_providers())
 
 
-def test__list_install_options(p):
-    assert isinstance(p._list_install_options(), dict)
-    assert len(p._list_install_options()) == 0
+def test_list_install_options(p):
+    assert isinstance(p.list_install_options(), dict)
+    assert len(p.list_install_options()) == 0
 
     with pytest.raises(ValueError):
-        p._list_install_options(name="error")
+        p.list_install_options(name="error")
 
-    result = sorted(list(p._list_install_options(name="ensembl").keys()))
+    result = sorted(list(p.list_install_options(name="ensembl").keys()))
     expected = ["toplevel", "version"]
     assert result == expected
 

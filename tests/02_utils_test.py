@@ -11,6 +11,36 @@ from platform import system
 linux = system() == "Linux"
 
 
+def test_read_readme():
+    wd = os.getcwd()
+    readme = os.path.join(wd, "README.txt")
+    with open(readme, "w") as f:
+        f.writelines("provider: asd\n")
+        f.writelines("this is a regular line\n")
+
+    metadata, lines = genomepy.utils.read_readme(readme)
+    assert metadata["provider"] == "asd"
+    assert lines == ["this is a regular line"]
+
+    os.unlink(readme)
+
+
+def test_write_readme():
+    wd = os.getcwd()
+    readme = os.path.join(wd, "README.txt")
+    metadata, lines = genomepy.utils.read_readme(readme)
+
+    metadata["name"] = "my_cool_genome"
+    lines = ["", "I wanted to do some regex, but regex is hard"]
+    genomepy.utils.write_readme(readme, metadata, lines)
+
+    metadata2, lines2 = genomepy.utils.read_readme(readme)
+    assert metadata == metadata2
+    assert lines == lines2
+
+    os.unlink(readme)
+
+
 def test_generate_gap_bed(fname="tests/data/gap.fa", outname="tests/data/gap.bed"):
     tmp = NamedTemporaryFile().name
     genomepy.utils.generate_gap_bed(fname, tmp)

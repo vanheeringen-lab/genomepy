@@ -57,11 +57,14 @@ def test_assembly_accession(p):
 
 def test_search(p):
     result = p.search("???")
-    assert next(result) is None
+    expected = genomepy.provider.EnsemblProvider().search("???")
+    assert isinstance(result, type(expected))
+    with pytest.raises(StopIteration):
+        assert next(result)
 
 
-def test__list_install_options(p):
-    result = list(p._list_install_options())
+def test_list_install_options(p):
+    result = list(p.list_install_options())
     expected = ["to_annotation"]
     assert result == expected
 

@@ -30,24 +30,16 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
 
 
 def test__read_metadata(capsys, genome="tests/data/small_genome.fa.gz"):
-    # create a README.txt
+    # create blank README.txt
     g = genomepy.Genome(genome)
     readme = os.path.join(g.genome_dir, g.name, "README.txt")
+    if os.path.exists(readme):
+        os.unlink(readme)
+    metadata, lines = genomepy.utils.read_readme(readme)
 
-    # check 1: no provider recognized
-    with open(readme, "w") as f:
-        f.writelines("nothing important here\n")
-    genomepy.Genome(genome)
+    assert metadata["provider"] == "na"
 
-    with open(readme) as f:
-        metadata = {}
-        for line in f.readlines():
-            vals = line.strip().split(":")
-            metadata[vals[0].strip()] = (":".join(vals[1:])).strip()
-
-    assert metadata["provider"] == "Unknown"
-
-    # check 2: no lookups required
+    # no changes to metadata
     with open(readme, "w") as f:
         f.writelines("provider: NCBI\n")
         f.writelines("original name: ASM14646v1\n")
@@ -55,24 +47,12 @@ def test__read_metadata(capsys, genome="tests/data/small_genome.fa.gz"):
         f.writelines("assembly_accession: GCA_000146465.1\n")
     genomepy.Genome(genome)
 
-    # exactly this (one) message to stderr
-    captured = capsys.readouterr()
-    assert captured.err.strip() == "Updating metadata in README.txt"
-
-    # no changes to metadata
-    with open(readme) as f:
-        metadata = {}
-        for line in f.readlines():
-            vals = line.strip().split(":")
-            metadata[vals[0].strip()] = (":".join(vals[1:])).strip()
-
+    metadata, lines = genomepy.utils.read_readme(readme)
     assert metadata["provider"] == "NCBI"
     assert metadata["original name"] == "ASM14646v1"
     assert metadata["tax_id"] == "58839"
     assert metadata["assembly_accession"] == "GCA_000146465.1"
-
-    # note: lookup of "tax_id" and "assembly_accession" requires provider -> tested later.
-    # TODO: add anyway with a note?
+    os.unlink(readme)
 
 
 def test__bed_to_seqs(

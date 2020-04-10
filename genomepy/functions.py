@@ -44,6 +44,8 @@ def manage_config(cmd):
             fout.write(fin.read())
         config.config_file = new_config
         print(f"Created config file {new_config}")
+    else:
+        raise ValueError(f"Invalid config command: {cmd}")
 
 
 def list_available_genomes(provider=None):
@@ -84,7 +86,7 @@ def _is_genome_dir(dirname):
     ------
     bool
     """
-    return len(glob("{}/*.fa".format(dirname))) > 0
+    return len(glob(f"{dirname}/*.fa")) > 0
 
 
 def list_installed_genomes(genome_dir=None):
@@ -129,8 +131,8 @@ def generate_env(fname=None):
 
     Parameters
     ----------
-    fname: strs, optional
-        Name of the output file.
+    fname: str, optional
+        Absolute path or name of the output file.
     """
     if fname and os.path.isabs(fname):
         absname = fname
@@ -193,8 +195,8 @@ def install_genome(
         If set to True the genome FASTA file will be compressed using bgzip.
         If not specified, the setting from the configuration file will be used.
 
-    threads : int, optional
-        Build genome index using multithreading (if supported).
+    threads : int , optional
+        Build genome index using multithreading (if supported). Default: lowest of 8/all threads
 
     force : bool , optional
         Set to True to overwrite existing files.
@@ -209,12 +211,12 @@ def install_genome(
         If set to True, downloaded annotation files whose sequence names do not match
         with the (first header fields of) the genome.fa will not be corrected.
 
-    kwargs : dict, optional
+    kwargs : dict , optional
         Provider specific options.
         toplevel : bool , optional
             Ensembl only: Always download the toplevel genome. Ignores potential primary assembly.
 
-        version : int, optional
+        version : int , optional
             Ensembl only: Specify release version. Default is latest.
 
         to_annotation : text , optional
@@ -282,23 +284,15 @@ def install_genome(
 
 
 def manage_plugins(command, plugin_names=None):
-    """Enable or disable plugins.
+    """List, enable or disable plugins.
     """
-    if plugin_names is None:
-        plugin_names = []
-    active_plugins = config.get("plugin", [])
+    if command not in ["list", "enable", "disable"]:
+        raise ValueError(f"Invalid plugin command: {command}")
+
     plugins = init_plugins()
-    if command == "enable":
-        for name in plugin_names:
-            if name not in plugins:
-                raise ValueError(f"Unknown plugin: {name}")
-            if name not in active_plugins:
-                active_plugins.append(name)
-    elif command == "disable":
-        for name in plugin_names:
-            if name in active_plugins:
-                active_plugins.remove(name)
-    elif command == "list":
+    active_plugins = config.get("plugin", [])
+
+    if command == "list":
         print("{:20}{}".format("plugin", "enabled"))
         for plugin in sorted(plugins):
             print(
@@ -307,12 +301,25 @@ def manage_plugins(command, plugin_names=None):
                 )
             )
     else:
-        raise ValueError("Invalid plugin command")
+        if plugin_names:
+            for name in plugin_names:
+                if name not in plugins:
+                    raise ValueError(f"Unknown plugin: {name}")
+        else:
+            plugin_names = []
+
+        if command == "enable":
+            for name in plugin_names:
+                if name not in active_plugins:
+                    active_plugins.append(name)
+        elif command == "disable":
+            for name in plugin_names:
+                if name in active_plugins:
+                    active_plugins.remove(name)
+
     config["plugin"] = active_plugins
     config.save()
-
-    if command in ["enable", "disable"]:
-        print("Enabled plugins: {}".format(", ".join(sorted(active_plugins))))
+    print("Enabled plugins: {}".format(", ".join(sorted(active_plugins))))
 
 
 def list_available_providers():
@@ -330,9 +337,9 @@ def search(term, provider=None):
     """
     Search for a genome.
 
-     If provider is specified, search only that specific provider, else
-     search all providers. Both the name and description are used for the
-     search. Search term is case-insensitive.
+    If provider is specified, search only that specific provider, else
+    search all providers. Both the name and description are used for the
+    search. Search term is case-insensitive.
 
     Parameters
     ----------
@@ -350,10 +357,8 @@ def search(term, provider=None):
     if provider:
         providers = [ProviderBase.create(provider)]
     else:
-        # if provider is not specified search all providers (except direct url)
-        providers = [
-            ProviderBase.create(p) for p in ProviderBase.list_providers() if p != "url"
-        ]
+        # if provider is not specified search all providers
+        providers = [ProviderBase.create(p) for p in ProviderBase.list_providers()]
     for p in providers:
         for row in p.search(term):
             yield [

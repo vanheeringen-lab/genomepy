@@ -64,8 +64,8 @@ def test__get_genomes(p):
     assert genome["taxonomy_id"] == 7719
 
 
-def test__list_install_options(p):
-    result = sorted(list(p._list_install_options()))
+def test_list_install_options(p):
+    result = sorted(list(p.list_install_options()))
     expected = ["toplevel", "version"]
     assert result == expected
 

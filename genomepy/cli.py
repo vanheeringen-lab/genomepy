@@ -26,13 +26,14 @@ def cli():
 @click.command("config", short_help="manage configuration")
 @click.argument("command")
 def config(command):
-    """Manage configuration
+    """
+    Manage configuration
 
-    genomepy config file    return config filepath
+    genomepy config file        return config filepath
 
-    genomepy config show    return config content
+    genomepy config show        return config content
 
-    genomepy config generate    create config file
+    genomepy config generate    create new config file
     """
     genomepy.manage_config(command)
 
@@ -62,7 +63,7 @@ general_install_options = {
     "mask": {
         "short": "m",
         "long": "mask",
-        "help": "hard/soft/no mask (default: soft)",
+        "help": "DNA masking: hard/soft/none (default: soft)",
         "default": "soft",
     },
     "regex": {
@@ -135,7 +136,7 @@ def get_install_options():
     install_options = general_install_options
 
     for name in genomepy.ProviderBase.list_providers():
-        p_dict = genomepy.ProviderBase.create(name)._list_install_options()
+        p_dict = genomepy.ProviderBase.create(name).list_install_options()
         for option in p_dict.keys():
             p_dict[option]["long"] = name + "-" + p_dict[option]["long"]
         install_options.update(p_dict)
@@ -213,13 +214,14 @@ def install(
 @click.argument("command")
 @click.argument("name", nargs=-1)
 def plugin(command, name):
-    """Enable or disable plugins
+    """
+    Enable or disable plugins
 
-    genomepy plugin list               show plugins and status
+    genomepy plugin list                 show plugins and status
 
-    genomepy plugin enable  NAME(S)    enable plugins
+    genomepy plugin enable  [NAME(S)]    enable plugins
 
-    genomepy plugin disable NAME(S)    disable plugins
+    genomepy plugin disable [NAME(S)]    disable plugins
     """
     genomepy.manage_plugins(command, name)
 
@@ -235,7 +237,12 @@ def providers():
 @click.argument("term")
 @click.option("-p", "--provider", help="provider")
 def search(term, provider=None):
-    """Search for genomes that contain TERM in their name or description."""
+    """
+    Search for genomes that contain TERM in their name or description.
+
+    Function is case-insensitive. Spaces in TERM can be replaced with underscores
+    (_) or TERM can be "quoted", e.g., "homo sapiens".
+    """
     data = [["name", "provider", "accession", "species", "tax_id", "other_info"]]
     for row in genomepy.search(term, provider):
         data.append([x.decode("utf-8", "ignore") for x in row])
