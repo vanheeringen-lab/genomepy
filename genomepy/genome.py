@@ -120,10 +120,9 @@ class Genome(Fasta):
             name = safe(metadata.get("original name", ""))
             p = None
             genome = None
-            if metadata["provider"] != "Unknown":
+            if metadata["provider"] != "Unknown" and name:
                 p = ProviderBase.create(metadata["provider"])
-                if name and name in p.genomes:
-                    genome = p.genomes[name]
+                genome = p.genomes.get(name)
 
             if "tax_id" not in metadata:
                 metadata["tax_id"] = "na"

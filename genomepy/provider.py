@@ -130,6 +130,9 @@ class ProviderBase(object):
 
     def check_name(self, name):
         """check if genome name can be found for provider"""
+        if self.name == "URL":
+            return
+
         if not safe(name) in self.genomes:
             raise GenomeDownloadError(
                 f"Could not download genome {name} from {self.name}.\n\n"
@@ -299,8 +302,8 @@ class ProviderBase(object):
             "provider": self.name,
             "original name": original_name,
             "original filename": os.path.split(link)[-1],
-            "assembly_accession": self.assembly_accession(self.genomes[name]),
-            "tax_id": self.genome_taxid(self.genomes[name]),
+            "assembly_accession": self.assembly_accession(self.genomes.get(name)),
+            "tax_id": self.genome_taxid(self.genomes.get(name)),
             "mask": mask,
             "genome url": link,
             "annotation url": "na",
@@ -1165,6 +1168,11 @@ class UrlProvider(ProviderBase):
             ):
                 fname = split
                 break
+        else:
+            raise FileNotFoundError(
+                "Could not parse the remote directory. "
+                "Please supply a URL using --url-to-annotation.\n"
+            )
 
         # set variables for downloading
         link = urldir + "/" + fname
