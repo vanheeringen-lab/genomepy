@@ -409,8 +409,8 @@ def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
     # unzip genome if zipped and return up-to-date genome name
     bgzip, genome_file = bgunzip_and_name(genome)
 
-    # determine which element in the fasta header contains the location
-    # identifiers used in the annotation.gtf
+    # determine which element in the fasta header contains the
+    # location identifiers used in the annotation.gtf
     header = []
     with open(genome_file, "r") as fa:
         for line in fa:
@@ -428,7 +428,7 @@ def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
                 except ValueError:
                     continue
         else:
-            # re-zip genome if unzipped
+            # re-zip genome if it was unzipped earlier
             bgrezip(bgzip, genome_file)
 
             metadata, lines = read_readme(readme)
@@ -436,7 +436,7 @@ def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
             write_readme(readme, metadata, lines)
 
             sys.stderr.write(
-                "WARNING: Cannot correct annotation files automatically!\n"
+                "\nWARNING: Cannot correct annotation files automatically!\n"
                 + "Leaving original version in place.\n"
             )
             return
@@ -450,30 +450,41 @@ def sanitize_annotation(genome, gtf_file=None, sizes_file=None, out_dir=None):
                 if line[element] not in ids.keys():
                     ids.update({line[element]: line[0]})
 
-    # re-zip genome if unzipped
+    # re-zip genome if it was unzipped earlier
     bgrezip(bgzip, genome_file)
 
-    # remove old files
     with TemporaryDirectory(dir=out_dir) as tmpdir:
-        old_gtf_file = os.path.join(tmpdir, os.path.basename(gtf_file))
-        bed_file = gtf_file.replace("gtf", "bed")
-        sp.check_call(f"mv {gtf_file} {old_gtf_file}", shell=True)
-        sp.check_call(f"rm {bed_file}.gz", shell=True)
-
-        # rename the location identifier in the new gtf (using the conversion table)
-        with open(old_gtf_file, "r") as oldgtf, open(gtf_file, "w") as newgtf:
+        # generate a gtf with updated location identifiers from the conversion table
+        new_gtf_file = os.path.join(tmpdir, os.path.basename(gtf_file))
+        missing_contigs = []
+        with open(gtf_file, "r") as oldgtf, open(new_gtf_file, "w") as newgtf:
             for line in oldgtf:
                 line = line.split("\t")
-                line[0] = ids[line[0]]
+                try:
+                    line[0] = ids[line[0]]
+                except KeyError:
+                    missing_contigs.append(line[0])
                 line = "\t".join(line)
                 newgtf.write(line)
 
-    # generate a bed with matching scaffold/chromosome IDs
-    cmd = (
-        "gtfToGenePred {0} /dev/stdout | " "genePredToBed /dev/stdin {1} && gzip -f {1}"
-    )
-    sp.check_call(cmd.format(gtf_file, bed_file), shell=True)
-    sp.check_call(f"gzip -f {gtf_file}", shell=True)
+        if len(missing_contigs) > 0:
+            sys.stderr.write(
+                "\nWARNING: annotation contains contigs not present in the genome!\n"
+                "The following contigs were not found: "
+                f"{', '.join(set(missing_contigs))}.\n"
+                "These have been kept as-is. Other contigs were corrected!\n"
+            )
+
+        # generate a bed from the gtf
+        cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1}"
+        new_bed_file = new_gtf_file.replace("gtf", "bed")
+        sp.check_call(cmd.format(new_gtf_file, new_bed_file), shell=True)
+
+        # overwrite old annotation files (and gzip)
+        for src, dst in zip(
+            [new_gtf_file, new_bed_file], [gtf_file, gtf_file.replace("gtf", "bed")]
+        ):
+            sp.check_call(f"mv {src} {dst} && gzip -f {dst}", shell=True)
 
     metadata, lines = read_readme(readme)
     metadata["sanitized annotation"] = "yes"
