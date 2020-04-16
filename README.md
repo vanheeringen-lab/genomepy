@@ -29,7 +29,7 @@ Genomepy works with Python 3.6+.
 You can install it via [bioconda](https://bioconda.github.io/):
 
 ```
-$ conda install genomepy
+$ conda install "genomepy>0.7"
 ``` 
 
 Or via pip:
@@ -38,7 +38,7 @@ Or via pip:
 $ pip install genomepy
 ```
 
-To enjoy the full capabilities of genomepy, you will have to install some dependencies.
+With Pip installation, you will have to install some dependencies.
 Make sure these dependencies are in your PATH.
 
 To read/write bgzipped genomes you will have to install `tabix`.
@@ -80,7 +80,7 @@ Note 1: these programs are not installed by genomepy and need to be
 installed separately for the indexing to work.
 
 Note 2: the index is based on the genome, annotation (splice sites) is currently
-not taken into account.
+taken into account only for STAR.
 
 You can configure the index creation using the `genomepy plugin` command (see below)
 
@@ -152,9 +152,12 @@ Find the name of your desired genome:
 
 ```
 $ genomepy search xenopus_tropicalis
-ensembl Xenopus_tropicalis_v9.1 xenopus_tropicalis
-ucsc    xenTro9 X. tropicalis Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9) Genome at UCSC
-ncbi    Xenopus_tropicalis_v9.1 Xenopus tropicalis; DOE Joint Genome Institute
+name                       provider    accession          species               tax_id    other_info                                     
+Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3    Xenopus tropicalis    8364      2019-04-Ensembl/2019-06                                            
+xenTro9                    UCSC        GCA_000004195.3    Xenopus tropicalis    8364      Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)    
+Xenopus_tropicalis_v9.1    NCBI        GCA_000004195.3    Xenopus tropicalis    8364      DOE Joint Genome Institute
+ ^
+ Use name for genomepy install
 ```
 
 Note that genomes with a space can be searched for either by using `"quotation marks"`, 
@@ -166,10 +169,12 @@ Lets say we want to download the Xenopus Tropicalis genome from UCSC.
 Copy the name returned by the search function and it with the provider name to install:
 
 ```
-$ genomepy  install xenTro9 UCSC
-downloading...
-done...
+$ genomepy install xenTro9 UCSC
+Downloading genome from http://hgdownload.soe.ucsc.edu/goldenPath/xenTro9/bigZips/xenTro9.fa.gz...
+Genome download successful, starting post processing...
+
 name: xenTro9
+local name: xenTro9
 fasta: /data/genomes/xenTro9/xenTro9.fa
 ```
 
@@ -177,12 +182,13 @@ Here, genomes are downloaded to the directory specified in the config file.
 To choose a different directory, use the `-g` option.
 
 ```
-$ genomepy install sacCer3 UCSC -g ~/genomes/
-downloading from http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz...
-done...
+$ genomepy install sacCer3 UCSC -g /path/to/my/genomes
+Downloading genome from http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz...
+Genome download successful, starting post processing...
+
 name: sacCer3
 local name: sacCer3
-fasta: /data/genomes/sacCer3/sacCer3.fa
+fasta: /path/to/my/genomes/sacCer3/sacCer3.fa
 ```
 
 You can use a regular expression to filter for matching sequences 
@@ -223,7 +229,7 @@ $ grep ">" /data/genomes/hg38/hg38.fa
 >chrY
 ```
 
-By default, sequences are soft-masked. Use `-m hard` for hard masking, or `-m unmaksed` for no masking.
+By default, sequences are soft-masked. Use `-m hard` for hard masking, or `-m none` for no masking.
 
 The chromosome sizes are saved in file called `<genome_name>.fa.sizes`.
 
@@ -311,6 +317,7 @@ $ genomepy providers
 Ensembl
 UCSC
 NCBI
+URL
 ```
 
 #### List available genomes
@@ -425,7 +432,7 @@ When contributing a PR, please use the [develop](https://github.com/vanheeringen
 For style, code will be checked using flake8 and
 [black](https://github.com/psf/black). These modules can be
 installed via conda, `conda install black flake8 flake8-bugbear` or via pip `pip
-install black flake8 flake8-bugbear`.
+install black flake8 flake8-bugbear`. All requirements can be found in the `environment.yaml`.
 
 ```
 black --check genomepy/ setup.py tests/
