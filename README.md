@@ -29,7 +29,8 @@ Genomepy works with Python 3.6+.
 You can install it via [bioconda](https://bioconda.github.io/):
 
 ```
-$ conda install "genomepy>0.7"
+$ conda config --set use_only_tar_bz2 True
+$ conda install genomepy
 ``` 
 
 Or via pip:

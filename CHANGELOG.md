@@ -15,16 +15,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
     - Downloading of annotation file (BED/GTF/GFF3) from URL
     - Automatic search for annotation file (GTF/GFF3) in genome directory when downloading from URL
     - Option for URL provider to link to annotation file (to process is similarly to other providers)
-    - Annotation sanitizing (and skip sanitizing flag)
+    - Automatic annotation sanitizing (and skip sanitizing flag `-s` for `genomepy install`)
     - Option to only download annotation with `genomepy install -o`
 - Plugins:
     - Blacklists are automatically unzipped.
-    - Multithreading support for plugins, thanks to @alienzj!
+    - Multithreading support for plugins, thanks to alienzj!
     - STAR now uses the annotation file for a (one-pass) splice-aware index
 
 ### Changed
 - sizes no longer a plugin, but always gets executed
-- `genomepy install --help` menu now contains paragraphs
 - `genomepy FUNCTION --help` texts expanded
 - all genomepy classes exported when imported into Python
 - all providers now let you know when they are downloading assembly information.
@@ -36,8 +35,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Removed outdated dependency `xmltodict`
 
 ### Fixed
-- tests use double digits to preserve testing order
-- config options made more robust
+- `genomepy config` options made more robust
 - README.txt will no longer:
   - update 3x for each command
   - drop regex info
@@ -62,17 +60,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
     - `.travis.yml`
     - `release_checklist.md`
     - `cli.py`
-    - strings (many replaced with f-strings)
+    - strings (many strings with .format() replaced with f-strings)
 
 ## [0.7.2] - 2019-03-31
 
-### Fixes
+### Fixed
 - Fix minor issue with hg19 wrong blacklist url
 - Ensembl downloads over http instead of https (release 99 no longer has https)
 
 ## [0.7.1] - 2019-11-20
 
-### Fixes
+### Fixed
 - STAR is not longer enabled by default
 
 ## [0.7.0] - 2019-11-18
