@@ -24,7 +24,7 @@ class GmapPlugin(Plugin):
             # its content is moved to index dir, consistent with other plugins
             with TemporaryDirectory() as tmpdir:
                 # Create index
-                cmd = "gmap_build -D {} -d {} {}".format(tmpdir, genome.name, fname)
+                cmd = f"gmap_build -D {tmpdir} -d {genome.name} {fname}"
                 run_index_cmd("gmap", cmd)
 
                 # Move files to index_dir

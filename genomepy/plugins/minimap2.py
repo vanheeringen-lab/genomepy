@@ -19,7 +19,7 @@ class Minimap2Plugin(Plugin):
 
         if not any(fname.endswith(".mmi") for fname in os.listdir(index_dir)):
             # Create index
-            cmd = "minimap2 -t {} -d {} {}".format(threads, index_name, genome.filename)
+            cmd = f"minimap2 -t {threads} -d {index_name} {genome.filename}"
             run_index_cmd("minimap2", cmd)
 
     def get_properties(self, genome):
@@ -31,7 +31,7 @@ class Minimap2Plugin(Plugin):
                 os.path.dirname(genome.filename),
                 "index",
                 "minimap2",
-                "{}.mmi".format(genome.name),
+                f"{genome.name}.mmi",
             ),
         }
         return props

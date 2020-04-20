@@ -1,44 +1,44 @@
+name: genomepy
 channels:
   - bioconda
   - conda-forge
   - defaults
 dependencies:
   # Also found in setup.py
+  - appdirs
+  - biopython>=1.73  # for pyfaidx
+  - bucketcache
   - click
   - colorama
-  - pyfaidx>=0.5.7
   - norns>=0.1.5
-  - bucketcache
-  - xmltodict
-  - requests
-  - biopython>=1.73
   - psutil
-  - appdirs
+  - pyfaidx>=0.5.7
+  - requests
 
   # Bgzip
   - tabix
 
   # Annotation downloading
+  - ucsc-bedtogenepred
   - ucsc-genepredtobed
   - ucsc-genepredtogtf
-  - ucsc-bedtogenepred
   - ucsc-gff3togenepred
   - ucsc-gtftogenepred
 
   # Plugins
-  - bwa
-  - star
-  - minimap2
   - bowtie2
-  - hisat2
+  - bwa
   - gmap
+  - hisat2
+  - minimap2
+  - star
 
   # Distribution
   - setuptools
 
   # Testing
+  - black
   - flake8
   - flake8-bugbear
-  - black
   - pytest
   - pytest-cov

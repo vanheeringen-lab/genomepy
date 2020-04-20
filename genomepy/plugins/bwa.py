@@ -21,18 +21,14 @@ class BwaPlugin(Plugin):
             # Create index
             if not os.path.exists(index_name):
                 os.symlink(genome.filename, index_name)
-
-            cmd = "bwa index {}".format(index_name)
+            cmd = f"bwa index {index_name}"
             run_index_cmd("bwa", cmd)
 
     def get_properties(self, genome):
         props = {
             "index_dir": os.path.join(os.path.dirname(genome.filename), "index", "bwa"),
             "index_name": os.path.join(
-                os.path.dirname(genome.filename),
-                "index",
-                "bwa",
-                "{}.fa".format(genome.name),
+                os.path.dirname(genome.filename), "index", "bwa", f"{genome.name}.fa",
             ),
         }
         return props

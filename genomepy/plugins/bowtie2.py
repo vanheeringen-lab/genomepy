@@ -19,9 +19,7 @@ class Bowtie2Plugin(Plugin):
 
         if not any(fname.endswith(".bt2") for fname in os.listdir(index_dir)):
             # Create index
-            cmd = "bowtie2-build --threads {} {} {}".format(
-                threads, genome.filename, index_name
-            )
+            cmd = f"bowtie2-build --threads {threads} {genome.filename} {index_name}"
             run_index_cmd("bowtie2", cmd)
 
     def get_properties(self, genome):
