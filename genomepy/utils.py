@@ -246,20 +246,28 @@ def safe(name):
 def get_localname(name, localname=None):
     """
     Returns the safe version of the given localname, if provided.
-    If not localname is provided, return the safe version of the name.
+    If no localname is provided, return the safe version of the name.
     If the name is a working URL, return the safe version of the filename.
     """
-    if localname is None:
-        try:
-            urllib.request.urlopen(name)
-        except (IOError, ValueError):
-            return safe(name)
-        else:
-            # try to get the name from the url
-            name = name[name.rfind("/") + 1 :]
-            return safe(name[: name.find(".")])
-    else:
+    if localname:
         return safe(localname)
+    try:
+        urllib.request.urlopen(name)
+    except (IOError, ValueError):
+        return safe(name)
+    else:
+        # try to get the name from the url
+        name = name[name.rfind("/") + 1 :]
+        name = safe(name[: name.find(".fa")])
+        # remove potential unwanted text from the name (ex: _genomes or .est_)
+        unwanted = ["genome", "sequence", "cds", "pep", "transcript", "EST"]
+        name = re.sub(
+            r"(\.?_?){}(s?\.?_?)".format("(s?\.?_?)|".join(unwanted)),
+            "",
+            name,
+            flags=re.IGNORECASE,
+        )
+        return name
 
 
 def tar_to_bigfile(fname, outfile):
