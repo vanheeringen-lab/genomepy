@@ -262,7 +262,7 @@ def get_localname(name, localname=None):
         # remove potential unwanted text from the name (ex: _genomes or .est_)
         unwanted = ["genome", "sequence", "cds", "pep", "transcript", "EST"]
         name = re.sub(
-            r"(\.?_?){}(s?\.?_?)".format("(s?\.?_?)|".join(unwanted)),
+            r"(\.?_?){}(s?\.?_?)".format("(s?\.?_?)|".join(unwanted)),  # noqa: W605
             "",
             name,
             flags=re.IGNORECASE,
