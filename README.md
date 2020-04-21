@@ -3,8 +3,7 @@
 [![bioconda-badge](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io)
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/genomepy/badges/downloads.svg)](https://anaconda.org/bioconda/genomepy)
 [![PyPI version](https://badge.fury.io/py/genomepy.svg)](https://badge.fury.io/py/genomepy)
-[![star this repo](http://githubbadges.com/star.svg?user=vanheeringen-lab&repo=genomepy&style=flat)](https://github.com/vanheeringen-lab/genomepy)
-[![Anaconda-Server Badge](https://anaconda.org/bioconda/genomepy/badges/downloads.svg)](https://anaconda.org/bioconda/genomepy)
+[![star this repo](https://githubbadges.com/star.svg?user=vanheeringen-lab&repo=genomepy&style=flat)](https://github.com/vanheeringen-lab/genomepy)
 
 [![Build Status](https://travis-ci.org/vanheeringen-lab/genomepy.svg?branch=master)](https://travis-ci.org/vanheeringen-lab/genomepy)
 [![Maintainability](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/maintainability)](https://codeclimate.com/github/vanheeringen-lab/genomepy/maintainability)
@@ -21,6 +20,25 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 [![asciicast](https://asciinema.org/a/eZttBuf5ly0AnjFVBiEIybbjS.png)](https://asciinema.org/a/eZttBuf5ly0AnjFVBiEIybbjS)
 
 **Pssst, hey there!** Is genomepy not doing what you want? Does it fail? Is it clunky? Is the documentation unclear? Have any other ideas on how to improve it? Don't be shy and [let us know](https://github.com/vanheeringen-lab/genomepy/issues)!
+
+## Table of Contents
+1.  [Installation](#Installation)
+1.  [Installation](#-Installation)
+1.  [Installation](# Installation)
+1.  [Installation](##Installation)
+1.  [Installation](##-Installation)
+1.  [Installation](## Installation)
+2.  [Quick usage](##-Quick-usage)
+3.  [Plugins and indexing](##-Plugins-and-indexing)
+4.  [Configuration](##-Configuration)
+5.  [Usage](##-Usage)
+    * [Command line](###-Command-line)
+    * [Python](###-Python)
+6.  [Known Issues](##-Known-Issues)
+7.  [Citation](##-Citation)
+8.  [Getting help](##-Getting-help)
+9.  [Contributing](##-Contributing)
+10.  [License](##-License)
 
 
 ## Installation
@@ -55,6 +73,22 @@ you will have to install the following utilities:
 
 You can find the binaries [here](http://hgdownload.cse.ucsc.edu/admin/exe/).
 
+## Quick usage
+
+1.  Find your genome: `$ genomepy search zebrafish`
+
+  Console output:
+  ```
+  name      provider    accession          species        tax_id    other_info                 
+  GRCz11    Ensembl     GCA_000002035.4    Danio rerio    7955      2017-08-Ensembl/2018-04    
+   ^
+   Use name for genomepy install
+  ```
+
+2.  Install your genome (with annotation): `$ genomepy install --annotation GRCz11 ensembl`
+
+  Default genome directory: `~/.local/share/genomes/`
+
 ## Plugins and indexing
 
 By default genomepy generates a file with chromosome sizes and a BED file with
@@ -80,8 +114,12 @@ some widely using aligners. Currently, genomepy supports:
 Note 1: these programs are not installed by genomepy and need to be
 installed separately for the indexing to work.
 
-Note 2: the index is based on the genome, annotation (splice sites) is currently
-taken into account only for STAR.
+Note 2: splice-aware indexing is performed by Hisat2 and STAR.
+Splice-aware indexing requires the annotation to be downloaded as well. 
+You will recieve a warning if indexing is performed without annotation for these aligners.
+
+Note 3: STAR can further improve mapping to (novel) splice junctions by indexing again (2-pass mapping mode). 
+The second pass is currently not supported by genomepy.
 
 You can configure the index creation using the `genomepy plugin` command (see below)
 
@@ -129,7 +167,7 @@ script from [pyfaidx](https://github.com/mdshw5/pyfaidx) which comes installed w
 
 ## Usage
 
-### Command line 
+### Command line
 
 ```
 Usage: genomepy [OPTIONS] COMMAND [ARGS]...
@@ -163,7 +201,7 @@ Xenopus_tropicalis_v9.1    NCBI        GCA_000004195.3    Xenopus tropicalis    
 
 Note that genomes with a space can be searched for either by using `"quotation marks"`, 
 or by replacing the space(s) with and underscore `_`. 
-For example, we can search for Xenopus Tropicalis as `"xenopus tropicalis"`, 
+For example, we can search for Xenopus Tropicalis as `"Xenopus Tropicalis"`, 
 `xenopus_tropicalis` or `xenopus`. The search function is case-insensitive.
 
 Lets say we want to download the Xenopus Tropicalis genome from UCSC. 
@@ -235,7 +273,7 @@ By default, sequences are soft-masked. Use `-m hard` for hard masking, or `-m no
 The chromosome sizes are saved in file called `<genome_name>.fa.sizes`.
 
 You can choose to download gene annotation files with the `--annotation` option. 
-These will be saved in BED and GTF format. 
+These will be saved in (gzipped) BED and GTF format. 
 
 ```
 $ genomepy  install hg38 UCSC --annotation
@@ -250,7 +288,7 @@ This installs the genome under the filename of the link, but can be changed with
 option
 
 Finally, in the spirit of reproducibility all selected options are stored in a `README.txt`. 
-This includes the original name and download location. 
+This includes the original name, download location and other genomepy operations (such as regex filtering and time).
 
 #### Manage plugins.
 
@@ -371,7 +409,7 @@ The lists are cached locally, which will save time later. The cached files are s
 `~/.cache/genomepy` and expire after 7 days. You can also delete this directory to clean the 
 cache.
 
-### From Python
+### Python
 
 ```python
 >>> import genomepy
@@ -411,15 +449,9 @@ There might be issues with specific genome sequences.
 Sadly, not everything (naming, structure, filenames) is always consistent on the provider end. 
 Let me know if you encounter issues with certain downloads.
 
-## Todo
-
-* Linking genomes to NCBI taxonomy ID
-* Optionally: Ensembl bacteria (although there might be better options specifically for bacterial sequences)
-
 ## Citation
 
 If you use genomepy in your research, please cite it: [10.21105/joss.00320](http://dx.doi.org/10.21105/joss.00320).
-
 
 ## Getting help
 
@@ -427,13 +459,11 @@ If you want to report a bug or issue, or have problems with installing or runnin
 
 ## Contributing
 
-Contributions welcome! Send me a pull request or get in [touch](mailto:simon.vanheeringen@gmail.com).
+Contributions welcome! Send me a pull request or [get in touch](mailto:simon.vanheeringen@gmail.com).
 
 When contributing a PR, please use the [develop](https://github.com/vanheeringen-lab/genomepy/tree/develop) branch.
-For style, code will be checked using flake8 and
-[black](https://github.com/psf/black). These modules can be
-installed via conda, `conda install black flake8 flake8-bugbear` or via pip `pip
-install black flake8 flake8-bugbear`. All requirements can be found in the `environment.yaml`.
+For style, code will be checked using flake8 and [black](https://github.com/psf/black). 
+These modules can be installed via conda, using the `environment.yaml`, or `conda install black flake8 flake8-bugbear` or via pip `pip install black flake8 flake8-bugbear`.
 
 ```
 black --check genomepy/ setup.py tests/
