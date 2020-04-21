@@ -253,16 +253,6 @@ def install_genome(
     if genome_found:
         g = Genome(localname, genome_dir=genome_dir)
 
-    # Generate sizes file (if not found or if generation is forced)
-    sizes_file = os.path.join(out_dir, localname + ".fa.sizes")
-    if (not os.path.exists(sizes_file) or force) and not only_annotation:
-        generate_fa_sizes(glob_ext_files(out_dir, "fa")[0], sizes_file)
-
-    # Generate gap file (if not found or if generation is forced)
-    gap_file = os.path.join(out_dir, localname + ".gaps.bed")
-    if (not os.path.exists(gap_file) or force) and not only_annotation:
-        generate_gap_bed(glob_ext_files(out_dir, "fa")[0], gap_file)
-
     # Check if any annotation flags are given, if annotation already exists, or if downloading is forced
     if any([annotation, only_annotation, kwargs.get("to_annotation", False)]):
         annotation = True

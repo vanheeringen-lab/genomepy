@@ -3,6 +3,7 @@ import re
 import sys
 
 from bisect import bisect
+from glob import glob
 from pyfaidx import Fasta, Sequence
 from random import random
 
@@ -40,24 +41,24 @@ class Genome(Fasta):
     """
 
     def __init__(self, name, genome_dir=None):
-        self.genome_dir = get_genome_dir(genome_dir)
-        self.name, self.filename = self._get_name_and_filename(name)
+        self.name, self.filename = self._get_name_and_filename(name, genome_dir)
         super(Genome, self).__init__(self.filename)
+
+        self.annotation_names = self.get_annotations()
+        self.sizes_name = self.get_sizes_file()
+        self.gaps_name = self.get_gaps_file()
+        self._gap_sizes = None
 
         metadata = self._read_metadata()
         self.tax_id = metadata.get("tax_id")
         self.assembly_accession = metadata.get("assembly_accession")
-        self.annotations = self._check_annotations()
-        self.sizes_file = self.get_sizes_file()
-        self.gaps_file = self.get_gaps_file()
-        self._contig_sizes = None
-        self._gap_sizes = None
-        self.props = {}
 
+        self.props = {}
         for plugin in get_active_plugins():
             self.props[plugin.name()] = plugin.get_properties(self)
 
-    def _get_name_and_filename(self, name):
+    @staticmethod
+    def _get_name_and_filename(name, genome_dir=None):
         """
         name can be just a name (e.g. hg38) or an abspath to a fasta file or the fasta's folder
 
@@ -75,7 +76,7 @@ class Genome(Fasta):
             filename = glob_ext_files(name)[0]
             name = os.path.basename(stripped_name)
         else:
-            fasta_dir = os.path.join(self.genome_dir, stripped_name)
+            fasta_dir = os.path.join(get_genome_dir(genome_dir), stripped_name)
             filenames = glob_ext_files(fasta_dir)
             if len(filenames) == 1:
                 filename = filenames[0]
@@ -99,7 +100,7 @@ class Genome(Fasta):
         """
         Read genome metadata from genome README.txt (if it exists).
         """
-        readme = os.path.join(self.genome_dir, self.name, "README.txt")
+        readme = os.path.join(os.path.dirname(self.filename), "README.txt")
         metadata, lines = read_readme(readme)
 
         update_metadata = False
@@ -145,20 +146,13 @@ class Genome(Fasta):
         write_readme(readme, metadata, lines)
         return metadata
 
-    def _check_annotations(self):
+    def get_annotations(self):
         """returns the file paths to the (gzipped) annotation files"""
-        fname = self.filename
-        fname = re.sub(".fa(.gz)?$", "", fname)
-
-        gtf = fname + ".annotation.gtf"
-        bed = fname + ".annotation.bed"
-
-        annotations = []
-        for f in [gtf, gtf + ".gz", bed, bed + ".gz"]:
-            if os.path.exists(f):
-                annotations.append(f)
-
-        return annotations if annotations else None
+        pattern = os.path.join(
+            os.path.dirname(self.filename), self.name + ".annotation.*"
+        )
+        annotations = glob(pattern)
+        return annotations
 
     def get_gaps_file(self):
         """
@@ -166,8 +160,9 @@ class Genome(Fasta):
 
         generates the file if nonexistent
         """
-        fname = re.sub(".fa(.gz)?$", "", self.filename)
-        gaps_file = fname + ".gaps.bed"
+        gaps_file = os.path.join(
+            os.path.dirname(self.filename), self.name + ".gaps.bed"
+        )
         if not os.path.exists(gaps_file):
             generate_gap_bed(self.filename, gaps_file)
 
@@ -325,19 +320,12 @@ class Genome(Fasta):
             a dictionary with chromosomes as key and the total number of
             Ns as values
         """
-        if not self._gap_sizes:
-            gaps_file = re.sub(".fa(.gz)?$", "", self.filename) + ".gaps.bed"
-
-            # generate gap file if not found
-            if not os.path.exists(gaps_file):
-                generate_gap_bed(self.filename, gaps_file)
-
-            self._gap_sizes = {}
-            with open(gaps_file) as f:
-                for line in f:
-                    chrom, start, end = line.strip().split("\t")
-                    start, end = int(start), int(end)
-                    self._gap_sizes[chrom] = self._gap_sizes.get(chrom, 0) + end - start
+        self._gap_sizes = {}
+        with open(self.gaps_name) as f:
+            for line in f:
+                chrom, start, end = line.strip().split("\t")
+                start, end = int(start), int(end)
+                self._gap_sizes[chrom] = self._gap_sizes.get(chrom, 0) + end - start
         return self._gap_sizes
 
     @staticmethod
