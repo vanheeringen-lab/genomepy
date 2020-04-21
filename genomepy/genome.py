@@ -14,6 +14,7 @@ from genomepy.utils import (
     get_genome_dir,
     get_localname,
     glob_ext_files,
+    generate_fa_sizes,
     generate_gap_bed,
     safe,
 )
@@ -46,6 +47,10 @@ class Genome(Fasta):
         metadata = self._read_metadata()
         self.tax_id = metadata.get("tax_id")
         self.assembly_accession = metadata.get("assembly_accession")
+        self.annotations = self._check_annotations()
+        self.sizes_file = self.get_sizes_file()
+        self.gaps_file = self.get_gaps_file()
+        self._contig_sizes = None
         self._gap_sizes = None
         self.props = {}
 
@@ -139,6 +144,46 @@ class Genome(Fasta):
 
         write_readme(readme, metadata, lines)
         return metadata
+
+    def _check_annotations(self):
+        """returns the file paths to the (gzipped) annotation files"""
+        fname = self.filename
+        fname = re.sub(".fa(.gz)?$", "", fname)
+
+        gtf = fname + ".annotation.gtf"
+        bed = fname + ".annotation.bed"
+
+        annotations = []
+        for f in [gtf, gtf + ".gz", bed, bed + ".gz"]:
+            if os.path.exists(f):
+                annotations.append(f)
+
+        return annotations if annotations else None
+
+    def get_gaps_file(self):
+        """
+        returns the file path to the genome's gaps file
+
+        generates the file if nonexistent
+        """
+        fname = re.sub(".fa(.gz)?$", "", self.filename)
+        gaps_file = fname + ".gaps.bed"
+        if not os.path.exists(gaps_file):
+            generate_gap_bed(self.filename, gaps_file)
+
+        return gaps_file
+
+    def get_sizes_file(self):
+        """
+        returns the file path to the genome's sizes file
+
+        generates the file if nonexistent
+        """
+        sizes_file = self.filename + ".sizes"
+        if not os.path.exists(sizes_file):
+            generate_fa_sizes(self.filename, sizes_file)
+
+        return sizes_file
 
     def _bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
         bufsize = 10000
