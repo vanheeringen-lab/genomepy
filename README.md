@@ -23,22 +23,17 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 
 ## Table of Contents
 1.  [Installation](#Installation)
-1.  [Installation](#-Installation)
-1.  [Installation](# Installation)
-1.  [Installation](##Installation)
-1.  [Installation](##-Installation)
-1.  [Installation](## Installation)
-2.  [Quick usage](##-Quick-usage)
-3.  [Plugins and indexing](##-Plugins-and-indexing)
-4.  [Configuration](##-Configuration)
-5.  [Usage](##-Usage)
-    * [Command line](###-Command-line)
-    * [Python](###-Python)
-6.  [Known Issues](##-Known-Issues)
-7.  [Citation](##-Citation)
-8.  [Getting help](##-Getting-help)
-9.  [Contributing](##-Contributing)
-10.  [License](##-License)
+2.  [Quick usage](#Quick-usage)
+3.  [Plugins and indexing](#Plugins-and-indexing)
+4.  [Configuration](#Configuration)
+5.  [Usage](#Usage)
+    * [Command line](#Command-line)
+    * [Python](#Python)
+6.  [Known Issues](#Known-Issues)
+7.  [Citation](#Citation)
+8.  [Getting help](#Getting-help)
+9.  [Contributing](#Contributing)
+10.  [License](#License)
 
 
 ## Installation
