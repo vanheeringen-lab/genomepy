@@ -326,14 +326,14 @@ class Genome(Fasta):
             Ns as values
         """
         if not self._gap_sizes:
-            gap_file = self.filename + ".sizes"
+            gaps_file = re.sub(".fa(.gz)?$", "", self.filename) + ".gaps.bed"
 
             # generate gap file if not found
-            if not os.path.exists(gap_file):
-                generate_gap_bed(self.filename, gap_file)
+            if not os.path.exists(gaps_file):
+                generate_gap_bed(self.filename, gaps_file)
 
             self._gap_sizes = {}
-            with open(gap_file) as f:
+            with open(gaps_file) as f:
                 for line in f:
                     chrom, start, end = line.strip().split("\t")
                     start, end = int(start), int(end)
