@@ -35,18 +35,19 @@ def genome(request):
     name = "ce10"  # Use fake name for blacklist test
     fafile = "tests/data/small_genome.fa.gz"
 
-    genome_dir = os.path.join(os.getcwd(), ".genomepy_plugin_tests")
-    if os.path.exists(genome_dir):
-        shutil.rmtree(genome_dir)
-    genomepy.utils.mkdir_p(os.path.join(genome_dir, name))
-    fname = os.path.join(genome_dir, name, f"{name}.fa.gz")
+    genomes_dir = os.path.join(os.getcwd(), ".genomepy_plugin_tests")
+    if os.path.exists(genomes_dir):
+        shutil.rmtree(genomes_dir)
+    genome_dir = os.path.join(genomes_dir, name)
+    genomepy.utils.mkdir_p(genome_dir)
+    fname = os.path.join(genome_dir, f"{name}.fa.gz")
     shutil.copyfile(fafile, fname)
 
     # unzip genome if required
     if request.param == "unzipped":
         sp.check_call(["gunzip", fname])
 
-    return genomepy.Genome(name, genome_dir=genome_dir)
+    return genomepy.Genome(name, genomes_dir=genomes_dir)
 
 
 def test_blacklist(genome):

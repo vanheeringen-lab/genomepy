@@ -48,10 +48,10 @@ def genomes(provider=None):
 
 # extended options for genomepy install
 general_install_options = {
-    "genome_dir": {
+    "genomes_dir": {
         "short": "g",
-        "long": "genome_dir",
-        "help": "genome directory",
+        "long": "genomes_dir",
+        "help": "genomes directory",
         "default": None,
     },
     "localname": {
@@ -178,7 +178,7 @@ def custom_options(options):
 def install(
     name,
     provider,
-    genome_dir,
+    genomes_dir,
     localname,
     mask,
     regex,
@@ -195,7 +195,7 @@ def install(
     genomepy.install_genome(
         name,
         provider,
-        genome_dir=genome_dir,
+        genomes_dir=genomes_dir,
         localname=localname,
         mask=mask,
         regex=regex,

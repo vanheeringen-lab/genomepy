@@ -16,8 +16,8 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
     with pytest.raises(FileNotFoundError):
         genomepy.Genome("unknown", "unknown")
 
-    # create genome_dir (normally done by downloading the genome)
-    gd = genomepy.utils.get_genome_dir(check_exist=False)
+    # create genomes_dir (normally done by downloading the genome)
+    gd = genomepy.utils.get_genomes_dir(check_exist=False)
     genomepy.utils.mkdir_p(os.path.join(gd, "small_genome"))
 
     # initialize the class (creates the index file)
@@ -32,7 +32,7 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
 def test__read_metadata(capsys, genome="tests/data/small_genome.fa.gz"):
     # create blank README.txt
     g = genomepy.Genome(genome)
-    readme = os.path.join(g.genome_dir, g.name, "README.txt")
+    readme = os.path.join(g.genomes_dir, g.name, "README.txt")
     if os.path.exists(readme):
         os.unlink(readme)
     metadata, lines = genomepy.utils.read_readme(readme)

@@ -124,7 +124,7 @@ def test_download_genome(
     with TemporaryDirectory(dir=out_dir) as tmpdir:
         p.download_genome(
             name,
-            genome_dir=tmpdir,
+            genomes_dir=tmpdir,
             localname=localname,
             mask=mask,
             regex=regex,
@@ -159,7 +159,7 @@ def test_download_and_generate_annotation(p):
     annot_url = "https://www.google.com"
     with pytest.raises(TypeError), TemporaryDirectory(dir=out_dir) as tmpdir:
         p.download_and_generate_annotation(
-            genome_dir=tmpdir, annot_url=annot_url, localname=localname
+            genomes_dir=tmpdir, annot_url=annot_url, localname=localname
         )
 
     annot_url = (
@@ -168,7 +168,7 @@ def test_download_and_generate_annotation(p):
     )
     with TemporaryDirectory(dir=out_dir) as tmpdir:
         p.download_and_generate_annotation(
-            genome_dir=tmpdir, annot_url=annot_url, localname=localname
+            genomes_dir=tmpdir, annot_url=annot_url, localname=localname
         )
 
         fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf.gz")
@@ -209,7 +209,7 @@ def test_download_annotation(p):
         "http://hgdownload.cse.ucsc.edu/goldenPath/sacCer3/database/ensGene.txt.gz"
     )
     with TemporaryDirectory(dir=out_dir) as tmpdir:
-        p.download_annotation(name=name, genome_dir=tmpdir, localname=localname)
+        p.download_annotation(name=name, genomes_dir=tmpdir, localname=localname)
 
         # check download_and_generate_annotation output
         fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf.gz")

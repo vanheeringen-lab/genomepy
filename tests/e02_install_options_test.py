@@ -59,7 +59,7 @@ if not skip:
         genomepy.install_genome(
             genome,
             provider,
-            genome_dir=tmp,
+            genomes_dir=tmp,
             localname=localname,
             bgzip=bgzip,
             force=force,
@@ -77,7 +77,7 @@ if not skip:
         genomepy.install_genome(
             genome,
             provider,
-            genome_dir=tmp,
+            genomes_dir=tmp,
             localname=localname,
             bgzip=bgzip,
             force=force,
@@ -105,7 +105,7 @@ if not skip:
         genomepy.install_genome(
             genome,
             provider,
-            genome_dir=tmp,
+            genomes_dir=tmp,
             localname=localname,
             annotation=annotation,
             skip_sanitizing=True,
@@ -126,7 +126,7 @@ if not skip:
         genomepy.install_genome(
             genome,
             provider,
-            genome_dir=tmp,
+            genomes_dir=tmp,
             localname=localname,
             annotation=annotation,
             force=force,
