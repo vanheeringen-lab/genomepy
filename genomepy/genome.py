@@ -65,12 +65,7 @@ class Genome(Fasta):
         if os.path.isfile(path_name):
             return path_name
 
-        if os.path.isdir(path_name):
-            for f in glob_ext_files(path_name):
-                if self.name + ".fa" in os.path.basename(f):
-                    return f
-
-        for f in glob_ext_files(self.genome_dir):
+        for f in glob_ext_files(path_name) + glob_ext_files(self.genome_dir):
             if self.name + ".fa" in os.path.basename(f):
                 return f
 
