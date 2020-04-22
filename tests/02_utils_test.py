@@ -124,14 +124,14 @@ def test_glob_ext_files(file="tests/data/small_genome.fa"):
     assert len(genomepy.utils.glob_ext_files("tests/data", "fake_ext")) == 0
 
 
-def test_get_genome_dir(genome_dir="tests/data"):
+def test_get_genomes_dir(genomes_dir="tests/data"):
     # dir does exist
-    gd = genomepy.utils.get_genome_dir(genome_dir=genome_dir, check_exist=True)
-    assert os.path.abspath(gd) == os.path.abspath(genome_dir)
+    gd = genomepy.utils.get_genomes_dir(genomes_dir=genomes_dir, check_exist=True)
+    assert os.path.abspath(gd) == os.path.abspath(genomes_dir)
 
     # dir does not exist
     with pytest.raises(FileNotFoundError):
-        genomepy.utils.get_genome_dir(genome_dir="fake_dir", check_exist=True)
+        genomepy.utils.get_genomes_dir(genomes_dir="fake_dir", check_exist=True)
 
 
 def test_safe(unsafe_name="a name", safe_name="a_name"):

@@ -12,7 +12,7 @@ from genomepy.provider import ProviderBase
 from genomepy.utils import (
     read_readme,
     write_readme,
-    get_genome_dir,
+    get_genomes_dir,
     get_localname,
     glob_ext_files,
     generate_fa_sizes,
@@ -32,7 +32,7 @@ class Genome(Fasta):
     name : str
         Genome name
 
-    genome_dir : str
+    genomes_dir : str
         Genome installation directory
 
     Returns
@@ -40,12 +40,14 @@ class Genome(Fasta):
     pyfaidx.Fasta object
     """
 
-    def __init__(self, name, genome_dir=None):
-        self.name, filename = self._get_name_and_filename(name, genome_dir)
-        super(Genome, self).__init__(filename)
+    def __init__(self, name, genomes_dir=None):
+        self.name = os.path.basename(re.sub(".fa(.gz)?$", "", get_localname(name)))
+        self.genomes_dir = get_genomes_dir(genomes_dir)
+        self.filename = self._get_filename(name)
+        super(Genome, self).__init__(self.filename)
 
         # file paths
-        self.genome_file = filename
+        self.genome_file = self.filename
         self.genome_dir = os.path.dirname(self.genome_file)
         self.index_file = self.genome_file + ".fai"
         self.readme_file = os.path.join(self.genome_dir, "README.txt")
@@ -65,44 +67,25 @@ class Genome(Fasta):
         for plugin in get_active_plugins():
             self.props[plugin.name()] = plugin.get_properties(self)
 
-    @staticmethod
-    def _get_name_and_filename(name, genome_dir=None):
+    def _get_filename(self, name):
         """
-        name can be just a name (e.g. hg38) or an abspath to a fasta file or the fasta's folder
+        accepts path to a fasta file, path to a fasta folder, or
+        the name of a genome (e.g. hg38).
 
-        returns the name and the abspath to the (closest) fasta file
+        returns the abspath to the fasta file
         """
-        stripped_name = get_localname(name)
-        stripped_name = re.sub(".fa(.gz)?$", "", stripped_name)
+        path_name = os.path.abspath(os.path.expanduser(name))
+        if os.path.isfile(path_name):
+            return path_name
 
-        if os.path.isfile(name):
-            filename = name
-            name = os.path.basename(stripped_name)
-        elif os.path.isdir(name) and glob_ext_files(name)[0].startswith(
-            os.path.basename(name) + ".fa"
-        ):
-            filename = glob_ext_files(name)[0]
-            name = os.path.basename(stripped_name)
-        else:
-            fasta_dir = os.path.join(get_genome_dir(genome_dir), stripped_name)
-            filenames = glob_ext_files(fasta_dir)
-            if len(filenames) == 1:
-                filename = filenames[0]
-            elif len(filenames) == 0:
-                raise FileNotFoundError(
-                    f"no *.fa files found in genome_dir {fasta_dir}"
-                )
-            else:
-                filename = os.path.join(fasta_dir, stripped_name + ".fa")
-                if filename not in filenames:
-                    filename += ".gz"
-                if filename not in filenames:
-                    raise Exception(
-                        f"Multiple fasta files found, but not {stripped_name}.fa!"
-                    )
-            name = stripped_name
+        default_genome_dir = os.path.join(self.genomes_dir, self.name)
+        for f in glob_ext_files(path_name) + glob_ext_files(default_genome_dir):
+            if self.name + ".fa" in os.path.basename(f):
+                return f
 
-        return [name, filename]
+        raise FileNotFoundError(
+            f"could not find {self.name}.fa(.gz) in genome_dir {default_genome_dir}"
+        )
 
     @property
     def sizes_file(self):

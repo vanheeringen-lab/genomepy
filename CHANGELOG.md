@@ -145,7 +145,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-- Fixed genome_dir argument to `genomepy install`
+- Fixed genomes_dir argument to `genomepy install`
 - Fixed msgpack dependency
 - Fixed issue with `config generate` where config directory does note exist.
 

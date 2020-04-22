@@ -13,7 +13,7 @@ from genomepy.utils import (
     generate_fa_sizes,
     get_localname,
     sanitize_annotation,
-    get_genome_dir,
+    get_genomes_dir,
     glob_ext_files,
     mkdir_p,
 )
@@ -89,23 +89,25 @@ def _is_genome_dir(dirname):
     return len(glob(f"{dirname}/*.fa")) > 0
 
 
-def list_installed_genomes(genome_dir=None):
+def list_installed_genomes(genomes_dir=None):
     """
     List all available genomes.
 
     Parameters
     ----------
-    genome_dir : str
+    genomes_dir : str
         Directory with installed genomes.
 
     Returns
     -------
     list with genome names
     """
-    genome_dir = get_genome_dir(genome_dir)
+    genomes_dir = get_genomes_dir(genomes_dir)
 
     return [
-        f for f in os.listdir(genome_dir) if _is_genome_dir(os.path.join(genome_dir, f))
+        f
+        for f in os.listdir(genomes_dir)
+        if _is_genome_dir(os.path.join(genomes_dir, f))
     ]
 
 
@@ -152,7 +154,7 @@ def generate_env(fname=None):
 def install_genome(
     name,
     provider,
-    genome_dir=None,
+    genomes_dir=None,
     localname=None,
     mask="soft",
     regex=None,
@@ -176,7 +178,7 @@ def install_genome(
     provider : str
         Provider name
 
-    genome_dir : str , optional
+    genomes_dir : str , optional
         Where to store the fasta files
 
     localname : str , optional
@@ -223,9 +225,9 @@ def install_genome(
             URL only: direct link to annotation file.
             Required if this is not the same directory as the fasta.
     """
-    genome_dir = get_genome_dir(genome_dir, check_exist=False)
+    genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
     localname = get_localname(name, localname)
-    out_dir = os.path.join(genome_dir, localname)
+    out_dir = os.path.join(genomes_dir, localname)
 
     # Check if genome already exists, or if downloading is forced
     genome_found = (
@@ -236,7 +238,7 @@ def install_genome(
         p = ProviderBase.create(provider)
         p.download_genome(
             name,
-            genome_dir,
+            genomes_dir,
             mask=mask,
             regex=regex,
             invert_match=invert_match,
@@ -251,7 +253,7 @@ def install_genome(
 
     # Generates a Fasta object and the index file
     if genome_found:
-        g = Genome(localname, genome_dir=genome_dir)
+        g = Genome(localname, genomes_dir=genomes_dir)
 
     # Check if any annotation flags are given, if annotation already exists, or if downloading is forced
     if any([annotation, only_annotation, kwargs.get("to_annotation", False)]):
@@ -260,7 +262,7 @@ def install_genome(
     if (not annotation_found or force) and annotation:
         # Download annotation from provider
         p = ProviderBase.create(provider)
-        p.download_annotation(name, genome_dir, localname=localname, **kwargs)
+        p.download_annotation(name, genomes_dir, localname=localname, **kwargs)
 
         # Sanitize annotation if needed (requires genome)
         annotation_found = len(glob_ext_files(out_dir, "gtf")) >= 1

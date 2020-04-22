@@ -135,13 +135,13 @@ To set the default genome directory to `/data/genomes` for instance,
 edit `~/.config/genomepy/genomepy.yaml` and change the following line:
 
 ```
-genome_dir: ~/.local/share/genomes/
+genomes_dir: ~/.local/share/genomes/
 ```
 
 to:
 
 ```
-genome_dir: /data/genomes
+genomes_dir: /data/genomes
 ```
 
 The genome directory can also be explicitly specified in both the Python API as well as on the command-line.
@@ -383,7 +383,7 @@ To show the contents of the config file:
 ```
 $ genomepy config show
 # Directory were downloaded genomes will be stored
-genome_dir: ~/.local/share/genomes/
+genomes_dir: ~/.local/share/genomes/
 
 plugin:
  - blacklist
@@ -424,12 +424,12 @@ NCBI	GRCh38.p7	Homo sapiens; Genome Reference Consortium
 NCBI	GRCh38.p8	Homo sapiens; Genome Reference Consortium
 NCBI	GRCh38.p9	Homo sapiens; Genome Reference Consortium
 Ensembl	GRCh38.p10	Human
->>> genomepy.install_genome("hg38", "UCSC", genome_dir="/data/genomes")
+>>> genomepy.install_genome("hg38", "UCSC", genomes_dir="/data/genomes")
 downloading...
 done...
 name: hg38
 fasta: /data/genomes/hg38/hg38.fa
->>> g = genomepy.Genome("hg38", genome_dir="/data/genomes")
+>>> g = genomepy.Genome("hg38", genomes_dir="/data/genomes")
 >>> g["chr6"][166502000:166503000]
 tgtatggtccctagaggggccagagtcacagagatggaaagtggatggcgggtgccgggggctggggagctactgtgcagggggacagagctttagttctgcaagatgaaacagttctggagatggacggtggggatgggggcccagcaatgggaacgtgcttaatgccactgaactgggcacttaaacgtggtgaaaactgtaaaagtcatgtgtatttttctacaattaaaaaaaATCTGCCACAGAGTTAAAAAAATAACCACTATTTTCTGGAAATGGGAAGGAAAAGTTACAGCATGTAATTAAGATGACAATTTATAATGAACAAGGCAAATCTTTTCATCTTTGCCTTTTGGGCATATTCAATCTTTGCCCAGAATTAAGCACCTTTCAAGATTAATTCTCTAATAATTCTAGTTGAACAACACAACCTTTTCCTTCAAGCTTGCAATTAAATAAGGCTATTTTTAGCTGTAAGGATCACGCTGACCTTCAGGAGCAATGAGAACCGGCACTCCCGGCCTGAGTGGATGCACGGGGAGTGTGTCTAACACACAGGCGTCAACAGCCAGGGCCGCACGAGGAGGAGGAGTGGCAACGTCCACACAGACTCACAACACGGCACTCCGACTTGGAGGGTAATTAATACCAGGTTAACTTCTGGGATGACCTTGGCAACGACCCAAGGTGACAGGCCAGGCTCTGCAATCACCTCCCAATTAAGGAGAGGCGAAAGGGGACTCCCAGGGCTCAGAGCACCACGGGGTTCTAGGTCAGACCCACTTTGAAATGGAAATCTGGCCTTGTGCTGCTGCTCTTGTGGGGAGACAGCAGCTGCGGAGGCTGCTCTCTTCATGGGATTACTCTGGATAAAGTCTTTTTTGATTCTACgttgagcatcccttatctgaaatgcctgaaaccggaagtgtttaggatttggggattttgcaatatttacttatatataatgagatatcttggagatgggccacaa
 ```

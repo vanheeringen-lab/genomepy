@@ -91,12 +91,12 @@ def test_list_installed_genomes():
 
 @pytest.mark.skipif(not travis or not linux, reason="slow")
 def test_install_genome():
-    out_dir = genomepy.functions.get_genome_dir(None, False)
+    out_dir = genomepy.functions.get_genomes_dir(None, False)
     localname = "my_genome"
     genomepy.functions.install_genome(
         name="fr3",
         provider="UCSC",
-        genome_dir=None,
+        genomes_dir=None,
         localname=localname,
         annotation=True,
         force=True,

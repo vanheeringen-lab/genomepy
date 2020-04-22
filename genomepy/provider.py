@@ -183,7 +183,7 @@ class ProviderBase(object):
     def download_genome(
         self,
         name,
-        genome_dir,
+        genomes_dir,
         localname=None,
         mask="soft",
         regex=None,
@@ -199,7 +199,7 @@ class ProviderBase(object):
         name : str
             Genome / species name
 
-        genome_dir : str
+        genomes_dir : str
             Directory to install genome
 
         localname : str , optional
@@ -226,8 +226,8 @@ class ProviderBase(object):
         name = safe(name)
         localname = get_localname(name, localname)
 
-        genome_dir = os.path.expanduser(genome_dir)
-        out_dir = os.path.join(genome_dir, localname)
+        genomes_dir = os.path.expanduser(genomes_dir)
+        out_dir = os.path.join(genomes_dir, localname)
         if not os.path.exists(out_dir):
             mkdir_p(out_dir)
 
@@ -287,7 +287,7 @@ class ProviderBase(object):
 
             # transfer the genome from the tmpdir to the genome_dir
             src = fname
-            dst = os.path.join(genome_dir, localname, os.path.basename(fname))
+            dst = os.path.join(genomes_dir, localname, os.path.basename(fname))
             shutil.move(src, dst)
 
         sys.stderr.write("\n")
@@ -296,7 +296,7 @@ class ProviderBase(object):
         sys.stderr.write("fasta: {}\n".format(dst))
 
         # Create readme with information
-        readme = os.path.join(genome_dir, localname, "README.txt")
+        readme = os.path.join(genomes_dir, localname, "README.txt")
         metadata = {
             "name": localname,
             "provider": self.name,
@@ -323,11 +323,11 @@ class ProviderBase(object):
         raise NotImplementedError()
 
     @staticmethod
-    def download_and_generate_annotation(genome_dir, annot_url, localname):
+    def download_and_generate_annotation(genomes_dir, annot_url, localname):
         """download annotation file, convert to intermediate file and generate output files"""
 
         # create output directory if missing
-        out_dir = os.path.join(genome_dir, localname)
+        out_dir = os.path.join(genomes_dir, localname)
         if not os.path.exists(out_dir):
             mkdir_p(out_dir)
 
@@ -390,7 +390,7 @@ class ProviderBase(object):
                 dst = os.path.join(out_dir, os.path.basename(f))
                 shutil.move(src, dst)
 
-    def attempt_and_report(self, name, localname, link, genome_dir):
+    def attempt_and_report(self, name, localname, link, genomes_dir):
         if not link:
             sys.stderr.write(
                 f"Could not download genome annotation for {name} from {self.name}.\n"
@@ -399,7 +399,7 @@ class ProviderBase(object):
 
         sys.stderr.write(f"\nDownloading annotation from {link}...\n")
         try:
-            self.download_and_generate_annotation(genome_dir, link, localname)
+            self.download_and_generate_annotation(genomes_dir, link, localname)
         except Exception:
             raise GenomeDownloadError(
                 f"\nCould not download annotation for {name} from {self.name}\n"
@@ -411,12 +411,12 @@ class ProviderBase(object):
         sys.stderr.write(f"Annotation download successful\n")
 
         # Update readme annotation URL, or make a new
-        readme = os.path.join(genome_dir, localname, "README.txt")
+        readme = os.path.join(genomes_dir, localname, "README.txt")
         metadata, lines = read_readme(readme)
         metadata["annotation url"] = link
         write_readme(readme, metadata, lines)
 
-    def download_annotation(self, name, genome_dir, localname=None, **kwargs):
+    def download_annotation(self, name, genomes_dir, localname=None, **kwargs):
         """
         Download annotation file to to a specific directory
 
@@ -425,7 +425,7 @@ class ProviderBase(object):
         name : str
             Genome / species name
 
-        genome_dir : str
+        genomes_dir : str
             Directory to install annotation
 
         localname : str , optional
@@ -435,7 +435,7 @@ class ProviderBase(object):
 
         link = self.get_annotation_download_link(name, **kwargs)
 
-        self.attempt_and_report(name, localname, link, genome_dir)
+        self.attempt_and_report(name, localname, link, genomes_dir)
 
     def _search_taxids(self, genome, term):
         """check if search term corresponds to the provider's taxonomy field(s)"""
@@ -1180,7 +1180,7 @@ class UrlProvider(ProviderBase):
         if check_url(link):
             return link
 
-    def download_annotation(self, url, genome_dir, localname=None, **kwargs):
+    def download_annotation(self, url, genomes_dir, localname=None, **kwargs):
         """
         Attempts to download a gtf or gff3 file from the same location as the genome url
 
@@ -1189,7 +1189,7 @@ class UrlProvider(ProviderBase):
         url : str
             url of where to download genome from
 
-        genome_dir : str
+        genomes_dir : str
             Directory to install annotation
 
         localname : str , optional
@@ -1209,4 +1209,4 @@ class UrlProvider(ProviderBase):
         else:
             link = self.search_url_for_annotation(url)
 
-        self.attempt_and_report(name, localname, link, genome_dir)
+        self.attempt_and_report(name, localname, link, genomes_dir)

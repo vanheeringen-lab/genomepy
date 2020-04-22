@@ -107,7 +107,7 @@ def test_download_annotation(p):
     with TemporaryDirectory(dir=out_dir) as tmpdir:
         p.download_annotation(
             url="string",
-            genome_dir=tmpdir,
+            genomes_dir=tmpdir,
             localname=localname,
             **{"to_annotation": annot_url},
         )
