@@ -224,18 +224,18 @@ def glob_ext_files(dirname, ext="fa"):
     ]
 
 
-def get_genome_dir(genome_dir=None, check_exist=True):
-    """import genome_dir if none is given, and check validity"""
-    if not genome_dir:
-        genome_dir = config.get("genome_dir", None)
-    if not genome_dir:
-        raise norns.exceptions.ConfigError("Please provide or configure a genome_dir")
+def get_genomes_dir(genomes_dir=None, check_exist=True):
+    """import genomes_dir if none is given, and check validity"""
+    if not genomes_dir:
+        genomes_dir = config.get("genomes_dir", None)
+    if not genomes_dir:
+        raise norns.exceptions.ConfigError("Please provide or configure a genomes_dir")
 
-    genome_dir = os.path.expanduser(genome_dir)
-    if not os.path.exists(genome_dir) and check_exist:
-        raise FileNotFoundError(f"Genome_dir {genome_dir} does not exist!")
+    genomes_dir = os.path.abspath(os.path.expanduser(genomes_dir))
+    if not os.path.exists(genomes_dir) and check_exist:
+        raise FileNotFoundError(f"Genomes_dir {genomes_dir} does not exist!")
 
-    return genome_dir
+    return genomes_dir
 
 
 def safe(name):
