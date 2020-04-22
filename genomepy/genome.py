@@ -41,18 +41,26 @@ class Genome(Fasta):
     """
 
     def __init__(self, name, genome_dir=None):
-        self.name, self.filename = self._get_name_and_filename(name, genome_dir)
-        super(Genome, self).__init__(self.filename)
+        self.name, filename = self._get_name_and_filename(name, genome_dir)
+        super(Genome, self).__init__(filename)
 
-        self.annotation_names = self.get_annotations()
-        self.sizes_name = self.get_sizes_file()
-        self.gaps_name = self.get_gaps_file()
-        self._gap_sizes = None
+        # file paths
+        self.genome_file = filename
+        self.genome_dir = os.path.dirname(self.genome_file)
+        self.index_file = self.genome_file + ".fai"
+        self.readme_file = os.path.join(self.genome_dir, "README.txt")
+        self.annotation_gtf_file, self.annotation_bed_file = self.get_annotations()
+        self.sizes_file = self.get_sizes_file()
+        self.gaps_file = self.get_gaps_file()
 
+        # genome attributes
+        self.sizes = {}  # populate with contig_sizes()
+        self.gaps = {}  # populate with gap_sizes()
         metadata = self._read_metadata()
         self.tax_id = metadata.get("tax_id")
         self.assembly_accession = metadata.get("assembly_accession")
 
+        # plugins & their properties
         self.props = {}
         for plugin in get_active_plugins():
             self.props[plugin.name()] = plugin.get_properties(self)
@@ -100,8 +108,7 @@ class Genome(Fasta):
         """
         Read genome metadata from genome README.txt (if it exists).
         """
-        readme = os.path.join(os.path.dirname(self.filename), "README.txt")
-        metadata, lines = read_readme(readme)
+        metadata, lines = read_readme(self.readme_file)
 
         update_metadata = False
         if metadata["genome url"] != "na":
@@ -143,16 +150,15 @@ class Genome(Fasta):
                     accession = p.assembly_accession(genome)
                     metadata["assembly_accession"] = accession
 
-        write_readme(readme, metadata, lines)
+        write_readme(self.readme_file, metadata, lines)
         return metadata
 
     def get_annotations(self):
         """returns the file paths to the (gzipped) annotation files"""
-        pattern = os.path.join(
-            os.path.dirname(self.filename), self.name + ".annotation.*"
-        )
-        annotations = glob(pattern)
-        return annotations
+        pattern = os.path.join(self.genome_dir, self.name + ".annotation.")
+        gtf = glob(pattern + "gtf*")
+        bed = glob(pattern + "bed*")
+        return gtf, bed
 
     def get_gaps_file(self):
         """
@@ -160,11 +166,9 @@ class Genome(Fasta):
 
         generates the file if nonexistent
         """
-        gaps_file = os.path.join(
-            os.path.dirname(self.filename), self.name + ".gaps.bed"
-        )
+        gaps_file = os.path.join(self.genome_dir, self.name + ".gaps.bed")
         if not os.path.exists(gaps_file):
-            generate_gap_bed(self.filename, gaps_file)
+            generate_gap_bed(self.genome_file, gaps_file)
 
         return gaps_file
 
@@ -174,9 +178,9 @@ class Genome(Fasta):
 
         generates the file if nonexistent
         """
-        sizes_file = self.filename + ".sizes"
+        sizes_file = self.genome_file + ".sizes"
         if not os.path.exists(sizes_file):
-            generate_fa_sizes(self.filename, sizes_file)
+            generate_fa_sizes(self.genome_file, sizes_file)
 
         return sizes_file
 
@@ -311,6 +315,20 @@ class Genome(Fasta):
         else:
             return [seq for seq in seqqer]
 
+    def contig_sizes(self):
+        """Return sizes per contig.
+
+        Returns
+        -------
+        contig_sizes : dict
+            a dictionary with contigs as key and their lengths as values
+        """
+        with open(self.sizes_file) as f:
+            for line in f:
+                contig, length = line.strip().split("\t")
+                self.sizes[contig] = length
+        return self.sizes
+
     def gap_sizes(self):
         """Return gap sizes per chromosome.
 
@@ -320,13 +338,12 @@ class Genome(Fasta):
             a dictionary with chromosomes as key and the total number of
             Ns as values
         """
-        self._gap_sizes = {}
-        with open(self.gaps_name) as f:
+        with open(self.gaps_file) as f:
             for line in f:
                 chrom, start, end = line.strip().split("\t")
                 start, end = int(start), int(end)
-                self._gap_sizes[chrom] = self._gap_sizes.get(chrom, 0) + end - start
-        return self._gap_sizes
+                self.gaps[chrom] = self.gaps.get(chrom, 0) + end - start
+        return self.gaps
 
     @staticmethod
     def _weighted_selection(l, n):
@@ -376,15 +393,12 @@ class Genome(Fasta):
         """
         if not chroms:
             chroms = self.keys()
-        if self._gap_sizes is None:
+        if self.gaps is None:
             self.gap_sizes()
 
         # dict of chromosome sizes after subtracting the number of Ns
         sizes = dict(
-            [
-                (chrom, len(self[chrom]) - self._gap_sizes.get(chrom, 0))
-                for chrom in chroms
-            ]
+            [(chrom, len(self[chrom]) - self.gaps.get(chrom, 0)) for chrom in chroms]
         )
 
         # list of (tuples with) chromosomes and their size

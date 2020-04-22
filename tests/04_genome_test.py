@@ -16,23 +16,20 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
     with pytest.raises(FileNotFoundError):
         genomepy.Genome("unknown", "unknown")
 
-    # create genome_dir (normally done by downloading the genome)
-    gd = genomepy.utils.get_genome_dir(check_exist=False)
-    genomepy.utils.mkdir_p(os.path.join(gd, "small_genome"))
-
-    # initialize the class (creates the index file)
-    index_file = genome + ".fai"
-    if os.path.exists(index_file):
-        os.unlink(index_file)
-
-    genomepy.Genome(genome)
-    assert os.path.exists(index_file)
+    g = genomepy.Genome(genome)
+    assert os.path.exists(g.index_file)
+    assert not os.path.exists(g.readme_file)
+    assert not g.annotation_gtf_file
+    assert not g.annotation_bed_file
+    assert os.path.exists(g.sizes_file)
+    assert os.path.exists(g.gaps_file)
+    assert g.tax_id == g.assembly_accession == "na"
 
 
 def test__read_metadata(capsys, genome="tests/data/small_genome.fa.gz"):
     # create blank README.txt
     g = genomepy.Genome(genome)
-    readme = os.path.join(g.genome_dir, g.name, "README.txt")
+    readme = g.readme_file
     if os.path.exists(readme):
         os.unlink(readme)
     metadata, lines = genomepy.utils.read_readme(readme)
@@ -155,8 +152,7 @@ def test_gap_sizes(genome="tests/data/gap.fa"):
     g = genomepy.Genome(genome)
     g.gap_sizes()
 
-    assert isinstance(g._gap_sizes, dict)
-    assert list(g._gap_sizes.keys()) == ["chr1", "chr3"]
+    assert list(g.gaps.keys()) == ["chr1", "chr3"]
 
 
 def test__weighted_selection(n=2):
@@ -194,11 +190,10 @@ def test_get_random_sequences(genome="tests/data/small_genome.fa.gz"):
 
 def test_delete_test_files():
     for genome in [
-        "tests/data/small_genome.fa.gz",
-        "tests/data/small_genome.fa",
-        "tests/data/gap.fa",
+        "tests/data/small_genome.",
+        "tests/data/gap.",
     ]:
-        for ext in [".fai", ".sizes"]:
+        for ext in ["fa.fai", "fa.sizes", "gaps.bed", "fa.gz.fai", "fa.gz.sizes"]:
             file = genome + ext
             if os.path.exists(file):
                 os.unlink(file)
