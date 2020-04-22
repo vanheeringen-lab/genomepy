@@ -62,10 +62,8 @@ class Genome(Fasta):
         self.tax_id = metadata.get("tax_id")
         self.assembly_accession = metadata.get("assembly_accession")
 
-        # plugins & their properties
-        self.props = {}
-        for plugin in get_active_plugins():
-            self.props[plugin.name()] = plugin.get_properties(self)
+        # plugin attributes
+        self.plugin = None
 
     def _get_filename(self, name):
         """
@@ -120,6 +118,19 @@ class Genome(Fasta):
         if not os.path.exists(self.__gaps_file):
             generate_gap_bed(self.genome_file, self.__gaps_file)
         return self.__gaps_file
+
+    @property
+    def plugin(self):
+        return self.__plugin
+
+    @plugin.setter
+    def plugin(self, plugins=None):
+        if not plugins:
+            self.__plugin = {}
+            for plugin in get_active_plugins():
+                self.__plugin[plugin.name()] = plugin.get_properties(self)
+        else:
+            self.__plugin = plugins
 
     def get_annotations(self):
         """returns the file paths to the (gzipped) annotation files"""

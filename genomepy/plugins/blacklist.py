@@ -21,8 +21,7 @@ class BlacklistPlugin(Plugin):
     }
 
     def after_genome_download(self, genome, threads=1, force=False):
-        props = self.get_properties(genome)
-        fname = props["blacklist"]
+        fname = self.get_properties(genome)["blacklist"]
         if force and os.path.exists(fname):
             # Start from scratch
             os.unlink(fname)

@@ -11,8 +11,8 @@ class Hisat2Plugin(Plugin):
             return
 
         # Create index dir
-        index_dir = genome.props["hisat2"]["index_dir"]
-        index_name = genome.props["hisat2"]["index_name"]
+        index_dir = genome.plugin["hisat2"]["index_dir"]
+        index_name = genome.plugin["hisat2"]["index_name"]
         if force:
             # Start from scratch
             rmtree(index_dir, ignore_errors=True)

@@ -10,8 +10,8 @@ class Minimap2Plugin(Plugin):
             return
 
         # Create index dir
-        index_dir = genome.props["minimap2"]["index_dir"]
-        index_name = genome.props["minimap2"]["index_name"]
+        index_dir = genome.plugin["minimap2"]["index_dir"]
+        index_name = genome.plugin["minimap2"]["index_name"]
         if force:
             # Start from scratch
             rmtree(index_dir, ignore_errors=True)

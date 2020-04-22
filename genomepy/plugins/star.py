@@ -11,8 +11,8 @@ class StarPlugin(Plugin):
             return
 
         # Create index dir
-        index_dir = genome.props["star"]["index_dir"]
-        index_name = genome.props["star"]["index_name"]
+        index_dir = genome.plugin["star"]["index_dir"]
+        index_name = genome.plugin["star"]["index_name"]
         if force:
             # Start from scratch
             rmtree(index_dir, ignore_errors=True)

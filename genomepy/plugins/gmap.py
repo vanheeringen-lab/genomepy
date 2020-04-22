@@ -11,7 +11,7 @@ class GmapPlugin(Plugin):
             return
 
         # Create index dir
-        index_dir = genome.props["gmap"]["index_dir"]
+        index_dir = genome.plugin["gmap"]["index_dir"]
         if force:
             # Start from scratch
             rmtree(index_dir, ignore_errors=True)
