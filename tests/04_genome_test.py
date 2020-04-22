@@ -18,7 +18,6 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
 
     g = genomepy.Genome(genome)
     assert os.path.exists(g.index_file)
-    assert not os.path.exists(g.readme_file)
     assert not g.annotation_gtf_file
     assert not g.annotation_bed_file
     assert os.path.exists(g.sizes_file)

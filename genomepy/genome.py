@@ -50,8 +50,8 @@ class Genome(Fasta):
         self.index_file = self.genome_file + ".fai"
         self.readme_file = os.path.join(self.genome_dir, "README.txt")
         self.annotation_gtf_file, self.annotation_bed_file = self.get_annotations()
-        self.sizes_file = self.get_sizes_file()
-        self.gaps_file = self.get_gaps_file()
+        self.sizes_file = None
+        self.gaps_file = None
 
         # genome attributes
         self.sizes = {}  # populate with contig_sizes()
@@ -104,6 +104,47 @@ class Genome(Fasta):
 
         return [name, filename]
 
+    @property
+    def sizes_file(self):
+        return self.__sizes_file
+
+    @sizes_file.setter
+    def sizes_file(self, sizes_file=None):
+        if sizes_file is None:
+            sizes_file = self.genome_file + ".sizes"
+        self.__sizes_file = sizes_file
+
+    @sizes_file.getter
+    def sizes_file(self):
+        """generate the file if nonexistent upon request"""
+        if not os.path.exists(self.__sizes_file):
+            generate_fa_sizes(self.genome_file, self.__sizes_file)
+        return self.__sizes_file
+
+    @property
+    def gaps_file(self):
+        return self.__gaps_file
+
+    @gaps_file.setter
+    def gaps_file(self, gaps_file=None):
+        if gaps_file is None:
+            gaps_file = os.path.join(self.genome_dir, self.name + ".gaps.bed")
+        self.__gaps_file = gaps_file
+
+    @gaps_file.getter
+    def gaps_file(self):
+        """generate the file if nonexistent upon request"""
+        if not os.path.exists(self.__gaps_file):
+            generate_gap_bed(self.genome_file, self.__gaps_file)
+        return self.__gaps_file
+
+    def get_annotations(self):
+        """returns the file paths to the (gzipped) annotation files"""
+        pattern = os.path.join(self.genome_dir, self.name + ".annotation.")
+        gtf = glob(pattern + "gtf*")
+        bed = glob(pattern + "bed*")
+        return gtf, bed
+
     def _read_metadata(self):
         """
         Read genome metadata from genome README.txt (if it exists).
@@ -152,37 +193,6 @@ class Genome(Fasta):
 
         write_readme(self.readme_file, metadata, lines)
         return metadata
-
-    def get_annotations(self):
-        """returns the file paths to the (gzipped) annotation files"""
-        pattern = os.path.join(self.genome_dir, self.name + ".annotation.")
-        gtf = glob(pattern + "gtf*")
-        bed = glob(pattern + "bed*")
-        return gtf, bed
-
-    def get_gaps_file(self):
-        """
-        returns the file path to the genome's gaps file
-
-        generates the file if nonexistent
-        """
-        gaps_file = os.path.join(self.genome_dir, self.name + ".gaps.bed")
-        if not os.path.exists(gaps_file):
-            generate_gap_bed(self.genome_file, gaps_file)
-
-        return gaps_file
-
-    def get_sizes_file(self):
-        """
-        returns the file path to the genome's sizes file
-
-        generates the file if nonexistent
-        """
-        sizes_file = self.genome_file + ".sizes"
-        if not os.path.exists(sizes_file):
-            generate_fa_sizes(self.genome_file, sizes_file)
-
-        return sizes_file
 
     def _bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
         bufsize = 10000
