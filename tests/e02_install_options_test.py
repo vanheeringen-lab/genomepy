@@ -89,7 +89,7 @@ if not skip:
         shutil.rmtree(tmp)
 
     def test_install_annotation_options(
-        force, localname, annotation=True, genome="ASM14646v1", provider="NCBI"
+        force, localname, genome="ASM14646v1", provider="NCBI"
     ):
         """Test force and localname with annotations"""
         tmp = mkdtemp()
@@ -107,7 +107,7 @@ if not skip:
             provider,
             genomes_dir=tmp,
             localname=localname,
-            annotation=annotation,
+            only_annotation=True,
             skip_sanitizing=True,
             force=False,
         )
@@ -128,7 +128,8 @@ if not skip:
             provider,
             genomes_dir=tmp,
             localname=localname,
-            annotation=annotation,
+            only_annotation=True,
+            skip_sanitizing=True,
             force=force,
         )
 
