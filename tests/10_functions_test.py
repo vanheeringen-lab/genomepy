@@ -83,7 +83,8 @@ def test__is_genome_dir():
 
 
 def test_list_installed_genomes():
-    assert isinstance(genomepy.functions.list_installed_genomes(), list)
+    assert isinstance(genomepy.functions.list_installed_genomes(os.getcwd()), list)
+
     gdir = os.path.join(os.getcwd(), "tests", "data")
     genomes = genomepy.functions.list_installed_genomes(gdir)
     assert genomes == ["regexp"]

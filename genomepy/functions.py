@@ -9,8 +9,6 @@ from genomepy.genome import Genome
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
 from genomepy.utils import (
-    generate_gap_bed,
-    generate_fa_sizes,
     get_localname,
     sanitize_annotation,
     get_genomes_dir,
@@ -251,7 +249,7 @@ def install_genome(
         # Export installed genome(s)
         generate_env()
 
-    # Generates a Fasta object and the index file
+    # Generates a Fasta object, index, gaps and sizes file
     if genome_found:
         g = Genome(localname, genomes_dir=genomes_dir)
 
