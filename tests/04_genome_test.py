@@ -17,12 +17,18 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
         genomepy.Genome("unknown", "unknown")
 
     g = genomepy.Genome(genome)
+    assert g.genomes_dir == genomepy.utils.get_genomes_dir(None, False)
+    assert g.name == "small_genome"
+    assert g.filename == os.path.abspath(genome)
     assert os.path.exists(g.index_file)
-    assert not g.annotation_gtf_file
-    assert not g.annotation_bed_file
     assert os.path.exists(g.sizes_file)
     assert os.path.exists(g.gaps_file)
+    assert isinstance(g.sizes, dict)
+    assert isinstance(g.gaps, dict)
+    assert g.annotation_gtf_file is None
+    assert g.annotation_bed_file is None
     assert g.tax_id == g.assembly_accession == "na"
+    assert isinstance(g.plugin, dict)
 
 
 def test__read_metadata(capsys, genome="tests/data/small_genome.fa.gz"):
