@@ -91,7 +91,6 @@ def test_list_installed_genomes():
 
 @pytest.mark.skipif(not travis or not linux, reason="slow")
 def test_install_genome():
-    out_dir = genomepy.functions.get_genomes_dir(None, False)
     localname = "my_genome"
     genomepy.functions.install_genome(
         name="fr3",
@@ -102,16 +101,19 @@ def test_install_genome():
         force=True,
     )
 
-    genome = os.path.join(out_dir, localname, localname + ".fa")
-    assert os.path.exists(genome)
-    sizes_file = os.path.join(out_dir, localname, localname + ".fa.sizes")
+    genomes_dir = genomepy.functions.get_genomes_dir(None, False)
+    genome_file = os.path.join(genomes_dir, localname, localname + ".fa")
+    assert os.path.exists(genome_file)
+    sizes_file = os.path.join(genomes_dir, localname, localname + ".fa.sizes")
     assert os.path.exists(sizes_file)
-    gap_file = os.path.join(out_dir, localname, localname + ".gaps.bed")
+    gap_file = os.path.join(genomes_dir, localname, localname + ".gaps.bed")
     assert os.path.exists(gap_file)
-    annotation_file = os.path.join(out_dir, localname, localname + ".annotation.gtf.gz")
+    annotation_file = os.path.join(
+        genomes_dir, localname, localname + ".annotation.gtf.gz"
+    )
     assert os.path.exists(annotation_file)
 
-    readme = os.path.join(os.path.dirname(genome), "README.txt")
+    readme = os.path.join(os.path.dirname(genome_file), "README.txt")
     with open(readme) as f:
         metadata = {}
         for line in f.readlines():

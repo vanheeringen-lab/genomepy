@@ -41,9 +41,9 @@ class Genome(Fasta):
     """
 
     def __init__(self, name, genomes_dir=None):
-        self.name = os.path.basename(re.sub(".fa(.gz)?$", "", get_localname(name)))
-        self.genomes_dir = get_genomes_dir(genomes_dir)
-        self.filename = self._get_filename(name)
+        self.name = name  # see property
+        self.genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
+        self.filename = name  # see property
         super(Genome, self).__init__(self.filename)
 
         # file paths
@@ -51,9 +51,10 @@ class Genome(Fasta):
         self.genome_dir = os.path.dirname(self.genome_file)
         self.index_file = self.genome_file + ".fai"
         self.readme_file = os.path.join(self.genome_dir, "README.txt")
-        self.annotation_gtf_file, self.annotation_bed_file = self.get_annotations()
-        self.sizes_file = None
-        self.gaps_file = None
+        self.annotation_gtf_file = None  # see property
+        self.annotation_bed_file = None  # see property
+        self.sizes_file = None  # see property
+        self.gaps_file = None  # see property
 
         # genome attributes
         self.sizes = {}  # populate with contig_sizes()
@@ -63,9 +64,23 @@ class Genome(Fasta):
         self.assembly_accession = metadata.get("assembly_accession")
 
         # plugin attributes
-        self.plugin = None
+        self.plugin = None  # see property
 
-    def _get_filename(self, name):
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, name):
+        """extract a safe name from file path, url or regular names"""
+        self.__name = os.path.basename(re.sub(".fa(.gz)?$", "", get_localname(name)))
+
+    @property
+    def filename(self):
+        return self.__filename
+
+    @filename.setter
+    def filename(self, name):
         """
         accepts path to a fasta file, path to a fasta folder, or
         the name of a genome (e.g. hg38).
@@ -74,16 +89,42 @@ class Genome(Fasta):
         """
         path_name = os.path.abspath(os.path.expanduser(name))
         if os.path.isfile(path_name):
-            return path_name
+            self.__filename = path_name
+            return
 
         default_genome_dir = os.path.join(self.genomes_dir, self.name)
         for f in glob_ext_files(path_name) + glob_ext_files(default_genome_dir):
             if self.name + ".fa" in os.path.basename(f):
-                return f
+                self.__filename = f
+                return
 
         raise FileNotFoundError(
             f"could not find {self.name}.fa(.gz) in genome_dir {default_genome_dir}"
         )
+
+    @property
+    def annotation_gtf_file(self):
+        return self.__annotation_gtf_file
+
+    @annotation_gtf_file.setter
+    def annotation_gtf_file(self, file):
+        """sets (gzipped) annotation file if none is given"""
+        if not file:
+            file = glob(os.path.join(self.genome_dir, self.name + ".annotation.gtf*"))
+            file = file[0] if file else None
+        self.__annotation_gtf_file = file
+
+    @property
+    def annotation_bed_file(self):
+        return self.__annotation_bed_file
+
+    @annotation_bed_file.setter
+    def annotation_bed_file(self, file):
+        """sets (gzipped) annotation file if none is given"""
+        if not file:
+            file = glob(os.path.join(self.genome_dir, self.name + ".annotation.bed*"))
+            file = file[0] if file else None
+        self.__annotation_bed_file = file
 
     @property
     def sizes_file(self):
@@ -91,16 +132,12 @@ class Genome(Fasta):
 
     @sizes_file.setter
     def sizes_file(self, sizes_file=None):
+        """generate the file if nonexistent"""
         if sizes_file is None:
             sizes_file = self.genome_file + ".sizes"
+        if not os.path.exists(sizes_file):
+            generate_fa_sizes(self.genome_file, sizes_file)
         self.__sizes_file = sizes_file
-
-    @sizes_file.getter
-    def sizes_file(self):
-        """generate the file if nonexistent upon request"""
-        if not os.path.exists(self.__sizes_file):
-            generate_fa_sizes(self.genome_file, self.__sizes_file)
-        return self.__sizes_file
 
     @property
     def gaps_file(self):
@@ -108,16 +145,12 @@ class Genome(Fasta):
 
     @gaps_file.setter
     def gaps_file(self, gaps_file=None):
+        """generate the file if nonexistent"""
         if gaps_file is None:
             gaps_file = os.path.join(self.genome_dir, self.name + ".gaps.bed")
+        if not os.path.exists(gaps_file):
+            generate_gap_bed(self.genome_file, gaps_file)
         self.__gaps_file = gaps_file
-
-    @gaps_file.getter
-    def gaps_file(self):
-        """generate the file if nonexistent upon request"""
-        if not os.path.exists(self.__gaps_file):
-            generate_gap_bed(self.genome_file, self.__gaps_file)
-        return self.__gaps_file
 
     @property
     def plugin(self):
@@ -131,13 +164,6 @@ class Genome(Fasta):
                 self.__plugin[plugin.name()] = plugin.get_properties(self)
         else:
             self.__plugin = plugins
-
-    def get_annotations(self):
-        """returns the file paths to the (gzipped) annotation files"""
-        pattern = os.path.join(self.genome_dir, self.name + ".annotation.")
-        gtf = glob(pattern + "gtf*")
-        bed = glob(pattern + "bed*")
-        return gtf, bed
 
     def _read_metadata(self):
         """
