@@ -100,7 +100,7 @@ def list_installed_genomes(genomes_dir=None):
     -------
     list with genome names
     """
-    genomes_dir = get_genomes_dir(genomes_dir)
+    genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
 
     return [
         f
@@ -127,15 +127,16 @@ def generate_env(fname=None):
 
     By default this is .config/genomepy/exports.txt.
 
-    An alternative file name or absolute path is accepted too.
+    An alternative file name or file path is accepted too.
 
     Parameters
     ----------
     fname: str, optional
         Absolute path or name of the output file.
     """
-    if fname and os.path.isabs(fname):
-        absname = fname
+    path_name = os.path.expanduser(str(fname))
+    if fname and os.path.exists(os.path.dirname(path_name)):
+        absname = os.path.abspath(path_name)
     else:
         config_dir = user_config_dir("genomepy")
         if not os.path.exists(config_dir):
