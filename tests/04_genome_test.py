@@ -149,13 +149,13 @@ def test_track2fasta(genome="tests/data/small_genome.fa.gz"):
 
 def test_sizes(genome="tests/data/gap.fa"):
     g = genomepy.Genome(genome)
-
+    g.contig_sizes()
     assert list(g.sizes.keys()) == ["chr1", "chr2", "chr3"]
 
 
 def test_gaps(genome="tests/data/gap.fa"):
     g = genomepy.Genome(genome)
-
+    g.gap_sizes()
     assert list(g.gaps.keys()) == ["chr1", "chr3"]
 
 
