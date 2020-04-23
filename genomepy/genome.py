@@ -1,15 +1,19 @@
 import os.path
 import re
 import sys
+import subprocess as sp
 
 from bisect import bisect
 from glob import glob
 from pyfaidx import Fasta, Sequence
 from random import random
+from tempfile import TemporaryDirectory
 
 from genomepy.plugin import get_active_plugins
 from genomepy.provider import ProviderBase
 from genomepy.utils import (
+    bgunzip_and_name,
+    bgrezip,
     read_readme,
     write_readme,
     get_genomes_dir,
@@ -51,8 +55,6 @@ class Genome(Fasta):
         self.genome_dir = os.path.dirname(self.filename)
         self.index_file = self.filename + ".fai"
         self.readme_file = os.path.join(self.genome_dir, "README.txt")
-        self.annotation_gtf_file = self.check_annotation_file("gtf")
-        self.annotation_bed_file = self.check_annotation_file("bed")
 
         # genome attributes
         self.sizes = {}  # populate using contig_sizes
@@ -84,6 +86,14 @@ class Genome(Fasta):
         for plugin in get_active_plugins():
             p[plugin.name()] = plugin.get_properties(self)
         return p
+
+    @property
+    def annotation_gtf_file(self):
+        return self.check_annotation_file("gtf")
+
+    @property
+    def annotation_bed_file(self):
+        return self.check_annotation_file("bed")
 
     @staticmethod
     def _parse_name(name):
@@ -421,3 +431,131 @@ class Genome(Fasta):
                 coords[i] = [f"{region[0]}:{region[1]}-{region[2]}"]
 
         return coords
+
+    def sanitize_annotation(self):
+        """
+        Matches the toplevel sequence names in annotation.gtf to those in genome.fa.
+
+        The fasta and gtf formats dictate the 1st field in the genome header and gtf should match.
+        In some cases the genome.fa has multiple names per header, the 1st field not matching those in the gtf.
+        If this occurs a conversion table can be made to rename the sequence names in either file.
+
+        This script changes the names in the gtf to match those in the genome.fa, if needed.
+        A bed format annotation file is made from the gtf afterward.
+        """
+        gtf_file = self.annotation_gtf_file
+        bed_file = self.annotation_bed_file
+        sizes_file = self.sizes_file
+        readme = self.readme_file
+        out_dir = self.genome_dir
+
+        # unzip gtf if zipped and return up-to-date name
+        if gtf_file.endswith(".gz"):
+            sp.check_call(f"gunzip -f {gtf_file}", shell=True)
+            gtf_file = gtf_file[:-3]
+
+        # Check if genome and annotation have matching chromosome/scaffold names
+        with open(gtf_file, "r") as gtf:
+            for line in gtf:
+                if not line.startswith("#"):
+                    gtf_id = line.split("\t")[0]
+                    break
+
+        with open(sizes_file, "r") as sizes:
+            for line in sizes:
+                fa_id = line.split("\t")[0]
+                if fa_id == gtf_id:
+                    sp.check_call(f"gzip -f {gtf_file}", shell=True)
+
+                    metadata, lines = read_readme(readme)
+                    metadata["sanitized annotation"] = "not required"
+                    write_readme(readme, metadata, lines)
+                    return
+
+        # generate a gtf with matching scaffold/chromosome IDs
+        sys.stderr.write(
+            "\nGenome and annotation do not have matching sequence names! "
+            "Creating matching annotation files...\n"
+        )
+
+        # unzip genome if zipped and return up-to-date genome name
+        bgzip, genome_file = bgunzip_and_name(self)
+
+        # determine which element in the fasta header contains the
+        # location identifiers used in the annotation.gtf
+        header = []
+        with open(genome_file, "r") as fa:
+            for line in fa:
+                if line.startswith(">"):
+                    header = line.strip(">\n").split(" ")
+                    break
+
+        with open(gtf_file, "r") as gtf:
+            for line in gtf:
+                if not line.startswith("#"):
+                    loc_id = line.strip().split("\t")[0]
+                    try:
+                        element = header.index(loc_id)
+                        break
+                    except ValueError:
+                        continue
+            else:
+                # re-zip genome if it was unzipped earlier
+                bgrezip(bgzip, genome_file)
+
+                metadata, lines = read_readme(readme)
+                metadata["sanitized annotation"] = "not possible"
+                write_readme(readme, metadata, lines)
+
+                sys.stderr.write(
+                    "\nWARNING: Cannot correct annotation files automatically!\n"
+                    + "Leaving original version in place.\n"
+                )
+                return
+
+        # build a conversion table
+        ids = {}
+        with open(genome_file, "r") as fa:
+            for line in fa:
+                if line.startswith(">"):
+                    line = line.strip(">\n").split(" ")
+                    if line[element] not in ids.keys():
+                        ids.update({line[element]: line[0]})
+
+        # re-zip genome if it was unzipped earlier
+        bgrezip(bgzip, genome_file)
+
+        with TemporaryDirectory(dir=out_dir) as tmpdir:
+            # generate a gtf with updated location identifiers from the conversion table
+            new_gtf_file = os.path.join(tmpdir, os.path.basename(gtf_file))
+            missing_contigs = []
+            with open(gtf_file, "r") as oldgtf, open(new_gtf_file, "w") as newgtf:
+                for line in oldgtf:
+                    line = line.split("\t")
+                    try:
+                        line[0] = ids[line[0]]
+                    except KeyError:
+                        missing_contigs.append(line[0])
+                    line = "\t".join(line)
+                    newgtf.write(line)
+
+            if len(missing_contigs) > 0:
+                sys.stderr.write(
+                    "\nWARNING: annotation contains contigs not present in the genome!\n"
+                    "The following contigs were not found: "
+                    f"{', '.join(set(missing_contigs))}.\n"
+                    "These have been kept as-is. Other contigs were corrected!\n"
+                )
+
+            # generate a bed from the gtf
+            cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1}"
+            new_bed_file = new_gtf_file.replace("gtf", "bed")
+            sp.check_call(cmd.format(new_gtf_file, new_bed_file), shell=True)
+
+            # overwrite old annotation files (and gzip)
+            for src, dst in zip([new_gtf_file, new_bed_file], [gtf_file, bed_file]):
+                sp.check_call(f"mv {src} {dst} && gzip -f {dst}", shell=True)
+
+        metadata, lines = read_readme(readme)
+        metadata["sanitized annotation"] = "yes"
+        write_readme(readme, metadata, lines)

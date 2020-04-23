@@ -3,7 +3,6 @@ import genomepy
 import pytest
 import os
 import shutil
-import subprocess as sp
 
 from tempfile import NamedTemporaryFile
 from platform import system
@@ -203,41 +202,3 @@ def test_get_file_info(fname="tests/data/small_genome.fa.gz"):
 
     ext, gz = genomepy.utils.get_file_info(fname[:-2] + "fai")
     assert ext == ".fai" and not gz
-
-
-def test_sanitize_annotation(genome="tests/data/small_genome.fa.gz"):
-    class TestGenome:
-        def __init__(self, filename=genome):
-            self.filename = filename
-            self.name = os.path.basename(genome)[:-6]
-
-    # generate sizes file (already tested)
-    sp.check_call(f"gunzip -f {genome}", shell=True)
-    sizes_file = genome[:-2] + "sizes"
-    genomepy.utils.generate_fa_sizes(genome[:-3], sizes_file)
-    sp.check_call(f"bgzip -f {genome[:-3]}", shell=True)
-
-    # generate gtf file
-    gtf_file = genome[:-5] + "annotation.gtf"
-    with open(gtf_file, "w") as f:
-        f.write("# skip this line\n")
-        f.write(
-            """chr2\tvanHeeringen-lab\tgene\t2\t22\t.\t+\t.\tgene_id "vH-1"; transcript_id "vH-1.1";\n"""
-        )
-    sp.check_call(f"gzip -f {gtf_file}", shell=True)
-
-    # generate bed file
-    bed_file = gtf_file.replace("gtf", "bed.gz")
-    sp.check_call(f"touch {bed_file}", shell=True)
-
-    # function proper
-    g = TestGenome(genome)
-    genomepy.utils.sanitize_annotation(g)
-
-    result = open(gtf_file).read()
-    assert result.startswith("# skip this line\nchr2\tvanHeeringen-lab")
-
-    # cleanup
-    os.unlink(sizes_file)
-    os.unlink(gtf_file)
-    os.unlink(bed_file)

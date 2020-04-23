@@ -5,12 +5,12 @@ import re
 
 from appdirs import user_config_dir
 from glob import glob
+from pyfaidx import FastaIndexingError
 from genomepy.genome import Genome
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
 from genomepy.utils import (
     get_localname,
-    sanitize_annotation,
     get_genomes_dir,
     glob_ext_files,
     mkdir_p,
@@ -102,11 +102,15 @@ def list_installed_genomes(genomes_dir=None):
     """
     genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
 
-    return [
-        f
-        for f in os.listdir(genomes_dir)
-        if _is_genome_dir(os.path.join(genomes_dir, f))
-    ]
+    return (
+        [
+            f
+            for f in os.listdir(genomes_dir)
+            if _is_genome_dir(os.path.join(genomes_dir, f))
+        ]
+        if os.path.exists(genomes_dir)
+        else []
+    )
 
 
 def generate_exports():
@@ -116,8 +120,8 @@ def generate_exports():
         try:
             g = Genome(name)
             env_name = re.sub(r"[^\w]+", "_", name).upper()
-            env.append("export {}={}".format(env_name, g.filename))
-        except Exception:
+            env.append(f"export {env_name}={g.filename}")
+        except FastaIndexingError:
             pass
     return env
 
@@ -266,7 +270,7 @@ def install_genome(
         # Sanitize annotation if needed (requires genome)
         annotation_found = len(glob_ext_files(out_dir, "gtf")) >= 1
         if genome_found and annotation_found and not skip_sanitizing:
-            sanitize_annotation(g)
+            g.sanitize_annotation()
 
     if genome_found:
         # Run all active plugins (requires genome)
