@@ -107,8 +107,8 @@ def test_install_genome():
     assert os.path.exists(genome_file)
     sizes_file = os.path.join(genomes_dir, localname, localname + ".fa.sizes")
     assert os.path.exists(sizes_file)
-    gap_file = os.path.join(genomes_dir, localname, localname + ".gaps.bed")
-    assert os.path.exists(gap_file)
+    gaps_file = os.path.join(genomes_dir, localname, localname + ".gaps.bed")
+    assert os.path.exists(gaps_file)
     annotation_file = os.path.join(
         genomes_dir, localname, localname + ".annotation.gtf.gz"
     )

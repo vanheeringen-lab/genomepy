@@ -54,6 +54,8 @@ class Genome(Fasta):
         self.genome_file = self.filename
         self.genome_dir = os.path.dirname(self.filename)
         self.index_file = self.filename + ".fai"
+        self.sizes_file = self.genome_file + ".sizes"
+        self.gaps_file = os.path.join(self.genome_dir, self.name + ".gaps.bed")
         self.readme_file = os.path.join(self.genome_dir, "README.txt")
 
         # genome attributes
@@ -65,19 +67,23 @@ class Genome(Fasta):
 
     @property
     def sizes_file(self):
-        """path to sizes file. Generates file if nonexistent"""
-        sf = self.genome_file + ".sizes"
-        if not os.path.exists(sf):
-            generate_fa_sizes(self.genome_file, sf)
-        return sf
+        return self.__sizes_file
+
+    @sizes_file.setter
+    def sizes_file(self, fname):
+        if not os.path.exists(fname):
+            generate_fa_sizes(self.genome_file, fname)
+        self.__sizes_file = fname
 
     @property
     def gaps_file(self):
-        """path to gaps file. Generates file if nonexistent"""
-        gf = os.path.join(self.genome_dir, self.name + ".gaps.bed")
-        if not os.path.exists(gf):
-            generate_gap_bed(self.genome_file, gf)
-        return gf
+        return self.__gaps_file
+
+    @gaps_file.setter
+    def gaps_file(self, fname):
+        if not os.path.exists(fname):
+            generate_gap_bed(self.genome_file, fname)
+        self.__gaps_file = fname
 
     @property
     def plugin(self):
