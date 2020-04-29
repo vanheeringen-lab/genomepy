@@ -2,7 +2,7 @@ import os.path
 from shutil import move, rmtree
 from tempfile import TemporaryDirectory
 from genomepy.plugin import Plugin
-from genomepy.utils import cmd_ok, run_index_cmd, bgunzip_and_name, bgrezip
+from genomepy.utils import cmd_ok, run_index_cmd, gunzip_and_name, bgzip_and_name
 
 
 class GmapPlugin(Plugin):
@@ -18,7 +18,7 @@ class GmapPlugin(Plugin):
 
         if not os.path.exists(index_dir):
             # unzip genome if zipped and return up-to-date genome name
-            bgzip, fname = bgunzip_and_name(genome)
+            fname, bgzip = gunzip_and_name(genome.filename)
 
             # gmap outputs a folder named genome.name
             # its content is moved to index dir, consistent with other plugins
@@ -32,7 +32,7 @@ class GmapPlugin(Plugin):
                 move(src, index_dir)
 
             # re-zip genome if unzipped
-            bgrezip(bgzip, fname)
+            bgzip_and_name(fname, bgzip)
 
     def get_properties(self, genome):
         props = {

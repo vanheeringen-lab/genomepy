@@ -2,7 +2,13 @@ import os
 import subprocess as sp
 from shutil import rmtree
 from genomepy.plugin import Plugin
-from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd, bgunzip_and_name, bgrezip
+from genomepy.utils import (
+    mkdir_p,
+    cmd_ok,
+    run_index_cmd,
+    gunzip_and_name,
+    bgzip_and_name,
+)
 
 
 class StarPlugin(Plugin):
@@ -20,7 +26,7 @@ class StarPlugin(Plugin):
 
         if not os.path.exists(index_name):
             # unzip genome if zipped and return up-to-date genome name
-            bgzip, fname = bgunzip_and_name(genome)
+            fname, bgzip = gunzip_and_name(genome.filename)
             # unzip annotation if found
             annot = fname[:-2] + "annotation.gtf.gz"
             rezip = False
@@ -42,7 +48,7 @@ class StarPlugin(Plugin):
             run_index_cmd("star", cmd)
 
             # re-zip genome if it was unzipped prior
-            bgrezip(bgzip, fname)
+            bgzip_and_name(fname, bgzip)
             # re-zip annotation if it was unzipped prior
             if rezip:
                 sp.check_call(f"gzip {annot}", shell=True)

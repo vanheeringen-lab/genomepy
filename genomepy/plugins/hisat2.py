@@ -2,7 +2,13 @@ import os
 import subprocess as sp
 from shutil import rmtree
 from genomepy.plugin import Plugin
-from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd, bgunzip_and_name, bgrezip
+from genomepy.utils import (
+    mkdir_p,
+    cmd_ok,
+    run_index_cmd,
+    bgzip_and_name,
+    gunzip_and_name,
+)
 
 
 class Hisat2Plugin(Plugin):
@@ -20,7 +26,7 @@ class Hisat2Plugin(Plugin):
 
         if not any(fname.endswith(".ht2") for fname in os.listdir(index_dir)):
             # unzip genome if zipped and return up-to-date genome name
-            bgzip, fname = bgunzip_and_name(genome)
+            fname, bgzip = gunzip_and_name(genome.filename)
             # unzip annotation if found
             annot = fname[:-2] + "annotation.gtf.gz"
             rezip = False
@@ -56,7 +62,7 @@ class Hisat2Plugin(Plugin):
             run_index_cmd("hisat2", cmd)
 
             # re-zip genome if unzipped
-            bgrezip(bgzip, fname)
+            bgzip_and_name(fname, bgzip)
             # re-zip annotation if it was unzipped prior
             if rezip:
                 sp.check_call(f"gzip {annot}", shell=True)

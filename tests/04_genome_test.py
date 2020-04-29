@@ -199,30 +199,6 @@ def test_get_random_sequences(genome="tests/data/small_genome.fa.gz"):
     assert str(g.track2fasta(rs[0])[0].seq).upper().count("N") <= length * max_n
 
 
-def test_sanitize_annotation(genome="tests/data/small_genome.fa.gz"):
-    # generate gtf file
-    gtf_file = genome[:-5] + "annotation.gtf"
-    with open(gtf_file, "w") as f:
-        f.write("# skip this line\n")
-        f.write(
-            """chr2\tvanHeeringen-lab\tgene\t2\t22\t.\t+\t.\tgene_id "vH-1"; transcript_id "vH-1.1";\n"""
-        )
-    sp.check_call(f"gzip -f {gtf_file}", shell=True)
-
-    # generate bed file
-    bed_file = gtf_file.replace("gtf", "bed.gz")
-    sp.check_call(f"touch {bed_file}", shell=True)
-
-    g = genomepy.Genome(genome)
-    g.sanitize_annotation()
-    result = open(gtf_file).read()
-    assert result.startswith("# skip this line\nchr2\tvanHeeringen-lab")
-
-    # cleanup
-    os.unlink(gtf_file)
-    os.unlink(bed_file)
-
-
 def test_delete_test_files():
     for genome in [
         "tests/data/small_genome.",

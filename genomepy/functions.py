@@ -14,6 +14,7 @@ from genomepy.utils import (
     get_genomes_dir,
     glob_ext_files,
     mkdir_p,
+    sanitize_annotation,
 )
 
 config = norns.config("genomepy", default="cfg/default.yaml")
@@ -270,7 +271,7 @@ def install_genome(
         # Sanitize annotation if needed (requires genome)
         annotation_found = len(glob_ext_files(out_dir, "gtf")) >= 1
         if genome_found and annotation_found and not skip_sanitizing:
-            g.sanitize_annotation()
+            sanitize_annotation(g)
 
     if genome_found:
         # Run all active plugins (requires genome)
