@@ -17,6 +17,12 @@ def test_black_formatting():
     sp.check_call("black setup.py genomepy/ tests/", shell=True)
 
 
+@pytest.mark.skipif(travis, reason="format before committing!")
+def test_flake8_formatting():
+    ret = sp.check_call("flake8 setup.py genomepy/ tests/", shell=True)
+    assert ret == 0
+
+
 def test_import():
     # __init__.py
     assert str(genomepy.search).startswith("<function search at")
