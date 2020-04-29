@@ -1,7 +1,6 @@
 import genomepy
 import os
 import pytest
-import subprocess as sp
 
 
 # to ignore file changes
