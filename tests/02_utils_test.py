@@ -212,6 +212,83 @@ def test_get_file_info(fname="tests/data/small_genome.fa.gz"):
     assert ext == ".fai" and not gz
 
 
+def test_match_contigs():
+    sizes_file = "tests/data/small_genome.fa.sizes"
+    gtf_file = "tests/data/small_genome.annotation.gtf"
+
+    # generate sizes file
+    with open(sizes_file, "w") as f:
+        f.write("""chr2\t1234""")
+
+    # generate empty gtf file
+    with open(gtf_file, "w") as f:
+        f.write("# skip this line\n")
+    match = genomepy.utils.match_contigs(gtf_file, sizes_file)
+    assert match is None
+
+    # generate matching gtf file
+    with open(gtf_file, "w") as f:
+        f.write("# skip this line\n")
+        f.write("""chr2\tvanHeeringen-lab""")
+    match = genomepy.utils.match_contigs(gtf_file, sizes_file)
+    assert match
+
+    # generate mismatching gtf file
+    with open(gtf_file, "w") as f:
+        f.write("# skip this line\n")
+        f.write("""2\tvanHeeringen-lab""")
+    match = genomepy.utils.match_contigs(gtf_file, sizes_file)
+    assert match is False
+
+
+def test_contig_pos():
+    gtf_file = "tests/data/small_genome.annotation.gtf"
+    genome_file = "tests/data/contig_pos.fa"
+
+    # generate gtf file
+    with open(gtf_file, "w") as f:
+        f.write("chr2\tvanHeeringen-lab\n" "chr3\tvanHeeringen-lab\n")
+
+    # generate non-matching genome file
+    with open(genome_file, "w") as f:
+        f.write(">no matches\n")
+    element_pos = genomepy.utils.contig_pos(gtf_file, genome_file)
+    assert element_pos == -1
+
+    # generate matching genome file
+    with open(genome_file, "w") as f:
+        f.write(">chr3 this matches\n")
+    element_pos = genomepy.utils.contig_pos(gtf_file, genome_file)
+    assert element_pos == 0
+
+    # generate matching genome file
+    with open(genome_file, "w") as f:
+        f.write(">this matches chr2\n")
+    element_pos = genomepy.utils.contig_pos(gtf_file, genome_file)
+    assert element_pos == 2
+
+    os.unlink(genome_file)
+
+
+def test_contig_conversion():
+    genome_file = "tests/data/contig_pos.fa"
+
+    # generate genome file
+    with open(genome_file, "w") as f:
+        f.write(">this matches chr2\n" ">that matches chr3\n")
+    ids, duplicate_contigs = genomepy.utils.contig_conversion(genome_file, 2)
+    assert not duplicate_contigs
+    assert ids["chr2"] == "this"
+    assert ids["chr3"] == "that"
+
+    # assume "matches" in the contig name
+    ids, duplicate_contigs = genomepy.utils.contig_conversion(genome_file, 1)
+    assert "matches" in duplicate_contigs
+    assert ids["matches"] == "that"
+
+    os.unlink(genome_file)
+
+
 def test_sanitize_annotation(genome="tests/data/small_genome.fa.gz"):
     class TestGenome:
         def __init__(self, filename=genome):
