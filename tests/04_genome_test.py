@@ -27,8 +27,8 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
     assert os.path.exists(g.gaps_file)
     assert isinstance(g.sizes, dict)
     assert isinstance(g.gaps, dict)
-    assert "annotation_gtf_file" in dir(g)
-    assert "annotation_bed_file" in dir(g)
+    assert g.annotation_gtf_file is None
+    assert g.annotation_bed_file is None
     assert g.tax_id == g.assembly_accession == "na"
     assert isinstance(g.plugin, dict)
 

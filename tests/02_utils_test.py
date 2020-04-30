@@ -12,6 +12,11 @@ linux = system() == "Linux"
 
 
 def test_read_readme():
+    metadata, lines = genomepy.utils.read_readme("tests/data/not_an_existsing_file")
+    assert metadata["name"] == "na"
+    assert metadata["sanitized annotation"] == "no"
+    assert lines == []
+
     wd = os.getcwd()
     readme = os.path.join(wd, "README.txt")
     with open(readme, "w") as f:
