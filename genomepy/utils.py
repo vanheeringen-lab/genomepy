@@ -424,22 +424,43 @@ def contig_pos(gtf_file, genome_file):
 
 
 def contig_conversion(genome_file, element_pos):
-    """build a conversion table"""
-    ids = {}
+    """
+    build a conversion table
+    returns a list of duplicate contig names
+    """
+    conversion_table = {}
     duplicate_contigs = []
     with open(genome_file, "r") as fa:
         for line in fa:
             if line.startswith(">"):
                 line = line.strip(">\n").split(" ")
-                if line[element_pos] in ids:
+                if line[element_pos] in conversion_table:
                     duplicate_contigs.append(line[element_pos])
-                ids[line[element_pos]] = line[0]
-    return ids, duplicate_contigs
+                conversion_table[line[element_pos]] = line[0]
+    return conversion_table, list(set(duplicate_contigs))
+
+
+def sanitize_gtf(old_gtf_file, new_gtf_file, conversion_table):
+    """
+    create a new gtf file with renamed contigs based on the conversion table
+    returns a list of contigs not present in the genome
+    """
+    missing_contigs = []
+    with open(old_gtf_file, "r") as oldgtf, open(new_gtf_file, "w") as newgtf:
+        for line in oldgtf:
+            line = line.split("\t")
+            try:
+                line[0] = conversion_table[line[0]]
+            except KeyError:
+                missing_contigs.append(line[0])
+            line = "\t".join(line)
+            newgtf.write(line)
+    return list(set(missing_contigs))
 
 
 def sanitize_annotation(genome):
     """
-    Matches the toplevel sequence names in annotation.gtf to those in genome.fa.
+    Matches the contig names in annotation.gtf to those in genome.fa.
 
     The fasta and gtf formats dictate the 1st field in the genome header and gtf should match.
     In some cases the genome.fa has multiple names per header, the 1st field not matching those in the gtf.
@@ -493,7 +514,7 @@ def sanitize_annotation(genome):
         return
 
     # build a conversion table and check for duplicate contigs
-    ids, duplicate_contigs = contig_conversion(genome_file, element_pos)
+    conversion_table, duplicate_contigs = contig_conversion(genome_file, element_pos)
     # re-zip genome if it was unzipped earlier
     bgzip_and_name(genome_file, bgzip)
     # clean up if sanitizing is not possible
@@ -501,7 +522,7 @@ def sanitize_annotation(genome):
         sys.stderr.write(
             "\nGenome contains duplicate contig names!\n"
             "The following contigs were found duplicate found: "
-            f"{', '.join(set(duplicate_contigs))}.\n"
+            f"{', '.join(duplicate_contigs)}.\n"
         )
         cleanup("not possible", error=True)
         return
@@ -510,16 +531,7 @@ def sanitize_annotation(genome):
     with TemporaryDirectory(dir=genome.genome_dir) as tmpdir:
         # generate corrected gtf file
         new_gtf_file = os.path.join(tmpdir, os.path.basename(gtf_file))
-        missing_contigs = []
-        with open(gtf_file, "r") as oldgtf, open(new_gtf_file, "w") as newgtf:
-            for line in oldgtf:
-                line = line.split("\t")
-                try:
-                    line[0] = ids[line[0]]
-                except KeyError:
-                    missing_contigs.append(line[0])
-                line = "\t".join(line)
-                newgtf.write(line)
+        missing_contigs = sanitize_gtf(gtf_file, new_gtf_file, conversion_table)
 
         # generate corrected bed file from the gtf
         cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1}"
@@ -544,12 +556,12 @@ def sanitize_annotation(genome):
             "",
             "WARNING: annotation contains contigs not present in the genome!",
             "The following contigs were not found:",
-            f"{', '.join(set(missing_contigs))}.",
+            f"{', '.join(missing_contigs)}.",
         ]
         sys.stderr.write(
             "\nWARNING: annotation contains contigs not present in the genome!\n"
             "The following contigs were not found: "
-            f"{', '.join(set(missing_contigs))}.\n"
+            f"{', '.join(missing_contigs)}.\n"
             "These have been kept as-is. Other contigs were corrected!\n"
         )
     write_readme(readme, metadata, lines)

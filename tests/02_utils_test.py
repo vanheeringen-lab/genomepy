@@ -289,6 +289,25 @@ def test_contig_conversion():
     os.unlink(genome_file)
 
 
+def test_sanitize_gtf():
+    old_gtf = "tests/data/old_gtf.gtf"
+    new_gtf = "tests/data/new_gtf.gtf"
+    ids = {"1": "chr1", "2": "chr2"}  # replace 1,2 with chr1, chr2
+
+    with open(old_gtf, "w") as gtf:
+        gtf.write("1\tgene1\n" "2\tgene2\n" "3\tgene3\n")
+    result = open(old_gtf).read()
+    assert result == "1\tgene1\n2\tgene2\n3\tgene3\n"
+
+    missing_contigs = genomepy.utils.sanitize_gtf(old_gtf, new_gtf, ids)
+    result = open(new_gtf).read()
+    assert result == "chr1\tgene1\nchr2\tgene2\n3\tgene3\n"
+    assert missing_contigs == ["3"]
+
+    os.unlink(old_gtf)
+    os.unlink(new_gtf)
+
+
 def test_sanitize_annotation(genome="tests/data/small_genome.fa.gz"):
     class TestGenome:
         def __init__(self, filename=genome):
