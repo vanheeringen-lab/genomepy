@@ -1,6 +1,7 @@
 import genomepy
 import os
 import pytest
+import shutil
 
 
 # to ignore file changes
@@ -20,6 +21,7 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
     assert g.genomes_dir == genomepy.utils.get_genomes_dir(None, False)
     assert g.name == "small_genome"
     assert g.filename == os.path.abspath(genome)
+    assert g.genome_dir == os.path.dirname(g.filename)
     assert os.path.exists(g.index_file)
     assert os.path.exists(g.sizes_file)
     assert os.path.exists(g.gaps_file)
@@ -29,6 +31,63 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
     assert "annotation_bed_file" in dir(g)
     assert g.tax_id == g.assembly_accession == "na"
     assert isinstance(g.plugin, dict)
+
+
+def test__parse_name(genome="tests/data/small_genome.fa.gz"):
+    g = genomepy.Genome(genome)  # unimportant
+
+    # name
+    name = g._parse_name("test")
+    assert name == "test"
+
+    # file
+    name = g._parse_name("/home/genomepy/genomes/test2.fa")
+    assert name == "test2"
+
+    # url
+    name = g._parse_name("http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XT9_1.fa.gz")
+    assert name == "XT9_1"
+
+
+def test__parse_filename(genome="tests/data/small_genome.fa.gz"):
+    g = genomepy.Genome(genome)  # unimportant
+
+    # file path
+    filename = g._parse_filename(genome)
+    assert filename == os.path.abspath(genome)
+
+    # folder path
+    filename = g._parse_filename(os.path.dirname(genome))
+    assert filename == os.path.abspath(genome)
+
+    # name of genome in genomes_dir
+    os.mkdir("tests/data/small_genome")
+    with open("tests/data/small_genome/small_genome.fa.gz", "w") as fa:
+        fa.write("test")
+    g.genomes_dir = "tests/data/"
+    filename = g._parse_filename(os.path.basename(genome))
+    assert filename == "tests/data/small_genome/small_genome.fa.gz"
+    shutil.rmtree("tests/data/small_genome")
+
+    # genome not found
+    with pytest.raises(FileNotFoundError):
+        g._parse_filename("does not exist")
+
+
+def test_check_annotation_file(genome="tests/data/small_genome.fa.gz"):
+    g = genomepy.Genome(genome)
+
+    # does not exist
+    gtf = g.check_annotation_file("gtf")
+    assert gtf is None
+
+    # does exist
+    path = "tests/data/small_genome.annotation.test.gz"
+    with open(path, "w") as fa:
+        fa.write("test")
+    test = g.check_annotation_file("test")
+    assert test == os.path.abspath(path)
+    os.unlink(path)
 
 
 def test__read_metadata(capsys, genome="tests/data/small_genome.fa.gz"):
