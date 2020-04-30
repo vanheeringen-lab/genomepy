@@ -1,4 +1,4 @@
-import genomepy
+import genomepy.plugin
 import pytest
 import norns
 

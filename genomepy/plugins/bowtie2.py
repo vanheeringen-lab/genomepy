@@ -10,8 +10,8 @@ class Bowtie2Plugin(Plugin):
             return
 
         # Create index dir
-        index_dir = genome.props["bowtie2"]["index_dir"]
-        index_name = genome.props["bowtie2"]["index_name"]
+        index_dir = genome.plugin["bowtie2"]["index_dir"]
+        index_name = genome.plugin["bowtie2"]["index_name"]
         if force:
             # Start from scratch
             rmtree(index_dir, ignore_errors=True)

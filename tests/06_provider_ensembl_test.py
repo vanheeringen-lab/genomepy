@@ -80,12 +80,12 @@ def test_get_version(p):
     # note: this test will break every time ensembl releases a new version
     ftp_site = "http://ftp.ensembl.org/pub"
     v = p.get_version(ftp_site)
-    assert v == "99"
+    assert v == "100"
 
     if not travis:
         ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
         v = p.get_version(ftp_site)
-        assert v == "46"
+        assert v == "47"
 
 
 def test_get_genome_download_link(p):

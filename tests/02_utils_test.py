@@ -12,15 +12,22 @@ linux = system() == "Linux"
 
 
 def test_read_readme():
+    metadata, lines = genomepy.utils.read_readme("tests/data/not_an_existsing_file")
+    assert metadata["name"] == "na"
+    assert metadata["sanitized annotation"] == "no"
+    assert lines == []
+
     wd = os.getcwd()
     readme = os.path.join(wd, "README.txt")
     with open(readme, "w") as f:
         f.writelines("provider: asd\n")
-        f.writelines("this is a regular line\n")
+        f.writelines(
+            "this is a regular line\n  \n  \n \nonly one empty line before me\n"
+        )
 
     metadata, lines = genomepy.utils.read_readme(readme)
     assert metadata["provider"] == "asd"
-    assert lines == ["this is a regular line"]
+    assert lines == ["this is a regular line", "", "only one empty line before me"]
 
     os.unlink(readme)
 
@@ -93,15 +100,23 @@ def test_filter_fasta(fname="tests/data/regexp/regexp.fa"):
 
 
 def test_mkdir_p(path="./tests/dir1/dir2/nestled_dir"):
+    shutil.rmtree("./tests/dir1", ignore_errors=True)
+    assert not os.path.isdir(path)
+
+    # make a non-existing nestled-dir
     genomepy.utils.mkdir_p(path)
     assert os.path.isdir(path)
 
-    shutil.rmtree("./tests/dir1")
+    # try to make an existing dir
+    genomepy.utils.mkdir_p(path)
+
+    shutil.rmtree("./tests/dir1", ignore_errors=True)
     assert not os.path.isdir(path)
 
 
-def test_cmd_ok(cmd="gunzip"):
-    assert genomepy.utils.cmd_ok(cmd)
+def test_cmd_ok():
+    assert genomepy.utils.cmd_ok("STAR")
+    assert genomepy.utils.cmd_ok("bwa")
     assert not genomepy.utils.cmd_ok("missing_cmd")
 
 
@@ -134,15 +149,19 @@ def test_get_genomes_dir(genomes_dir="tests/data"):
         genomepy.utils.get_genomes_dir(genomes_dir="fake_dir", check_exist=True)
 
 
-def test_safe(unsafe_name="a name", safe_name="a_name"):
+def test_safe(unsafe_name="a name ", safe_name="a_name"):
     result = genomepy.utils.safe(unsafe_name)
     assert result == safe_name
 
 
 def test_get_localname(name="XT9_1", localname="my genome"):
-    # name input
+    # name + localname input
     result = genomepy.utils.get_localname(name=name, localname=localname)
     assert result == genomepy.utils.safe(localname)
+
+    # name input
+    result = genomepy.utils.get_localname(name=name)
+    assert result == name
 
     # URL input
     url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XT9_1.fa.gz"
@@ -161,22 +180,32 @@ def test_tar_to_bigfile():
     os.unlink(outname)
 
 
-def test_bgunzip_and_name(genome="tests/data/small_genome.fa.gz"):
-    class TestGenome:
-        def __init__(self, filename=genome):
-            self.filename = filename
-
-    g = TestGenome(genome)
-    bgzip, fname = genomepy.utils.bgunzip_and_name(genome=g)
-    assert bgzip and fname == genome[:-3]
+def test_gunzip_and_name(fname="tests/data/small_genome.fa.gz"):
+    assert os.path.exists(fname)
+    fname, gzip_file = genomepy.utils.gunzip_and_name(fname)
+    assert gzip_file and fname.endswith(".fa")
+    assert os.path.exists(fname)
 
 
-def test_bgrezip(bgzip=True, fname="tests/data/small_genome.fa"):
-    genomepy.utils.bgrezip(bgzip, fname)
+def test_gzip_and_name(fname="tests/data/small_genome.fa"):
+    assert os.path.exists(fname)
+    fname = genomepy.utils.gzip_and_name(fname)
+    assert fname.endswith(".gz")
+    assert os.path.exists(fname)
 
-    # any error (here: nothing to bgzip)
-    with pytest.raises(Exception):
-        genomepy.utils.bgrezip(bgzip, fname)
+    fname, _ = genomepy.utils.gunzip_and_name(fname)
+    assert fname.endswith(".fa")
+    assert os.path.exists(fname)
+
+
+def test_bgzip_and_name(fname="tests/data/small_genome.fa"):
+    assert os.path.exists(fname)
+    fname = genomepy.utils.bgzip_and_name(fname)
+    assert fname.endswith(".gz")
+    assert os.path.exists(fname)
+
+    with pytest.raises(sp.CalledProcessError):
+        genomepy.utils.bgzip_and_name("tests/data/nofile.fa")
 
 
 def test_is_number():
@@ -205,11 +234,111 @@ def test_get_file_info(fname="tests/data/small_genome.fa.gz"):
     assert ext == ".fai" and not gz
 
 
+def test_match_contigs():
+    sizes_file = "tests/data/small_genome.fa.sizes"
+    gtf_file = "tests/data/small_genome.annotation.gtf"
+
+    # generate sizes file
+    with open(sizes_file, "w") as f:
+        f.write("""chr2\t1234""")
+
+    # generate empty gtf file
+    with open(gtf_file, "w") as f:
+        f.write("# skip this line\n")
+    match = genomepy.utils.match_contigs(gtf_file, sizes_file)
+    assert match is None
+
+    # generate matching gtf file
+    with open(gtf_file, "w") as f:
+        f.write("# skip this line\n")
+        f.write("""chr2\tvanHeeringen-lab""")
+    match = genomepy.utils.match_contigs(gtf_file, sizes_file)
+    assert match
+
+    # generate mismatching gtf file
+    with open(gtf_file, "w") as f:
+        f.write("# skip this line\n")
+        f.write("""2\tvanHeeringen-lab""")
+    match = genomepy.utils.match_contigs(gtf_file, sizes_file)
+    assert match is False
+
+
+def test_contig_pos():
+    gtf_file = "tests/data/small_genome.annotation.gtf"
+    genome_file = "tests/data/contig_pos.fa"
+
+    # generate gtf file
+    with open(gtf_file, "w") as f:
+        f.write("chr2\tvanHeeringen-lab\n" "chr3\tvanHeeringen-lab\n")
+
+    # generate non-matching genome file
+    with open(genome_file, "w") as f:
+        f.write(">no matches\n")
+    element_pos = genomepy.utils.contig_pos(gtf_file, genome_file)
+    assert element_pos == -1
+
+    # generate matching genome file
+    with open(genome_file, "w") as f:
+        f.write(">chr3 this matches\n")
+    element_pos = genomepy.utils.contig_pos(gtf_file, genome_file)
+    assert element_pos == 0
+
+    # generate different matching genome file
+    with open(genome_file, "w") as f:
+        f.write(">this matches chr2\n")
+    element_pos = genomepy.utils.contig_pos(gtf_file, genome_file)
+    assert element_pos == 2
+
+    os.unlink(genome_file)
+
+
+def test_contig_conversion():
+    genome_file = "tests/data/contig_pos.fa"
+
+    # generate genome file
+    with open(genome_file, "w") as f:
+        f.write(">this matches chr2\n" ">that matches chr3\n")
+    ids, duplicate_contigs = genomepy.utils.contig_conversion(genome_file, 2)
+    assert not duplicate_contigs
+    assert ids["chr2"] == "this"
+    assert ids["chr3"] == "that"
+
+    # assume "matches" is the contig name
+    ids, duplicate_contigs = genomepy.utils.contig_conversion(genome_file, 1)
+    assert "matches" in duplicate_contigs
+    assert ids["matches"] == "that"
+
+    os.unlink(genome_file)
+
+
+def test_sanitize_gtf():
+    old_gtf = "tests/data/old_gtf.gtf"
+    new_gtf = "tests/data/new_gtf.gtf"
+    ids = {"1": "chr1", "2": "chr2"}  # replace 1,2 with chr1, chr2
+
+    with open(old_gtf, "w") as gtf:
+        gtf.write("1\tgene1\n" "2\tgene2\n" "3\tgene3\n")
+    result = open(old_gtf).read()
+    assert result == "1\tgene1\n2\tgene2\n3\tgene3\n"
+
+    missing_contigs = genomepy.utils.sanitize_gtf(old_gtf, new_gtf, ids)
+    result = open(new_gtf).read()
+    assert result == "chr1\tgene1\nchr2\tgene2\n3\tgene3\n"
+    assert missing_contigs == ["3"]
+
+    os.unlink(old_gtf)
+    os.unlink(new_gtf)
+
+
 def test_sanitize_annotation(genome="tests/data/small_genome.fa.gz"):
     class TestGenome:
         def __init__(self, filename=genome):
             self.filename = filename
-            self.name = os.path.basename(genome)[:-6]
+            self.genome_dir = os.path.dirname(genome)
+            self.annotation_gtf_file = genome[:-5] + "annotation.gtf.gz"
+            self.annotation_bed_file = genome[:-5] + "annotation.bed.gz"
+            self.sizes_file = genome[:-2] + "sizes"
+            self.readme_file = os.path.join(self.genome_dir, "README.txt")
 
     # generate sizes file (already tested)
     sp.check_call(f"gunzip -f {genome}", shell=True)
@@ -234,6 +363,7 @@ def test_sanitize_annotation(genome="tests/data/small_genome.fa.gz"):
     g = TestGenome(genome)
     genomepy.utils.sanitize_annotation(g)
 
+    sp.check_call(f"gunzip -f {gtf_file}.gz", shell=True)
     result = open(gtf_file).read()
     assert result.startswith("# skip this line\nchr2\tvanHeeringen-lab")
 

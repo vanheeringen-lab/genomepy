@@ -1,6 +1,7 @@
 import genomepy
 import os
 import pytest
+import shutil
 
 
 # to ignore file changes
@@ -16,23 +17,83 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
     with pytest.raises(FileNotFoundError):
         genomepy.Genome("unknown", "unknown")
 
-    # create genomes_dir (normally done by downloading the genome)
-    gd = genomepy.utils.get_genomes_dir(check_exist=False)
-    genomepy.utils.mkdir_p(os.path.join(gd, "small_genome"))
+    g = genomepy.Genome(genome)
+    assert g.genomes_dir == genomepy.utils.get_genomes_dir(None, False)
+    assert g.name == "small_genome"
+    assert g.filename == os.path.abspath(genome)
+    assert g.genome_dir == os.path.dirname(g.filename)
+    assert os.path.exists(g.index_file)
+    assert os.path.exists(g.sizes_file)
+    assert os.path.exists(g.gaps_file)
+    assert isinstance(g.sizes, dict)
+    assert isinstance(g.gaps, dict)
+    assert g.annotation_gtf_file is None
+    assert g.annotation_bed_file is None
+    assert g.tax_id == g.assembly_accession == "na"
+    assert isinstance(g.plugin, dict)
 
-    # initialize the class (creates the index file)
-    index_file = genome + ".fai"
-    if os.path.exists(index_file):
-        os.unlink(index_file)
 
-    genomepy.Genome(genome)
-    assert os.path.exists(index_file)
+def test__parse_name(genome="tests/data/small_genome.fa.gz"):
+    g = genomepy.Genome(genome)  # unimportant
+
+    # name
+    name = g._parse_name("test")
+    assert name == "test"
+
+    # file
+    name = g._parse_name("/home/genomepy/genomes/test2.fa")
+    assert name == "test2"
+
+    # url
+    name = g._parse_name("http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XT9_1.fa.gz")
+    assert name == "XT9_1"
 
 
-def test__read_metadata(capsys, genome="tests/data/small_genome.fa.gz"):
+def test__parse_filename(genome="tests/data/small_genome.fa.gz"):
+    g = genomepy.Genome(genome)  # unimportant
+
+    # file path
+    filename = g._parse_filename(genome)
+    assert filename == os.path.abspath(genome)
+
+    # folder path
+    filename = g._parse_filename(os.path.dirname(genome))
+    assert filename == os.path.abspath(genome)
+
+    # name of genome in genomes_dir
+    os.mkdir("tests/data/small_genome")
+    with open("tests/data/small_genome/small_genome.fa.gz", "w") as fa:
+        fa.write("test")
+    g.genomes_dir = "tests/data/"
+    filename = g._parse_filename(os.path.basename(genome))
+    assert filename == "tests/data/small_genome/small_genome.fa.gz"
+    shutil.rmtree("tests/data/small_genome")
+
+    # genome not found
+    with pytest.raises(FileNotFoundError):
+        g._parse_filename("does not exist")
+
+
+def test_check_annotation_file(genome="tests/data/small_genome.fa.gz"):
+    g = genomepy.Genome(genome)
+
+    # does not exist
+    gtf = g.check_annotation_file("gtf")
+    assert gtf is None
+
+    # does exist
+    path = "tests/data/small_genome.annotation.test.gz"
+    with open(path, "w") as fa:
+        fa.write("test")
+    test = g.check_annotation_file("test")
+    assert test == os.path.abspath(path)
+    os.unlink(path)
+
+
+def test__read_metadata(genome="tests/data/small_genome.fa.gz"):
     # create blank README.txt
     g = genomepy.Genome(genome)
-    readme = os.path.join(g.genomes_dir, g.name, "README.txt")
+    readme = g.readme_file
     if os.path.exists(readme):
         os.unlink(readme)
     metadata, lines = genomepy.utils.read_readme(readme)
@@ -151,12 +212,16 @@ def test_track2fasta(genome="tests/data/small_genome.fa.gz"):
             assert seq[1].seq == "CTCCTCCAAGCCC"
 
 
-def test_gap_sizes(genome="tests/data/gap.fa"):
+def test_sizes(genome="tests/data/gap.fa"):
+    g = genomepy.Genome(genome)
+    g.contig_sizes()
+    assert list(g.sizes.keys()) == ["chr1", "chr2", "chr3"]
+
+
+def test_gaps(genome="tests/data/gap.fa"):
     g = genomepy.Genome(genome)
     g.gap_sizes()
-
-    assert isinstance(g._gap_sizes, dict)
-    assert list(g._gap_sizes.keys()) == ["chr1", "chr3"]
+    assert list(g.gaps.keys()) == ["chr1", "chr3"]
 
 
 def test__weighted_selection(n=2):
@@ -194,11 +259,10 @@ def test_get_random_sequences(genome="tests/data/small_genome.fa.gz"):
 
 def test_delete_test_files():
     for genome in [
-        "tests/data/small_genome.fa.gz",
-        "tests/data/small_genome.fa",
-        "tests/data/gap.fa",
+        "tests/data/small_genome.",
+        "tests/data/gap.",
     ]:
-        for ext in [".fai", ".sizes"]:
+        for ext in ["fa.fai", "fa.sizes", "gaps.bed", "fa.gz.fai", "fa.gz.sizes"]:
             file = genome + ext
             if os.path.exists(file):
                 os.unlink(file)

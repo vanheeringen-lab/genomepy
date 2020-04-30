@@ -1,6 +1,8 @@
 import genomepy
 import pytest
 import os
+import shutil
+
 from appdirs import user_config_dir
 from platform import system
 
@@ -83,7 +85,8 @@ def test__is_genome_dir():
 
 
 def test_list_installed_genomes():
-    assert isinstance(genomepy.functions.list_installed_genomes(), list)
+    assert isinstance(genomepy.functions.list_installed_genomes(os.getcwd()), list)
+
     gdir = os.path.join(os.getcwd(), "tests", "data")
     genomes = genomepy.functions.list_installed_genomes(gdir)
     assert genomes == ["regexp"]
@@ -91,7 +94,6 @@ def test_list_installed_genomes():
 
 @pytest.mark.skipif(not travis or not linux, reason="slow")
 def test_install_genome():
-    out_dir = genomepy.functions.get_genomes_dir(None, False)
     localname = "my_genome"
     genomepy.functions.install_genome(
         name="fr3",
@@ -102,16 +104,19 @@ def test_install_genome():
         force=True,
     )
 
-    genome = os.path.join(out_dir, localname, localname + ".fa")
-    assert os.path.exists(genome)
-    sizes_file = os.path.join(out_dir, localname, localname + ".fa.sizes")
+    genomes_dir = genomepy.functions.get_genomes_dir(None, False)
+    genome_file = os.path.join(genomes_dir, localname, localname + ".fa")
+    assert os.path.exists(genome_file)
+    sizes_file = os.path.join(genomes_dir, localname, localname + ".fa.sizes")
     assert os.path.exists(sizes_file)
-    gap_file = os.path.join(out_dir, localname, localname + ".gaps.bed")
-    assert os.path.exists(gap_file)
-    annotation_file = os.path.join(out_dir, localname, localname + ".annotation.gtf.gz")
+    gaps_file = os.path.join(genomes_dir, localname, localname + ".gaps.bed")
+    assert os.path.exists(gaps_file)
+    annotation_file = os.path.join(
+        genomes_dir, localname, localname + ".annotation.gtf.gz"
+    )
     assert os.path.exists(annotation_file)
 
-    readme = os.path.join(os.path.dirname(genome), "README.txt")
+    readme = os.path.join(os.path.dirname(genome_file), "README.txt")
     with open(readme) as f:
         metadata = {}
         for line in f.readlines():
@@ -131,6 +136,23 @@ def test_generate_exports():
     # check if my_genome was installed in the last test
     assert any([x for x in exports if x.startswith("export MY_GENOME")])
 
+    # add genome that throws a FastaIndexingError
+    gd = genomepy.utils.get_genomes_dir(None, True)
+    os.makedirs(os.path.join(gd, "testgenome"), exist_ok=True)
+    path = os.path.join(gd, "testgenome", "testgenome.fa")
+    with open(path, "w") as fa:
+        fa.write("forbidden characters")
+    exports = genomepy.functions.generate_exports()
+    assert f"export TESTGENOME={path}" not in exports
+
+    # add genome that works
+    with open(path, "w") as fa:
+        fa.write(">chr1\nallowed characters")
+    exports = genomepy.functions.generate_exports()
+    assert f"export TESTGENOME={path}" in exports
+
+    shutil.rmtree(os.path.join(gd, "testgenome"))
+
 
 @pytest.mark.skipif(
     not travis or not linux, reason="only works if a genome was installed"
@@ -141,7 +163,21 @@ def test_generate_env():
     path = os.path.join(config_dir, "exports.txt")
     if os.path.exists(path):
         os.unlink(path)
+    assert not os.path.exists(path)
 
+    # give file path
+    my_path = "~/exports.txt"
+    genomepy.functions.generate_env(my_path)
+    assert os.path.exists(os.path.expanduser(my_path))
+    os.unlink(os.path.expanduser(my_path))
+
+    # give file name
+    my_file = os.path.join(config_dir, "my_exports.txt")
+    genomepy.functions.generate_env("my_exports.txt")
+    assert os.path.exists(my_file)
+    os.unlink(os.path.expanduser(my_file))
+
+    # give nothing
     genomepy.functions.generate_env()
     assert os.path.exists(path)
     with open(path) as f:

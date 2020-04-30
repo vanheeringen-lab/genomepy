@@ -239,7 +239,7 @@ def test__search_descriptions(p):
     assert not p._search_descriptions(p.genomes["KH"], "not_in_description")
 
 
-def test_search(p, capsys):
+def test_search(p):
     p = p.create("Ensembl")
     for method in ["KH", "7719", "Ciona intestinalis"]:
         genomes = p.search(method)

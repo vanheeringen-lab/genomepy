@@ -10,8 +10,8 @@ class BwaPlugin(Plugin):
             return
 
         # Create index dir
-        index_dir = genome.props["bwa"]["index_dir"]
-        index_name = genome.props["bwa"]["index_name"]
+        index_dir = genome.plugin["bwa"]["index_dir"]
+        index_name = genome.plugin["bwa"]["index_name"]
         if force:
             # Start from scratch
             rmtree(index_dir, ignore_errors=True)

@@ -5,17 +5,16 @@ import re
 
 from appdirs import user_config_dir
 from glob import glob
+from pyfaidx import FastaIndexingError
 from genomepy.genome import Genome
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
 from genomepy.utils import (
-    generate_gap_bed,
-    generate_fa_sizes,
     get_localname,
-    sanitize_annotation,
     get_genomes_dir,
     glob_ext_files,
     mkdir_p,
+    sanitize_annotation,
 )
 
 config = norns.config("genomepy", default="cfg/default.yaml")
@@ -102,13 +101,17 @@ def list_installed_genomes(genomes_dir=None):
     -------
     list with genome names
     """
-    genomes_dir = get_genomes_dir(genomes_dir)
+    genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
 
-    return [
-        f
-        for f in os.listdir(genomes_dir)
-        if _is_genome_dir(os.path.join(genomes_dir, f))
-    ]
+    return (
+        [
+            f
+            for f in os.listdir(genomes_dir)
+            if _is_genome_dir(os.path.join(genomes_dir, f))
+        ]
+        if os.path.exists(genomes_dir)
+        else []
+    )
 
 
 def generate_exports():
@@ -118,8 +121,8 @@ def generate_exports():
         try:
             g = Genome(name)
             env_name = re.sub(r"[^\w]+", "_", name).upper()
-            env.append("export {}={}".format(env_name, g.filename))
-        except Exception:
+            env.append(f"export {env_name}={g.filename}")
+        except FastaIndexingError:
             pass
     return env
 
@@ -129,15 +132,16 @@ def generate_env(fname=None):
 
     By default this is .config/genomepy/exports.txt.
 
-    An alternative file name or absolute path is accepted too.
+    An alternative file name or file path is accepted too.
 
     Parameters
     ----------
     fname: str, optional
         Absolute path or name of the output file.
     """
-    if fname and os.path.isabs(fname):
-        absname = fname
+    path_name = os.path.expanduser(str(fname))
+    if fname and os.path.exists(os.path.dirname(path_name)):
+        absname = os.path.abspath(path_name)
     else:
         config_dir = user_config_dir("genomepy")
         if not os.path.exists(config_dir):
@@ -251,19 +255,10 @@ def install_genome(
         # Export installed genome(s)
         generate_env()
 
-    # Generates a Fasta object and the index file
+    # Generates a Fasta object, index, gaps and sizes file
+    g = None
     if genome_found:
         g = Genome(localname, genomes_dir=genomes_dir)
-
-    # Generate sizes file (if not found or if generation is forced)
-    sizes_file = os.path.join(out_dir, localname + ".fa.sizes")
-    if (not os.path.exists(sizes_file) or force) and not only_annotation:
-        generate_fa_sizes(glob_ext_files(out_dir, "fa")[0], sizes_file)
-
-    # Generate gap file (if not found or if generation is forced)
-    gap_file = os.path.join(out_dir, localname + ".gaps.bed")
-    if (not os.path.exists(gap_file) or force) and not only_annotation:
-        generate_gap_bed(glob_ext_files(out_dir, "fa")[0], gap_file)
 
     # Check if any annotation flags are given, if annotation already exists, or if downloading is forced
     if any([annotation, only_annotation, kwargs.get("to_annotation", False)]):
