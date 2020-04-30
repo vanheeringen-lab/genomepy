@@ -12,6 +12,7 @@ import shutil
 import time
 
 from glob import glob
+from norns import exceptions
 from pyfaidx import Fasta
 from tempfile import TemporaryDirectory
 
@@ -231,7 +232,7 @@ def get_genomes_dir(genomes_dir=None, check_exist=True):
     if not genomes_dir:
         genomes_dir = config.get("genomes_dir", None)
     if not genomes_dir:
-        raise norns.exceptions.ConfigError("Please provide or configure a genomes_dir")
+        raise exceptions.ConfigError("Please provide or configure a genomes_dir")
 
     genomes_dir = os.path.abspath(os.path.expanduser(genomes_dir))
     if not os.path.exists(genomes_dir) and check_exist:

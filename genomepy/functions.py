@@ -256,6 +256,7 @@ def install_genome(
         generate_env()
 
     # Generates a Fasta object, index, gaps and sizes file
+    g = None
     if genome_found:
         g = Genome(localname, genomes_dir=genomes_dir)
 
