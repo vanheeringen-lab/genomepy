@@ -47,6 +47,11 @@ def genome(request):
     if request.param == "unzipped":
         sp.check_call(["gunzip", fname])
 
+        # add annotation (for STAR and hisat2), but only once
+        gtf_file = "tests/data/ce10.annotation.gtf"
+        aname = os.path.join(genome_dir, f"{name}.annotation.gtf")
+        shutil.copyfile(gtf_file, aname)
+
     return genomepy.Genome(name, genomes_dir=genomes_dir)
 
 
@@ -111,7 +116,7 @@ def test_gmap(genome, threads=2):
     assert os.path.exists(fname)
 
 
-def test_hisat2(genome, threads=2):
+def test_hisat2(capsys, genome, threads=2):
     """Create hisat2 index."""
     p = Hisat2Plugin()
     p.after_genome_download(genome, threads=threads, force=True)
@@ -121,6 +126,13 @@ def test_hisat2(genome, threads=2):
     fname = os.path.join(index_dir, f"{genome.name}.1.ht2")
     assert os.path.exists(index_dir)
     assert os.path.exists(fname)
+
+    # check if splice-aware index is generated
+    captured = capsys.readouterr().out.strip()
+    if genome.annotation_gtf_file:
+        assert captured == ""
+    else:
+        assert captured == "Generating Hisat2 index without annotation file."
 
 
 def test_minimap2(genome, threads=2):
@@ -141,7 +153,7 @@ def test_minimap2(genome, threads=2):
 
 
 @pytest.mark.skipif(not travis or not linux, reason="slow")
-def test_star(genome, threads=2):
+def test_star(capsys, genome, threads=2):
     """Create star index."""
     p = StarPlugin()
     p.after_genome_download(genome, threads=threads, force=True)
@@ -151,6 +163,13 @@ def test_star(genome, threads=2):
     fname = os.path.join(index_dir, "SA")
     assert os.path.exists(index_dir)
     assert os.path.exists(fname)
+
+    # check if splice-aware index is generated
+    captured = capsys.readouterr().out.strip()
+    if genome.annotation_gtf_file:
+        assert captured == ""
+    else:
+        assert captured == "Generating STAR index without annotation file."
 
 
 def test_plugin_cleanup():

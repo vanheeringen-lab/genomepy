@@ -90,7 +90,7 @@ def test_check_annotation_file(genome="tests/data/small_genome.fa.gz"):
     os.unlink(path)
 
 
-def test__read_metadata(capsys, genome="tests/data/small_genome.fa.gz"):
+def test__read_metadata(genome="tests/data/small_genome.fa.gz"):
     # create blank README.txt
     g = genomepy.Genome(genome)
     readme = g.readme_file

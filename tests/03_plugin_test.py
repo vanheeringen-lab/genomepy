@@ -2,12 +2,14 @@ import genomepy
 import pytest
 import norns
 
+from genomepy.plugin import plugins
+
 config = norns.config("genomepy", default="cfg/default.yaml")
 
 
 def test_find_plugins():
     genomepy.plugin.find_plugins()
-    function_loc = genomepy.plugins.bwa
+    function_loc = plugins.bwa
     assert str(function_loc).endswith("genomepy/genomepy/plugins/bwa.py'>")
 
 

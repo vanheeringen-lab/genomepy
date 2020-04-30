@@ -8,6 +8,7 @@ from genomepy.utils import (
     run_index_cmd,
     bgzip_and_name,
     gunzip_and_name,
+    gzip_and_name,
 )
 
 
@@ -24,48 +25,51 @@ class Hisat2Plugin(Plugin):
             rmtree(index_dir, ignore_errors=True)
         mkdir_p(index_dir)
 
-        if not any(fname.endswith(".ht2") for fname in os.listdir(index_dir)):
-            # unzip genome if zipped and return up-to-date genome name
-            fname, bgzip = gunzip_and_name(genome.filename)
-            # unzip annotation if found
-            annot = fname[:-2] + "annotation.gtf.gz"
-            rezip = False
-            if os.path.exists(annot):
-                sp.check_call(f"gunzip -f {annot}", shell=True)
-                rezip = True
-            annot = annot[:-3]
+        if any(fname.endswith(".ht2") for fname in os.listdir(index_dir)):
+            return
+
+        # unzip genome if zipped and return up-to-date genome name
+        fname, bgzip = gunzip_and_name(genome.filename)
+
+        # index command
+        cmd = f"hisat2-build -p {threads} {fname} {index_name}"
+
+        # if an annotation is present, generate a splice-aware index
+        gtf_file = genome.annotation_gtf_file
+        if gtf_file:
+            # gunzip if gzipped
+            gtf_file, gzip_file = gunzip_and_name(gtf_file)
 
             # generate splice and exon site files to enhance indexing
-            splice_file = os.path.join(os.path.dirname(annot), "splice_sites.txt")
-            exon_file = os.path.join(os.path.dirname(annot), "exon_sites.txt")
-            if os.path.exists(annot):
-                proc = sp.Popen("which hisat2", stdout=sp.PIPE, shell=True)
-                splice_script = (
-                    proc.stdout.read().decode("utf8").strip()
-                    + "_extract_splice_sites.py"
-                )
-                sp.check_call(
-                    f"python3 {splice_script} {annot} > {splice_file}", shell=True
-                )
+            hisat_path = (
+                sp.Popen("which hisat2", stdout=sp.PIPE, shell=True)
+                .stdout.read()
+                .decode("utf8")
+                .strip()
+            )
+            splice_script = hisat_path + "_extract_splice_sites.py"
+            splice_file = os.path.join(genome.genome_dir, "splice_sites.txt")
+            sp.check_call(
+                f"python3 {splice_script} {gtf_file} > {splice_file}", shell=True
+            )
 
-                exon_script = splice_script[:-24] + "_extract_exons.py"
-                sp.check_call(
-                    f"python3 {exon_script} {annot} > {exon_file}", shell=True
-                )
+            exon_script = hisat_path + "_extract_exons.py"
+            exon_file = os.path.join(genome.genome_dir, "exon_sites.txt")
+            sp.check_call(f"python3 {exon_script} {gtf_file} > {exon_file}", shell=True)
 
-            # Create index
-            cmd = f"hisat2-build -p {threads} {fname} {index_name}"
-            if os.path.exists(splice_file) and os.path.exists(exon_file):
-                cmd += f" --ss {splice_file} --exon {exon_file}"
-            else:
-                print("\nGenerating Hisat2 index without annotation file.\n\n")
-            run_index_cmd("hisat2", cmd)
+            # re-gzip annotation if gunzipped
+            gzip_and_name(gtf_file, gzip_file)
 
-            # re-zip genome if unzipped
-            bgzip_and_name(fname, bgzip)
-            # re-zip annotation if it was unzipped prior
-            if rezip:
-                sp.check_call(f"gzip {annot}", shell=True)
+            # update index command with annotation
+            cmd += f" --ss {splice_file} --exon {exon_file}"
+        else:
+            print("\nGenerating Hisat2 index without annotation file.\n\n")
+
+        # Create index
+        run_index_cmd("hisat2", cmd)
+
+        # re-bgzip genome if gunzipped
+        bgzip_and_name(fname, bgzip)
 
     def get_properties(self, genome):
         props = {
