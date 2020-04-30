@@ -1,5 +1,4 @@
 """Utility functions."""
-import errno
 import os
 import norns
 import re
@@ -49,21 +48,24 @@ def read_readme(readme):
     }
     lines = []
 
+    if not os.path.exists(readme):
+        return metadata, lines
+
     # if the readme exists, overwrite all metadata fields found
-    if os.path.exists(readme):
-        with open(readme) as f:
-            for line in f.readlines():
-                if ": " in line:
-                    vals = line.strip().split(": ")
-                    metadata[vals[0].strip()] = (": ".join(vals[1:])).strip()
-                else:
-                    line = line.strip("\n").strip(" ")
-                    if not (
-                        line == ""
-                        and len(lines) > 0
-                        and lines[len(lines) - 1].strip() == ""
-                    ):
-                        lines.append(line)
+    with open(readme) as f:
+        for line in f.readlines():
+            if ": " in line:
+                vals = line.strip().split(": ")
+                metadata[vals[0].strip()] = (": ".join(vals[1:])).strip()
+            else:
+                line = line.strip("\n").strip(" ")
+                # blank lines are allowed, but only one in a row
+                if not (
+                    line == ""
+                    and len(lines) > 0
+                    and lines[len(lines) - 1].strip() == ""
+                ):
+                    lines.append(line)
 
     return metadata, lines
 
@@ -171,13 +173,7 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
 
 def mkdir_p(path):
     """ 'mkdir -p' in Python """
-    try:
-        os.makedirs(path)
-    except OSError as exc:
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
+    os.makedirs(path, exist_ok=True)
 
 
 def cmd_ok(cmd):

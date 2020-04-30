@@ -16,11 +16,13 @@ def test_read_readme():
     readme = os.path.join(wd, "README.txt")
     with open(readme, "w") as f:
         f.writelines("provider: asd\n")
-        f.writelines("this is a regular line\n")
+        f.writelines(
+            "this is a regular line\n  \n  \n \nonly one empty line before me\n"
+        )
 
     metadata, lines = genomepy.utils.read_readme(readme)
     assert metadata["provider"] == "asd"
-    assert lines == ["this is a regular line"]
+    assert lines == ["this is a regular line", "", "only one empty line before me"]
 
     os.unlink(readme)
 
@@ -93,15 +95,23 @@ def test_filter_fasta(fname="tests/data/regexp/regexp.fa"):
 
 
 def test_mkdir_p(path="./tests/dir1/dir2/nestled_dir"):
+    shutil.rmtree("./tests/dir1", ignore_errors=True)
+    assert not os.path.isdir(path)
+
+    # make a non-existing nestled-dir
     genomepy.utils.mkdir_p(path)
     assert os.path.isdir(path)
 
-    shutil.rmtree("./tests/dir1")
+    # try to make an existing dir
+    genomepy.utils.mkdir_p(path)
+
+    shutil.rmtree("./tests/dir1", ignore_errors=True)
     assert not os.path.isdir(path)
 
 
-def test_cmd_ok(cmd="gunzip"):
-    assert genomepy.utils.cmd_ok(cmd)
+def test_cmd_ok():
+    assert genomepy.utils.cmd_ok("STAR")
+    assert genomepy.utils.cmd_ok("bwa")
     assert not genomepy.utils.cmd_ok("missing_cmd")
 
 
@@ -134,15 +144,19 @@ def test_get_genomes_dir(genomes_dir="tests/data"):
         genomepy.utils.get_genomes_dir(genomes_dir="fake_dir", check_exist=True)
 
 
-def test_safe(unsafe_name="a name", safe_name="a_name"):
+def test_safe(unsafe_name="a name ", safe_name="a_name"):
     result = genomepy.utils.safe(unsafe_name)
     assert result == safe_name
 
 
 def test_get_localname(name="XT9_1", localname="my genome"):
-    # name input
+    # name + localname input
     result = genomepy.utils.get_localname(name=name, localname=localname)
     assert result == genomepy.utils.safe(localname)
+
+    # name input
+    result = genomepy.utils.get_localname(name=name)
+    assert result == name
 
     # URL input
     url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XT9_1.fa.gz"
@@ -184,6 +198,9 @@ def test_bgzip_and_name(fname="tests/data/small_genome.fa"):
     fname = genomepy.utils.bgzip_and_name(fname)
     assert fname.endswith(".gz")
     assert os.path.exists(fname)
+
+    with pytest.raises(sp.CalledProcessError):
+        genomepy.utils.bgzip_and_name("tests/data/nofile.fa")
 
 
 def test_is_number():
@@ -261,7 +278,7 @@ def test_contig_pos():
     element_pos = genomepy.utils.contig_pos(gtf_file, genome_file)
     assert element_pos == 0
 
-    # generate matching genome file
+    # generate different matching genome file
     with open(genome_file, "w") as f:
         f.write(">this matches chr2\n")
     element_pos = genomepy.utils.contig_pos(gtf_file, genome_file)
@@ -281,7 +298,7 @@ def test_contig_conversion():
     assert ids["chr2"] == "this"
     assert ids["chr3"] == "that"
 
-    # assume "matches" in the contig name
+    # assume "matches" is the contig name
     ids, duplicate_contigs = genomepy.utils.contig_conversion(genome_file, 1)
     assert "matches" in duplicate_contigs
     assert ids["matches"] == "that"
