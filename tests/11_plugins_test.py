@@ -143,12 +143,16 @@ def test_hisat2(capsys, genome, threads=2):
     assert os.path.exists(index_dir)
     assert os.path.exists(fname)
 
-    # check if splice-aware index is generated
     captured = capsys.readouterr().out.strip()
     if genome.annotation_gtf_file:
-        assert captured == ""
+        # check if splice-aware index is generated
+        assert os.path.exists(os.path.join(genome.genome_dir, "splice_sites.txt"))
+        assert os.path.exists(os.path.join(genome.genome_dir, "exon_sites.txt"))
+        # check if annotation file is still the same
+        assert os.path.exists(genome.annotation_gtf_file)
+        assert genome.annotation_gtf_file.endswith(".gtf")
     else:
-        assert captured == "Generating Hisat2 index without annotation file."
+        assert captured == "Creating Hisat2 index without annotation file."
 
 
 def test_minimap2(genome, threads=2):
@@ -180,12 +184,15 @@ def test_star(capsys, genome, threads=2):
     assert os.path.exists(index_dir)
     assert os.path.exists(fname)
 
-    # check if splice-aware index is generated
     captured = capsys.readouterr().out.strip()
     if genome.annotation_gtf_file:
+        # check if splice-aware index is generated
         assert captured == ""
+        # check if annotation file is still the same
+        assert os.path.exists(genome.annotation_gtf_file)
+        assert genome.annotation_gtf_file.endswith(".gtf")
     else:
-        assert captured == "Generating STAR index without annotation file."
+        assert captured == "Creating STAR index without annotation file."
 
 
 def test_plugin_cleanup():

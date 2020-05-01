@@ -13,21 +13,15 @@ from genomepy.utils import (
 
 class StarPlugin(Plugin):
     def after_genome_download(self, genome, threads=1, force=False):
-        if not cmd_ok("STAR"):
+        index_name = genome.plugin["star"]["index_name"]
+        if not cmd_ok("STAR") or (os.path.exists(index_name) and not force):
             return
 
-        # Create index dir
         index_dir = genome.plugin["star"]["index_dir"]
-        index_name = genome.plugin["star"]["index_name"]
-        if force:
-            # Start from scratch
-            rmtree(index_dir, ignore_errors=True)
+        rmtree(index_dir, ignore_errors=True)
         mkdir_p(index_dir)
 
-        if os.path.exists(index_name):
-            return
-
-        # unzip genome if zipped and return up-to-date genome name
+        # gunzip genome if bgzipped and return up-to-date genome name
         fname, bgzip = gunzip_and_name(genome.filename)
 
         # index command
@@ -47,7 +41,7 @@ class StarPlugin(Plugin):
             # update index command with annotation
             cmd += f" --sjdbGTFfile {gtf_file}"
         else:
-            print("\nGenerating STAR index without annotation file.\n\n")
+            print("\nCreating STAR index without annotation file.")
 
         # Create index
         run_index_cmd("star", cmd)

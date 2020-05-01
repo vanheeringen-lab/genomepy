@@ -14,21 +14,17 @@ from genomepy.utils import (
 
 class Hisat2Plugin(Plugin):
     def after_genome_download(self, genome, threads=1, force=False):
-        if not cmd_ok("hisat2-build"):
+        index_name = genome.plugin["hisat2"]["index_name"]
+        if not cmd_ok("hisat2-build") or (
+            os.path.exists(f"{index_name}.1.ht2") and not force
+        ):
             return
 
-        # Create index dir
         index_dir = genome.plugin["hisat2"]["index_dir"]
-        index_name = genome.plugin["hisat2"]["index_name"]
-        if force:
-            # Start from scratch
-            rmtree(index_dir, ignore_errors=True)
+        rmtree(index_dir, ignore_errors=True)
         mkdir_p(index_dir)
 
-        if any(fname.endswith(".ht2") for fname in os.listdir(index_dir)):
-            return
-
-        # unzip genome if zipped and return up-to-date genome name
+        # gunzip genome if bgzipped and return up-to-date genome name
         fname, bgzip = gunzip_and_name(genome.filename)
 
         # index command
@@ -63,7 +59,7 @@ class Hisat2Plugin(Plugin):
             # update index command with annotation
             cmd += f" --ss {splice_file} --exon {exon_file}"
         else:
-            print("\nGenerating Hisat2 index without annotation file.\n\n")
+            print("\nCreating Hisat2 index without annotation file.")
 
         # Create index
         run_index_cmd("hisat2", cmd)
