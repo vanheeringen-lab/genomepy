@@ -131,37 +131,35 @@ class Genome(Fasta):
     @staticmethod
     def _update_provider(metadata):
         """check if provider is missing and try to update"""
-        if metadata.get("provider", "na") == "na":
-            metadata["provider"] = "Unknown"
-            url = metadata.get("genome url", "").lower()
-            for provider in ["Ensembl", "UCSC", "NCBI"]:
-                if provider.lower() in url:
-                    metadata["provider"] = provider
-                    break
+        metadata["provider"] = "Unknown"
+        url = metadata.get("genome url", "").lower()
+        for provider in ["Ensembl", "UCSC", "NCBI"]:
+            if provider.lower() in url:
+                metadata["provider"] = provider
+                break
 
     @staticmethod
     def _update_tax_id(metadata, provider=None, genome=None):
         """check if tax_id is missing and try to update"""
-        if "tax_id" not in metadata:
-            taxid = "na"
-            if genome:
-                taxid = provider.genome_taxid(genome)
-                taxid = str(taxid) if taxid != 0 else "na"
-            metadata["tax_id"] = taxid
+        taxid = "na"
+        if genome:
+            taxid = provider.genome_taxid(genome)
+            taxid = str(taxid) if taxid != 0 else "na"
+        metadata["tax_id"] = taxid
 
     @staticmethod
     def _update_assembly_accession(metadata, provider=None, genome=None):
         """check if assembly_accession is missing and try to update"""
-        if "assembly_accession" not in metadata:
-            accession = "na"
-            if genome:
-                accession = provider.assembly_accession(genome)
-            metadata["assembly_accession"] = accession
+        accession = "na"
+        if genome:
+            accession = provider.assembly_accession(genome)
+        metadata["assembly_accession"] = accession
 
     def _update_metadata(self, metadata):
         """check if there is missing info that can be updated"""
         print(f"Updating metadata in README.txt", file=sys.stderr)
-        self._update_provider(metadata)
+        if metadata.get("provider", "na") == "na":
+            self._update_provider(metadata)
 
         known_provider = metadata["provider"] in ["Ensembl", "UCSC", "NCBI"]
         name = safe(metadata.get("original name", ""))
@@ -174,8 +172,10 @@ class Genome(Fasta):
         else:
             p = genome = None
 
-        self._update_tax_id(metadata, p, genome)
-        self._update_assembly_accession(metadata, p, genome)
+        if "tax_id" not in metadata:
+            self._update_tax_id(metadata, p, genome)
+        if "assembly_accession" not in metadata:
+            self._update_assembly_accession(metadata, p, genome)
 
     def _read_metadata(self):
         """
