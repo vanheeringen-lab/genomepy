@@ -4,7 +4,9 @@ import pytest
 import re
 import shutil
 import subprocess as sp
+
 from platform import system
+from time import sleep
 
 from genomepy.plugin import init_plugins, activate, deactivate
 from genomepy.plugins.blacklist import BlacklistPlugin
@@ -27,6 +29,16 @@ def test_plugins():
         elif p == "star":
             assert genomepy.utils.cmd_ok(p.upper())
         activate(p)
+
+
+def dont_overwrite(p, genome, fname):
+    t0 = os.path.getmtime(fname)
+    # OSX rounds down getmtime to the second
+    if system() != "Linux":
+        sleep(1)
+    p.after_genome_download(genome, force=False)
+    t1 = os.path.getmtime(fname)
+    assert t0 == t1
 
 
 @pytest.fixture(scope="module", params=["unzipped", "bgzipped"])
@@ -55,18 +67,22 @@ def genome(request):
     return genomepy.Genome(name, genomes_dir=genomes_dir)
 
 
-def test_blacklist(genome):
+def test_blacklist(capsys, genome):
     """Create blacklist."""
-    # not affected by bgzipping,
-    # no need to check for both .fa and .fa.gz.
-    if genome.filename.endswith(".fa"):
-        pass
-
+    # download
     p = BlacklistPlugin()
-    p.after_genome_download(genome)
-
+    p.after_genome_download(genome, force=True)
     fname = re.sub(".fa(.gz)?$", ".blacklist.bed", genome.filename)
     assert os.path.exists(fname)
+
+    # don't overwrite
+    dont_overwrite(p, genome, fname)
+
+    # no blacklist found
+    genome.name = "ce01"
+    p.after_genome_download(genome, force=True)
+    captured = capsys.readouterr().err.strip()
+    assert captured.endswith(f"No blacklist found for {genome.name}")
 
 
 def test_bowtie2(genome, threads=2):
