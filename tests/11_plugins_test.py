@@ -55,18 +55,18 @@ def genome(request):
     return genomepy.Genome(name, genomes_dir=genomes_dir)
 
 
-def test_blacklist(genome):
+def test_blacklist(capsys, genome):
     """Create blacklist."""
-    # not affected by bgzipping,
-    # no need to check for both .fa and .fa.gz.
-    if genome.filename.endswith(".fa"):
-        pass
-
     p = BlacklistPlugin()
     p.after_genome_download(genome)
-
     fname = re.sub(".fa(.gz)?$", ".blacklist.bed", genome.filename)
     assert os.path.exists(fname)
+
+    # no blacklist found
+    genome.name = "ce01"
+    p.after_genome_download(genome, force=True)
+    captured = capsys.readouterr().err.strip()
+    assert captured.endswith(f"No blacklist found for {genome.name}")
 
 
 def test_bowtie2(genome, threads=2):
