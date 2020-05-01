@@ -3,6 +3,8 @@ import os
 import pytest
 import shutil
 
+from genomepy.provider import ProviderBase
+
 
 # to ignore file changes
 # git update-index --assume-unchanged tests/data/small_genome.fa.gz
@@ -16,6 +18,10 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
     # genome dir not found
     with pytest.raises(FileNotFoundError):
         genomepy.Genome("unknown", "unknown")
+
+    readme = "tests/data/README.txt"
+    if os.path.exists(readme):
+        os.unlink(readme)
 
     g = genomepy.Genome(genome)
     assert g.genomes_dir == genomepy.utils.get_genomes_dir(None, False)
@@ -90,29 +96,97 @@ def test_check_annotation_file(genome="tests/data/small_genome.fa.gz"):
     os.unlink(path)
 
 
-def test__read_metadata(genome="tests/data/small_genome.fa.gz"):
-    # create blank README.txt
+def test__update_provider(genome="tests/data/small_genome.fa.gz"):
     g = genomepy.Genome(genome)
+
+    # can't parse url
+    metadata = {}
+    g._update_provider(metadata)
+    assert metadata.get("provider") == "Unknown"
+
+    # can parse url
+    metadata = {
+        "genome url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/146/465/"
+        "GCF_000146465.1_ASM14646v1/GCF_000146465.1_ASM14646v1_genomic.fna.gz"
+    }
+    g._update_provider(metadata)
+    assert metadata.get("provider") == "NCBI"
+
+
+def test__update_tax_id(genome="tests/data/small_genome.fa.gz"):
+    g = genomepy.Genome(genome)
+
+    # genome not found
+    metadata = {}
+    g._update_tax_id(metadata)
+    assert metadata["tax_id"] == "na"
+
+    # genome found
+    metadata = {}
+    provider = ProviderBase.create("NCBI")
+    genome = provider.genomes.get("ASM14646v1")
+
+    g._update_tax_id(metadata, provider, genome)
+    assert metadata["tax_id"] == "58839"
+
+
+def test__update_assembly_accession(genome="tests/data/small_genome.fa.gz"):
+    g = genomepy.Genome(genome)
+
+    # genome not found
+    metadata = {}
+    g._update_assembly_accession(metadata)
+    assert metadata["assembly_accession"] == "na"
+
+    # genome found
+    metadata = {}
+    provider = ProviderBase.create("NCBI")
+    genome = provider.genomes.get("ASM14646v1")
+
+    g._update_assembly_accession(metadata, provider, genome)
+    assert metadata["assembly_accession"] == "GCA_000146465.1"
+
+
+def test__update_metadata(genome="tests/data/small_genome.fa.gz"):
+    g = genomepy.Genome(genome)
+
+    metadata = {"provider": "NCBI", "original name": "ASM14646v1"}
+    g._update_metadata(metadata)
+    assert metadata["tax_id"] == "58839"
+    assert metadata["assembly_accession"] == "GCA_000146465.1"
+
+
+def test__read_metadata(genome="tests/data/small_genome.fa.gz"):
+    g = genomepy.Genome(genome)
+
+    # no readme found
     readme = g.readme_file
     if os.path.exists(readme):
         os.unlink(readme)
-    metadata, lines = genomepy.utils.read_readme(readme)
+    metadata = g._read_metadata()
+    assert metadata["provider"] == "Unknown"
 
-    assert metadata["provider"] == "na"
-
-    # no changes to metadata
+    # no overwrites to metadata
     with open(readme, "w") as f:
-        f.writelines("provider: NCBI\n")
-        f.writelines("original name: ASM14646v1\n")
-        f.writelines("tax_id: 58839\n")
-        f.writelines("assembly_accession: GCA_000146465.1\n")
-    genomepy.Genome(genome)
+        f.writelines("provider: not_really_NCBI\n")
+        f.writelines("tax_id: not_really_58839\n")
+        f.writelines("assembly_accession: not_really_GCA_000146465.1\n")
+    metadata = g._read_metadata()
+    assert metadata["provider"] == "not_really_NCBI"
 
-    metadata, lines = genomepy.utils.read_readme(readme)
-    assert metadata["provider"] == "NCBI"
-    assert metadata["original name"] == "ASM14646v1"
-    assert metadata["tax_id"] == "58839"
-    assert metadata["assembly_accession"] == "GCA_000146465.1"
+    # updates to metadata dict and file
+    with open(readme, "w") as f:
+        f.writelines(
+            "genome url: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/"
+            "146/465/GCF_000146465.1_ASM14646v1/"
+            "GCF_000146465.1_ASM14646v1_genomic.fna.gz\n"
+        )
+        f.writelines("tax_id: not_really_58839\n")
+        f.writelines("assembly_accession: not_really_GCA_000146465.1\n")
+    metadata1 = g._read_metadata()
+    assert metadata1["provider"] == "NCBI"
+    metadata2, _ = genomepy.utils.read_readme(readme)
+    assert metadata2["provider"] == "NCBI"
     os.unlink(readme)
 
 

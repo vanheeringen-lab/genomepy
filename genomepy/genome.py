@@ -128,53 +128,69 @@ class Genome(Fasta):
         file = glob(pattern + ext + "*")
         return file[0] if file else None
 
+    @staticmethod
+    def _update_provider(metadata):
+        """check if provider is missing and try to update"""
+        if metadata.get("provider", "na") == "na":
+            metadata["provider"] = "Unknown"
+            url = metadata.get("genome url", "").lower()
+            for provider in ["Ensembl", "UCSC", "NCBI"]:
+                if provider.lower() in url:
+                    metadata["provider"] = provider
+                    break
+
+    @staticmethod
+    def _update_tax_id(metadata, provider=None, genome=None):
+        """check if tax_id is missing and try to update"""
+        if "tax_id" not in metadata:
+            taxid = "na"
+            if genome:
+                taxid = provider.genome_taxid(genome)
+                taxid = str(taxid) if taxid != 0 else "na"
+            metadata["tax_id"] = taxid
+
+    @staticmethod
+    def _update_assembly_accession(metadata, provider=None, genome=None):
+        """check if assembly_accession is missing and try to update"""
+        if "assembly_accession" not in metadata:
+            accession = "na"
+            if genome:
+                accession = provider.assembly_accession(genome)
+            metadata["assembly_accession"] = accession
+
+    def _update_metadata(self, metadata):
+        """check if there is missing info that can be updated"""
+        print(f"Updating metadata in README.txt", file=sys.stderr)
+        self._update_provider(metadata)
+
+        known_provider = metadata["provider"] in ["Ensembl", "UCSC", "NCBI"]
+        name = safe(metadata.get("original name", ""))
+        missing_info = any(
+            key not in metadata for key in ["tax_id", "assembly_accession"]
+        )
+        if known_provider and name and missing_info:
+            p = ProviderBase.create(metadata["provider"])
+            genome = p.genomes.get(name)
+        else:
+            p = genome = None
+
+        self._update_tax_id(metadata, p, genome)
+        self._update_assembly_accession(metadata, p, genome)
+
     def _read_metadata(self):
         """
         Read genome metadata from genome README.txt (if it exists).
         """
         metadata, lines = read_readme(self.readme_file)
 
-        update_metadata = False
-        if metadata["genome url"] != "na":
-            for key in ["provider", "tax_id", "assembly_accession"]:
-                if key not in metadata:
-                    update_metadata = True
-                    break
-        if not update_metadata:
-            return metadata
+        if (
+            metadata.get("provider", "na") == "na"
+            or "tax_id" not in metadata
+            or "assembly_accession" not in metadata
+        ):
+            self._update_metadata(metadata)
+            write_readme(self.readme_file, metadata, lines)
 
-        print(f"Updating metadata in README.txt", file=sys.stderr)
-
-        if "provider" not in metadata:
-            url = metadata.get("genome url", "").lower()
-            for provider in ["Ensembl", "UCSC", "NCBI"]:
-                if provider.lower() in url:
-                    metadata["provider"] = provider
-            else:
-                metadata["provider"] = "Unknown"
-
-        if "tax_id" not in metadata or "assembly_accession" not in metadata:
-            name = safe(metadata.get("original name", ""))
-            p = None
-            genome = None
-            if metadata["provider"] != "Unknown" and name:
-                p = ProviderBase.create(metadata["provider"])
-                genome = p.genomes.get(name)
-
-            if "tax_id" not in metadata:
-                metadata["tax_id"] = "na"
-                if genome:
-                    taxid = p.genome_taxid(genome)
-                    taxid = str(taxid) if taxid != 0 else "na"
-                    metadata["tax_id"] = taxid
-
-            if "assembly_accession" not in metadata:
-                metadata["assembly_accession"] = "na"
-                if genome:
-                    accession = p.assembly_accession(genome)
-                    metadata["assembly_accession"] = accession
-
-        write_readme(self.readme_file, metadata, lines)
         return metadata
 
     def _bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
