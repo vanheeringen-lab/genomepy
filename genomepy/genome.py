@@ -166,11 +166,10 @@ class Genome(Fasta):
         missing_info = any(
             key not in metadata for key in ["tax_id", "assembly_accession"]
         )
+        p = genome = None
         if known_provider and name and missing_info:
             p = ProviderBase.create(metadata["provider"])
             genome = p.genomes.get(name)
-        else:
-            p = genome = None
 
         if "tax_id" not in metadata:
             self._update_tax_id(metadata, p, genome)
