@@ -60,8 +60,8 @@ def genome(request):
         sp.check_call(["gunzip", fname])
 
         # add annotation (for STAR and hisat2), but only once
-        gtf_file = "tests/data/ce10.annotation.gtf"
-        aname = os.path.join(genome_dir, f"{name}.annotation.gtf")
+        gtf_file = "tests/data/ce10.annotation.gtf.gz"
+        aname = os.path.join(genome_dir, f"{name}.annotation.gtf.gz")
         shutil.copyfile(gtf_file, aname)
 
     return genomepy.Genome(name, genomes_dir=genomes_dir)
