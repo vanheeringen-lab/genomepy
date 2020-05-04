@@ -86,6 +86,22 @@ def test_blacklist(capsys, genome):
     # don't overwrite
     dont_overwrite(p, genome, fname)
 
+    # error downloading blacklist
+    genome.name = "this was a triumph"
+    p.after_genome_download(genome, force=True)
+    captured = capsys.readouterr().err.strip()
+    link = "I'm making a note here: 'Huge success'"
+    assert captured.endswith(f"Could not download blacklist file from {link}")
+
+    # download
+    genome.name = "ce10"
+    p.after_genome_download(genome, force=True)
+    fname = re.sub(".fa(.gz)?$", ".blacklist.bed", genome.filename)
+    assert os.path.exists(fname)
+
+    # don't overwrite
+    dont_overwrite(p, genome, fname)
+
 
 def test_bowtie2(genome, threads=2):
     """Create bowtie2 index."""
