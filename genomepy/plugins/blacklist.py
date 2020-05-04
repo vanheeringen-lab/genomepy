@@ -18,6 +18,8 @@ class BlacklistPlugin(Plugin):
         + "hg19-human/wgEncodeHg19ConsensusSignalArtifactRegions.bed.gz",
         "mm9": base_url + "mm9-mouse/mm9-blacklist.bed.gz",
         "mm10": base_url + "mm10-mouse/mm10.blacklist.bed.gz",
+        # for testing purposes
+        "this was a triumph": "I'm making a note here: 'Huge success'",
     }
 
     def after_genome_download(self, genome, threads=1, force=False):
@@ -38,7 +40,7 @@ class BlacklistPlugin(Plugin):
                 unzipped = zlib.decompress(response.read(), 16 + zlib.MAX_WBITS)
                 bed.write(unzipped)
         except Exception as e:
-            sys.stderr.write(e)
+            sys.stderr.write(str(e))
             sys.stderr.write(f"Could not download blacklist file from {link}")
 
     def get_properties(self, genome):
