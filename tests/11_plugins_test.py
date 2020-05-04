@@ -69,20 +69,22 @@ def genome(request):
 
 def test_blacklist(capsys, genome):
     """Create blacklist."""
-    # download
     p = BlacklistPlugin()
-    p.after_genome_download(genome, force=True)
-    fname = re.sub(".fa(.gz)?$", ".blacklist.bed", genome.filename)
-    assert os.path.exists(fname)
-
-    # don't overwrite
-    dont_overwrite(p, genome, fname)
 
     # no blacklist found
     genome.name = "ce01"
     p.after_genome_download(genome, force=True)
     captured = capsys.readouterr().err.strip()
     assert captured.endswith(f"No blacklist found for {genome.name}")
+    genome.name = "ce10"
+
+    # download
+    p.after_genome_download(genome, force=True)
+    fname = re.sub(".fa(.gz)?$", ".blacklist.bed", genome.filename)
+    assert os.path.exists(fname)
+
+    # don't overwrite
+    dont_overwrite(p, genome, fname)
 
 
 def test_bowtie2(genome, threads=2):
