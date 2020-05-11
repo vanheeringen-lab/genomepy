@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.8.0] - 2020-05-11
+
 ### Added
 - Now using the UCSC rest API
 - `genomepy search` now accepts taxonomy IDs
