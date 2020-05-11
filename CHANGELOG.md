@@ -9,20 +9,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [0.8.1] - 2020-05-11
 
 ### Added
-- Now using the UCSC rest API
+- Now using the UCSC REST API
 - `genomepy search` now accepts taxonomy IDs
 - `genomepy search` will now return taxonomy IDs and Accession numbers
 - The README.txt will now store taxonomy IDs and Accession numbers
 - Gene annotations:
     - Downloading of annotation file (BED/GTF/GFF3) from URL
     - Automatic search for annotation file (GTF/GFF3) in genome directory when downloading from URL
-    - Option for URL provider to link to annotation file (to process is similarly to other providers)
+    - Option for URL provider to link to annotation file (to process it similarly to other providers)
     - Automatic annotation sanitizing (and skip sanitizing flag `-s` for `genomepy install`)
     - Option to only download annotation with `genomepy install -o`
 - Plugins:
     - Blacklists are automatically unzipped.
-    - Multithreading support for plugins, thanks to alienzj!
-    - STAR now uses the annotation file for a (one-pass) splice-aware index
+    - Multithreading support for plugins, thanks to @alienzj!
+    - STAR and HISAT2 will now generate splice-aware indexes if annotation files are available.
 
 ### Changed
 - sizes no longer a plugin, but always gets executed

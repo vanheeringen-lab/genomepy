@@ -223,7 +223,7 @@ UCB_Xtro_10.0              NCBI        GCA_000004195.4    Xenopus tropicalis    
  Use name for genomepy install
 ```
 
-Lets say we want to download the *Xenopus tropicalis* genome from UCSC. 
+Lets say we want to download the *Xenopus tropicalis* genome from UCSC.
 Copy the name returned by the search function and it with the provider name to install:
 
 ```
