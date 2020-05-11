@@ -186,20 +186,44 @@ Find the name of your desired genome:
 
 ```
 $ genomepy search xenopus_tropicalis
-name                       provider    accession          species               tax_id    other_info                                     
-Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3    Xenopus tropicalis    8364      2019-04-Ensembl/2019-06                                            
-xenTro9                    UCSC        GCA_000004195.3    Xenopus tropicalis    8364      Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)    
+name                       provider    accession          species               tax_id    other_info
+Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3    Xenopus tropicalis    8364      2019-04-Ensembl/2019-12
+xenTro1                    UCSC        na                 Xenopus tropicalis    8364      Oct. 2004 (JGI 3.0/xenTro1)
+xenTro2                    UCSC        na                 Xenopus tropicalis    8364      Aug. 2005 (JGI 4.1/xenTro2)
+xenTro3                    UCSC        GCA_000004195.1    Xenopus tropicalis    8364      Nov. 2009 (JGI 4.2/xenTro3)
+xenTro7                    UCSC        GCA_000004195.2    Xenopus tropicalis    8364      Sep. 2012 (JGI 7.0/xenTro7)
+xenTro9                    UCSC        GCA_000004195.3    Xenopus tropicalis    8364      Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
+v4.2                       NCBI        GCA_000004195.1    Xenopus tropicalis    8364      DOE Joint Genome Institute
+Xtropicalis_v7             NCBI        GCA_000004195.2    Xenopus tropicalis    8364      DOE Joint Genome Institute
 Xenopus_tropicalis_v9.1    NCBI        GCA_000004195.3    Xenopus tropicalis    8364      DOE Joint Genome Institute
+UCB_Xtro_10.0              NCBI        GCA_000004195.4    Xenopus tropicalis    8364      University of California, Berkeley
  ^
  Use name for genomepy install
 ```
 
 Note that genomes with a space can be searched for either by using `"quotation marks"`, 
 or by replacing the space(s) with and underscore `_`. 
-For example, we can search for Xenopus Tropicalis as `"Xenopus Tropicalis"`, 
-`xenopus_tropicalis` or `xenopus`. The search function is case-insensitive.
+For example, we can search for *Xenopus tropicalis* as `"Xenopus Tropicalis"`, 
+`xenopus_tropicalis` or `xenopus`. The search function is case-insensitive. You can also search by taxonomy ID. For instance, to search for [*Xenopus tropicalis*](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=8364):
 
-Lets say we want to download the Xenopus Tropicalis genome from UCSC. 
+```
+$ genomepy search 8364
+name                       provider    accession          species               tax_id    other_info
+Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3    Xenopus tropicalis    8364      2019-04-Ensembl/2019-12
+xenTro1                    UCSC        na                 Xenopus tropicalis    8364      Oct. 2004 (JGI 3.0/xenTro1)
+xenTro2                    UCSC        na                 Xenopus tropicalis    8364      Aug. 2005 (JGI 4.1/xenTro2)
+xenTro3                    UCSC        GCA_000004195.1    Xenopus tropicalis    8364      Nov. 2009 (JGI 4.2/xenTro3)
+xenTro7                    UCSC        GCA_000004195.2    Xenopus tropicalis    8364      Sep. 2012 (JGI 7.0/xenTro7)
+xenTro9                    UCSC        GCA_000004195.3    Xenopus tropicalis    8364      Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
+v4.2                       NCBI        GCA_000004195.1    Xenopus tropicalis    8364      DOE Joint Genome Institute
+Xtropicalis_v7             NCBI        GCA_000004195.2    Xenopus tropicalis    8364      DOE Joint Genome Institute
+Xenopus_tropicalis_v9.1    NCBI        GCA_000004195.3    Xenopus tropicalis    8364      DOE Joint Genome Institute
+UCB_Xtro_10.0              NCBI        GCA_000004195.4    Xenopus tropicalis    8364      University of California, Berkeley
+ ^
+ Use name for genomepy install
+```
+
+Lets say we want to download the *Xenopus tropicalis* genome from UCSC.
 Copy the name returned by the search function and it with the provider name to install:
 
 ```
@@ -467,10 +491,11 @@ flake8 setup.py genomepy/ tests/
 
 ## Contributors
 
-- Simon van Heeringen - @simonvh
-- Siebren Frölich - @siebrenf
-- Maarten van der Sande - @Maarten-vd-Sande
-- Dohoon Lee - @dohlee
+- Siebren Frölich - [@siebrenf](https://github.com/siebrenf)
+- Simon van Heeringen - [@simonvh](https://github.com/simonvh)
+- Maarten van der Sande - [@Maarten-vd-Sande](https://github.com/Maarten-vd-Sande)
+- Dohoon Lee - [@dohlee](https://github.com/dohlee)
+- Jie Zhu - [@alienzj](https://github.com/alienzj)
 
 ## License
 
