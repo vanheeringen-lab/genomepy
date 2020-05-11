@@ -21,7 +21,7 @@ class Plugin(object):
     def deactivate(self):
         self.active = False
 
-    def after_genome_download(self, genome, force):
+    def after_genome_download(self, genome, threads, force):
         raise NotImplementedError("plugin should implement this method")
 
     def get_properties(self, genome):
@@ -35,7 +35,7 @@ def find_plugins():
     plugin_dir = os.path.join(plugin_dir, "plugins")
     plugin_files = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
     for plugin in plugin_files:
-        __import__("genomepy.plugins.{}".format(plugin))
+        __import__(f"genomepy.plugins.{plugin}")
 
 
 def convert(name):
@@ -87,7 +87,7 @@ def activate(name):
     if name in plugins:
         plugins[name].activate()
     else:
-        raise Exception("plugin {} not found".format(name))
+        raise ValueError(f"plugin {name} not found")
 
 
 def deactivate(name):
@@ -101,7 +101,7 @@ def deactivate(name):
     if name in plugins:
         plugins[name].deactivate()
     else:
-        raise Exception("plugin {} not found".format(name))
+        raise ValueError(f"plugin {name} not found")
 
 
 def get_active_plugins():

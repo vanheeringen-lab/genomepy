@@ -1,0 +1,8 @@
+# this file directs pytest-cov to exclude files from the coverage test.
+# the files listed here makes the output consistent with the maintainability
+# tests as defined in .codeclimate.yml
+
+[run]
+omit =
+    **/__*
+    genomepy/cli.py

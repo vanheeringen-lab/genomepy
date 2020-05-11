@@ -12,23 +12,23 @@ if sys.argv[-1] == "publish":
 with open("README.md") as f:
     long_description = f.read()
 
+# List of files and directories to include when packaging for release
 packages = ["genomepy", "genomepy/plugins"]
-
-# this replaces the PyPa MANIFEST.in
-package_data = {"genomepy": ["cfg/*.yaml"], "": ["LICENSE", "README.md"]}
+package_data = {"genomepy": ["cfg/*.yaml"]}
+data_files = [("", ["LICENSE", "README.md", "CHANGELOG.md"])]
 
 entry_points = {"console_scripts": ["genomepy=genomepy.cli:cli"]}
 
 requires = [
-    "click",
-    "pyfaidx>=0.5.1",
-    "norns>=0.1.5",
-    "xmltodict",
-    "bucketcache",
-    "requests",
-    "biopython>=1.73",
     "appdirs",
+    "biopython>=1.73",
+    "bucketcache",
+    "click",
+    "colorama",
+    "norns>=0.1.5",
     "psutil",
+    "pyfaidx>=0.5.7",
+    "requests",
 ]
 
 classifiers = [
@@ -51,11 +51,12 @@ setup(
     long_description_content_type="text/markdown",
     packages=packages,
     package_data=package_data,
+    data_files=data_files,
     entry_points=entry_points,
     install_requires=requires,
     author=__author__,  # noqa: F821
     author_email="simon.vanheeringen@gmail.com",
-    url="https://github.com/simonvh/genomepy",
+    url="https://github.com/vanheeringen-lab/genomepy",
     license="MIT",
     classifiers=classifiers,
 )
