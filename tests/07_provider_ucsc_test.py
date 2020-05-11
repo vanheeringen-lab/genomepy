@@ -58,7 +58,7 @@ def test_assembly_accession(p):
     genome = p.genomes["sacCer3"]
     accession = p.assembly_accession(genome)
 
-    assert accession.startswith("GCA_000146055")
+    assert accession.startswith("GCA_000146045")
 
 
 def test_genome_info_tuple(p):
