@@ -157,7 +157,7 @@ class Genome(Fasta):
 
     def _update_metadata(self, metadata):
         """check if there is missing info that can be updated"""
-        print(f"Updating metadata in README.txt", file=sys.stderr)
+        print("Updating metadata in README.txt", file=sys.stderr)
         if metadata.get("provider", "na") == "na":
             self._update_provider(metadata)
 
@@ -354,7 +354,7 @@ class Genome(Fasta):
         return self.gaps
 
     @staticmethod
-    def _weighted_selection(l, n):
+    def _weighted_selection(list_of_tuples, n):
         """
         Selects n random elements from a list of (weight, item) tuples.
         Based on code snippet by Nick Johnson
@@ -362,7 +362,7 @@ class Genome(Fasta):
         cuml = []
         items = []
         total_weight = 0.0
-        for weight, item in l:
+        for weight, item in list_of_tuples:
             total_weight += weight
             cuml.append(total_weight)
             items.append(item)
