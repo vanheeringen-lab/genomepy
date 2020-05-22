@@ -139,7 +139,11 @@ def get_install_options():
     if "-h" in click.get_os_args() or "--help" in click.get_os_args():
         for name in genomepy.ProviderBase.list_providers():
             # directly access the provider's arguments, skips __init__
-            p_dict = eval("genomepy.provider." + name.capitalize() + "Provider.list_install_options(None)")
+            p_dict = eval(
+                "genomepy.provider."
+                + name.capitalize()
+                + "Provider.list_install_options(None)"
+            )
             for option in p_dict.keys():
                 p_dict[option]["long"] = name + "-" + p_dict[option]["long"]
             install_options.update(p_dict)
