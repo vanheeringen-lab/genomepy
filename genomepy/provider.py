@@ -408,7 +408,7 @@ class ProviderBase(object):
             )
 
         # TODO sanity check for genes
-        sys.stderr.write(f"Annotation download successful\n")
+        sys.stderr.write("Annotation download successful\n")
 
         # Update readme annotation URL, or make a new
         readme = os.path.join(genomes_dir, localname, "README.txt")
@@ -705,7 +705,7 @@ class EnsemblProvider(ProviderBase):
         genome = self.genomes[safe(name)]
         division = genome["division"].lower().replace("ensembl", "")
 
-        ftp_site = f"ftp://ftp.ensemblgenomes.org/pub"
+        ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
         if division == "vertebrates":
             ftp_site = "http://ftp.ensembl.org/pub"
 
