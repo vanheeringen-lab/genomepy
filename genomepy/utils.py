@@ -311,6 +311,7 @@ def gzip_and_name(fname, gzip_file=True):
         with open(fname, "rb") as f_in:
             with gzip.open(fname + ".gz", "wb") as f_out:
                 shutil.copyfileobj(f_in, f_out)
+        os.unlink(fname)
         fname += ".gz"
     return fname
 

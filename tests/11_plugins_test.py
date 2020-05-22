@@ -168,7 +168,7 @@ def test_hisat2(capsys, genome, threads=2):
         assert os.path.exists(os.path.join(genome.genome_dir, "exon_sites.txt"))
         # check if annotation file is still the same
         assert os.path.exists(genome.annotation_gtf_file)
-        assert genome.annotation_gtf_file.endswith(".gtf")
+        assert genome.annotation_gtf_file.endswith(".gtf.gz")
     else:
         assert captured == "Creating Hisat2 index without annotation file."
 
@@ -208,7 +208,7 @@ def test_star(capsys, genome, threads=2):
         assert captured == ""
         # check if annotation file is still the same
         assert os.path.exists(genome.annotation_gtf_file)
-        assert genome.annotation_gtf_file.endswith(".gtf")
+        assert genome.annotation_gtf_file.endswith(".gtf.gz")
     else:
         assert captured == "Creating STAR index without annotation file."
 
