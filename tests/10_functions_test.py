@@ -216,9 +216,9 @@ def test_search():
     search = genomepy.functions.search("xenopus tropicalis", "ensembl")
     metadata = next(search)
     assert isinstance(metadata, list)
-    assert "xenopus_tropicalis_v9.1" in str(metadata[0])
-    assert "ensembl" in str(metadata[1])
-    assert "gca_000004195" in str(metadata[2])
+    assert "Xenopus_tropicalis_v9.1" in str(metadata[0])
+    assert "Ensembl" in str(metadata[1])
+    assert "GCA_000004195" in str(metadata[2])
     assert "8364" in str(metadata[4])
 
 

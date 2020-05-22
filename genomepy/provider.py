@@ -500,7 +500,7 @@ class ProviderBase(object):
             for name in genomes:
                 if self._search_taxids(genome=genomes[name], term=term):
                     yield self._genome_info_tuple(name)
-        
+
         else:
             term = safe(term).lower()
             for name in genomes:
