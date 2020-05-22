@@ -3,6 +3,7 @@ import os
 import pytest
 import shutil
 
+from stat import S_IREAD, S_IRGRP, S_IROTH
 from genomepy.provider import ProviderBase
 
 
@@ -164,7 +165,7 @@ def test__read_metadata(genome="tests/data/small_genome.fa.gz"):
     if os.path.exists(readme):
         os.unlink(readme)
     metadata = g._read_metadata()
-    assert metadata["provider"] == "Unknown"
+    assert metadata["provider"] == "na"
 
     # no overwrites to metadata
     with open(readme, "w") as f:
@@ -187,6 +188,17 @@ def test__read_metadata(genome="tests/data/small_genome.fa.gz"):
     assert metadata1["provider"] == "NCBI"
     metadata2, _ = genomepy.utils.read_readme(readme)
     assert metadata2["provider"] == "NCBI"
+
+    # no writing permission to file
+    with open(readme, "w") as f:
+        f.writelines(
+            "genome url: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/"
+            "146/465/GCF_000146465.1_ASM14646v1/"
+            "GCF_000146465.1_ASM14646v1_genomic.fna.gz\n"
+        )
+    os.chmod(readme, S_IREAD | S_IRGRP | S_IROTH)
+    metadata1 = g._read_metadata()
+    assert metadata1["provider"] == "na"
     os.unlink(readme)
 
 

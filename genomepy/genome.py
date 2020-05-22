@@ -186,7 +186,7 @@ class Genome(Fasta):
             metadata.get("provider", "na") == "na"
             or "tax_id" not in metadata
             or "assembly_accession" not in metadata
-        ):
+        ) and os.access(self.readme_file, os.W_OK):
             self._update_metadata(metadata)
             write_readme(self.readme_file, metadata, lines)
 
