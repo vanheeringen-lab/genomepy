@@ -354,7 +354,7 @@ class Genome(Fasta):
         return self.gaps
 
     @staticmethod
-    def _weighted_selection(weighted_list, number):
+    def _weighted_selection(list_of_tuples, n):
         """
         Selects number random elements from a list of (weight, item) tuples.
         Based on code snippet by Nick Johnson
@@ -362,7 +362,7 @@ class Genome(Fasta):
         cuml = []
         items = []
         total_weight = 0.0
-        for weight, item in weighted_list:
+        for weight, item in list_of_tuples:
             total_weight += weight
             cuml.append(total_weight)
             items.append(item)
