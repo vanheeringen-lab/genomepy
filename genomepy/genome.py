@@ -367,7 +367,7 @@ class Genome(Fasta):
             cuml.append(total_weight)
             items.append(item)
 
-        return [items[bisect(cuml, random() * total_weight)] for _ in range(number)]
+        return [items[bisect(cuml, random() * total_weight)] for _ in range(n)]
 
     def get_random_sequences(
         self, n=10, length=200, chroms=None, max_n=0.1, outtype="list"
