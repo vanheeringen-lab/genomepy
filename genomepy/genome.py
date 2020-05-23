@@ -356,7 +356,7 @@ class Genome(Fasta):
     @staticmethod
     def _weighted_selection(list_of_tuples, n):
         """
-        Selects number random elements from a list of (weight, item) tuples.
+        Selects n random elements from a list of (weight, item) tuples.
         Based on code snippet by Nick Johnson
         """
         cuml = []
