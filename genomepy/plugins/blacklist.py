@@ -9,15 +9,17 @@ from genomepy.plugin import Plugin
 
 
 class BlacklistPlugin(Plugin):
-    base_url = "http://mitra.stanford.edu/kundaje/akundaje/release/blacklists/"
+    stanford_url = "http://mitra.stanford.edu/kundaje/akundaje/release/blacklists/"
+    encode_url = "https://www.encodeproject.org/files/"
     http_dict = {
-        "ce10": base_url + "ce10-C.elegans/ce10-blacklist.bed.gz",
-        "dm3": base_url + "dm3-D.melanogaster/dm3-blacklist.bed.gz",
-        "hg38": base_url + "hg38-human/hg38.blacklist.bed.gz",
-        "hg19": base_url
+        "ce10": stanford_url + "ce10-C.elegans/ce10-blacklist.bed.gz",
+        "dm3": stanford_url + "dm3-D.melanogaster/dm3-blacklist.bed.gz",
+        "hg38": stanford_url + "hg38-human/hg38.blacklist.bed.gz",
+        "hg19": stanford_url
         + "hg19-human/wgEncodeHg19ConsensusSignalArtifactRegions.bed.gz",
-        "mm9": base_url + "mm9-mouse/mm9-blacklist.bed.gz",
-        "mm10": base_url + "mm10-mouse/mm10.blacklist.bed.gz",
+        "mm9": stanford_url + "mm9-mouse/mm9-blacklist.bed.gz",
+        "mm10": stanford_url + "mm10-mouse/mm10.blacklist.bed.gz",
+        "GRCh38": encode_url + "ENCFF356LFX/@@download/ENCFF356LFX.bed.gz",
         # for testing purposes
         "this was a triumph": "I'm making a note here: 'Huge success'",
     }

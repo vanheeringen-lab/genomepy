@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- backwards compatibility with old configuration files (with `genome_dir` instead of `genomes_dir`)
+- updating the README.txt will only happen if you have write permission
+- after gzipping files the original unzipped file is now properly removed
+- providers will only download genome summaries when specifically queried
+- updated available blacklists (added GRCh38)
+
 ## [0.8.1] - 2020-05-11
 
 ### Added
@@ -25,6 +32,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
     - STAR and HISAT2 will now generate splice-aware indexes if annotation files are available.
 
 ### Changed
+- `Genome.props` has been renamed to `Genome.plugin`
 - sizes no longer a plugin, but always gets executed
 - `genomepy FUNCTION --help` texts expanded
 - all genomepy classes exported when imported into Python
