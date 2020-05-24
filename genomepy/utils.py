@@ -226,7 +226,8 @@ def glob_ext_files(dirname, ext="fa"):
 def get_genomes_dir(genomes_dir=None, check_exist=True):
     """import genomes_dir if none is given, and check validity"""
     if not genomes_dir:
-        genomes_dir = config.get("genomes_dir", None)
+        # backwards compatibility for "genome_dir" (this fixes issue #87)
+        genomes_dir = config.get("genomes_dir", config.get("genome_dir", None))
     if not genomes_dir:
         raise exceptions.ConfigError("Please provide or configure a genomes_dir")
 
@@ -310,6 +311,7 @@ def gzip_and_name(fname, gzip_file=True):
         with open(fname, "rb") as f_in:
             with gzip.open(fname + ".gz", "wb") as f_out:
                 shutil.copyfileobj(f_in, f_out)
+        os.unlink(fname)
         fname += ".gz"
     return fname
 

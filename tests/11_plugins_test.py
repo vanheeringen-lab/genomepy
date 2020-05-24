@@ -69,22 +69,19 @@ def genome(request):
 
 def test_blacklist(capsys, genome):
     """Create blacklist."""
+    # independent of bgzipping
+    # no need to check for both .fa and .fa.gz.
+    if genome.filename.endswith(".fa.gz"):
+        pass
+
     p = BlacklistPlugin()
+    fname = re.sub(".fa(.gz)?$", ".blacklist.bed", genome.filename)
 
     # no blacklist found
     genome.name = "ce01"
     p.after_genome_download(genome, force=True)
     captured = capsys.readouterr().err.strip()
     assert captured.endswith(f"No blacklist found for {genome.name}")
-    genome.name = "ce10"
-
-    # download
-    p.after_genome_download(genome, force=True)
-    fname = re.sub(".fa(.gz)?$", ".blacklist.bed", genome.filename)
-    assert os.path.exists(fname)
-
-    # don't overwrite
-    dont_overwrite(p, genome, fname)
 
     # error downloading blacklist
     genome.name = "this was a triumph"
@@ -93,14 +90,33 @@ def test_blacklist(capsys, genome):
     link = "I'm making a note here: 'Huge success'"
     assert captured.endswith(f"Could not download blacklist file from {link}")
 
-    # download
+    # download UCSC blacklist
     genome.name = "ce10"
     p.after_genome_download(genome, force=True)
-    fname = re.sub(".fa(.gz)?$", ".blacklist.bed", genome.filename)
+    captured = capsys.readouterr().err.strip()
+    assert captured.endswith("ce10-C.elegans/ce10-blacklist.bed.gz")
     assert os.path.exists(fname)
+    with open(fname) as blacklist:
+        for line in blacklist:
+            assert line.startswith("chr")
+            break
+    os.unlink(fname)
+
+    # download Ensembl/NCBI blacklist
+    genome.name = "GRCh38"
+    p.after_genome_download(genome, force=True)
+    captured = capsys.readouterr().err.strip()
+    assert captured.endswith("ENCFF356LFX/@@download/ENCFF356LFX.bed.gz")
+    with open(fname) as blacklist:
+        for line in blacklist:
+            assert not line.startswith("chr")
+            break
 
     # don't overwrite
     dont_overwrite(p, genome, fname)
+    os.unlink(fname)
+
+    genome.name = "ce10"
 
 
 def test_bowtie2(genome, threads=2):
@@ -168,7 +184,7 @@ def test_hisat2(capsys, genome, threads=2):
         assert os.path.exists(os.path.join(genome.genome_dir, "exon_sites.txt"))
         # check if annotation file is still the same
         assert os.path.exists(genome.annotation_gtf_file)
-        assert genome.annotation_gtf_file.endswith(".gtf")
+        assert genome.annotation_gtf_file.endswith(".gtf.gz")
     else:
         assert captured == "Creating Hisat2 index without annotation file."
 
@@ -208,7 +224,7 @@ def test_star(capsys, genome, threads=2):
         assert captured == ""
         # check if annotation file is still the same
         assert os.path.exists(genome.annotation_gtf_file)
-        assert genome.annotation_gtf_file.endswith(".gtf")
+        assert genome.annotation_gtf_file.endswith(".gtf.gz")
     else:
         assert captured == "Creating STAR index without annotation file."
 

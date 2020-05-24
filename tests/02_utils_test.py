@@ -185,6 +185,7 @@ def test_gunzip_and_name(fname="tests/data/small_genome.fa.gz"):
     fname, gzip_file = genomepy.utils.gunzip_and_name(fname)
     assert gzip_file and fname.endswith(".fa")
     assert os.path.exists(fname)
+    assert not os.path.exists(fname + ".gz")
 
 
 def test_gzip_and_name(fname="tests/data/small_genome.fa"):
@@ -192,10 +193,12 @@ def test_gzip_and_name(fname="tests/data/small_genome.fa"):
     fname = genomepy.utils.gzip_and_name(fname)
     assert fname.endswith(".gz")
     assert os.path.exists(fname)
+    assert not os.path.exists(fname[:-3])
 
     fname, _ = genomepy.utils.gunzip_and_name(fname)
     assert fname.endswith(".fa")
     assert os.path.exists(fname)
+    assert not os.path.exists(fname + ".gz")
 
 
 def test_bgzip_and_name(fname="tests/data/small_genome.fa"):
@@ -203,6 +206,7 @@ def test_bgzip_and_name(fname="tests/data/small_genome.fa"):
     fname = genomepy.utils.bgzip_and_name(fname)
     assert fname.endswith(".gz")
     assert os.path.exists(fname)
+    assert not os.path.exists(fname[:-3])
 
     with pytest.raises(sp.CalledProcessError):
         genomepy.utils.bgzip_and_name("tests/data/nofile.fa")
