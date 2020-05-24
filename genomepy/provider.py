@@ -449,6 +449,29 @@ class ProviderBase(object):
             if term in safe(genome[field].lower()):
                 return True
 
+    def _search_accessions(self, term):
+        """
+        Search for specific assembly accession.
+
+        Parameters
+        ----------
+        term : str
+            Assembly accession, GCA_....
+        Yields
+        ------
+        tuples with name and metadata
+        """
+        # NCBI provides a consistent assembly accession. This can be used to
+        # retrieve the species, and then search for that.
+        p = ProviderBase.create("NCBI")
+        species = [row[2] for row in p.search(term)]
+        if len(species) == 0:
+            raise ValueError(f"No genome found with accession {term}")
+        species = species[0]
+        for row in self.search(species):
+            if row[1] == term:
+                yield row
+
     def search(self, term):
         """
         Search for term in genome names, descriptions and taxonomy ID.
@@ -465,9 +488,12 @@ class ProviderBase(object):
         ------
         tuples with name and metadata
         """
-        term = str(term)
         genomes = self.genomes
-        if safe(term) in genomes:
+        term = str(term)
+        if term.startswith("GCA_") and self.name != "NCBI":
+            for row in self._search_accessions(term):
+                yield (row)
+        elif safe(term) in genomes:
             yield self._genome_info_tuple(term)
 
         elif is_number(term):
@@ -918,7 +944,13 @@ class NcbiProvider(ProviderBase):
         self.genomes = self._get_genomes()
         self.accession_fields = ["assembly_accession", "gbrs_paired_asm"]
         self.taxid_fields = ["species_taxid", "taxid"]
-        self.description_fields = ["submitter", "organism_name"]
+        self.description_fields = [
+            "submitter",
+            "organism_name",
+            "assembly_accession",
+            "gbrs_paired_asm",
+            "paired_asm_comp",
+        ]
 
     @cached(method=True)
     def _get_genomes(self):

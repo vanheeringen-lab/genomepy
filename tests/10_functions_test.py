@@ -212,11 +212,20 @@ def test_list_available_providers():
 
 
 def test_search():
-    # unrecognized provider/genome will cause an Exception or StopIteration respectively
-    search = genomepy.functions.search("Xenopus Tropicalis", "Ensembl")
+    # unrecognized provider/genome will cause an exception or stopiteration respectively
+    search = genomepy.functions.search("xenopus tropicalis", "ensembl")
     metadata = next(search)
     assert isinstance(metadata, list)
     assert "Xenopus_tropicalis_v9.1" in str(metadata[0])
     assert "Ensembl" in str(metadata[1])
     assert "GCA_000004195" in str(metadata[2])
     assert "8364" in str(metadata[4])
+
+
+def test_accession_search():
+    search = [row for row in genomepy.functions.search("GCA_000004195.3")]
+    assert 3 == len(search)
+    providers = [row[1] for row in search]
+    assert b"Ensembl" in providers
+    assert b"NCBI" in providers
+    assert b"UCSC" in providers
