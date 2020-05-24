@@ -9,6 +9,14 @@ import subprocess as sp
 from pyfaidx import Fasta
 from tempfile import TemporaryDirectory
 
+import base64
+import hashlib
+import binascii
+
+def trunc512_digest(seq, offset=24):
+    digest = hashlib.sha512(seq).digest()
+    hex_digest = binascii.hexlify(digest[:offset])
+    return hex_digest
 
 def generate_gap_bed(fname, outname):
     """ Generate a BED file with gap locations.
