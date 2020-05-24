@@ -10,8 +10,8 @@ class Bowtie2Plugin(Plugin):
             return
 
         # Create index dir
-        index_dir = genome.props["bowtie2"]["index_dir"]
-        index_name = genome.props["bowtie2"]["index_name"]
+        index_dir = genome.plugin["bowtie2"]["index_dir"]
+        index_name = genome.plugin["bowtie2"]["index_name"]
         if force:
             # Start from scratch
             rmtree(index_dir, ignore_errors=True)
@@ -19,9 +19,7 @@ class Bowtie2Plugin(Plugin):
 
         if not any(fname.endswith(".bt2") for fname in os.listdir(index_dir)):
             # Create index
-            cmd = "bowtie2-build --threads {} {} {}".format(
-                threads, genome.filename, index_name
-            )
+            cmd = f"bowtie2-build --threads {threads} {genome.filename} {index_name}"
             run_index_cmd("bowtie2", cmd)
 
     def get_properties(self, genome):

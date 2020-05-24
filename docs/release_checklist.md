@@ -57,15 +57,7 @@ twine upload dist/genomepy-${version}*
 
 * fork bioconda/bioconda-recipes
 * follow the steps in the [docs](https://bioconda.github.io/contributor/workflow.html)
-<<<<<<< HEAD
 * get the hash from the downloaded tarbal using `sha256sum *genomepy-${version}.tar.gz`
 * update the [yaml file](https://github.com/bioconda/bioconda-recipes/blob/master/recipes/genomepy/meta.yaml) locally. 
 * push to a new branch on the fork
 * start a PR
-=======
-* update the [yaml file](https://github.com/bioconda/bioconda-recipes/blob/master/recipes/genomepy/meta.yaml) locally. 
-* get the hash from the tarbal using `sha256sum *genomepy-${version}.tar.gz`
-* push to a new branch on the fork
-* start a PR
-
->>>>>>> 0.7.2

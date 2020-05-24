@@ -1,9 +1,9 @@
 # genomepy
 
 [![bioconda-badge](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io)
-[![PyPI version](https://badge.fury.io/py/genomepy.svg)](https://badge.fury.io/py/genomepy)
-[![star this repo](http://githubbadges.com/star.svg?user=vanheeringen-lab&repo=genomepy&style=flat)](https://github.com/vanheeringen-lab/genomepy)
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/genomepy/badges/downloads.svg)](https://anaconda.org/bioconda/genomepy)
+[![PyPI version](https://badge.fury.io/py/genomepy.svg)](https://badge.fury.io/py/genomepy)
+[![star this repo](https://githubbadges.com/star.svg?user=vanheeringen-lab&repo=genomepy&style=flat)](https://github.com/vanheeringen-lab/genomepy)
 
 [![Build Status](https://travis-ci.org/vanheeringen-lab/genomepy.svg?branch=master)](https://travis-ci.org/vanheeringen-lab/genomepy)
 [![Maintainability](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/maintainability)](https://codeclimate.com/github/vanheeringen-lab/genomepy/maintainability)
@@ -21,6 +21,20 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 
 **Pssst, hey there!** Is genomepy not doing what you want? Does it fail? Is it clunky? Is the documentation unclear? Have any other ideas on how to improve it? Don't be shy and [let us know](https://github.com/vanheeringen-lab/genomepy/issues)!
 
+## Table of Contents
+1.  [Installation](#Installation)
+2.  [Quick usage](#Quick-usage)
+3.  [Plugins and indexing](#Plugins-and-indexing)
+4.  [Configuration](#Configuration)
+5.  [Usage](#Usage)
+    * [Command line](#Command-line)
+    * [Python](#Python)
+6.  [Known Issues](#Known-Issues)
+7.  [Citation](#Citation)
+8.  [Getting help](#Getting-help)
+9.  [Contributing](#Contributing)
+10.  [License](#License)
+
 
 ## Installation
 
@@ -28,6 +42,7 @@ Genomepy works with Python 3.6+.
 You can install it via [bioconda](https://bioconda.github.io/):
 
 ```
+$ conda config --set use_only_tar_bz2 True
 $ conda install genomepy
 ``` 
 
@@ -37,7 +52,7 @@ Or via pip:
 $ pip install genomepy
 ```
 
-To enjoy the full capabilities of genomepy, you will have to install some dependencies.
+With Pip installation, you will have to install some dependencies.
 Make sure these dependencies are in your PATH.
 
 To read/write bgzipped genomes you will have to install `tabix`.
@@ -52,6 +67,22 @@ you will have to install the following utilities:
 * `gff3ToGenePred`
 
 You can find the binaries [here](http://hgdownload.cse.ucsc.edu/admin/exe/).
+
+## Quick usage
+
+1.  Find your genome: `$ genomepy search zebrafish`
+
+  Console output:
+  ```
+  name      provider    accession          species        tax_id    other_info                 
+  GRCz11    Ensembl     GCA_000002035.4    Danio rerio    7955      2017-08-Ensembl/2018-04    
+   ^
+   Use name for genomepy install
+  ```
+
+2.  Install your genome (with annotation): `$ genomepy install --annotation GRCz11 ensembl`
+
+  Default genome directory: `~/.local/share/genomes/`
 
 ## Plugins and indexing
 
@@ -78,8 +109,12 @@ some widely using aligners. Currently, genomepy supports:
 Note 1: these programs are not installed by genomepy and need to be
 installed separately for the indexing to work.
 
-Note 2: the index is based on the genome, annotation (splice sites) is currently
-not taken into account.
+Note 2: splice-aware indexing is performed by Hisat2 and STAR.
+Splice-aware indexing requires the annotation to be downloaded as well. 
+You will recieve a warning if indexing is performed without annotation for these aligners.
+
+Note 3: STAR can further improve mapping to (novel) splice junctions by indexing again (2-pass mapping mode). 
+The second pass is currently not supported by genomepy.
 
 You can configure the index creation using the `genomepy plugin` command (see below)
 
@@ -100,13 +135,13 @@ To set the default genome directory to `/data/genomes` for instance,
 edit `~/.config/genomepy/genomepy.yaml` and change the following line:
 
 ```
-genome_dir: ~/.local/share/genomes/
+genomes_dir: ~/.local/share/genomes/
 ```
 
 to:
 
 ```
-genome_dir: /data/genomes
+genomes_dir: /data/genomes
 ```
 
 The genome directory can also be explicitly specified in both the Python API as well as on the command-line.
@@ -127,7 +162,7 @@ script from [pyfaidx](https://github.com/mdshw5/pyfaidx) which comes installed w
 
 ## Usage
 
-### Command line 
+### Command line
 
 ```
 Usage: genomepy [OPTIONS] COMMAND [ARGS]...
@@ -151,24 +186,53 @@ Find the name of your desired genome:
 
 ```
 $ genomepy search xenopus_tropicalis
-ensembl Xenopus_tropicalis_v9.1 xenopus_tropicalis
-ucsc    xenTro9 X. tropicalis Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9) Genome at UCSC
-ncbi    Xenopus_tropicalis_v9.1 Xenopus tropicalis; DOE Joint Genome Institute
+name                       provider    accession          species               tax_id    other_info
+Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3    Xenopus tropicalis    8364      2019-04-Ensembl/2019-12
+xenTro1                    UCSC        na                 Xenopus tropicalis    8364      Oct. 2004 (JGI 3.0/xenTro1)
+xenTro2                    UCSC        na                 Xenopus tropicalis    8364      Aug. 2005 (JGI 4.1/xenTro2)
+xenTro3                    UCSC        GCA_000004195.1    Xenopus tropicalis    8364      Nov. 2009 (JGI 4.2/xenTro3)
+xenTro7                    UCSC        GCA_000004195.2    Xenopus tropicalis    8364      Sep. 2012 (JGI 7.0/xenTro7)
+xenTro9                    UCSC        GCA_000004195.3    Xenopus tropicalis    8364      Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
+v4.2                       NCBI        GCA_000004195.1    Xenopus tropicalis    8364      DOE Joint Genome Institute
+Xtropicalis_v7             NCBI        GCA_000004195.2    Xenopus tropicalis    8364      DOE Joint Genome Institute
+Xenopus_tropicalis_v9.1    NCBI        GCA_000004195.3    Xenopus tropicalis    8364      DOE Joint Genome Institute
+UCB_Xtro_10.0              NCBI        GCA_000004195.4    Xenopus tropicalis    8364      University of California, Berkeley
+ ^
+ Use name for genomepy install
 ```
 
 Note that genomes with a space can be searched for either by using `"quotation marks"`, 
 or by replacing the space(s) with and underscore `_`. 
-For example, we can search for Xenopus Tropicalis as `"xenopus tropicalis"`, 
-`xenopus_tropicalis` or `xenopus`. The search function is case-insensitive.
+For example, we can search for *Xenopus tropicalis* as `"Xenopus Tropicalis"`, 
+`xenopus_tropicalis` or `xenopus`. The search function is case-insensitive. You can also search by taxonomy ID. For instance, to search for [*Xenopus tropicalis*](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=8364):
 
-Lets say we want to download the Xenopus Tropicalis genome from UCSC. 
+```
+$ genomepy search 8364
+name                       provider    accession          species               tax_id    other_info
+Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3    Xenopus tropicalis    8364      2019-04-Ensembl/2019-12
+xenTro1                    UCSC        na                 Xenopus tropicalis    8364      Oct. 2004 (JGI 3.0/xenTro1)
+xenTro2                    UCSC        na                 Xenopus tropicalis    8364      Aug. 2005 (JGI 4.1/xenTro2)
+xenTro3                    UCSC        GCA_000004195.1    Xenopus tropicalis    8364      Nov. 2009 (JGI 4.2/xenTro3)
+xenTro7                    UCSC        GCA_000004195.2    Xenopus tropicalis    8364      Sep. 2012 (JGI 7.0/xenTro7)
+xenTro9                    UCSC        GCA_000004195.3    Xenopus tropicalis    8364      Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
+v4.2                       NCBI        GCA_000004195.1    Xenopus tropicalis    8364      DOE Joint Genome Institute
+Xtropicalis_v7             NCBI        GCA_000004195.2    Xenopus tropicalis    8364      DOE Joint Genome Institute
+Xenopus_tropicalis_v9.1    NCBI        GCA_000004195.3    Xenopus tropicalis    8364      DOE Joint Genome Institute
+UCB_Xtro_10.0              NCBI        GCA_000004195.4    Xenopus tropicalis    8364      University of California, Berkeley
+ ^
+ Use name for genomepy install
+```
+
+Lets say we want to download the *Xenopus tropicalis* genome from UCSC.
 Copy the name returned by the search function and it with the provider name to install:
 
 ```
-$ genomepy  install xenTro9 UCSC
-downloading...
-done...
+$ genomepy install xenTro9 UCSC
+Downloading genome from http://hgdownload.soe.ucsc.edu/goldenPath/xenTro9/bigZips/xenTro9.fa.gz...
+Genome download successful, starting post processing...
+
 name: xenTro9
+local name: xenTro9
 fasta: /data/genomes/xenTro9/xenTro9.fa
 ```
 
@@ -176,12 +240,13 @@ Here, genomes are downloaded to the directory specified in the config file.
 To choose a different directory, use the `-g` option.
 
 ```
-$ genomepy install sacCer3 UCSC -g ~/genomes/
-downloading from http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz...
-done...
+$ genomepy install sacCer3 UCSC -g /path/to/my/genomes
+Downloading genome from http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz...
+Genome download successful, starting post processing...
+
 name: sacCer3
 local name: sacCer3
-fasta: /data/genomes/sacCer3/sacCer3.fa
+fasta: /path/to/my/genomes/sacCer3/sacCer3.fa
 ```
 
 You can use a regular expression to filter for matching sequences 
@@ -222,12 +287,12 @@ $ grep ">" /data/genomes/hg38/hg38.fa
 >chrY
 ```
 
-By default, sequences are soft-masked. Use `-m hard` for hard masking, or `-m unmaksed` for no masking.
+By default, sequences are soft-masked. Use `-m hard` for hard masking, or `-m none` for no masking.
 
 The chromosome sizes are saved in file called `<genome_name>.fa.sizes`.
 
 You can choose to download gene annotation files with the `--annotation` option. 
-These will be saved in BED and GTF format. 
+These will be saved in (gzipped) BED and GTF format. 
 
 ```
 $ genomepy  install hg38 UCSC --annotation
@@ -242,7 +307,7 @@ This installs the genome under the filename of the link, but can be changed with
 option
 
 Finally, in the spirit of reproducibility all selected options are stored in a `README.txt`. 
-This includes the original name and download location. 
+This includes the original name, download location and other genomepy operations (such as regex filtering and time).
 
 #### Manage plugins.
 
@@ -310,6 +375,7 @@ $ genomepy providers
 Ensembl
 UCSC
 NCBI
+URL
 ```
 
 #### List available genomes
@@ -341,7 +407,7 @@ To show the contents of the config file:
 ```
 $ genomepy config show
 # Directory were downloaded genomes will be stored
-genome_dir: ~/.local/share/genomes/
+genomes_dir: ~/.local/share/genomes/
 
 plugin:
  - blacklist
@@ -362,7 +428,7 @@ The lists are cached locally, which will save time later. The cached files are s
 `~/.cache/genomepy` and expire after 7 days. You can also delete this directory to clean the 
 cache.
 
-### From Python
+### Python
 
 ```python
 >>> import genomepy
@@ -382,12 +448,12 @@ NCBI	GRCh38.p7	Homo sapiens; Genome Reference Consortium
 NCBI	GRCh38.p8	Homo sapiens; Genome Reference Consortium
 NCBI	GRCh38.p9	Homo sapiens; Genome Reference Consortium
 Ensembl	GRCh38.p10	Human
->>> genomepy.install_genome("hg38", "UCSC", genome_dir="/data/genomes")
+>>> genomepy.install_genome("hg38", "UCSC", genomes_dir="/data/genomes")
 downloading...
 done...
 name: hg38
 fasta: /data/genomes/hg38/hg38.fa
->>> g = genomepy.Genome("hg38", genome_dir="/data/genomes")
+>>> g = genomepy.Genome("hg38", genomes_dir="/data/genomes")
 >>> g["chr6"][166502000:166503000]
 tgtatggtccctagaggggccagagtcacagagatggaaagtggatggcgggtgccgggggctggggagctactgtgcagggggacagagctttagttctgcaagatgaaacagttctggagatggacggtggggatgggggcccagcaatgggaacgtgcttaatgccactgaactgggcacttaaacgtggtgaaaactgtaaaagtcatgtgtatttttctacaattaaaaaaaATCTGCCACAGAGTTAAAAAAATAACCACTATTTTCTGGAAATGGGAAGGAAAAGTTACAGCATGTAATTAAGATGACAATTTATAATGAACAAGGCAAATCTTTTCATCTTTGCCTTTTGGGCATATTCAATCTTTGCCCAGAATTAAGCACCTTTCAAGATTAATTCTCTAATAATTCTAGTTGAACAACACAACCTTTTCCTTCAAGCTTGCAATTAAATAAGGCTATTTTTAGCTGTAAGGATCACGCTGACCTTCAGGAGCAATGAGAACCGGCACTCCCGGCCTGAGTGGATGCACGGGGAGTGTGTCTAACACACAGGCGTCAACAGCCAGGGCCGCACGAGGAGGAGGAGTGGCAACGTCCACACAGACTCACAACACGGCACTCCGACTTGGAGGGTAATTAATACCAGGTTAACTTCTGGGATGACCTTGGCAACGACCCAAGGTGACAGGCCAGGCTCTGCAATCACCTCCCAATTAAGGAGAGGCGAAAGGGGACTCCCAGGGCTCAGAGCACCACGGGGTTCTAGGTCAGACCCACTTTGAAATGGAAATCTGGCCTTGTGCTGCTGCTCTTGTGGGGAGACAGCAGCTGCGGAGGCTGCTCTCTTCATGGGATTACTCTGGATAAAGTCTTTTTTGATTCTACgttgagcatcccttatctgaaatgcctgaaaccggaagtgtttaggatttggggattttgcaatatttacttatatataatgagatatcttggagatgggccacaa
 ```
@@ -402,15 +468,9 @@ There might be issues with specific genome sequences.
 Sadly, not everything (naming, structure, filenames) is always consistent on the provider end. 
 Let me know if you encounter issues with certain downloads.
 
-## Todo
-
-* Linking genomes to NCBI taxonomy ID
-* Optionally: Ensembl bacteria (although there might be better options specifically for bacterial sequences)
-
 ## Citation
 
 If you use genomepy in your research, please cite it: [10.21105/joss.00320](http://dx.doi.org/10.21105/joss.00320).
-
 
 ## Getting help
 
@@ -418,13 +478,11 @@ If you want to report a bug or issue, or have problems with installing or runnin
 
 ## Contributing
 
-Contributions welcome! Send me a pull request or get in [touch](mailto:simon.vanheeringen@gmail.com).
+Contributions welcome! Send me a pull request or [get in touch](mailto:simon.vanheeringen@gmail.com).
 
 When contributing a PR, please use the [develop](https://github.com/vanheeringen-lab/genomepy/tree/develop) branch.
-For style, code will be checked using flake8 and
-[black](https://github.com/psf/black). These modules can be
-installed via conda, `conda install black flake8 flake8-bugbear` or via pip `pip
-install black flake8 flake8-bugbear`.
+For style, code will be checked using flake8 and [black](https://github.com/psf/black). 
+These modules can be installed via conda, using the `environment.yaml`, or `conda install black flake8 flake8-bugbear` or via pip `pip install black flake8 flake8-bugbear`.
 
 ```
 black --check genomepy/ setup.py tests/
@@ -433,10 +491,11 @@ flake8 setup.py genomepy/ tests/
 
 ## Contributors
 
-- Simon van Heeringen - @simonvh
-- Siebren Frölich - @siebrenf
-- Maarten van der Sande - @Maarten-vd-Sande
-- Dohoon Lee - @dohlee
+- Siebren Frölich - [@siebrenf](https://github.com/siebrenf)
+- Simon van Heeringen - [@simonvh](https://github.com/simonvh)
+- Maarten van der Sande - [@Maarten-vd-Sande](https://github.com/Maarten-vd-Sande)
+- Dohoon Lee - [@dohlee](https://github.com/dohlee)
+- Jie Zhu - [@alienzj](https://github.com/alienzj)
 
 ## License
 

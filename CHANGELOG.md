@@ -6,28 +6,81 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- backwards compatibility with old configuration files (with `genome_dir` instead of `genomes_dir`)
+- updating the README.txt will only happen if you have write permission
+- after gzipping files the original unzipped file is now properly removed
+- providers will only download genome summaries when specifically queried
+- updated available blacklists (added GRCh38)
+
+## [0.8.1] - 2020-05-11
+
 ### Added
-- Blacklists are automatically unzipped.
-- Downloading of annotation file (BED/GTF/GFF3) from URL
-- Automatic search for annotation file (GTF/GFF3) in genome directory when downloading from URL
-- Annotation sanitizing (and skip sanitizing flag)
+- Now using the UCSC REST API
+- `genomepy search` now accepts taxonomy IDs
+- `genomepy search` will now return taxonomy IDs and Accession numbers
+- The README.txt will now store taxonomy IDs and Accession numbers
+- Gene annotations:
+    - Downloading of annotation file (BED/GTF/GFF3) from URL
+    - Automatic search for annotation file (GTF/GFF3) in genome directory when downloading from URL
+    - Option for URL provider to link to annotation file (to process it similarly to other providers)
+    - Automatic annotation sanitizing (and skip sanitizing flag `-s` for `genomepy install`)
+    - Option to only download annotation with `genomepy install -o`
+- Plugins:
+    - Blacklists are automatically unzipped.
+    - Multithreading support for plugins, thanks to @alienzj!
+    - STAR and HISAT2 will now generate splice-aware indexes if annotation files are available.
 
 ### Changed
+- `Genome.props` has been renamed to `Genome.plugin`
 - sizes no longer a plugin, but always gets executed
-- `genomepy install --help` menu now contains paragraphs
+- `genomepy FUNCTION --help` texts expanded
+- all genomepy classes exported when imported into Python
+- all providers now let you know when they are downloading assembly information.
+- more descriptive feedback to installing & many errors
 
-### Fixes
-- tests now use double digits to preserve testing order
+### Removed
+- Sizes plugin
+- Old tests
+- Removed outdated dependency `xmltodict`
+
+### Fixed
+- `genomepy config` options made more robust
+- README.txt will no longer:
+  - update 3x for each command
+  - drop regex info
+  - have duplicate lines
+
+### Refactoring
+- Genome class moved to `genome.py`
+- Many functions moved to `utils.py`
+- Many other functions made static methods of a class
+- `Genome.track2fasta` and `Genome.get_random_sequence` optimized
+- All Provider classes now store their genomes as a dict-in-dict, with the assembly name as key.
+- Many Provider class functions now standardized. Many functions moved to from the daughter classes to the ProviderBase class.
+- README.txt file generation and updating standardized
+- Unit tests! all functions now have an individual test. Almost all test use functions already tested prior to them.
+- Old tests incorporated in several extra tests (e01, e02, e03).
+- Raise statements now use more fitting errors
+- All instances of `os.remove` exchanged for `os.unlink`
+- Almost all warnings fixed
+- Extensive, COVID19-enabled, and somewhat pointless alphabetizing, optimizing and/or organizing changes to
+    - imports everywhere
+    - `.gitignore`
+    - `.travis.yml`
+    - `release_checklist.md`
+    - `cli.py`
+    - strings (many strings with .format() replaced with f-strings)
 
 ## [0.7.2] - 2019-03-31
 
-### Fixes
+### Fixed
 - Fix minor issue with hg19 wrong blacklist url
 - Ensembl downloads over http instead of https (release 99 no longer has https)
 
 ## [0.7.1] - 2019-11-20
 
-### Fixes
+### Fixed
 - STAR is not longer enabled by default
 
 ## [0.7.0] - 2019-11-18
@@ -102,7 +155,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-- Fixed genome_dir argument to `genomepy install`
+- Fixed genomes_dir argument to `genomepy install`
 - Fixed msgpack dependency
 - Fixed issue with `config generate` where config directory does note exist.
 

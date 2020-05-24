@@ -5,7 +5,7 @@ from typing import Tuple, Iterable, Optional
 from loguru import logger
 import mygene
 from genomepy.provider import ProviderBase, cached
-from genomepy import Genome
+from genomepy import Genome, search
 import pandas as pd
 
 
@@ -17,7 +17,7 @@ logger.add(
 )
 
 
-@cached
+#@cached
 def ensembl_genome_info(genome_name: str) -> Tuple[str, str, str]:
     """Return Ensembl genome information for a local genome managed by genomepy.
 
@@ -70,7 +70,7 @@ def ensembl_genome_info(genome_name: str) -> Tuple[str, str, str]:
         return None
 
 
-@cached
+#@cached
 def ncbi_assembly_report(asm_acc: str) -> pd.DataFrame:
     """Retrieve the NCBI assembly report as a DataFrame.
 
@@ -89,6 +89,7 @@ def ncbi_assembly_report(asm_acc: str) -> pd.DataFrame:
     if len(ncbi_search) > 1:
         raise Exception("More than one genome for accession")
     else:
+        print(ncbi_search)
         ncbi_name = ncbi_search[0][0].replace(" ", "_")
 
     # NCBI FTP location of assembly report
@@ -116,14 +117,34 @@ def ncbi_assembly_report(asm_acc: str) -> pd.DataFrame:
     return asm_report
 
 
-@cached
-def load_mapping(genome_name):
+##@cached
+def load_mapping(to, provider=None):
     logger.info("Loading chromosome mapping.")
-    genome = Genome(genome_name)
-    asm_acc = genome.assembly_accession
+    if to.startswith("GCA"):
+        if provider is None:
+            raise ValueError("Need a provider: NCBI, UCSC or Ensembl")
+        asm_acc = to
+    else:
+        try:
+            genome = Genome(to)
+            asm_acc = genome.assembly_accession
+            if provider is None:
+                provider = genome.provider
+        except Exception:
+            result = [row for row in search(to, provider=provider)]
+            if len(result) > 1:
+                p = [row[1].decode() for row in result]
+                raise ValueError(f"More than one result, need one of these providers: {', '.join(p)}")
+            if provider is None:
+                provider = result[0][1].decode()
+            asm_acc = result[0][2].decode()
+    
+    
+    print("TO:", asm_acc)
+    print("TO:", provider)
 
-    if genome.provider not in ["UCSC", "NCBI"]:
-        logger.error(f"Can't map to provider {genome.provider}")
+    if provider not in ["UCSC", "NCBI", "Ensembl"]:
+        logger.error(f"Can't map to provider {provider}")
         return None
 
     asm_report = ncbi_assembly_report(asm_acc)
@@ -135,12 +156,15 @@ def load_mapping(genome_name):
         ["Sequence-Name", "UCSC-style-name", "Assigned-Molecule", "GenBank-Accn"]
     ]
 
-    if genome.provider == "NCBI":
+    if provider == "NCBI":
         logger.info("Mapping to NCBI sequence names")
         id_column = "Sequence-Name"
-    elif genome.provider == "UCSC":
+    elif provider == "UCSC":
         logger.info("Mapping to UCSC sequence names")
         id_column = "UCSC-style-name"
+    elif provider == "Ensembl":
+        mapping["Ensembl-Name"] = mapping["Sequence-Name"]
+        mapping.loc[mapping["Sequence-Role"] != "assembled_molecule", "Ensembl-Name"] = mapping.loc[mapping["Sequence-Role"] != "assembled_molecule", "GenBank-Accn"]
     mapping = pd.melt(mapping, id_vars=[id_column])
     mapping = mapping[mapping["value"] != "na"]
     mapping = mapping.drop_duplicates().set_index("value")[[id_column]]
@@ -148,7 +172,7 @@ def load_mapping(genome_name):
     return mapping
 
 
-@cached
+#@cached
 def map_gene_dataframe(
     df: pd.DataFrame, genome: str, gene_field: str, product: str = "protein"
 ) -> pd.DataFrame:
@@ -196,7 +220,7 @@ def map_gene_dataframe(
     return df
 
 
-@cached
+#@cached
 def gene_annotation(
     genome: str, gene_field: Optional[str] = None, product: str = "protein"
 ) -> pd.DataFrame:
@@ -263,7 +287,7 @@ def gene_annotation(
     return df
 
 
-@cached
+#@cached
 def local_genome_coords(genes: Iterable[str], genome: str) -> pd.DataFrame:
     """Retrieve gene location from local annotation.
 
@@ -320,7 +344,7 @@ def _query_mygene(genome: str, query: Iterable[str], fields: str = "genomic_pos"
     return result
 
 
-@cached
+#@cached
 def genome_coords(genes: Iterable[str], genome: str) -> pd.DataFrame:
     """Retrieve genomic coordinates of a set of genes.
 
