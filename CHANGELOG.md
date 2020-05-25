@@ -6,12 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.8.2] - 2020-05-25
+
 ### Fixed
+- `Genome.sizes` and `Genome.gaps` are now populated automatically.
 - backwards compatibility with old configuration files (with `genome_dir` instead of `genomes_dir`)
 - updating the README.txt will only happen if you have write permission
 - after gzipping files the original unzipped file is now properly removed
 - providers will only download genome summaries when specifically queried
-- updated available blacklists (added GRCh38)
+
+### Changed
+
+- updated blacklist for hg38/GRCh38 based on work by Anshul Kundaje, see [ENCODE README.txt](https://www.encodeproject.org/documents/cbaffa9e-2e42-434e-8b88-f04619c57080/@@download/attachment/README.txt)
 
 ## [0.8.1] - 2020-05-11
 
