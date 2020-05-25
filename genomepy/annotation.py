@@ -86,10 +86,11 @@ def ncbi_assembly_report(asm_acc: str) -> pd.DataFrame:
     """
     p = ProviderBase.create("NCBI")
     ncbi_search = list(p.search(asm_acc))
-    if len(ncbi_search) > 1:
+    if len(ncbi_search) == 0:
+        raise ValueError(f"No assembly found with accession {asm_acc}")
+    elif len(ncbi_search) > 1:
         raise Exception("More than one genome for accession")
     else:
-        print(ncbi_search)
         ncbi_name = ncbi_search[0][0].replace(" ", "_")
 
     # NCBI FTP location of assembly report
@@ -98,7 +99,7 @@ def ncbi_assembly_report(asm_acc: str) -> pd.DataFrame:
         f"ftp://ftp.ncbi.nlm.nih.gov/genomes/all/{asm_acc[0:3]}/"
         + f"{asm_acc[4:7]}/{asm_acc[7:10]}/{asm_acc[10:13]}/"
         + f"{asm_acc}_{ncbi_name}/{asm_acc}_{ncbi_name}_assembly_report.txt"
-    )
+    )   
 
     logger.info(f"Downloading {assembly_report}")
     header = [
@@ -118,7 +119,11 @@ def ncbi_assembly_report(asm_acc: str) -> pd.DataFrame:
 
 
 ##@cached
-def load_mapping(to, provider=None):
+def load_mapping(to, provider=None, fmt="dataframe"):
+    
+    if fmt.lower() not in ["dataframe", "dict"]:
+        raise ValueError("Invalid format, should be 'dataframe' or 'dict'")
+    
     logger.info("Loading chromosome mapping.")
     if to.startswith("GCA"):
         if provider is None:
@@ -127,10 +132,12 @@ def load_mapping(to, provider=None):
     else:
         try:
             genome = Genome(to)
+            logger.info("Using local genome information")
             asm_acc = genome.assembly_accession
             if provider is None:
                 provider = genome.provider
         except Exception:
+            logger.info("Searching remote genome information")
             result = [row for row in search(to, provider=provider)]
             if len(result) > 1:
                 p = [row[1].decode() for row in result]
@@ -140,8 +147,7 @@ def load_mapping(to, provider=None):
             asm_acc = result[0][2].decode()
     
     
-    print("TO:", asm_acc)
-    print("TO:", provider)
+    logger.info(f"Assembly {asm_acc}, provider {provider}")
 
     if provider not in ["UCSC", "NCBI", "Ensembl"]:
         logger.error(f"Can't map to provider {provider}")
@@ -152,9 +158,8 @@ def load_mapping(to, provider=None):
         asm_report["Sequence-Role"] != "assembled-molecule", "Assigned-Molecule"
     ] = "na"
 
-    mapping = asm_report[
-        ["Sequence-Name", "UCSC-style-name", "Assigned-Molecule", "GenBank-Accn"]
-    ]
+    asm_report["Ensembl-Name"] = asm_report["Sequence-Name"]
+    asm_report.loc[asm_report["Sequence-Role"] != "assembled-molecule", "Ensembl-Name"] = asm_report.loc[asm_report["Sequence-Role"] != "assembled-molecule", "GenBank-Accn"]
 
     if provider == "NCBI":
         logger.info("Mapping to NCBI sequence names")
@@ -162,14 +167,43 @@ def load_mapping(to, provider=None):
     elif provider == "UCSC":
         logger.info("Mapping to UCSC sequence names")
         id_column = "UCSC-style-name"
+        ucsc_ids = asm_report[id_column].unique()
+        if len(ucsc_ids) == 1 and ucsc_ids[0] == "na":
+            raise ValueError("UCSC style names not available for this assembly")
     elif provider == "Ensembl":
-        mapping["Ensembl-Name"] = mapping["Sequence-Name"]
-        mapping.loc[mapping["Sequence-Role"] != "assembled_molecule", "Ensembl-Name"] = mapping.loc[mapping["Sequence-Role"] != "assembled_molecule", "GenBank-Accn"]
+        logger.info("Mapping to Ensembl sequence names")
+        id_column = "Ensembl-Name"
+    
+    mapping = asm_report[
+        ["Sequence-Name", "UCSC-style-name", "Assigned-Molecule", "GenBank-Accn", "Ensembl-Name"]
+    ]
     mapping = pd.melt(mapping, id_vars=[id_column])
     mapping = mapping[mapping["value"] != "na"]
     mapping = mapping.drop_duplicates().set_index("value")[[id_column]]
     mapping.columns = ["chrom"]
-    return mapping
+    if fmt == "dataframe":
+        return mapping
+    if fmt == "dict":
+        return mapping["chrom"].to_dict()
+
+
+def map_bedfile(infile, to, provider=None, keepgoing=False):
+    map_dict = load_mapping(to, provider, fmt="dict")
+    seen = {}
+    for line in open(infile):
+        vals = line.strip().split("\t")
+        chrom = vals[0]
+        new_chrom = map_dict.get(chrom, None)
+        if new_chrom is None:
+            if keepgoing:
+                if not seen.get(chrom):
+                    logger.warning(f"Skipping all features for {chrom}, not found in mapping.")
+                    cat
+                    seen[chrom] = 1
+                continue
+            else:
+                raise ValueError(f"No mapping found for {chrom}")
+        print("\t".join([new_chrom] + vals[1:]))
 
 
 #@cached
