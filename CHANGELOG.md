@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - after gzipping files the original unzipped file is now properly removed
 - providers will only download genome summaries when specifically queried
 - updated available blacklists (added GRCh38)
+- `Genome.sizes` and `Genome.gaps` now populate when accessed (no longer requires a separate function call)
 
 ## [0.8.1] - 2020-05-11
 
