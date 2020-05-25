@@ -300,13 +300,27 @@ def test_track2fasta(genome="tests/data/small_genome.fa.gz"):
 
 def test_sizes(genome="tests/data/gap.fa"):
     g = genomepy.Genome(genome)
-    g.contig_sizes()
+    assert list(g.sizes.keys()) == ["chr1", "chr2", "chr3"]
+
+    # does not overwrite user-set sizes
+    g.sizes = {"asd": 1}
+    assert g.sizes == {"asd": 1}
+
+    # repopulates empty dicts
+    g.sizes = {}
     assert list(g.sizes.keys()) == ["chr1", "chr2", "chr3"]
 
 
 def test_gaps(genome="tests/data/gap.fa"):
     g = genomepy.Genome(genome)
-    g.gap_sizes()
+    assert list(g.gaps.keys()) == ["chr1", "chr3"]
+
+    # does not overwrite user-set gaps
+    g.gaps = {"asd": 1}
+    assert g.gaps == {"asd": 1}
+
+    # repopulates empty dicts
+    g.gaps = {}
     assert list(g.gaps.keys()) == ["chr1", "chr3"]
 
 
