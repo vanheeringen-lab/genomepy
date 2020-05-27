@@ -869,7 +869,8 @@ class UcscProvider(ProviderBase):
         """
         Parse and test the link to the UCSC annotation file.
 
-        Will check UCSC, Ensembl and RefSeq annotation, respectively.
+        Will check UCSC, Ensembl, NCBI RefSeq and UCSC RefSeq annotation, respectively.
+        More info on the annotation file on: https://genome.ucsc.edu/FAQ/FAQgenes.html#whatdo
 
         Parameters
         ----------
@@ -877,7 +878,7 @@ class UcscProvider(ProviderBase):
             Genome name
         """
         ucsc_gene_url = f"http://hgdownload.cse.ucsc.edu/goldenPath/{name}/database/"
-        annot_files = ["ensGene.txt.gz", "knownGene.txt.gz", "refGene.txt.gz"]
+        annot_files = ["knownGene.txt.gz", "ensGene.txt.gz", "ncbiRefSeq", "refGene.txt.gz"]
 
         for file in annot_files:
             link = ucsc_gene_url + file
