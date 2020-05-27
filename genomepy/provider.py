@@ -345,13 +345,18 @@ class ProviderBase(object):
                 with open(annot_file) as f:
                     cols = f.readline().split("\t")
 
+                # extract the genePred format columns
                 start_col = 1
                 for i, col in enumerate(cols):
                     if col in ["+", "-"]:
                         start_col = i - 1
                         break
                 end_col = start_col + 10
-                cmd = f"cat {{0}} | cut -f {start_col}-{end_col} > {{1}}"
+                cmd = (
+                    f"""cat {{0}} | cut -f {start_col}-{end_col} | """
+                    # knownGene.txt.gz has spotty fields, this replaces non-integer fields with zeroes
+                    + """awk 'BEGIN {{FS=OFS="\t"}} !($11 ~ /^[0-9]+$/) {{$11="0"}}1' > {1}"""
+                )
             else:
                 raise TypeError(f"file type extension {ext} not recognized!")
 
@@ -360,7 +365,7 @@ class ProviderBase(object):
             # generate gzipped gtf file (if required)
             gtf_file = annot_file.replace(ext, ".gtf")
             if "gtf" not in ext:
-                cmd = "genePredToGtf file {0} {1} && gzip -f {1}"
+                cmd = "genePredToGtf -source=genomepy file {0} {1} && gzip -f {1}"
                 sp.check_call(cmd.format(pred_file, gtf_file), shell=True)
 
             # generate gzipped bed file (if required)

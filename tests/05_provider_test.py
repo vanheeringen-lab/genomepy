@@ -193,9 +193,7 @@ def test_download_annotation(p):
     p = p.create("UCSC")
     name = "sacCer3"
 
-    annot_url = (
-        "http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/genes/sacCer3.ensGene.gtf.gz"
-    )
+    annot_url = "http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/genes/sacCer3.ensGene.gtf.gz"
     with TemporaryDirectory(dir=out_dir) as tmpdir:
         p.download_annotation(name=name, genomes_dir=tmpdir, localname=localname)
 
