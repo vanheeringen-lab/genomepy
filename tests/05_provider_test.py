@@ -63,18 +63,6 @@ def test_register_provider_and_list_providers(p):
         assert provider in list(p.list_providers())
 
 
-def test_list_install_options(p):
-    assert isinstance(p.list_install_options(), dict)
-    assert len(p.list_install_options()) == 0
-
-    with pytest.raises(ValueError):
-        p.list_install_options(name="error")
-
-    result = sorted(list(p.list_install_options(name="ensembl").keys()))
-    expected = ["toplevel", "version"]
-    assert result == expected
-
-
 def test__genome_info_tuple(p):
     with pytest.raises(NotImplementedError):
         p._genome_info_tuple(None)

@@ -102,16 +102,6 @@ class ProviderBase(object):
     def __hash__(self):
         return hash(str(self.__class__))
 
-    def list_install_options(self, name=None):
-        """List provider specific install options"""
-        if name is None:
-            return {}
-        elif name.lower() not in self._providers:
-            raise ValueError(f"Unknown provider: {name}")
-        else:
-            provider = self._providers[name.lower()]
-            return provider.list_install_options(self)
-
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
         raise NotImplementedError()
@@ -495,6 +485,19 @@ class EnsemblProvider(ProviderBase):
     """
 
     rest_url = "http://rest.ensembl.org/"
+    provider_specific_install_options = {
+        "toplevel": {
+            "long": "toplevel",
+            "help": "always download toplevel-genome",
+            "flag_value": True,
+        },
+        "version": {
+            "long": "version",
+            "help": "select release version",
+            "type": int,
+            "default": None,
+        },
+    }
 
     def __init__(self):
         # Necessary for bucketcache, otherwise methods with identical names
@@ -542,25 +545,6 @@ class EnsemblProvider(ProviderBase):
             for genome in division_genomes:
                 genomes[safe(genome["assembly_name"])] = genome
         return genomes
-
-    def list_install_options(self, name=None):
-        """List Ensembl specific install options"""
-
-        provider_specific_options = {
-            "toplevel": {
-                "long": "toplevel",
-                "help": "always download toplevel-genome",
-                "flag_value": True,
-            },
-            "version": {
-                "long": "version",
-                "help": "select release version",
-                "type": int,
-                "default": None,
-            },
-        }
-
-        return provider_specific_options
 
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
@@ -722,6 +706,7 @@ class UcscProvider(ProviderBase):
     alt_ucsc_url = base_url + "/{0}/bigZips/{0}.fa.gz"
     alt_ucsc_url_masked = base_url + "/{0}/bigZips/{0}.fa.masked.gz"
     rest_url = "http://api.genome.ucsc.edu/list/ucscGenomes"
+    provider_specific_install_options = {}
 
     def __init__(self):
         # Necessary for bucketcache, otherwise methods with identical names
@@ -892,7 +877,7 @@ class UcscProvider(ProviderBase):
             Genome name
         """
         ucsc_gene_url = f"http://hgdownload.cse.ucsc.edu/goldenPath/{name}/database/"
-        annot_files = ["knownGene.txt.gz", "ensGene.txt.gz", "refGene.txt.gz"]
+        annot_files = ["ensGene.txt.gz", "knownGene.txt.gz", "refGene.txt.gz"]
 
         for file in annot_files:
             link = ucsc_gene_url + file
@@ -909,6 +894,7 @@ class NcbiProvider(ProviderBase):
     """
 
     assembly_url = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"
+    provider_specific_install_options = {}
 
     def __init__(self):
         # Necessary for bucketcache, otherwise methods with identical names
@@ -1087,6 +1073,14 @@ class UrlProvider(ProviderBase):
     Simply download a genome directly through an url.
     """
 
+    provider_specific_install_options = {
+        "to_annotation": {
+            "long": "to-annotation",
+            "help": "link to the annotation file, required if this is not in the same directory as the fasta file",
+            "default": None,
+        },
+    }
+
     def __init__(self):
         self.name = "URL"
         self.genomes = {}
@@ -1101,19 +1095,6 @@ class UrlProvider(ProviderBase):
         """return an empty generator,
         same as if no genomes were found at the other providers"""
         yield from ()
-
-    def list_install_options(self, name=None):
-        """List URL specific install options"""
-
-        provider_specific_options = {
-            "to_annotation": {
-                "long": "to-annotation",
-                "help": "link to the annotation file, required if this is not in the same directory as the fasta file",
-                "default": None,
-            },
-        }
-
-        return provider_specific_options
 
     def get_genome_download_link(self, url, mask=None, **kwargs):
         return url
