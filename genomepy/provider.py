@@ -706,7 +706,13 @@ class UcscProvider(ProviderBase):
     alt_ucsc_url = base_url + "/{0}/bigZips/{0}.fa.gz"
     alt_ucsc_url_masked = base_url + "/{0}/bigZips/{0}.fa.masked.gz"
     rest_url = "http://api.genome.ucsc.edu/list/ucscGenomes"
-    provider_specific_install_options = {}
+    provider_specific_install_options = {
+        "ucsc_annotation_type": {
+            "long": "annotation",
+            "help": "specify annotation to download: UCSC, Ensembl, NCBI_refseq or UCSC_refseq",
+            "default": None,
+        },
+    }
 
     def __init__(self):
         # Necessary for bucketcache, otherwise methods with identical names
@@ -877,13 +883,28 @@ class UcscProvider(ProviderBase):
         name : str
             Genome name
         """
-        ucsc_gene_url = f"http://hgdownload.cse.ucsc.edu/goldenPath/{name}/database/"
-        annot_files = ["knownGene.txt.gz", "ensGene.txt.gz", "ncbiRefSeq", "refGene.txt.gz"]
+        ucsc_annotation_url = (
+            f"http://hgdownload.cse.ucsc.edu/goldenPath/{name}/database/"
+        )
+        annot_files = {
+            "ucsc": "knownGene.txt.gz",
+            "ensembl": "ensGene.txt.gz",
+            "ncbi_refseq": "ncbiRefSeq.txt.gz",
+            "ucsc_refseq": "refGene.txt.gz",
+        }
 
-        for file in annot_files:
-            link = ucsc_gene_url + file
+        file = kwargs.get("ucsc_annotation_type")
+        if file:
+            link = ucsc_annotation_url + annot_files[file.lower()]
             if check_url(link):
                 return link
+            sys.stderr.write(f"{file} not found for {name}.\n")
+
+        else:
+            for file in annot_files.values():
+                link = ucsc_annotation_url + file
+                if check_url(link):
+                    return link
 
 
 @register_provider("NCBI")

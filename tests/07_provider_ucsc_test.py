@@ -115,3 +115,12 @@ def test_get_annotation_download_link(p):
         link
         == "http://hgdownload.cse.ucsc.edu/goldenPath/sacCer3/database/ensGene.txt.gz"
     )
+
+    # specific annotation type
+    link = p.get_annotation_download_link(
+        "sacCer3", **{"ucsc_annotation_type": "NCBI_refseq"}
+    )
+    assert (
+        link
+        == "http://hgdownload.cse.ucsc.edu/goldenPath/sacCer3/database/ncbiRefSeq.txt.gz"
+    )

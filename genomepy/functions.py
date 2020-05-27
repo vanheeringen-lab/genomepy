@@ -261,7 +261,15 @@ def install_genome(
         g = Genome(localname, genomes_dir=genomes_dir)
 
     # Check if any annotation flags are given, if annotation already exists, or if downloading is forced
-    if any([annotation, only_annotation, kwargs.get("to_annotation", False)]):
+    if any(
+        [
+            annotation,
+            only_annotation,
+            skip_sanitizing,
+            kwargs.get("to_annotation"),
+            kwargs.get("ucsc_annotation_type"),
+        ]
+    ):
         annotation = True
     annotation_found = len(glob_ext_files(out_dir, "gtf")) >= 1
     if (not annotation_found or force) and annotation:
