@@ -908,7 +908,7 @@ class UcscProvider(ProviderBase):
             link = base_url + annot_files[file.lower()] + base_ext
             if check_url(link):
                 return link
-            sys.stderr.write(f"{file} not found for {name}.\n")
+            sys.stderr.write(f"Specified annotation type ({file}) not found for {name}.\n")
 
         else:
             # download first available annotation type found
