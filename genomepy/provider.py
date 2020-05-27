@@ -347,11 +347,11 @@ class ProviderBase(object):
 
                 start_col = 1
                 for i, col in enumerate(cols):
-                    if col == "+" or col == "-":
+                    if col in ["+", "-"]:
                         start_col = i - 1
                         break
                 end_col = start_col + 10
-                cmd = f"cat {{0}} | cut -f{start_col}-{end_col} > {{1}}"
+                cmd = f"cat {{0}} | cut -f {start_col}-{end_col} > {{1}}"
             else:
                 raise TypeError(f"file type extension {ext} not recognized!")
 
@@ -883,26 +883,32 @@ class UcscProvider(ProviderBase):
         name : str
             Genome name
         """
-        ucsc_annotation_url = (
-            f"http://hgdownload.cse.ucsc.edu/goldenPath/{name}/database/"
-        )
+        gtf_url = f"http://hgdownload.soe.ucsc.edu/goldenPath/{name}/bigZips/genes/"
+        txt_url = f"http://hgdownload.cse.ucsc.edu/goldenPath/{name}/database/"
         annot_files = {
-            "ucsc": "knownGene.txt.gz",
-            "ensembl": "ensGene.txt.gz",
-            "ncbi_refseq": "ncbiRefSeq.txt.gz",
-            "ucsc_refseq": "refGene.txt.gz",
+            "ucsc": "knownGene",
+            "ensembl": "ensGene",
+            "ncbi_refseq": "ncbiRefSeq",
+            "ucsc_refseq": "refGene",
         }
 
+        # download gtf format if possible, txt format if not
+        gtfs_exists = check_url(gtf_url)
+        base_url = gtf_url + name + "." if gtfs_exists else txt_url
+        base_ext = ".gtf.gz" if gtfs_exists else ".txt.gz"
+
+        # download specified annotation type if requested
         file = kwargs.get("ucsc_annotation_type")
         if file:
-            link = ucsc_annotation_url + annot_files[file.lower()]
+            link = base_url + annot_files[file.lower()] + base_ext
             if check_url(link):
                 return link
             sys.stderr.write(f"{file} not found for {name}.\n")
 
         else:
+            # download first available annotation type found
             for file in annot_files.values():
-                link = ucsc_annotation_url + file
+                link = base_url + file + base_ext
                 if check_url(link):
                     return link
 
