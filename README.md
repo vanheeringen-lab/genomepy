@@ -481,13 +481,20 @@ If you want to report a bug or issue, or have problems with installing or runnin
 Contributions welcome! Send me a pull request or [get in touch](mailto:simon.vanheeringen@gmail.com).
 
 When contributing a PR, please use the [develop](https://github.com/vanheeringen-lab/genomepy/tree/develop) branch.
-For style, code will be checked using flake8 and [black](https://github.com/psf/black). 
-These modules can be installed via conda, using the `environment.yaml`, or `conda install black flake8 flake8-bugbear` or via pip `pip install black flake8 flake8-bugbear`.
 
-```
-black --check genomepy/ setup.py tests/
-flake8 setup.py genomepy/ tests/
-```
+### Quick development setup: 
+1. Fork & download this repo. 
+2. `cd` into your local repo. 
+3. `git checkout develop`
+4. `conda env create python=3.6 -f environment.yaml`
+5. `conda activate genomepy`
+6. `python setup.py develop`
+7. `python setup.py build`
+8. `git checkout -b` your_develop_branch
+
+The command line and python imports will now use the code in your local repo. 
+To test your changes locally, run the following command:
+`pytest -vv --disable-pytest-warnings`
 
 ## Contributors
 
