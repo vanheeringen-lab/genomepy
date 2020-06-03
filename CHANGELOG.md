@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.8.3] - 2020-06-03
+
 ### Fixed
 - Fixed bug introduced by fixing a bug: Provider-specific options for `genomepy install` on command line work again
 - UCSC annotations can now once again be obtained from knownGene.txt
