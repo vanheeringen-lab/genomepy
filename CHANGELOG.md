@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.8.3] - 2020-06-03
+
+### Fixed
+- Fixed bug introduced by fixing a bug: Provider-specific options for `genomepy install` on command line work again
+- UCSC annotations can now once again be obtained from knownGene.txt
+
+### Added
+- UCSC gene annotations will now be downloaded in GTF format where possible
+- Desired UCSC gene annotation type can now be specified in the `genomepy install` command using `--ucsc-annotation`
+
+### Changed
+- Added the NCBI RefSeq gene annotation to the list of potential UCSC gene annotations for download
+
 ## [0.8.2] - 2020-05-25
 
 ### Fixed

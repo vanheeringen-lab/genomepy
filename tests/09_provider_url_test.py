@@ -63,12 +63,6 @@ def test_search(p):
         assert next(result)
 
 
-def test_list_install_options(p):
-    result = list(p.list_install_options())
-    expected = ["to_annotation"]
-    assert result == expected
-
-
 def test_get_genome_download_link(p):
     link = p.get_genome_download_link("url")
     assert link == "url"

@@ -63,18 +63,6 @@ def test_register_provider_and_list_providers(p):
         assert provider in list(p.list_providers())
 
 
-def test_list_install_options(p):
-    assert isinstance(p.list_install_options(), dict)
-    assert len(p.list_install_options()) == 0
-
-    with pytest.raises(ValueError):
-        p.list_install_options(name="error")
-
-    result = sorted(list(p.list_install_options(name="ensembl").keys()))
-    expected = ["toplevel", "version"]
-    assert result == expected
-
-
 def test__genome_info_tuple(p):
     with pytest.raises(NotImplementedError):
         p._genome_info_tuple(None)
@@ -203,10 +191,10 @@ def test_download_annotation(p):
     localname = "my_annot"
 
     p = p.create("UCSC")
-    name = "sacCer3"
+    name = "xenTro2"
 
     annot_url = (
-        "http://hgdownload.cse.ucsc.edu/goldenPath/sacCer3/database/ensGene.txt.gz"
+        "http://hgdownload.cse.ucsc.edu/goldenPath/xenTro2/database/ensGene.txt.gz"
     )
     with TemporaryDirectory(dir=out_dir) as tmpdir:
         p.download_annotation(name=name, genomes_dir=tmpdir, localname=localname)
