@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import Tuple, Iterable, Optional
+from typing import Tuple, Iterable, Optional, Union
 
 from loguru import logger
 import mygene
@@ -17,7 +17,7 @@ logger.add(
 )
 
 
-#@cached
+# @cached
 def ensembl_genome_info(genome_name: str) -> Tuple[str, str, str]:
     """Return Ensembl genome information for a local genome managed by genomepy.
 
@@ -70,7 +70,7 @@ def ensembl_genome_info(genome_name: str) -> Tuple[str, str, str]:
         return None
 
 
-#@cached
+# @cached
 def ncbi_assembly_report(asm_acc: str) -> pd.DataFrame:
     """Retrieve the NCBI assembly report as a DataFrame.
 
@@ -99,7 +99,7 @@ def ncbi_assembly_report(asm_acc: str) -> pd.DataFrame:
         f"ftp://ftp.ncbi.nlm.nih.gov/genomes/all/{asm_acc[0:3]}/"
         + f"{asm_acc[4:7]}/{asm_acc[7:10]}/{asm_acc[10:13]}/"
         + f"{asm_acc}_{ncbi_name}/{asm_acc}_{ncbi_name}_assembly_report.txt"
-    )   
+    )
 
     logger.info(f"Downloading {assembly_report}")
     header = [
@@ -119,11 +119,30 @@ def ncbi_assembly_report(asm_acc: str) -> pd.DataFrame:
 
 
 ##@cached
-def load_mapping(to, provider=None, fmt="dataframe"):
-    
+def load_mapping(
+    to: str, provider: Optional[str] = None, fmt: Optional[str] = "dataframe"
+) -> Union[pd.DataFrame, dict]:
+    """Load chromosome mapping from one version of assembly to another
+
+    Parameters
+    ----------
+    to: str
+        Either a local genomepy genome name, a remote genome name or an assembly accession (GCA*)
+
+    provider: str, optional
+        If an accession is specified the provider needs to be specified (UCSC, Ensembl or NCBI)
+
+    fmt: str, optional
+        Format for the chromosome mapping, either "dataframe" or "dict".
+
+    Returns
+    -------
+    pandas.DataFrame or dict
+        Chromosome mapping.
+    """
     if fmt.lower() not in ["dataframe", "dict"]:
         raise ValueError("Invalid format, should be 'dataframe' or 'dict'")
-    
+
     logger.info("Loading chromosome mapping.")
     if to.startswith("GCA"):
         if provider is None:
@@ -141,12 +160,13 @@ def load_mapping(to, provider=None, fmt="dataframe"):
             result = [row for row in search(to, provider=provider)]
             if len(result) > 1:
                 p = [row[1].decode() for row in result]
-                raise ValueError(f"More than one result, need one of these providers: {', '.join(p)}")
+                raise ValueError(
+                    f"More than one result, need one of these providers: {', '.join(p)}"
+                )
             if provider is None:
                 provider = result[0][1].decode()
             asm_acc = result[0][2].decode()
-    
-    
+
     logger.info(f"Assembly {asm_acc}, provider {provider}")
 
     if provider not in ["UCSC", "NCBI", "Ensembl"]:
@@ -159,7 +179,11 @@ def load_mapping(to, provider=None, fmt="dataframe"):
     ] = "na"
 
     asm_report["Ensembl-Name"] = asm_report["Sequence-Name"]
-    asm_report.loc[asm_report["Sequence-Role"] != "assembled-molecule", "Ensembl-Name"] = asm_report.loc[asm_report["Sequence-Role"] != "assembled-molecule", "GenBank-Accn"]
+    asm_report.loc[
+        asm_report["Sequence-Role"] != "assembled-molecule", "Ensembl-Name"
+    ] = asm_report.loc[
+        asm_report["Sequence-Role"] != "assembled-molecule", "GenBank-Accn"
+    ]
 
     if provider == "NCBI":
         logger.info("Mapping to NCBI sequence names")
@@ -173,9 +197,15 @@ def load_mapping(to, provider=None, fmt="dataframe"):
     elif provider == "Ensembl":
         logger.info("Mapping to Ensembl sequence names")
         id_column = "Ensembl-Name"
-    
+
     mapping = asm_report[
-        ["Sequence-Name", "UCSC-style-name", "Assigned-Molecule", "GenBank-Accn", "Ensembl-Name"]
+        [
+            "Sequence-Name",
+            "UCSC-style-name",
+            "Assigned-Molecule",
+            "GenBank-Accn",
+            "Ensembl-Name",
+        ]
     ]
     mapping = pd.melt(mapping, id_vars=[id_column])
     mapping = mapping[mapping["value"] != "na"]
@@ -187,7 +217,28 @@ def load_mapping(to, provider=None, fmt="dataframe"):
         return mapping["chrom"].to_dict()
 
 
-def map_bedfile(infile, to, provider=None, keepgoing=False):
+def map_bedfile(
+    infile: str,
+    to: str,
+    provider: Optional[str] = None,
+    keepgoing: Optional[bool] = False,
+):
+    """Map BED file to specific assembly version.
+
+    Parameters
+    ----------
+    infile: str
+        Filename of BED file.
+
+    to: str
+        Either a local genomepy genome name, a remote genome name or an assembly accession (GCA*)
+
+    provider: str, optional
+        If an accession is specified the provider needs to be specified (UCSC, Ensembl or NCBI)
+
+    keepgoing: bool, optional
+        Ignore errors if chromosome mappings are not found.
+    """
     map_dict = load_mapping(to, provider, fmt="dict")
     seen = {}
     for line in open(infile):
@@ -197,8 +248,9 @@ def map_bedfile(infile, to, provider=None, keepgoing=False):
         if new_chrom is None:
             if keepgoing:
                 if not seen.get(chrom):
-                    logger.warning(f"Skipping all features for {chrom}, not found in mapping.")
-                    cat
+                    logger.warning(
+                        f"Skipping all features for {chrom}, not found in mapping."
+                    )
                     seen[chrom] = 1
                 continue
             else:
@@ -206,7 +258,7 @@ def map_bedfile(infile, to, provider=None, keepgoing=False):
         print("\t".join([new_chrom] + vals[1:]))
 
 
-#@cached
+# @cached
 def map_gene_dataframe(
     df: pd.DataFrame, genome: str, gene_field: str, product: str = "protein"
 ) -> pd.DataFrame:
@@ -254,7 +306,7 @@ def map_gene_dataframe(
     return df
 
 
-#@cached
+# @cached
 def gene_annotation(
     genome: str, gene_field: Optional[str] = None, product: str = "protein"
 ) -> pd.DataFrame:
@@ -321,7 +373,7 @@ def gene_annotation(
     return df
 
 
-#@cached
+# @cached
 def local_genome_coords(genes: Iterable[str], genome: str) -> pd.DataFrame:
     """Retrieve gene location from local annotation.
 
@@ -378,7 +430,7 @@ def _query_mygene(genome: str, query: Iterable[str], fields: str = "genomic_pos"
     return result
 
 
-#@cached
+# @cached
 def genome_coords(genes: Iterable[str], genome: str) -> pd.DataFrame:
     """Retrieve genomic coordinates of a set of genes.
 
