@@ -93,7 +93,7 @@ class Genome(Fasta):
             with open(self.sizes_file) as f:
                 for line in f:
                     contig, length = line.strip().split("\t")
-                    self.__sizes[contig] = length
+                    self.__sizes[contig] = int(length)
         return self.__sizes
 
     @property
