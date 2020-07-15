@@ -266,6 +266,7 @@ def test_get_track_type():
         (["chr1:10-20", "chr2:10-20"], "interval"),
         ("tests/data/regions.txt", "interval"),
         ("tests/data/regions.bed", "bed"),
+        ("tests/data/regions2.bed", "bed"),
     ]
 
     for track, track_type in tracks:
