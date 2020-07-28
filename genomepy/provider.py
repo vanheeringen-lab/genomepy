@@ -102,16 +102,6 @@ class ProviderBase(object):
     def __hash__(self):
         return hash(str(self.__class__))
 
-    def list_install_options(self, name=None):
-        """List provider specific install options"""
-        if name is None:
-            return {}
-        elif name.lower() not in self._providers:
-            raise ValueError(f"Unknown provider: {name}")
-        else:
-            provider = self._providers[name.lower()]
-            return provider.list_install_options(self)
-
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
         raise NotImplementedError()
@@ -355,13 +345,18 @@ class ProviderBase(object):
                 with open(annot_file) as f:
                     cols = f.readline().split("\t")
 
+                # extract the genePred format columns
                 start_col = 1
                 for i, col in enumerate(cols):
-                    if col == "+" or col == "-":
+                    if col in ["+", "-"]:
                         start_col = i - 1
                         break
                 end_col = start_col + 10
-                cmd = f"cat {{0}} | cut -f{start_col}-{end_col} > {{1}}"
+                cmd = (
+                    f"""cat {{0}} | cut -f {start_col}-{end_col} | """
+                    # knownGene.txt.gz has spotty fields, this replaces non-integer fields with zeroes
+                    + """awk 'BEGIN {{FS=OFS="\t"}} !($11 ~ /^[0-9]+$/) {{$11="0"}}1' > {1}"""
+                )
             else:
                 raise TypeError(f"file type extension {ext} not recognized!")
 
@@ -370,7 +365,7 @@ class ProviderBase(object):
             # generate gzipped gtf file (if required)
             gtf_file = annot_file.replace(ext, ".gtf")
             if "gtf" not in ext:
-                cmd = "genePredToGtf file {0} {1} && gzip -f {1}"
+                cmd = "genePredToGtf -source=genomepy file {0} {1} && gzip -f {1}"
                 sp.check_call(cmd.format(pred_file, gtf_file), shell=True)
 
             # generate gzipped bed file (if required)
@@ -521,6 +516,19 @@ class EnsemblProvider(ProviderBase):
     """
 
     rest_url = "http://rest.ensembl.org/"
+    provider_specific_install_options = {
+        "toplevel": {
+            "long": "toplevel",
+            "help": "always download toplevel-genome",
+            "flag_value": True,
+        },
+        "version": {
+            "long": "version",
+            "help": "select release version",
+            "type": int,
+            "default": None,
+        },
+    }
 
     def __init__(self):
         # Necessary for bucketcache, otherwise methods with identical names
@@ -568,25 +576,6 @@ class EnsemblProvider(ProviderBase):
             for genome in division_genomes:
                 genomes[safe(genome["assembly_name"])] = genome
         return genomes
-
-    def list_install_options(self, name=None):
-        """List Ensembl specific install options"""
-
-        provider_specific_options = {
-            "toplevel": {
-                "long": "toplevel",
-                "help": "always download toplevel-genome",
-                "flag_value": True,
-            },
-            "version": {
-                "long": "version",
-                "help": "select release version",
-                "type": int,
-                "default": None,
-            },
-        }
-
-        return provider_specific_options
 
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
@@ -748,6 +737,13 @@ class UcscProvider(ProviderBase):
     alt_ucsc_url = base_url + "/{0}/bigZips/{0}.fa.gz"
     alt_ucsc_url_masked = base_url + "/{0}/bigZips/{0}.fa.masked.gz"
     rest_url = "http://api.genome.ucsc.edu/list/ucscGenomes"
+    provider_specific_install_options = {
+        "ucsc_annotation_type": {
+            "long": "annotation",
+            "help": "specify annotation to download: UCSC, Ensembl, NCBI_refseq or UCSC_refseq",
+            "default": None,
+        },
+    }
 
     def __init__(self):
         # Necessary for bucketcache, otherwise methods with identical names
@@ -910,20 +906,44 @@ class UcscProvider(ProviderBase):
         """
         Parse and test the link to the UCSC annotation file.
 
-        Will check UCSC, Ensembl and RefSeq annotation, respectively.
+        Will check UCSC, Ensembl, NCBI RefSeq and UCSC RefSeq annotation, respectively.
+        More info on the annotation file on: https://genome.ucsc.edu/FAQ/FAQgenes.html#whatdo
 
         Parameters
         ----------
         name : str
             Genome name
         """
-        ucsc_gene_url = f"http://hgdownload.cse.ucsc.edu/goldenPath/{name}/database/"
-        annot_files = ["knownGene.txt.gz", "ensGene.txt.gz", "refGene.txt.gz"]
+        gtf_url = f"http://hgdownload.soe.ucsc.edu/goldenPath/{name}/bigZips/genes/"
+        txt_url = f"http://hgdownload.cse.ucsc.edu/goldenPath/{name}/database/"
+        annot_files = {
+            "ucsc": "knownGene",
+            "ensembl": "ensGene",
+            "ncbi_refseq": "ncbiRefSeq",
+            "ucsc_refseq": "refGene",
+        }
 
-        for file in annot_files:
-            link = ucsc_gene_url + file
+        # download gtf format if possible, txt format if not
+        gtfs_exists = check_url(gtf_url)
+        base_url = gtf_url + name + "." if gtfs_exists else txt_url
+        base_ext = ".gtf.gz" if gtfs_exists else ".txt.gz"
+
+        # download specified annotation type if requested
+        file = kwargs.get("ucsc_annotation_type")
+        if file:
+            link = base_url + annot_files[file.lower()] + base_ext
             if check_url(link):
                 return link
+            sys.stderr.write(
+                f"Specified annotation type ({file}) not found for {name}.\n"
+            )
+
+        else:
+            # download first available annotation type found
+            for file in annot_files.values():
+                link = base_url + file + base_ext
+                if check_url(link):
+                    return link
 
 
 @register_provider("NCBI")
@@ -935,6 +955,7 @@ class NcbiProvider(ProviderBase):
     """
 
     assembly_url = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"
+    provider_specific_install_options = {}
 
     def __init__(self):
         # Necessary for bucketcache, otherwise methods with identical names
@@ -1119,6 +1140,14 @@ class UrlProvider(ProviderBase):
     Simply download a genome directly through an url.
     """
 
+    provider_specific_install_options = {
+        "to_annotation": {
+            "long": "to-annotation",
+            "help": "link to the annotation file, required if this is not in the same directory as the fasta file",
+            "default": None,
+        },
+    }
+
     def __init__(self):
         self.name = "URL"
         self.genomes = {}
@@ -1133,19 +1162,6 @@ class UrlProvider(ProviderBase):
         """return an empty generator,
         same as if no genomes were found at the other providers"""
         yield from ()
-
-    def list_install_options(self, name=None):
-        """List URL specific install options"""
-
-        provider_specific_options = {
-            "to_annotation": {
-                "long": "to-annotation",
-                "help": "link to the annotation file, required if this is not in the same directory as the fasta file",
-                "default": None,
-            },
-        }
-
-        return provider_specific_options
 
     def get_genome_download_link(self, url, mask=None, **kwargs):
         return url

@@ -110,8 +110,32 @@ def test__post_process_download(p):
 
 
 def test_get_annotation_download_link(p):
-    link = p.get_annotation_download_link("sacCer3")
-    assert (
-        link
-        == "http://hgdownload.cse.ucsc.edu/goldenPath/sacCer3/database/ensGene.txt.gz"
+    # any GTF format annotation
+    genome = "sacCer3"
+    link = p.get_annotation_download_link(genome)
+    assert genome in link
+    assert link.endswith(".gtf.gz")
+
+    # specific GTF annotation type
+    link = p.get_annotation_download_link(
+        genome, **{"ucsc_annotation_type": "NCBI_refseq"}
     )
+    assert genome in link
+    assert link.endswith("ncbiRefSeq.gtf.gz")
+
+    # any TXT format annotation (no GTF available)
+    genome = "xenTro2"
+    link = p.get_annotation_download_link(genome)
+    assert genome in link
+    assert link.endswith(".txt.gz")
+
+    # specific TXT annotation type (no GTF available)
+    link = p.get_annotation_download_link(
+        genome, **{"ucsc_annotation_type": "UCSC_refseq"}
+    )
+    assert genome in link
+    assert link.endswith("refGene.txt.gz")
+
+    # non-existing annotation type
+    link = p.get_annotation_download_link(genome, **{"ucsc_annotation_type": "UCSC"})
+    assert link is None

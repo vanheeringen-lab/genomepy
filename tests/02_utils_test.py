@@ -154,18 +154,18 @@ def test_safe(unsafe_name="a name ", safe_name="a_name"):
     assert result == safe_name
 
 
-def test_get_localname(name="XT9_1", localname="my genome"):
+def test_get_localname(name="XENTR_9.1", localname="my genome"):
     # name + localname input
     result = genomepy.utils.get_localname(name=name, localname=localname)
     assert result == genomepy.utils.safe(localname)
 
     # name input
     result = genomepy.utils.get_localname(name=name)
-    assert result == name
+    assert result == genomepy.utils.safe(name)
 
     # URL input
-    url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XT9_1.fa.gz"
-    result = genomepy.utils.get_localname(name=url, localname=None)
+    url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_genome.fa.gz"
+    result = genomepy.utils.get_localname(name=url)
     assert result == name
 
 
