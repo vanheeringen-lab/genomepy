@@ -154,18 +154,18 @@ def test_safe(unsafe_name="a name ", safe_name="a_name"):
     assert result == safe_name
 
 
-def test_get_localname(name="XT9_1", localname="my genome"):
+def test_get_localname(name="XENTR_9.1", localname="my genome"):
     # name + localname input
     result = genomepy.utils.get_localname(name=name, localname=localname)
     assert result == genomepy.utils.safe(localname)
 
     # name input
     result = genomepy.utils.get_localname(name=name)
-    assert result == name
+    assert result == genomepy.utils.safe(name)
 
     # URL input
-    url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XT9_1.fa.gz"
-    result = genomepy.utils.get_localname(name=url, localname=None)
+    url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_genome.fa.gz"
+    result = genomepy.utils.get_localname(name=url)
     assert result == name
 
 
@@ -185,6 +185,7 @@ def test_gunzip_and_name(fname="tests/data/small_genome.fa.gz"):
     fname, gzip_file = genomepy.utils.gunzip_and_name(fname)
     assert gzip_file and fname.endswith(".fa")
     assert os.path.exists(fname)
+    assert not os.path.exists(fname + ".gz")
 
 
 def test_gzip_and_name(fname="tests/data/small_genome.fa"):
@@ -192,10 +193,12 @@ def test_gzip_and_name(fname="tests/data/small_genome.fa"):
     fname = genomepy.utils.gzip_and_name(fname)
     assert fname.endswith(".gz")
     assert os.path.exists(fname)
+    assert not os.path.exists(fname[:-3])
 
     fname, _ = genomepy.utils.gunzip_and_name(fname)
     assert fname.endswith(".fa")
     assert os.path.exists(fname)
+    assert not os.path.exists(fname + ".gz")
 
 
 def test_bgzip_and_name(fname="tests/data/small_genome.fa"):
@@ -203,6 +206,7 @@ def test_bgzip_and_name(fname="tests/data/small_genome.fa"):
     fname = genomepy.utils.bgzip_and_name(fname)
     assert fname.endswith(".gz")
     assert os.path.exists(fname)
+    assert not os.path.exists(fname[:-3])
 
     with pytest.raises(sp.CalledProcessError):
         genomepy.utils.bgzip_and_name("tests/data/nofile.fa")

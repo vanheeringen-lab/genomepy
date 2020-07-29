@@ -64,12 +64,6 @@ def test__get_genomes(p):
     assert genome["taxonomy_id"] == 7719
 
 
-def test_list_install_options(p):
-    result = sorted(list(p.list_install_options()))
-    expected = ["toplevel", "version"]
-    assert result == expected
-
-
 def test_genome_info_tuple(p):
     t = p._genome_info_tuple("KH")
     assert isinstance(t, tuple)

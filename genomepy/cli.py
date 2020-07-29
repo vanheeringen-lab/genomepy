@@ -135,11 +135,17 @@ def get_install_options():
     add provider in front of the provider specific options to prevent overlap"""
     install_options = general_install_options
 
-    for name in genomepy.ProviderBase.list_providers():
-        p_dict = genomepy.ProviderBase.create(name).list_install_options()
-        for option in p_dict.keys():
-            p_dict[option]["long"] = name + "-" + p_dict[option]["long"]
-        install_options.update(p_dict)
+    # extend install options with provider specific options
+    if "install" in click.get_os_args():
+        for provider in genomepy.ProviderBase.list_providers():
+            p_dict = eval(
+                "genomepy.provider."
+                + provider.capitalize()
+                + "Provider.provider_specific_install_options"
+            )
+            for option in p_dict.keys():
+                p_dict[option]["long"] = provider + "-" + p_dict[option]["long"]
+            install_options.update(p_dict)
 
     return install_options
 

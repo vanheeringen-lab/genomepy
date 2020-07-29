@@ -55,8 +55,8 @@ class Genome(Fasta):
         self.readme_file = os.path.join(self.genome_dir, "README.txt")
 
         # genome attributes
-        self.sizes = {}  # populate using contig_sizes
-        self.gaps = {}  # populate using gaps_sizes
+        self.sizes = {}
+        self.gaps = {}
         metadata = self._read_metadata()
         self.tax_id = metadata.get("tax_id")
         self.assembly_accession = metadata.get("assembly_accession")
@@ -67,9 +67,34 @@ class Genome(Fasta):
 
     @sizes_file.setter
     def sizes_file(self, fname):
+        """generate the sizes_file when the class is initiated"""
         if not os.path.exists(fname):
             generate_fa_sizes(self.genome_file, fname)
         self.__sizes_file = fname
+
+    @property
+    def sizes(self):
+        return self.__sizes
+
+    @sizes.setter
+    def sizes(self, contig_sizes):
+        self.__sizes = contig_sizes
+
+    @sizes.getter
+    def sizes(self):
+        """Return sizes per contig when requested
+
+        Returns
+        -------
+        contig_sizes : dict
+            a dictionary with contigs as key and their lengths as values
+        """
+        if self.__sizes == {}:
+            with open(self.sizes_file) as f:
+                for line in f:
+                    contig, length = line.strip().split("\t")
+                    self.__sizes[contig] = int(length)
+        return self.__sizes
 
     @property
     def gaps_file(self):
@@ -77,9 +102,36 @@ class Genome(Fasta):
 
     @gaps_file.setter
     def gaps_file(self, fname):
+        """generate the gaps_file when the class is initiated"""
         if not os.path.exists(fname):
             generate_gap_bed(self.genome_file, fname)
         self.__gaps_file = fname
+
+    @property
+    def gaps(self):
+        return self.__gaps
+
+    @gaps.setter
+    def gaps(self, gap_sizes):
+        self.__gaps = gap_sizes
+
+    @gaps.getter
+    def gaps(self):
+        """Return gap sizes per chromosome when requested
+
+        Returns
+        -------
+        gap_sizes : dict
+            a dictionary with chromosomes as key and the total number of
+            Ns as values
+        """
+        if self.__gaps == {}:
+            with open(self.gaps_file) as f:
+                for line in f:
+                    chrom, start, end = line.strip().split("\t")
+                    start, end = int(start), int(end)
+                    self.__gaps[chrom] = self.__gaps.get(chrom, 0) + end - start
+        return self.__gaps
 
     @property
     def plugin(self):
@@ -186,7 +238,7 @@ class Genome(Fasta):
             metadata.get("provider", "na") == "na"
             or "tax_id" not in metadata
             or "assembly_accession" not in metadata
-        ):
+        ) and os.access(self.readme_file, os.W_OK):
             self._update_metadata(metadata)
             write_readme(self.readme_file, metadata, lines)
 
@@ -275,7 +327,7 @@ class Genome(Fasta):
     @staticmethod
     def get_track_type(track):
         # region_p example: "chr1:123-456"
-        region_p = re.compile(r"^(.+):(\d+)-(\d+)$")
+        region_p = re.compile(r"^([^\s]+):(\d+)-(\d+)$")
         if not isinstance(track, (str, bytes)) and isinstance(track, (list, tuple)):
             if isinstance(track[0], (str, bytes)) and region_p.search(track[0]):
                 return "interval"
@@ -322,36 +374,6 @@ class Genome(Fasta):
                     fout.write(f"{seq.__repr__()}\n")
         else:
             return [seq for seq in seqqer]
-
-    def contig_sizes(self):
-        """Return sizes per contig.
-
-        Returns
-        -------
-        contig_sizes : dict
-            a dictionary with contigs as key and their lengths as values
-        """
-        with open(self.sizes_file) as f:
-            for line in f:
-                contig, length = line.strip().split("\t")
-                self.sizes[contig] = length
-        return self.sizes
-
-    def gap_sizes(self):
-        """Return gap sizes per chromosome.
-
-        Returns
-        -------
-        gap_sizes : dict
-            a dictionary with chromosomes as key and the total number of
-            Ns as values
-        """
-        with open(self.gaps_file) as f:
-            for line in f:
-                chrom, start, end = line.strip().split("\t")
-                start, end = int(start), int(end)
-                self.gaps[chrom] = self.gaps.get(chrom, 0) + end - start
-        return self.gaps
 
     @staticmethod
     def _weighted_selection(list_of_tuples, n):
@@ -401,8 +423,6 @@ class Genome(Fasta):
         """
         if not chroms:
             chroms = self.keys()
-        if self.gaps is None:
-            self.gap_sizes()
 
         # dict of chromosome sizes after subtracting the number of Ns
         sizes = dict(
