@@ -7,6 +7,7 @@ import mygene
 from genomepy.provider import ProviderBase #, cached
 from genomepy import Genome, search
 import pandas as pd
+import numpy as np
 
 
 logger.remove()
@@ -276,6 +277,8 @@ def gene_annotation(
     `gene_field`. If the identifier can't be mapped, it will be dropped
     from the resulting annotation.
 
+    Returns a DataFrame with gene annotation in bed12 format.
+
     Parameters
     ----------
     genome : str
@@ -295,6 +298,9 @@ def gene_annotation(
     -------
     pandas.DataFrame with gene annotation.
     """
+    product = product.lower()
+    gene_field = gene_field.lower()
+
     if product not in ["rna", "protein"]:
         raise ValueError(f"Argument product should be either 'rna' or 'protein'")
 
@@ -316,10 +322,14 @@ def gene_annotation(
     g = Genome(genome)
 
     if gene_field is not None:
-        anno_file = f"{genome}.{gene_field}.{product}.annotation.bed"
-        bed = os.path.join(os.path.dirname(g.filename), anno_file)
-        if os.path.exists(bed):
-            return pd.read_csv(bed, sep="\t", names=bed12_fields)
+        if gene_field == "refseq":
+            anno_file = f"{genome}.{gene_field}.{product}.annotation.bed"
+        else:
+            anno_file = f"{genome}.{gene_field}.annotation.bed"
+
+        target_anno = os.path.join(os.path.dirname(g.filename), anno_file)
+        if os.path.exists(target_anno):
+            return pd.read_csv(target_anno, sep="\t", names=bed12_fields, dtype={"chrom":"string", "start":np.uint32, "end":np.uint32})
 
     for anno_file in [f"{genome}.annotation.bed.gz", f"{genome}.annotation.bed"]:
         bed = os.path.join(os.path.dirname(g.filename), anno_file)
@@ -339,6 +349,9 @@ def gene_annotation(
         logger.info("Mapping gene identifiers using mygene.info")
         logger.info("This can take a long time, but results will be saved for faster access next time!")
         df = map_gene_dataframe(df, genome, gene_field=gene_field, product=product)
+        
+        # Save mapping results for quicker access next time
+        df.to_csv(target_anno, sep="\t", index=False, header=False)
 
     return df
 
