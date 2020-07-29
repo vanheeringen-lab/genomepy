@@ -1,13 +1,16 @@
 import os.path
 import re
 import sys
+from typing import Optional, Tuple, Iterable
 
 from bisect import bisect
 from glob import glob
 from pyfaidx import Fasta, Sequence
 from random import random
 import pandas as pd
+import numpy as np
 from loguru import logger
+import mygene
 
 from genomepy.plugin import get_active_plugins
 from genomepy.provider import ProviderBase
@@ -20,13 +23,6 @@ from genomepy.utils import (
     generate_fa_sizes,
     generate_gap_bed,
     safe,
-)
-
-logger.remove()
-logger.add(
-    sys.stderr,
-    format="<green>{time:YYYY-MM-DD at HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
-    level="INFO",
 )
 
 
@@ -67,6 +63,7 @@ class Genome(Fasta):
         self.sizes = {}
         self.gaps = {}
         metadata = self._read_metadata()
+        self.provider = metadata.get("provider")
         self.tax_id = metadata.get("tax_id")
         self.assembly_accession = metadata.get("assembly_accession")
 
@@ -157,6 +154,199 @@ class Genome(Fasta):
     @property
     def annotation_bed_file(self):
         return self.check_annotation_file("bed")
+
+    def _query_mygene(self, query: Iterable[str], fields: str = "genomic_pos"):
+        # mygene.info only queries the most recent version of the Ensembl database
+        # We can only safely continue if the local genome matched the Ensembl genome.
+        # Even if the local genome was installed via Ensembl, we still need to check
+        # if it is the same version
+        result = self.ensembl_genome_info()
+        if result is None:
+            return None
+
+        # Run the actual query
+        logger.info("Querying mygene.info...")
+        mg = mygene.MyGeneInfo()
+        result = mg.querymany(
+            query,
+            scopes="symbol,name,ensembl.gene,entrezgene,ensembl.transcript,ensembl",
+            fields=fields,
+            species=self.tax_id,
+            as_dataframe=True,
+            verbose=False,
+        )
+        logger.info("Done")
+        if "notfound" in result and result.shape[1] == 1:
+            logger.error("No matching genes found")
+            sys.exit()
+
+        return result
+
+    def ensembl_genome_info(self) -> Tuple[str, str, str]:
+        """Return Ensembl genome information this genome.
+
+        Returns
+        -------
+        (str, str, str)
+            Ensembl name, accession, taxonomy_id
+        """
+        if self.provider == "Ensembl":
+            return self.name
+
+        # Fast lookup for some common queries
+        common_names = {
+            "danRer11": "GRCz11",
+            "hg38": "GRCh38.p13",
+            "mm10": "GRCm38.p6",
+            "dm6": "BDGP6.28",
+        }
+        if self.name in common_names:
+            search_term = common_names[self.name]
+        else:
+            search_term = self.tax_id
+
+        # search Ensembl by taxonomy_id or by specific Ensembl name (if we know it)
+        logger.info(f"searching for {search_term}")
+        results = list(ProviderBase.search(str(search_term), provider="Ensembl"))
+        if len(results) == 0:
+            logger.warning(f"Could not find a genome for this species in Ensembl.")
+
+        for name, accession, _species, tax_id, *_ in results:
+            # Check if the assembly_id of the current Ensembl genome is the same as the
+            # local genome. If it is identical, we can correctly assume that the genomes
+            # sequences are identical.
+            # For the genomes in the lookup table, we already know they match.
+            if common_names[self.name] == name or accession == self.assembly_accession:
+                return name, accession, tax_id
+
+        logger.warning(f"Could not find a matching assembly version in the current release of Ensembl.")
+
+        return None
+
+    def map_gene_dataframe(self, df: pd.DataFrame, genome: str, gene_field: str, product: str = "protein") -> pd.DataFrame:
+        """Use mygene.info to map identifiers
+
+        If the identifier can't be mapped, it will be dropped from the resulting
+        annotation.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame with gene information. Should contain at least a "name" column.
+
+        genome : str
+            Genome name for mygene.info.
+
+        gene_field : str
+            Identifier for gene annotation. Uses mygene.info to map ids. Valid fields
+            are: ensembl.gene, entrezgene, symbol, name, refseq, entrezgene. Note that
+            refseq will return the protein refseq_id by default, use `product="rna"` to
+            return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
+            not supported.
+
+        product : str, optional
+            Either "protein" or "rna". Only used when `gene_field="refseq"`
+
+        Returns
+        -------
+        pandas.DataFrame with mapped gene annotation.
+        """
+        cols = df.columns
+        df["split_id"] = df["name"].str.split(r"\.", expand=True)[0]
+        genes = df["split_id"].tolist()
+        result = self._query_mygene(genes, fields=gene_field)
+        if result is None:
+            logger.error("Could not map using mygene.info")
+        df = df.join(result, on="split_id")
+
+        # Only in case of RefSeq annotation the product needs to be specified.
+        if gene_field == "refseq":
+            gene_field = f"{gene_field}.translation.{product}"
+
+        # Get rid of extra columns from query
+        df["name"] = df[gene_field]
+        df = df[cols].dropna()
+
+        return df
+
+    def gene_annotation(self, gene_field: Optional[str] = None, product: str = "protein") -> pd.DataFrame:
+        """Retrieve gene location from local annotation.
+
+        You can use mygene.info to map identifiers on the fly by specifying
+        `gene_field`. If the identifier can't be mapped, it will be dropped
+        from the resulting annotation.
+
+        Returns a DataFrame with gene annotation in bed12 format.
+
+        Parameters
+        ----------
+        genome : str
+            Genome name
+
+        gene_field : str, optional
+            Identifier for gene annotation. Uses mygene.info to map ids. Valid fields
+            are: ensembl.gene, entrezgene, symbol, name, refseq, entrezgene. Note that
+            refseq will return the protein refseq_id by default, use `product="rna"` to
+            return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
+            not supported.
+
+        product : str, optional
+            Either "protein" or "rna". Only used when `gene_field="refseq"`
+
+        Returns
+        -------
+        pandas.DataFrame with gene annotation.
+        """
+        product = product.lower()
+        if gene_field is not None:
+            gene_field = gene_field.lower()
+
+        if product not in ["rna", "protein"]:
+            raise ValueError(f"Argument product should be either 'rna' or 'protein'")
+
+        bed12_fields = [
+            "chrom",
+            "start",
+            "end",
+            "name",
+            "score",
+            "strand",
+            "thickStart",
+            "thickEnd",
+            "itemRrgb",
+            "blockCount",
+            "blockSizes",
+            "blockStarts",
+        ]
+
+        if gene_field is not None:
+            if gene_field == "refseq":
+                anno_file = f"{self.name}.{gene_field}.{product}.annotation.bed"
+            else:
+                anno_file = f"{self.name}.{gene_field}.annotation.bed"
+
+            target_anno = os.path.join(os.path.dirname(self.filename), anno_file)
+            if os.path.exists(target_anno):
+                return pd.read_csv(target_anno, sep="\t", names=bed12_fields, dtype={"chrom": "string", "start": np.uint32, "end": np.uint32})
+
+        bed = self.annotation_bed_file
+
+        if bed is None:
+            logger.info(f"No annotation file found for genome {self.name}")
+            return
+
+        df = pd.read_csv(bed, sep="\t", names=bed12_fields)
+
+        # Optionally use mygene.info to map gene/transcript ids
+        if gene_field is not None:
+            logger.info("Mapping gene identifiers using mygene.info")
+            logger.info("This can take a long time, but results will be saved for faster access next time!")
+            df = self.map_gene_dataframe(df, self.name, gene_field=gene_field, product=product)
+
+            # Save mapping results for quicker access next time
+            df.to_csv(target_anno, sep="\t", index=False, header=False)
+
+        return df
 
     @property
     def assembly_report(self):

@@ -1,5 +1,4 @@
 """Genome providers."""
-import sys
 import requests
 import re
 import os
@@ -34,12 +33,12 @@ from genomepy.utils import (
 )
 from genomepy.__about__ import __version__
 
-logger.remove()
-logger.add(
-    sys.stderr,
-    format="<green>{time:YYYY-MM-DD at HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
-    level="INFO",
-)
+# logger.remove()
+# logger.add(
+#     sys.stderr,
+#     format="<green>{time:YYYY-MM-DD at HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
+#     level="INFO",
+# )
 
 # store the output of slow commands (marked with @cached) for fast reuse
 my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
@@ -91,6 +90,43 @@ class ProviderBase(object):
             return cls._providers[name.lower()](**kwargs)
         except KeyError:
             raise ValueError("Unknown provider")
+
+    @classmethod
+    def search(cls, term, provider=None, encode=False):
+        """
+        Search for a genome.
+
+        If provider is specified, search only that specific provider, else
+        search all providers. Both the name and description are used for the
+        search. Search term is case-insensitive.
+
+        Parameters
+        ----------
+        term : str
+            Search term, case-insensitive.
+
+        provider : str , optional
+            Provider name
+
+        encode : bool, optional
+            Encode return strings.
+
+        Yields
+        ------
+        tuple
+            genome information (name/identfier and description)
+        """
+        if provider:
+            providers = [cls.create(provider)]
+        else:
+            # if provider is not specified search all providers
+            providers = [cls.create(p) for p in cls.list_providers()]
+        for p in providers:
+            for row in p._search(term):
+                ret = list(row[:1]) + [p.name] + list(row[1:])
+                if encode:
+                    ret = [x.encode("latin-1") for x in ret]
+                yield ret
 
     @classmethod
     def register_provider(cls, provider):
@@ -198,8 +234,7 @@ class ProviderBase(object):
         pandas.DataFrame
             NCBI assembly report.
         """
-        p = ProviderBase.create("NCBI")
-        ncbi_search = list(p.search(asm_acc))
+        ncbi_search = list(ProviderBase.search(asm_acc, provider="NCBI"))
         if len(ncbi_search) == 0:
             raise ValueError(f"No assembly found with accession {asm_acc}")
         elif len(ncbi_search) > 1:
@@ -304,7 +339,7 @@ class ProviderBase(object):
                 chunk_size = None if file_size < cutoff else cutoff
                 with open(fname, "wb") as f_out:
                     shutil.copyfileobj(response, f_out, chunk_size)
-            logger.info("Genome download successful, starting post processing...\n")
+            logger.info("Genome download successful, starting post processing...")
 
             # unzip genome
             if link.endswith(".tar.gz"):
@@ -458,7 +493,7 @@ class ProviderBase(object):
             )
             return
 
-        logger.info(f"\nDownloading annotation from {link}...")
+        logger.info(f"Downloading annotation from {link}...")
         try:
             self.download_and_generate_annotation(genomes_dir, link, localname)
         except Exception:
@@ -524,16 +559,15 @@ class ProviderBase(object):
         """
         # NCBI provides a consistent assembly accession. This can be used to
         # retrieve the species, and then search for that.
-        p = ProviderBase.create("NCBI")
-        species = [row[2] for row in p.search(term)]
+        species = [row[2] for row in ProviderBase.search(term, provider="NCBI")]
         if len(species) == 0:
             raise ValueError(f"No genome found with accession {term}")
         species = species[0]
-        for row in self.search(species):
+        for row in self._search(species):
             if row[1] == term:
                 yield row
 
-    def search(self, term):
+    def _search(self, term):
         """
         Search for term in genome names, descriptions and taxonomy ID.
 
@@ -1235,7 +1269,7 @@ class UrlProvider(ProviderBase):
     def assembly_accession(self, genome):
         return "na"
 
-    def search(self, term):
+    def _search(self, term):
         """return an empty generator,
         same as if no genomes were found at the other providers"""
         yield from ()

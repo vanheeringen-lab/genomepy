@@ -338,34 +338,4 @@ def list_available_providers():
     return ProviderBase.list_providers()
 
 
-def search(term, provider=None):
-    """
-    Search for a genome.
-
-    If provider is specified, search only that specific provider, else
-    search all providers. Both the name and description are used for the
-    search. Search term is case-insensitive.
-
-    Parameters
-    ----------
-    term : str
-        Search term, case-insensitive.
-
-    provider : str , optional
-        Provider name
-
-    Yields
-    ------
-    tuple
-        genome information (name/identfier and description)
-    """
-    if provider:
-        providers = [ProviderBase.create(provider)]
-    else:
-        # if provider is not specified search all providers
-        providers = [ProviderBase.create(p) for p in ProviderBase.list_providers()]
-    for p in providers:
-        for row in p.search(term):
-            yield [
-                x.encode("latin-1") for x in list(row[:1]) + [p.name] + list(row[1:])
-            ]
+search = ProviderBase.search

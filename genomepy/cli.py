@@ -251,7 +251,7 @@ def search(term, provider=None):
     """
     data = [["name", "provider", "accession", "species", "tax_id", "other_info"]]
     for row in genomepy.search(term, provider):
-        data.append([x.decode("utf-8", "ignore") for x in row])
+        data.append(row)
     if len(data) == 1:
         print("No genomes found!", file=sys.stderr)
         return
