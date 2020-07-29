@@ -27,6 +27,7 @@ def trunc512_digest(seq, offset=24):
     hex_digest = binascii.hexlify(digest[:offset])
     return hex_digest
 
+
 def read_readme(readme):
     """
     parse readme file
