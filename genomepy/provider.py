@@ -74,7 +74,7 @@ class ProviderBase(object):
     description_fields = []
 
     @classmethod
-    def create(cls, name):
+    def create(cls, name, **kwargs):
         """Create a provider based on the provider name.
 
         Parameters
@@ -88,7 +88,7 @@ class ProviderBase(object):
             Provider instance.
         """
         try:
-            return cls._providers[name.lower()]()
+            return cls._providers[name.lower()](**kwargs)
         except KeyError:
             raise ValueError("Unknown provider")
 
@@ -179,7 +179,7 @@ class ProviderBase(object):
             if accession.startswith("GCA"):
                 return accession
         return "na"
-    
+
     def download_assembly_report(self, asm_acc: str, fname: Optional[str] = None):
         """Retrieve the NCBI assembly report.
 
@@ -229,7 +229,7 @@ class ProviderBase(object):
             "UCSC-style-name",
         ]
         asm_report = pd.read_csv(assembly_report, sep="\t", comment="#", names=header)
-        
+
         if fname:
             asm_report.to_csv(fname, sep="\t", index=False)
         else:
@@ -304,9 +304,7 @@ class ProviderBase(object):
                 chunk_size = None if file_size < cutoff else cutoff
                 with open(fname, "wb") as f_out:
                     shutil.copyfileobj(response, f_out, chunk_size)
-            logger.info(
-                "Genome download successful, starting post processing...\n"
-            )
+            logger.info("Genome download successful, starting post processing...\n")
 
             # unzip genome
             if link.endswith(".tar.gz"):
@@ -583,7 +581,6 @@ class EnsemblProvider(ProviderBase):
     The bacteria division is not yet supported.
     """
 
-    rest_url = "http://rest.ensembl.org/"
     provider_specific_install_options = {
         "toplevel": {
             "long": "toplevel",
@@ -598,12 +595,11 @@ class EnsemblProvider(ProviderBase):
         },
     }
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         # Necessary for bucketcache, otherwise methods with identical names
         # from different classes will use the same cache :-O!
         self.name = "Ensembl"
-        # Populate on init, so that methods can be cached
-        self.genomes = self._get_genomes()
+
         self.accession_fields = ["assembly_accession"]
         self.taxid_fields = ["taxonomy_id"]
         self.description_fields = [
@@ -612,7 +608,24 @@ class EnsemblProvider(ProviderBase):
             "url_name",
             "display_name",
         ]
-        self.version = None
+        self.version = kwargs.get("version")
+
+        if self.version is not None and int(self.version) < 97:
+            raise ValueError(
+                "The Ensembl REST API does not support the necessary functions for releases lower than 97, sorry!"
+            )
+
+        if self.version is None:
+            self.rest_url = "http://rest.ensembl.org/"
+        else:
+            url = f"http://e{self.version}.rest.ensembl.org/"
+            # This is necessary to get the correct URL after redirection
+            # Otherwise content won't be returned as json later
+            r = requests.get(url)
+            self.rest_url = r.url
+
+        # Populate on init, so that methods can be cached
+        self.genomes = self._get_genomes(version=self.version)
 
     @cached(method=True)
     def _request_json(self, ext):
@@ -621,7 +634,7 @@ class EnsemblProvider(ProviderBase):
             ext = ext[1:]
 
         r = requests.get(
-            self.rest_url + ext, headers={"Content-Type": "application/json"}
+            self.rest_url + ext, headers={"content-type": "application/json"}
         )
 
         if not r.ok:
@@ -630,7 +643,7 @@ class EnsemblProvider(ProviderBase):
         return r.json()
 
     @cached(method=True)
-    def _get_genomes(self):
+    def _get_genomes(self, version=None):
         logger.info("Downloading assembly summaries from Ensembl")
 
         genomes = {}
@@ -813,7 +826,7 @@ class UcscProvider(ProviderBase):
         },
     }
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         # Necessary for bucketcache, otherwise methods with identical names
         # from different classes will use the same cache :-O!
         self.name = "UCSC"
@@ -1002,9 +1015,7 @@ class UcscProvider(ProviderBase):
             link = base_url + annot_files[file.lower()] + base_ext
             if check_url(link):
                 return link
-            logger.warn(
-                f"Specified annotation type ({file}) not found for {name}.\n"
-            )
+            logger.warn(f"Specified annotation type ({file}) not found for {name}.\n")
 
         else:
             # download first available annotation type found
@@ -1025,7 +1036,7 @@ class NcbiProvider(ProviderBase):
     assembly_url = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"
     provider_specific_install_options = {}
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         # Necessary for bucketcache, otherwise methods with identical names
         # from different classes will use the same cache :-O!
         self.name = "NCBI"
@@ -1156,9 +1167,7 @@ class NcbiProvider(ProviderBase):
                 return txt
 
         elif mask == "hard":
-            logger.info(
-                "NCBI genomes are softmasked by default. Hard masking..."
-            )
+            logger.info("NCBI genomes are softmasked by default. Hard masking...")
 
             def mask_cmd(txt):
                 return re.sub("[actg]", "N", txt)
@@ -1216,7 +1225,7 @@ class UrlProvider(ProviderBase):
         },
     }
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.name = "URL"
         self.genomes = {}
 
@@ -1253,7 +1262,7 @@ class UrlProvider(ProviderBase):
     def search_url_for_annotation(url):
         """Attempts to find a gtf or gff3 file in the same location as the genome url"""
         urldir = os.path.dirname(url)
-        
+
         logger.info("You have requested gene annotation to be downloaded.")
         logger.info("Genomepy will check the remote directory:")
         logger.info(f"{urldir} for annotation files...")
