@@ -93,7 +93,7 @@ class Genome(Fasta):
             with open(self.sizes_file) as f:
                 for line in f:
                     contig, length = line.strip().split("\t")
-                    self.__sizes[contig] = length
+                    self.__sizes[contig] = int(length)
         return self.__sizes
 
     @property
@@ -327,7 +327,7 @@ class Genome(Fasta):
     @staticmethod
     def get_track_type(track):
         # region_p example: "chr1:123-456"
-        region_p = re.compile(r"^(.+):(\d+)-(\d+)$")
+        region_p = re.compile(r"^([^\s]+):(\d+)-(\d+)$")
         if not isinstance(track, (str, bytes)) and isinstance(track, (list, tuple)):
             if isinstance(track[0], (str, bytes)) and region_p.search(track[0]):
                 return "interval"

@@ -266,6 +266,7 @@ def test_get_track_type():
         (["chr1:10-20", "chr2:10-20"], "interval"),
         ("tests/data/regions.txt", "interval"),
         ("tests/data/regions.bed", "bed"),
+        ("tests/data/regions2.bed", "bed"),
     ]
 
     for track, track_type in tracks:
@@ -301,6 +302,8 @@ def test_track2fasta(genome="tests/data/small_genome.fa.gz"):
 def test_sizes(genome="tests/data/gap.fa"):
     g = genomepy.Genome(genome)
     assert list(g.sizes.keys()) == ["chr1", "chr2", "chr3"]
+    assert all(isinstance(g.sizes[chrom], int) for chrom in g.sizes.keys())
+    assert g.sizes["chr1"] == 28
 
     # does not overwrite user-set sizes
     g.sizes = {"asd": 1}

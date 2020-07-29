@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.8.4] - 2020-07-29
+- Fix bug where Genome.sizes dict contains str instead of int (#110).
+- Fix bug with UTF-8 in README (#109).
+- Fix bug where BED files with chr:start-end in 4th column are not recognized as BED files.
+
 ## [0.8.3] - 2020-06-03
 
 ### Fixed
