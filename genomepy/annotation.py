@@ -4,7 +4,7 @@ from typing import Tuple, Iterable, Optional, Union
 
 from loguru import logger
 import mygene
-from genomepy.provider import ProviderBase, cached
+from genomepy.provider import ProviderBase #, cached
 from genomepy import Genome, search
 import pandas as pd
 
@@ -34,8 +34,8 @@ def ensembl_genome_info(genome_name: str) -> Tuple[str, str, str]:
     # Fast lookup for some common queries
     common_names = {
         "danRer11": "GRCz11",
-        "hg38": "GRCh38",
-        "mm10": "GRCm38",
+        "hg38": "GRCh38.p13",
+        "mm10": "GRCm38.p6",
         "dm6": "BDGP6.28",
     }
     if genome_name in common_names:
@@ -57,17 +57,22 @@ def ensembl_genome_info(genome_name: str) -> Tuple[str, str, str]:
 
     # search Ensembl by taxonomy_id or by specific Ensembl name (if we know it)
     p = ProviderBase.create("Ensembl")
-    name, accession, species, tax_id, *rest = [row for row in p.search(search_term)][0]
+    logger.info(f"searching for {search_term}")
+    results = list(p.search(str(search_term)))
+    if len(results) == 0:
+        logger.warn(f"Could not find a genome for this species in Ensembl.")
+    
+    for name, accession, species, tax_id, *rest in results:
+        # Check if the assembly_id of the current Ensembl genome is the same as the
+        # local genome. If it is identical, we can correctly assume that the genomes
+        # sequences are identical.
+        # For the genomes in the lookup table, we already know they match.
+        if common_names[genome_name] == name or accession == genome.assembly_accession:
+            return name, accession, tax_id
 
-    # Check if the assembly_id of the current Ensembl genome is the same as the
-    # local genome. If it is identical, we can correctly assume that the genomes
-    # sequences are identical.
-    # For the genomes in the lookup table, we already know they match.
-    if genome_name in common_names or accession == genome.assembly_accession:
-        return name, accession, tax_id
-    else:
-        print(f"Could not find a matching genome in Ensembl")
-        return None
+    logger.warn(f"Could not find a matching assembly version in the current release of Ensembl.")
+
+    return None
 
 
 ##@cached
@@ -246,6 +251,8 @@ def map_gene_dataframe(
     df["split_id"] = df["name"].str.split(r"\.", expand=True)[0]
     genes = df["split_id"].tolist()
     result = _query_mygene(genome, genes, fields=gene_field)
+    if result is None:
+        logger.error("Could not map using mygene.info")
     df = df.join(result, on="split_id")
 
     # Only in case of RefSeq annotation the product needs to be specified.
@@ -291,18 +298,6 @@ def gene_annotation(
     if product not in ["rna", "protein"]:
         raise ValueError(f"Argument product should be either 'rna' or 'protein'")
 
-    g = Genome(genome)
-    for anno_file in [f"{genome}.annotation.bed.gz", f"{genome}.annotation.bed"]:
-        bed = os.path.join(os.path.dirname(g.filename), anno_file)
-        if os.path.exists(bed):
-            break
-        else:
-            bed = None
-
-    if bed is None:
-        logger.info(f"No annotation file found for genome {genome}")
-        return
-
     bed12_fields = [
         "chrom",
         "start",
@@ -317,10 +312,32 @@ def gene_annotation(
         "blockSizes",
         "blockStarts",
     ]
-    df = pd.read_table(bed, names=bed12_fields)
+
+    g = Genome(genome)
+
+    if gene_field is not None:
+        anno_file = f"{genome}.{gene_field}.{product}.annotation.bed"
+        bed = os.path.join(os.path.dirname(g.filename), anno_file)
+        if os.path.exists(bed):
+            return pd.read_csv(bed, sep="\t", names=bed12_fields)
+
+    for anno_file in [f"{genome}.annotation.bed.gz", f"{genome}.annotation.bed"]:
+        bed = os.path.join(os.path.dirname(g.filename), anno_file)
+        if os.path.exists(bed):
+            break
+        else:
+            bed = None
+
+    if bed is None:
+        logger.info(f"No annotation file found for genome {genome}")
+        return
+
+    df = pd.read_csv(bed, sep="\t", names=bed12_fields)
 
     # Optionally use mygene.info to map gene/transcript ids
     if gene_field is not None:
+        logger.info("Mapping gene identifiers using mygene.info")
+        logger.info("This can take a long time, but results will be saved for faster access next time!")
         df = map_gene_dataframe(df, genome, gene_field=gene_field, product=product)
 
     return df
