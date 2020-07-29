@@ -29,6 +29,7 @@ logger.add(
     level="INFO",
 )
 
+
 class Genome(Fasta):
     """
     Get pyfaidx Fasta object of genome
@@ -162,13 +163,15 @@ class Genome(Fasta):
         fname = os.path.join(self.genome_dir, "assembly_report.txt")
         if not os.path.exists(fname):
             if self.assembly_accession in ["na", None]:
-                logger.warn("Can't download an assembly report without an assembly accession.")
+                logger.warn(
+                    "Can't download an assembly report without an assembly accession."
+                )
                 return
             logger.info("Assembly report not present, downloading...")
             p = ProviderBase.create("NCBI")
             p.download_assembly_report(self.assembly_accession, fname)
-        
-        return pd.read_csv(fname, sep='\t')
+
+        return pd.read_csv(fname, sep="\t")
 
     @staticmethod
     def _parse_name(name):
