@@ -7,13 +7,16 @@ import norns
 import time
 import shutil
 import subprocess as sp
+from typing import Optional
 
+from loguru import logger
 from psutil import virtual_memory
 from tempfile import TemporaryDirectory
 from urllib.request import urlopen, urlretrieve, urlcleanup
 from bucketcache import Bucket
 from pyfaidx import Fasta
 from appdirs import user_cache_dir
+import pandas as pd
 
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.utils import (
@@ -30,6 +33,13 @@ from genomepy.utils import (
     mkdir_p,
 )
 from genomepy.__about__ import __version__
+
+logger.remove()
+logger.add(
+    sys.stderr,
+    format="<green>{time:YYYY-MM-DD at HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
+    level="INFO",
+)
 
 # store the output of slow commands (marked with @cached) for fast reuse
 my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
@@ -169,6 +179,61 @@ class ProviderBase(object):
             if accession.startswith("GCA"):
                 return accession
         return "na"
+    
+    def download_assembly_report(self, asm_acc: str, fname: Optional[str] = None):
+        """Retrieve the NCBI assembly report.
+
+        Returns the assembly_report as a pandas DataFrame if fname is not specified.
+
+        Parameters
+        ----------
+        asm_acc : str
+            Assembly accession (GCA or GCF)
+
+        fname : str, optional
+            Save assembly_report to this filename.
+
+        Returns
+        -------
+        pandas.DataFrame
+            NCBI assembly report.
+        """
+        p = ProviderBase.create("NCBI")
+        ncbi_search = list(p.search(asm_acc))
+        if len(ncbi_search) == 0:
+            raise ValueError(f"No assembly found with accession {asm_acc}")
+        elif len(ncbi_search) > 1:
+            raise Exception("More than one genome for accession")
+        else:
+            ncbi_name = ncbi_search[0][0].replace(" ", "_")
+
+        # NCBI FTP location of assembly report
+        logger.info(f"Found NCBI assembly {asm_acc} with name {ncbi_name}")
+        assembly_report = (
+            f"ftp://ftp.ncbi.nlm.nih.gov/genomes/all/{asm_acc[0:3]}/"
+            + f"{asm_acc[4:7]}/{asm_acc[7:10]}/{asm_acc[10:13]}/"
+            + f"{asm_acc}_{ncbi_name}/{asm_acc}_{ncbi_name}_assembly_report.txt"
+        )
+
+        logger.info(f"Downloading {assembly_report}")
+        header = [
+            "Sequence-Name",
+            "Sequence-Role",
+            "Assigned-Molecule",
+            "Assigned-Molecule-Location/Type",
+            "GenBank-Accn",
+            "Relationship",
+            "RefSeq-Accn",
+            "Assembly-Unit",
+            "Sequence-Length",
+            "UCSC-style-name",
+        ]
+        asm_report = pd.read_csv(assembly_report, sep="\t", comment="#", names=header)
+        
+        if fname:
+            asm_report.to_csv(fname, sep="\t", index=False)
+        else:
+            return asm_report
 
     def download_genome(
         self,
@@ -221,7 +286,7 @@ class ProviderBase(object):
         if not os.path.exists(out_dir):
             mkdir_p(out_dir)
 
-        sys.stderr.write(f"Downloading genome from {link}...\n")
+        logger.info(f"Downloading genome from {link}...")
 
         # download to tmp dir. Move genome on completion.
         # tmp dir is in genome_dir to prevent moving the genome between disks
@@ -239,7 +304,7 @@ class ProviderBase(object):
                 chunk_size = None if file_size < cutoff else cutoff
                 with open(fname, "wb") as f_out:
                     shutil.copyfileobj(response, f_out, chunk_size)
-            sys.stderr.write(
+            logger.info(
                 "Genome download successful, starting post processing...\n"
             )
 
@@ -280,10 +345,13 @@ class ProviderBase(object):
             dst = os.path.join(genomes_dir, localname, os.path.basename(fname))
             shutil.move(src, dst)
 
-        sys.stderr.write("\n")
-        sys.stderr.write("name: {}\n".format(name))
-        sys.stderr.write("local name: {}\n".format(localname))
-        sys.stderr.write("fasta: {}\n".format(dst))
+        asm_report = os.path.join(genomes_dir, localname, "assembly_report.txt")
+        asm_acc = self.assembly_accession(self.genomes.get(name))
+        self.download_assembly_report(asm_acc, asm_report)
+
+        logger.info("name: {}".format(name))
+        logger.info("local name: {}".format(localname))
+        logger.info("fasta: {}".format(dst))
 
         # Create readme with information
         readme = os.path.join(genomes_dir, localname, "README.txt")
@@ -292,7 +360,7 @@ class ProviderBase(object):
             "provider": self.name,
             "original name": original_name,
             "original filename": os.path.split(link)[-1],
-            "assembly_accession": self.assembly_accession(self.genomes.get(name)),
+            "assembly_accession": asm_acc,
             "tax_id": self.genome_taxid(self.genomes.get(name)),
             "mask": mask,
             "genome url": link,
@@ -387,12 +455,12 @@ class ProviderBase(object):
 
     def attempt_and_report(self, name, localname, link, genomes_dir):
         if not link:
-            sys.stderr.write(
-                f"Could not download genome annotation for {name} from {self.name}.\n"
+            logger.warn(
+                f"Could not download genome annotation for {name} from {self.name}."
             )
             return
 
-        sys.stderr.write(f"\nDownloading annotation from {link}...\n")
+        logger.info(f"\nDownloading annotation from {link}...")
         try:
             self.download_and_generate_annotation(genomes_dir, link, localname)
         except Exception:
@@ -403,7 +471,7 @@ class ProviderBase(object):
             )
 
         # TODO sanity check for genes
-        sys.stderr.write("Annotation download successful\n")
+        logger.info("Annotation download successful")
 
         # Update readme annotation URL, or make a new
         readme = os.path.join(genomes_dir, localname, "README.txt")
@@ -563,7 +631,7 @@ class EnsemblProvider(ProviderBase):
 
     @cached(method=True)
     def _get_genomes(self):
-        sys.stderr.write("Downloading assembly summaries from Ensembl\n")
+        logger.info("Downloading assembly summaries from Ensembl")
 
         genomes = {}
         divisions = self._request_json("info/divisions?")
@@ -600,7 +668,7 @@ class EnsemblProvider(ProviderBase):
             m = p.search(response.read().decode())
         if m:
             version = m.group(2)
-            sys.stderr.write("Using version {}\n".format(version))
+            logger.info("Using version {}".format(version))
             self.version = version
             return version
 
@@ -757,7 +825,7 @@ class UcscProvider(ProviderBase):
 
     @cached(method=True)
     def _get_genomes(self):
-        sys.stderr.write("Downloading assembly summaries from UCSC\n")
+        logger.info("Downloading assembly summaries from UCSC")
 
         r = requests.get(self.rest_url, headers={"Content-Type": "application/json"})
         if not r.ok:
@@ -890,7 +958,7 @@ class UcscProvider(ProviderBase):
         if mask != "none":
             return
 
-        sys.stderr.write("\nUCSC genomes are softmasked by default. Unmasking...\n")
+        logger.info("\nUCSC genomes are softmasked by default. Unmasking...")
 
         fa = os.path.join(out_dir, f"{localname}.fa")
         old_fa = os.path.join(out_dir, f"old_{localname}.fa")
@@ -934,7 +1002,7 @@ class UcscProvider(ProviderBase):
             link = base_url + annot_files[file.lower()] + base_ext
             if check_url(link):
                 return link
-            sys.stderr.write(
+            logger.warn(
                 f"Specified annotation type ({file}) not found for {name}.\n"
             )
 
@@ -976,7 +1044,7 @@ class NcbiProvider(ProviderBase):
     @cached(method=True)
     def _get_genomes(self):
         """Parse genomes from assembly summary txt files."""
-        sys.stderr.write(
+        logger.info(
             "Downloading assembly summaries from NCBI, this will take a while...\n"
         )
 
@@ -1088,15 +1156,15 @@ class NcbiProvider(ProviderBase):
                 return txt
 
         elif mask == "hard":
-            sys.stderr.write(
-                "\nNCBI genomes are softmasked by default. Hard masking...\n"
+            logger.info(
+                "NCBI genomes are softmasked by default. Hard masking..."
             )
 
             def mask_cmd(txt):
                 return re.sub("[actg]", "N", txt)
 
         else:
-            sys.stderr.write("\nNCBI genomes are softmasked by default. Unmasking...\n")
+            logger.info("NCBI genomes are softmasked by default. Unmasking...")
 
             def mask_cmd(txt):
                 return txt.upper()
@@ -1185,11 +1253,10 @@ class UrlProvider(ProviderBase):
     def search_url_for_annotation(url):
         """Attempts to find a gtf or gff3 file in the same location as the genome url"""
         urldir = os.path.dirname(url)
-        sys.stderr.write(
-            "You have requested gene annotation to be downloaded.\n"
-            "Genomepy will check the remote directory:\n"
-            f"{urldir} for annotation files...\n"
-        )
+        
+        logger.info("You have requested gene annotation to be downloaded.")
+        logger.info("Genomepy will check the remote directory:")
+        logger.info(f"{urldir} for annotation files...")
 
         # try to find a GTF or GFF3 file
         name = get_localname(url)

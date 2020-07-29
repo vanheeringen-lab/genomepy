@@ -6,6 +6,8 @@ from bisect import bisect
 from glob import glob
 from pyfaidx import Fasta, Sequence
 from random import random
+import pandas as pd
+from loguru import logger
 
 from genomepy.plugin import get_active_plugins
 from genomepy.provider import ProviderBase
@@ -20,6 +22,12 @@ from genomepy.utils import (
     safe,
 )
 
+logger.remove()
+logger.add(
+    sys.stderr,
+    format="<green>{time:YYYY-MM-DD at HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
+    level="INFO",
+)
 
 class Genome(Fasta):
     """
@@ -148,6 +156,19 @@ class Genome(Fasta):
     @property
     def annotation_bed_file(self):
         return self.check_annotation_file("bed")
+
+    @property
+    def assembly_report(self):
+        fname = os.path.join(self.genome_dir, "assembly_report.txt")
+        if not os.path.exists(fname):
+            if self.assembly_accession in ["na", None]:
+                logger.warn("Can't download an assembly report without an assembly accession.")
+                return
+            logger.info("Assembly report not present, downloading...")
+            p = ProviderBase.create("NCBI")
+            p.download_assembly_report(self.assembly_accession, fname)
+        
+        return pd.read_csv(fname, sep='\t')
 
     @staticmethod
     def _parse_name(name):

@@ -70,54 +70,6 @@ def ensembl_genome_info(genome_name: str) -> Tuple[str, str, str]:
         return None
 
 
-# @cached
-def ncbi_assembly_report(asm_acc: str) -> pd.DataFrame:
-    """Retrieve the NCBI assembly report as a DataFrame.
-
-    Parameters
-    ----------
-    asm_acc : str
-        Assembly accession (GCA or GCF)
-
-    Returns
-    -------
-    pandas.DataFrame
-        NCBI assembly report.
-    """
-    p = ProviderBase.create("NCBI")
-    ncbi_search = list(p.search(asm_acc))
-    if len(ncbi_search) == 0:
-        raise ValueError(f"No assembly found with accession {asm_acc}")
-    elif len(ncbi_search) > 1:
-        raise Exception("More than one genome for accession")
-    else:
-        ncbi_name = ncbi_search[0][0].replace(" ", "_")
-
-    # NCBI FTP location of assembly report
-    logger.info(f"Found NCBI assembly {asm_acc} with name {ncbi_name}")
-    assembly_report = (
-        f"ftp://ftp.ncbi.nlm.nih.gov/genomes/all/{asm_acc[0:3]}/"
-        + f"{asm_acc[4:7]}/{asm_acc[7:10]}/{asm_acc[10:13]}/"
-        + f"{asm_acc}_{ncbi_name}/{asm_acc}_{ncbi_name}_assembly_report.txt"
-    )
-
-    logger.info(f"Downloading {assembly_report}")
-    header = [
-        "Sequence-Name",
-        "Sequence-Role",
-        "Assigned-Molecule",
-        "Assigned-Molecule-Location/Type",
-        "GenBank-Accn",
-        "Relationship",
-        "RefSeq-Accn",
-        "Assembly-Unit",
-        "Sequence-Length",
-        "UCSC-style-name",
-    ]
-    asm_report = pd.read_csv(assembly_report, sep="\t", comment="#", names=header)
-    return asm_report
-
-
 ##@cached
 def load_mapping(
     to: str, provider: Optional[str] = None, fmt: Optional[str] = "dataframe"
@@ -155,6 +107,7 @@ def load_mapping(
             asm_acc = genome.assembly_accession
             if provider is None:
                 provider = genome.provider
+            asm_report = genome.assembly_reportr
         except Exception:
             logger.info("Searching remote genome information")
             result = [row for row in search(to, provider=provider)]
@@ -166,6 +119,7 @@ def load_mapping(
             if provider is None:
                 provider = result[0][1].decode()
             asm_acc = result[0][2].decode()
+            asm_report = ProviderBase.create(provider).download_assembly_report(asm_acc)
 
     logger.info(f"Assembly {asm_acc}, provider {provider}")
 
@@ -173,7 +127,6 @@ def load_mapping(
         logger.error(f"Can't map to provider {provider}")
         return None
 
-    asm_report = ncbi_assembly_report(asm_acc)
     asm_report.loc[
         asm_report["Sequence-Role"] != "assembled-molecule", "Assigned-Molecule"
     ] = "na"

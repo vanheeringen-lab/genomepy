@@ -3,7 +3,7 @@ import gzip
 import os
 import pytest
 
-from tempfile import TemporaryDirectory
+from tempfile import TemporaryDirectory, NamedTemporaryFile
 from platform import system
 
 linux = system() == "Linux"
@@ -94,6 +94,16 @@ def test_assembly_accession(p):
     p = p.create("Ensembl")
     accession = p.assembly_accession(p.genomes["KH"])
     assert accession.startswith("GCA_000224145")
+
+
+def test_download_assembly_report():
+    p = genomepy.provider.ProviderBase.create("NCBI")
+    df = p.download_assembly_report("GCA_000146045.2")
+    assert df.columns[0] == "Sequence-Name"
+    with NamedTemporaryFile as fname:
+        p.download_assembly_report("GCA_000146045.2", fname)
+        header = fname.readline().split("\t")
+        assert header[0] == "Sequence-Name"
 
 
 @pytest.mark.skipif(not travis or not linux, reason="slow")
