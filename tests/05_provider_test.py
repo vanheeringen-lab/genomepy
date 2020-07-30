@@ -1,13 +1,25 @@
 import genomepy
 import gzip
 import os
+import logging
 import pytest
+from loguru import logger
 
 from tempfile import TemporaryDirectory, NamedTemporaryFile
 from platform import system
 
 linux = system() == "Linux"
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+
+
+# Fixture is necessary to be able to check loguru log messages
+@pytest.fixture
+def caplog(caplog):
+    class PropogateHandler(logging.Handler):
+        def emit(self, record):
+            logging.getLogger(record.name).handle(record)
+    logger.add(PropogateHandler(), format="{message}")
+    yield caplog
 
 
 def validate_gzipped_gtf(fname):
@@ -106,6 +118,7 @@ def test_download_assembly_report():
         header = f.readline().split("\t")
         assert header[0] == "Sequence-Name"
 
+
 @pytest.mark.skipif(not travis or not linux, reason="slow")
 def test_download_genome(
     p,
@@ -176,14 +189,13 @@ def test_download_and_generate_annotation(p):
         validate_gzipped_bed(fname)
 
 
-def test_attempt_and_report(p, capsys):
+def test_attempt_and_report(p, caplog):
     out_dir = os.getcwd()
     localname = "my_annot"
     name = "test"
 
-    result = p.attempt_and_report(name, localname, None, None)
-    assert result is None
-    #assert f"Could not download genome annotation for {name} from" in captured
+    p.attempt_and_report(name, localname, None, None)
+    assert f"Could not download genome annotation for {name} from" in caplog.text
 
     annot_url = "https://www.google.com"
     with pytest.raises(genomepy.exceptions.GenomeDownloadError), TemporaryDirectory(
@@ -191,8 +203,7 @@ def test_attempt_and_report(p, capsys):
     ) as tmpdir:
         p.attempt_and_report(name, localname, annot_url, tmpdir)
 
-    captured = capsys.readouterr().err.strip()
-    assert captured.startswith(f"Downloading annotation from {annot_url}")
+    assert f"Downloading annotation from {annot_url}" in caplog.text
 
 
 @pytest.mark.skipif(not travis or not linux, reason="slow")
@@ -240,6 +251,6 @@ def test__search_descriptions(p):
 def test_search(p):
     p = p.create("Ensembl")
     for method in ["KH", "7719", "Ciona intestinalis"]:
-        genomes = p._search(method)
+        genomes = p.search(method)
         for genome in genomes:
             assert genome[0] == "KH"
