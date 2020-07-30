@@ -191,9 +191,13 @@ class Genome(Fasta):
             Ensembl name, accession, taxonomy_id
         """
         if self.provider == "Ensembl":
-            return self.name
+            return self.name, self.assembly_accession, self.tax_id
 
-        # Fast lookup for some common queries
+        # Fast lookup for some common queries.
+        # We specifically provide the GRC genomes for mouse and human, as the patch
+        # level does not influence the genome coordinates. However, they do have a
+        # different assembly accession, so if we search by accession we don't get a
+        # match.
         common_names = {
             "danRer11": "GRCz11",
             "hg38": "GRCh38.p13",
@@ -203,29 +207,28 @@ class Genome(Fasta):
         if self.name in common_names:
             search_term = common_names[self.name]
         else:
-            search_term = self.tax_id
+            search_term = self.assembly_accession
+            if search_term in ["na", None]:
+                logger.warning("Cannot find a matching genome without an assembly accession.")
+                return
 
-        # search Ensembl by taxonomy_id or by specific Ensembl name (if we know it)
+        # search Ensembl by asssmbly accession or by specific Ensembl name (if we know it)
         logger.info(f"searching for {search_term}")
-        results = list(ProviderBase.search(str(search_term), provider="Ensembl"))
-        if len(results) == 0:
-            logger.warning(f"Could not find a genome for this species in Ensembl.")
-            return None
-
+        results = list(ProviderBase.search_all(str(search_term), provider="Ensembl"))
         for name, _provider, accession, _species, tax_id, *_ in results:
             # Check if the assembly_id of the current Ensembl genome is the same as the
             # local genome. If it is identical, we can correctly assume that the genomes
             # sequences are identical.
             # For the genomes in the lookup table, we already know they match.
-            print(name, accession, _species, tax_id)
-            if common_names.get(self.name) == name or accession == self.assembly_accession:
+            if (
+                common_names.get(self.name) == name
+                or accession == self.assembly_accession
+            ):
                 return name, accession, tax_id
 
         logger.warning(
             f"Could not find a matching assembly version in the current release of Ensembl."
         )
-
-        return None
 
     def map_gene_dataframe(
         self, df: pd.DataFrame, genome: str, gene_field: str, product: str = "protein"
@@ -345,7 +348,10 @@ class Genome(Fasta):
         bed = self.annotation_bed_file
 
         if bed is None:
-            logger.info(f"No annotation file found for genome {self.name}")
+            logger.info(f"No annotation file found for genome {self.name}!")
+            logger.info(f"Run the following command to install the annotation:")
+            logger.info(f"  genomepy install {self.name} {self.provider} --annotation")
+            logger.info(f"Alternatively, copy your own annotation to {os.path.join(self.genome_dir, self.name + '.annotation.bed')}")
             return
 
         df = pd.read_csv(bed, sep="\t", names=bed12_fields)
@@ -370,7 +376,7 @@ class Genome(Fasta):
         fname = os.path.join(self.genome_dir, "assembly_report.txt")
         if not os.path.exists(fname):
             if self.assembly_accession in ["na", None]:
-                logger.warn(
+                logger.warning(
                     "Can't download an assembly report without an assembly accession."
                 )
                 return

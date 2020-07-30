@@ -92,7 +92,7 @@ class ProviderBase(object):
             raise ValueError("Unknown provider")
 
     @classmethod
-    def search(cls, term, provider=None, encode=False):
+    def search_all(cls, term, provider=None, encode=False):
         """
         Search for a genome.
 
@@ -122,7 +122,7 @@ class ProviderBase(object):
             # if provider is not specified search all providers
             providers = [cls.create(p) for p in cls.list_providers()]
         for p in providers:
-            for row in p._search(term):
+            for row in p.search(term):
                 ret = list(row[:1]) + [p.name] + list(row[1:])
                 if encode:
                     ret = [x.encode("latin-1") for x in ret]
@@ -234,20 +234,24 @@ class ProviderBase(object):
         pandas.DataFrame
             NCBI assembly report.
         """
-        ncbi_search = list(ProviderBase.search(asm_acc, provider="NCBI"))
+        ncbi_search = list(ProviderBase.search_all(asm_acc, provider="NCBI"))
         if len(ncbi_search) == 0:
             raise ValueError(f"No assembly found with accession {asm_acc}")
         elif len(ncbi_search) > 1:
-            logger.warning(f"Uh oh! Found {len(ncbi_search)} genomes for accession {asm_acc}.")
+            logger.warning(
+                f"Uh oh! Found {len(ncbi_search)} genomes for accession {asm_acc}."
+            )
             logger.warning("It is likely that genomepy inferred the wrong accession.")
-            logger.warning("Check the README.txt of your genome and make sure the accession is correct!")
+            logger.warning(
+                "Check the README.txt of your genome and make sure the accession is correct!"
+            )
             logger.warning("Using the first assembly_report found.")
         ncbi_name = ncbi_search[0][0].replace(" ", "_")
 
         # NCBI FTP location of assembly report
         logger.info(f"Found NCBI assembly {asm_acc} with name {ncbi_name}")
         assembly_report = (
-            f"ftp://ftp.ncbi.nlm.nih.gov/genomes/all/{asm_acc[0:3]}/"
+            f"https://ftp.ncbi.nlm.nih.gov/genomes/all/{asm_acc[0:3]}/"
             + f"{asm_acc[4:7]}/{asm_acc[7:10]}/{asm_acc[10:13]}/"
             + f"{asm_acc}_{ncbi_name}/{asm_acc}_{ncbi_name}_assembly_report.txt"
         )
@@ -490,7 +494,7 @@ class ProviderBase(object):
 
     def attempt_and_report(self, name, localname, link, genomes_dir):
         if not link:
-            logger.warn(
+            logger.warning(
                 f"Could not download genome annotation for {name} from {self.name}."
             )
             return
@@ -561,15 +565,17 @@ class ProviderBase(object):
         """
         # NCBI provides a consistent assembly accession. This can be used to
         # retrieve the species, and then search for that.
-        species = [row[2] for row in ProviderBase.search(term, provider="NCBI")]
+        p = ProviderBase.create("NCBI")
+        species = [row[2] for row in p.search(term)]
         if len(species) == 0:
             raise ValueError(f"No genome found with accession {term}")
         species = species[0]
-        for row in self._search(species):
+        for row in self.search(species):
             if row[1] == term:
                 yield row
+                break  # we can stop now as there should be only one genome with this accession
 
-    def _search(self, term):
+    def search(self, term):
         """
         Search for term in genome names, descriptions and taxonomy ID.
 
@@ -904,8 +910,6 @@ class UcscProvider(ProviderBase):
         str
             Assembly accession.
         """
-        print("searching for assembly accession")
-        print(genome)
         ucsc_url = "https://hgdownload.soe.ucsc.edu/" + genome["htmlPath"]
 
         p = re.compile(r"GCA_\d+\.\d+")
@@ -1053,7 +1057,7 @@ class UcscProvider(ProviderBase):
             link = base_url + annot_files[file.lower()] + base_ext
             if check_url(link):
                 return link
-            logger.warn(f"Specified annotation type ({file}) not found for {name}.\n")
+            logger.warning(f"Specified annotation type ({file}) not found for {name}.\n")
 
         else:
             # download first available annotation type found
@@ -1273,7 +1277,7 @@ class UrlProvider(ProviderBase):
     def assembly_accession(self, genome):
         return "na"
 
-    def _search(self, term):
+    def search(self, term):
         """return an empty generator,
         same as if no genomes were found at the other providers"""
         yield from ()

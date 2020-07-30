@@ -338,4 +338,4 @@ def list_available_providers():
     return ProviderBase.list_providers()
 
 
-search = ProviderBase.search
+search = ProviderBase.search_all

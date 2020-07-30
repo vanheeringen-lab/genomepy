@@ -25,7 +25,7 @@ def test_flake8_formatting():
 
 def test_import():
     # __init__.py
-    assert str(genomepy.search).startswith("<function search at")
+    assert str(genomepy.search).startswith("<bound method")
     assert str(genomepy.Genome) == "<class 'genomepy.genome.Genome'>"
     assert str(genomepy.ProviderBase) == "<class 'genomepy.provider.ProviderBase'>"
     assert genomepy.__author__ == "Simon van Heeringen"

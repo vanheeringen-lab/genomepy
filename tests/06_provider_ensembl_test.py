@@ -82,6 +82,14 @@ def test_get_version(p):
         assert v == "47"
 
 
+def test_versions():
+    p = genomepy.provider.ProviderBase.create("ensembl", version=99)
+    assert int(p.version) == 99
+
+    with pytest.raises(ValueError):
+        p = genomepy.provider.ProviderBase.create("ensembl", version=95)
+
+
 def test_get_genome_download_link(p):
     if not travis:
         # non vertebrate: soft masked

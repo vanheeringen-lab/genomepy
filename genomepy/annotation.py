@@ -8,7 +8,6 @@ from genomepy.provider import ProviderBase
 from genomepy import Genome
 
 
-##@cached
 def load_mapping(
     to: str, provider: Optional[str] = None, fmt: Optional[str] = "dataframe"
 ) -> Union[pd.DataFrame, dict]:
@@ -48,7 +47,7 @@ def load_mapping(
             asm_report = genome.assembly_report
         except Exception:
             logger.info("Searching remote genome information")
-            result = [row for row in ProviderBase.search(to, provider=provider)]
+            result = [row for row in ProviderBase.search_all(to, provider=provider)]
             if len(result) > 1:
                 p = [row[1] for row in result]
                 raise ValueError(
@@ -163,7 +162,6 @@ def map_bedfile(
         fout.close()
 
 
-# @cached
 def local_genome_coords(genes: Iterable[str], genome: Genome) -> pd.DataFrame:
     """Retrieve gene location from local annotation.
 
@@ -191,7 +189,6 @@ def local_genome_coords(genes: Iterable[str], genome: Genome) -> pd.DataFrame:
         return gene_info.reset_index()[["chrom", "start", "end", "name", "strand"]]
 
 
-# @cached
 def genome_coords(genes: Iterable[str], genome: str) -> pd.DataFrame:
     """Retrieve genomic coordinates of a set of genes.
 

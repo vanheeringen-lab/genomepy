@@ -15,7 +15,6 @@ from norns import exceptions
 from pyfaidx import Fasta
 from tempfile import TemporaryDirectory
 
-import base64
 import hashlib
 import binascii
 
