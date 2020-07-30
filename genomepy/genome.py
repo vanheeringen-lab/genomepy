@@ -229,7 +229,7 @@ class Genome(Fasta):
                 return name, accession, tax_id
 
         logger.warning(
-            f"Could not find a matching assembly version in the current release of Ensembl."
+            "Could not find a matching assembly version in the current release of Ensembl."
         )
 
     def map_gene_dataframe(
@@ -315,7 +315,7 @@ class Genome(Fasta):
             gene_field = gene_field.lower()
 
         if product not in ["rna", "protein"]:
-            raise ValueError(f"Argument product should be either 'rna' or 'protein'")
+            raise ValueError("Argument product should be either 'rna' or 'protein'")
 
         bed12_fields = [
             "chrom",
@@ -351,7 +351,7 @@ class Genome(Fasta):
 
         if bed is None:
             logger.info(f"No annotation file found for genome {self.name}!")
-            logger.info(f"Run the following command to install the annotation:")
+            logger.info("Run the following command to install the annotation:")
             logger.info(f"  genomepy install {self.name} {self.provider} --annotation")
             logger.info(
                 f"Alternatively, copy your own annotation to {os.path.join(self.genome_dir, self.name + '.annotation.bed')}"
