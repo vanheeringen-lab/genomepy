@@ -209,7 +209,9 @@ class Genome(Fasta):
         else:
             search_term = self.assembly_accession
             if search_term in ["na", None]:
-                logger.warning("Cannot find a matching genome without an assembly accession.")
+                logger.warning(
+                    "Cannot find a matching genome without an assembly accession."
+                )
                 return
 
         # search Ensembl by asssmbly accession or by specific Ensembl name (if we know it)
@@ -351,7 +353,9 @@ class Genome(Fasta):
             logger.info(f"No annotation file found for genome {self.name}!")
             logger.info(f"Run the following command to install the annotation:")
             logger.info(f"  genomepy install {self.name} {self.provider} --annotation")
-            logger.info(f"Alternatively, copy your own annotation to {os.path.join(self.genome_dir, self.name + '.annotation.bed')}")
+            logger.info(
+                f"Alternatively, copy your own annotation to {os.path.join(self.genome_dir, self.name + '.annotation.bed')}"
+            )
             return
 
         df = pd.read_csv(bed, sep="\t", names=bed12_fields)

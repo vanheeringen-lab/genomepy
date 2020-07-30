@@ -18,6 +18,7 @@ def caplog(caplog):
     class PropogateHandler(logging.Handler):
         def emit(self, record):
             logging.getLogger(record.name).handle(record)
+
     logger.add(PropogateHandler(), format="{message}")
     yield caplog
 
