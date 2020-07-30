@@ -210,20 +210,26 @@ class Genome(Fasta):
         results = list(ProviderBase.search(str(search_term), provider="Ensembl"))
         if len(results) == 0:
             logger.warning(f"Could not find a genome for this species in Ensembl.")
+            return None
 
-        for name, accession, _species, tax_id, *_ in results:
+        for name, _provider, accession, _species, tax_id, *_ in results:
             # Check if the assembly_id of the current Ensembl genome is the same as the
             # local genome. If it is identical, we can correctly assume that the genomes
             # sequences are identical.
             # For the genomes in the lookup table, we already know they match.
-            if common_names[self.name] == name or accession == self.assembly_accession:
+            print(name, accession, _species, tax_id)
+            if common_names.get(self.name) == name or accession == self.assembly_accession:
                 return name, accession, tax_id
 
-        logger.warning(f"Could not find a matching assembly version in the current release of Ensembl.")
+        logger.warning(
+            f"Could not find a matching assembly version in the current release of Ensembl."
+        )
 
         return None
 
-    def map_gene_dataframe(self, df: pd.DataFrame, genome: str, gene_field: str, product: str = "protein") -> pd.DataFrame:
+    def map_gene_dataframe(
+        self, df: pd.DataFrame, genome: str, gene_field: str, product: str = "protein"
+    ) -> pd.DataFrame:
         """Use mygene.info to map identifiers
 
         If the identifier can't be mapped, it will be dropped from the resulting
@@ -269,7 +275,9 @@ class Genome(Fasta):
 
         return df
 
-    def gene_annotation(self, gene_field: Optional[str] = None, product: str = "protein") -> pd.DataFrame:
+    def gene_annotation(
+        self, gene_field: Optional[str] = None, product: str = "protein"
+    ) -> pd.DataFrame:
         """Retrieve gene location from local annotation.
 
         You can use mygene.info to map identifiers on the fly by specifying
@@ -327,7 +335,12 @@ class Genome(Fasta):
 
             target_anno = os.path.join(os.path.dirname(self.filename), anno_file)
             if os.path.exists(target_anno):
-                return pd.read_csv(target_anno, sep="\t", names=bed12_fields, dtype={"chrom": "string", "start": np.uint32, "end": np.uint32})
+                return pd.read_csv(
+                    target_anno,
+                    sep="\t",
+                    names=bed12_fields,
+                    dtype={"chrom": "string", "start": np.uint32, "end": np.uint32},
+                )
 
         bed = self.annotation_bed_file
 
@@ -340,8 +353,12 @@ class Genome(Fasta):
         # Optionally use mygene.info to map gene/transcript ids
         if gene_field is not None:
             logger.info("Mapping gene identifiers using mygene.info")
-            logger.info("This can take a long time, but results will be saved for faster access next time!")
-            df = self.map_gene_dataframe(df, self.name, gene_field=gene_field, product=product)
+            logger.info(
+                "This can take a long time, but results will be saved for faster access next time!"
+            )
+            df = self.map_gene_dataframe(
+                df, self.name, gene_field=gene_field, product=product
+            )
 
             # Save mapping results for quicker access next time
             df.to_csv(target_anno, sep="\t", index=False, header=False)

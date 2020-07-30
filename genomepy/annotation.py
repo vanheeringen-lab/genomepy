@@ -1,4 +1,3 @@
-
 import sys
 from typing import Iterable, Optional, Union, TextIO
 

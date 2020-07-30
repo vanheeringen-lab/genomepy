@@ -238,9 +238,11 @@ class ProviderBase(object):
         if len(ncbi_search) == 0:
             raise ValueError(f"No assembly found with accession {asm_acc}")
         elif len(ncbi_search) > 1:
-            raise Exception("More than one genome for accession")
-        else:
-            ncbi_name = ncbi_search[0][0].replace(" ", "_")
+            logger.warning(f"Uh oh! Found {len(ncbi_search)} genomes for accession {asm_acc}.")
+            logger.warning("It is likely that genomepy inferred the wrong accession.")
+            logger.warning("Check the README.txt of your genome and make sure the accession is correct!")
+            logger.warning("Using the first assembly_report found.")
+        ncbi_name = ncbi_search[0][0].replace(" ", "_")
 
         # NCBI FTP location of assembly report
         logger.info(f"Found NCBI assembly {asm_acc} with name {ncbi_name}")
@@ -902,6 +904,8 @@ class UcscProvider(ProviderBase):
         str
             Assembly accession.
         """
+        print("searching for assembly accession")
+        print(genome)
         ucsc_url = "https://hgdownload.soe.ucsc.edu/" + genome["htmlPath"]
 
         p = re.compile(r"GCA_\d+\.\d+")
