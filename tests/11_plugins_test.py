@@ -1,6 +1,8 @@
 import os
 import genomepy
+import logging
 import pytest
+from loguru import logger
 import re
 import shutil
 import subprocess as sp
@@ -19,6 +21,17 @@ from genomepy.plugins.star import StarPlugin
 
 linux = system() == "Linux"
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+
+
+# Fixture is necessary to be able to check loguru log messages
+@pytest.fixture
+def caplog(caplog):
+    class PropogateHandler(logging.Handler):
+        def emit(self, record):
+            logging.getLogger(record.name).handle(record)
+
+    logger.add(PropogateHandler(), format="{message}")
+    yield caplog
 
 
 def test_plugins():
@@ -67,7 +80,7 @@ def genome(request):
     return genomepy.Genome(name, genomes_dir=genomes_dir)
 
 
-def test_blacklist(capsys, genome):
+def test_blacklist(caplog, genome):
     """Create blacklist."""
     # independent of bgzipping
     # no need to check for both .fa and .fa.gz.
@@ -80,21 +93,18 @@ def test_blacklist(capsys, genome):
     # no blacklist found
     genome.name = "ce01"
     p.after_genome_download(genome, force=True)
-    captured = capsys.readouterr().err.strip()
-    assert captured.endswith(f"No blacklist found for {genome.name}")
+    assert f"No blacklist found for {genome.name}" in caplog.text
 
     # error downloading blacklist
     genome.name = "this was a triumph"
     p.after_genome_download(genome, force=True)
-    captured = capsys.readouterr().err.strip()
     link = "I'm making a note here: 'Huge success'"
-    assert captured.endswith(f"Could not download blacklist file from {link}")
+    assert f"Could not download blacklist file from {link}" in caplog.text
 
     # download UCSC blacklist
     genome.name = "ce10"
     p.after_genome_download(genome, force=True)
-    captured = capsys.readouterr().err.strip()
-    assert captured.endswith("ce10-C.elegans/ce10-blacklist.bed.gz")
+    assert "ce10-C.elegans/ce10-blacklist.bed.gz" in caplog.text
     assert os.path.exists(fname)
     with open(fname) as blacklist:
         for line in blacklist:
@@ -105,8 +115,7 @@ def test_blacklist(capsys, genome):
     # download Ensembl/NCBI blacklist
     genome.name = "GRCh38"
     p.after_genome_download(genome, force=True)
-    captured = capsys.readouterr().err.strip()
-    assert captured.endswith("ENCFF356LFX/@@download/ENCFF356LFX.bed.gz")
+    assert "ENCFF356LFX/@@download/ENCFF356LFX.bed.gz" in caplog.text
     with open(fname) as blacklist:
         for line in blacklist:
             assert not line.startswith("chr")

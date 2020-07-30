@@ -226,6 +226,6 @@ def test_accession_search():
     search = [row for row in genomepy.functions.search("GCA_000004195.3")]
     assert 3 == len(search)
     providers = [row[1] for row in search]
-    assert b"Ensembl" in providers
-    assert b"NCBI" in providers
-    assert b"UCSC" in providers
+    assert "Ensembl" in providers
+    assert "NCBI" in providers
+    assert "UCSC" in providers
