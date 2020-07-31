@@ -2,6 +2,7 @@
 import os
 import norns
 import re
+import sys
 
 from appdirs import user_config_dir
 from glob import glob
@@ -64,8 +65,14 @@ def list_available_genomes(provider=None):
     if provider:
         providers = [ProviderBase.create(provider)]
     else:
-        # if provider is not specified search all providers
-        providers = [ProviderBase.create(p) for p in ProviderBase.list_providers()]
+        # if provider is not specified search all online providers
+        providers = []
+        for p in ProviderBase.list_providers():
+            try:
+                providers.append(ProviderBase.create(p))
+            except ConnectionError as e:
+                sys.stderr.write(e)
+                pass
 
     for p in providers:
         for row in p.list_available_genomes():
@@ -357,13 +364,20 @@ def search(term, provider=None):
     Yields
     ------
     tuple
-        genome information (name/identfier and description)
+        genome information (name/identifier and description)
     """
     if provider:
         providers = [ProviderBase.create(provider)]
     else:
-        # if provider is not specified search all providers
-        providers = [ProviderBase.create(p) for p in ProviderBase.list_providers()]
+        # if provider is not specified search all online providers
+        providers = []
+        for p in ProviderBase.list_providers():
+            try:
+                providers.append(ProviderBase.create(p))
+            except ConnectionError as e:
+                sys.stderr.write(e)
+                pass
+
     for p in providers:
         for row in p.search(term):
             yield [

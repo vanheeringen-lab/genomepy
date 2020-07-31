@@ -516,6 +516,9 @@ class EnsemblProvider(ProviderBase):
     """
 
     rest_url = "http://rest.ensembl.org/"
+    if not check_url(rest_url):
+        raise ConnectionError("Ensembl appears to be offline.\n")
+
     provider_specific_install_options = {
         "toplevel": {
             "long": "toplevel",
@@ -732,6 +735,9 @@ class UcscProvider(ProviderBase):
     """
 
     base_url = "http://hgdownload.soe.ucsc.edu/goldenPath"
+    if not check_url(base_url):
+        raise ConnectionError("UCSC appears to be offline.\n")
+
     ucsc_url = base_url + "/{0}/bigZips/chromFa.tar.gz"
     ucsc_url_masked = base_url + "/{0}/bigZips/chromFaMasked.tar.gz"
     alt_ucsc_url = base_url + "/{0}/bigZips/{0}.fa.gz"
@@ -955,6 +961,9 @@ class NcbiProvider(ProviderBase):
     """
 
     assembly_url = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"
+    if not check_url(assembly_url):
+        raise ConnectionError("NCBI appears to be offline.\n")
+
     provider_specific_install_options = {}
 
     def __init__(self):

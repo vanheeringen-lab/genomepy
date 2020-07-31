@@ -335,10 +335,10 @@ def is_number(term):
         return True
 
 
-def check_url(url):
+def check_url(url, timeout=10):
     """Check if URL works. Returns bool"""
     try:
-        ret = urllib.request.urlopen(url)
+        ret = urllib.request.urlopen(url, timeout=timeout)
         # check return code for http(s) urls
         if url.startswith("ftp") or ret.getcode() == 200:
             return True
