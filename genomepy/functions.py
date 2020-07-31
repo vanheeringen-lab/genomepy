@@ -48,6 +48,22 @@ def manage_config(cmd):
         raise ValueError(f"Invalid config command: {cmd}")
 
 
+def _online_providers(provider=None):
+    """return a list of specified/online providers"""
+    if provider:
+        providers = [ProviderBase.create(provider)]
+    else:
+        # if provider is not specified search all online providers
+        providers = []
+        for p in ProviderBase.list_providers():
+            try:
+                providers.append(ProviderBase.create(p))
+            except ConnectionError as e:
+                sys.stderr.write(str(e))
+                pass
+    return providers
+
+
 def list_available_genomes(provider=None):
     """
     List all available genomes.
@@ -62,18 +78,7 @@ def list_available_genomes(provider=None):
     -------
     list with genome names
     """
-    if provider:
-        providers = [ProviderBase.create(provider)]
-    else:
-        # if provider is not specified search all online providers
-        providers = []
-        for p in ProviderBase.list_providers():
-            try:
-                providers.append(ProviderBase.create(p))
-            except ConnectionError as e:
-                sys.stderr.write(e)
-                pass
-
+    providers = _online_providers(provider)
     for p in providers:
         for row in p.list_available_genomes():
             yield [p.name] + list(row)
@@ -366,18 +371,7 @@ def search(term, provider=None):
     tuple
         genome information (name/identifier and description)
     """
-    if provider:
-        providers = [ProviderBase.create(provider)]
-    else:
-        # if provider is not specified search all online providers
-        providers = []
-        for p in ProviderBase.list_providers():
-            try:
-                providers.append(ProviderBase.create(p))
-            except ConnectionError as e:
-                sys.stderr.write(e)
-                pass
-
+    providers = _online_providers(provider)
     for p in providers:
         for row in p.search(term):
             yield [

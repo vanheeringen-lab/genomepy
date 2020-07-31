@@ -14,6 +14,7 @@ from glob import glob
 from norns import exceptions
 from pyfaidx import Fasta
 from tempfile import TemporaryDirectory
+from pytest_socket import SocketBlockedError
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -342,7 +343,8 @@ def check_url(url, timeout=10):
         # check return code for http(s) urls
         if url.startswith("ftp") or ret.getcode() == 200:
             return True
-    except urllib.request.URLError:
+    except (urllib.request.URLError, SocketBlockedError):
+        # latter error is for testing only)
         return False
 
 

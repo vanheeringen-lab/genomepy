@@ -223,6 +223,13 @@ def test_check_url():
     assert not genomepy.utils.check_url("http://not_an_url")
 
 
+@pytest.mark.disable_socket
+def test_check_url_offline():
+    assert not genomepy.utils.check_url(
+        "http://ftp.xenbase.org/pub/Genomics/JGI/README"
+    )
+
+
 def test_read_url(
     url="http://ftp.xenbase.org/pub/Genomics/JGI/README", expected="The data"
 ):

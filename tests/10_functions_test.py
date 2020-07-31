@@ -44,6 +44,26 @@ def test_manage_config(capsys):
     assert captured.startswith("bgzip: false")
 
 
+def test__online_providers(capsys):
+    ops = genomepy.functions._online_providers("Ensembl")
+    assert len(ops) == 1
+
+    ops = genomepy.functions._online_providers()
+    assert len(ops) == 4
+    assert "genomepy.provider.EnsemblProvider" in str(ops[0])
+
+
+@pytest.mark.disable_socket
+def test__online_providers_offline(capsys):
+    genomepy.functions._online_providers()
+    captured = capsys.readouterr().err.strip().split("\n")
+    assert len(captured) == 3
+    assert all(["appears to be offline." in e for e in captured])
+
+    with pytest.raises(ConnectionError):
+        genomepy.functions._online_providers("Ensembl")
+
+
 def test_list_available_genomes():
     g = genomepy.functions.list_available_genomes("Ensembl")
     metadata = next(g)

@@ -55,6 +55,14 @@ def test_create(p):
         p.create("error")
 
 
+@pytest.mark.disable_socket
+def test_create_offline(p):
+    providers = ["ensembl", "ucsc", "ncbi"]
+    for provider in providers:
+        with pytest.raises(ConnectionError):
+            p.create(provider)
+
+
 def test_register_provider_and_list_providers(p):
     assert isinstance(p._providers, dict)
 

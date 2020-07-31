@@ -41,4 +41,5 @@ dependencies:
   - flake8
   - flake8-bugbear
   - pytest
+  - pytest-socket
   - pytest-cov
