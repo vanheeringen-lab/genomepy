@@ -56,7 +56,6 @@ def _online_providers():
             providers.append(ProviderBase.create(p))
         except ConnectionError as e:
             sys.stderr.write(str(e))
-            pass
     return providers
 
 
