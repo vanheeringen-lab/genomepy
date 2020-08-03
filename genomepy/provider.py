@@ -221,7 +221,9 @@ class ProviderBase(object):
         if not os.path.exists(out_dir):
             mkdir_p(out_dir)
 
-        sys.stderr.write(f"Downloading genome from {link}...\n")
+        sys.stderr.write(
+            f"Downloading genome from {self.name}." f"\nTarget URL: {link}...\n"
+        )
 
         # download to tmp dir. Move genome on completion.
         # tmp dir is in genome_dir to prevent moving the genome between disks
@@ -392,7 +394,9 @@ class ProviderBase(object):
             )
             return
 
-        sys.stderr.write(f"\nDownloading annotation from {link}...\n")
+        sys.stderr.write(
+            f"Downloading annotation from {self.name}." f"\nTarget URL: {link}...\n"
+        )
         try:
             self.download_and_generate_annotation(genomes_dir, link, localname)
         except Exception:
