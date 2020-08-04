@@ -7,6 +7,7 @@ import subprocess as sp
 
 from tempfile import NamedTemporaryFile
 from platform import system
+from pytest_socket import SocketBlockedError
 
 linux = system() == "Linux"
 
@@ -225,9 +226,8 @@ def test_check_url():
 
 @pytest.mark.disable_socket
 def test_check_url_offline():
-    assert not genomepy.utils.check_url(
-        "http://ftp.xenbase.org/pub/Genomics/JGI/README"
-    )
+    with pytest.raises(SocketBlockedError):
+        genomepy.utils.check_url("http://ftp.xenbase.org/pub/Genomics/JGI/README")
 
 
 def test_read_url(

@@ -5,6 +5,7 @@ import shutil
 
 from appdirs import user_config_dir
 from platform import system
+from pytest_socket import SocketBlockedError
 
 linux = system() == "Linux"
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
@@ -44,7 +45,20 @@ def test_manage_config(capsys):
     assert captured.startswith("bgzip: false")
 
 
-def test__providers(capsys):
+def test__online_providers():
+    ops = genomepy.functions._online_providers()
+    assert len(ops) == 4
+    assert "genomepy.provider.EnsemblProvider" in str(ops[0])
+
+
+@pytest.mark.disable_socket
+def test__online_providers_offline():
+    with pytest.raises(SocketBlockedError):
+        # would have returned and empty list in a real scenario
+        genomepy.functions._online_providers()
+
+
+def test__providers():
     ops = genomepy.functions._providers("Ensembl")
     assert len(ops) == 1
 
@@ -54,14 +68,14 @@ def test__providers(capsys):
 
 
 @pytest.mark.disable_socket
-def test__providers_offline(capsys):
-    genomepy.functions._providers()
-    captured = capsys.readouterr().err.strip().split("\n")
-    assert len(captured) == 3
-    assert all(["appears to be offline." in e for e in captured])
-
-    with pytest.raises(ConnectionError):
+def test__providers_offline():
+    with pytest.raises(SocketBlockedError):
+        # would have been a ConnectionError in a real scenario
         genomepy.functions._providers("Ensembl")
+
+    with pytest.raises(SocketBlockedError):
+        # would have returned and empty list in a real scenario
+        genomepy.functions._providers()
 
 
 def test_list_available_genomes():
