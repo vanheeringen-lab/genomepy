@@ -4,4 +4,4 @@ COPY . ./
 
 RUN python setup.py install
 
-CMD ["bash", "genomepy"]
+CMD genomepy
