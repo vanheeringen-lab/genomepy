@@ -4,4 +4,5 @@ COPY . ./
 
 RUN python setup.py install
 
-CMD genomepy
+ENTRYPOINT ["genomepy"]
+CMD ["--help"]
