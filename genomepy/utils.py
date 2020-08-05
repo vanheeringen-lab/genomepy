@@ -13,6 +13,7 @@ import time
 from glob import glob
 from norns import exceptions
 from pyfaidx import Fasta
+from socket import timeout
 from tempfile import TemporaryDirectory
 
 config = norns.config("genomepy", default="cfg/default.yaml")
@@ -335,14 +336,14 @@ def is_number(term):
         return True
 
 
-def check_url(url, timeout=15):
+def check_url(url, time_out=10):
     """Check if URL works. Returns bool"""
     try:
-        ret = urllib.request.urlopen(url, timeout=timeout)
+        ret = urllib.request.urlopen(url, timeout=time_out)
         # check return code for http(s) urls
         if url.startswith("ftp") or ret.getcode() == 200:
             return True
-    except urllib.request.URLError:
+    except (urllib.request.URLError, timeout):
         return False
 
 
