@@ -13,8 +13,8 @@ import time
 from glob import glob
 from norns import exceptions
 from pyfaidx import Fasta
+from socket import timeout
 from tempfile import TemporaryDirectory
-from pytest_socket import SocketBlockedError
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -336,15 +336,19 @@ def is_number(term):
         return True
 
 
-def check_url(url, timeout=10):
+def check_url(url, time_out=3, max_tries=1, _try=1):
     """Check if URL works. Returns bool"""
     try:
-        ret = urllib.request.urlopen(url, timeout=timeout)
+        ret = urllib.request.urlopen(url, timeout=time_out)
         # check return code for http(s) urls
         if url.startswith("ftp") or ret.getcode() == 200:
             return True
-    except (urllib.request.URLError, SocketBlockedError):
-        # latter error is for testing only)
+
+    except (urllib.request.URLError, timeout):
+        # Some providers get swamped with requests, so we allow retries
+        if _try <= max_tries:
+            time.sleep(1)
+            return check_url(url, time_out=time_out, max_tries=max_tries, _try=_try + 1)
         return False
 
 

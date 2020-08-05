@@ -535,7 +535,7 @@ class EnsemblProvider(ProviderBase):
     }
 
     def __init__(self):
-        if not check_url(self.rest_url):
+        if not check_url(self.rest_url, max_tries=3):
             raise ConnectionError("Ensembl appears to be offline.\n")
         # Necessary for bucketcache, otherwise methods with identical names
         # from different classes will use the same cache :-O!

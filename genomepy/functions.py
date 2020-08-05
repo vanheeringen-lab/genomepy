@@ -51,7 +51,7 @@ def manage_config(cmd):
 
 
 def _online_providers():
-    """return a list of online providers"""
+    """return a list of online providers as objects"""
     providers = []
     for p in ProviderBase.list_providers():
         try:
@@ -62,7 +62,11 @@ def _online_providers():
 
 
 def _providers(provider=None):
-    """return a list with specified provider or all online providers"""
+    """
+    return a list of provider objects.
+
+    Either containing the specified provider, or all online providers
+    """
     return [ProviderBase.create(provider)] if provider else _online_providers()
 
 
