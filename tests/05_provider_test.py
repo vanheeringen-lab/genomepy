@@ -83,8 +83,8 @@ def test_list_available_genomes(p):
 
 
 def test_check_name(p):
-    p = p.create("Ensembl")
-    p.check_name("KH")
+    p = p.create("ucsc")
+    p.check_name("ailMel1")
     with pytest.raises(genomepy.exceptions.GenomeDownloadError):
         p.check_name("not_a_real_genome")
 
@@ -95,15 +95,15 @@ def get_genome_download_link(p):
 
 
 def test_genome_taxid(p):
-    p = p.create("Ensembl")
-    taxid = p.genome_taxid(p.genomes["KH"])
-    assert taxid == 7719
+    p = p.create("ucsc")
+    taxid = p.genome_taxid(p.genomes["ailMel1"])
+    assert taxid == 9646
 
 
 def test_assembly_accession(p):
-    p = p.create("Ensembl")
-    accession = p.assembly_accession(p.genomes["KH"])
-    assert accession.startswith("GCA_000224145")
+    p = p.create("ucsc")
+    accession = p.assembly_accession(p.genomes["ailMel1"])
+    assert accession.startswith("GCA_000004335")
 
 
 @pytest.mark.skipif(not travis or not linux, reason="slow")
@@ -223,9 +223,9 @@ def test_download_annotation(p):
 
 
 def test__search_taxids(p):
-    p = p.create("Ensembl")
-    assert not p._search_taxids(p.genomes["KH"], "not_an_id")
-    assert p._search_taxids(p.genomes["KH"], "7719")
+    p = p.create("ucsc")
+    assert not p._search_taxids(p.genomes["ailMel1"], "not_an_id")
+    assert p._search_taxids(p.genomes["ailMel1"], "9646")
 
 
 def test__search_descriptions(p):
@@ -238,8 +238,8 @@ def test__search_descriptions(p):
 
 
 def test_search(p):
-    p = p.create("Ensembl")
-    for method in ["KH", "7719", "Ciona intestinalis"]:
+    p = p.create("ucsc")
+    for method in ["ailMel1", "9646", "Ailuropoda melanoleuca"]:
         genomes = p.search(method)
         for genome in genomes:
-            assert genome[0] == "KH"
+            assert genome[0] == "ailMel1"
