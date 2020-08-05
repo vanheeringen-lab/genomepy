@@ -227,6 +227,7 @@ def test_check_url():
 @pytest.mark.disable_socket
 def test_check_url_offline():
     with pytest.raises(SocketBlockedError):
+        # would have returned False (bool) in a real scenario
         genomepy.utils.check_url("http://ftp.xenbase.org/pub/Genomics/JGI/README")
 
 

@@ -5,6 +5,7 @@ import pytest
 
 from tempfile import TemporaryDirectory
 from platform import system
+from pytest_socket import SocketBlockedError
 
 linux = system() == "Linux"
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
@@ -59,7 +60,8 @@ def test_create(p):
 def test_create_offline(p):
     providers = ["ensembl", "ucsc", "ncbi"]
     for provider in providers:
-        with pytest.raises(ConnectionError):
+        with pytest.raises(SocketBlockedError):
+            # would have been a ConnectionError in a real scenario
             p.create(provider)
 
 
