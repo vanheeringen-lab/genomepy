@@ -50,7 +50,7 @@ def test_providerbase__init__(p):
 
 
 def test_create(p):
-    p.create("Ensembl")
+    p.create("ncbi")
 
     with pytest.raises(ValueError):
         p.create("error")
@@ -229,12 +229,12 @@ def test__search_taxids(p):
 
 
 def test__search_descriptions(p):
-    p = p.create("Ensembl")
-    assert "scientific_name" in p.description_fields
-    assert p.genomes["KH"]["scientific_name"] == "Ciona intestinalis"
-    desc = genomepy.utils.safe("Ciona intestinalis").lower()
-    assert p._search_descriptions(p.genomes["KH"], desc)
-    assert not p._search_descriptions(p.genomes["KH"], "not_in_description")
+    p = p.create("ucsc")
+    assert "scientificName" in p.description_fields
+    assert p.genomes["ailMel1"]["scientificName"] == "Ailuropoda melanoleuca"
+    desc = genomepy.utils.safe("Ailuropoda melanoleuca").lower()
+    assert p._search_descriptions(p.genomes["ailMel1"], desc)
+    assert not p._search_descriptions(p.genomes["ailMel1"], "not_in_description")
 
 
 def test_search(p):

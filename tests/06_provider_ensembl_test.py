@@ -38,7 +38,7 @@ def validate_gzipped_bed(fname):
 @pytest.fixture(scope="module")
 def p():
     p = genomepy.provider.EnsemblProvider()
-    sleep(1)
+    sleep(1)  # Ensembl cant handle too many requests
     return p
 
 
@@ -54,6 +54,8 @@ def test__request_json(p):
     divisions = p._request_json("info/divisions?")
     assert isinstance(divisions, list)
     assert "EnsemblVertebrates" in divisions
+
+    sleep(1)
 
     # test not r.ok
     with pytest.raises(requests.exceptions.HTTPError):
