@@ -37,7 +37,9 @@ def validate_gzipped_bed(fname):
 
 @pytest.fixture(scope="module")
 def p():
-    return genomepy.provider.EnsemblProvider()
+    p = genomepy.provider.EnsemblProvider()
+    sleep(1)
+    return p
 
 
 def test_ensemblprovider__init__(p):
