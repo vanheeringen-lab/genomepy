@@ -4,6 +4,8 @@ import os
 import pytest
 import requests
 
+from time import sleep
+
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
@@ -43,6 +45,8 @@ def test_ensemblprovider__init__(p):
     assert p.name == p2.name == "Ensembl"
     assert p.taxid_fields == ["taxonomy_id"]
 
+    sleep(1)
+
 
 def test__request_json(p):
     divisions = p._request_json("info/divisions?")
@@ -52,6 +56,8 @@ def test__request_json(p):
     # test not r.ok
     with pytest.raises(requests.exceptions.HTTPError):
         p._request_json("error")
+
+    sleep(1)
 
 
 def test__get_genomes(p):
@@ -63,11 +69,15 @@ def test__get_genomes(p):
         assert field in genome
     assert genome["taxonomy_id"] == 7719
 
+    sleep(1)
+
 
 def test_genome_info_tuple(p):
     t = p._genome_info_tuple("KH")
     assert isinstance(t, tuple)
     assert t[2:4] == ("Ciona intestinalis", "7719")
+
+    sleep(1)
 
 
 def test_get_version(p):
@@ -80,6 +90,8 @@ def test_get_version(p):
         ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
         v = p.get_version(ftp_site)
         assert v == "47"
+
+    sleep(1)
 
 
 def test_get_genome_download_link(p):
@@ -118,6 +130,8 @@ def test_get_genome_download_link(p):
         "/fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna_sm.toplevel.fa.gz",
     ]:
         assert substring in link
+
+    sleep(1)
 
 
 def test_get_annotation_download_link(p):
