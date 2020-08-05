@@ -335,7 +335,7 @@ def is_number(term):
         return True
 
 
-def check_url(url, timeout=10):
+def check_url(url, timeout=12):
     """Check if URL works. Returns bool"""
     try:
         ret = urllib.request.urlopen(url, timeout=timeout)
