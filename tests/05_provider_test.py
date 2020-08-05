@@ -190,7 +190,9 @@ def test_attempt_and_report(p, capsys):
         p.attempt_and_report(name, localname, annot_url, tmpdir)
 
     captured = capsys.readouterr().err.strip()
-    assert captured.startswith(f"Downloading annotation from {annot_url}")
+    assert captured.startswith(
+        f"Downloading annotation from None.\nTarget URL: {annot_url}"
+    )
 
 
 @pytest.mark.skipif(not travis or not linux, reason="slow")

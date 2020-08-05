@@ -16,6 +16,7 @@ from genomepy.utils import (
     get_genomes_dir,
     glob_ext_files,
     mkdir_p,
+    read_readme,
     sanitize_annotation,
 )
 
@@ -180,6 +181,24 @@ def _lazy_provider_selection(name, provider=None):
         )
 
 
+def _provider_selection(name, localname, genomes_dir, provider=None):
+    """
+    Return a provider object
+
+    First tries to return a specified provider,
+    Second tries to return the provider from the README
+    Third tries to return the first provider which has the genome (Ensembl>UCSC>NCBI)
+    """
+    if provider is None:
+        readme = os.path.join(genomes_dir, localname, "README.txt")
+        m, _ = read_readme(readme)
+        p = m["provider"].lower()
+        if p in ["ensembl", "ucsc", "ncbi"]:
+            provider = p
+
+    return _lazy_provider_selection(name, provider)
+
+
 def install_genome(
     name,
     provider=None,
@@ -264,7 +283,7 @@ def install_genome(
     )
     if (not genome_found or force) and not only_annotation:
         # Download genome from provider
-        p = _lazy_provider_selection(name, provider)
+        p = _provider_selection(name, localname, genomes_dir, provider)
         p.download_genome(
             name,
             genomes_dir,
@@ -299,7 +318,7 @@ def install_genome(
     annotation_found = len(glob_ext_files(out_dir, "gtf")) >= 1
     if (not annotation_found or force) and annotation:
         # Download annotation from provider
-        p = _lazy_provider_selection(name, provider)
+        p = _provider_selection(name, localname, genomes_dir, provider)
         p.download_annotation(name, genomes_dir, localname=localname, **kwargs)
 
         # Sanitize annotation if needed (requires genome)
