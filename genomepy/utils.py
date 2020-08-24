@@ -13,7 +13,6 @@ import time
 from glob import glob
 from norns import exceptions
 from pyfaidx import Fasta
-from random import randint
 from socket import timeout
 from tempfile import TemporaryDirectory
 
@@ -348,7 +347,7 @@ def check_url(url, time_out=3, max_tries=1, _try=1):
     except (urllib.request.URLError, timeout):
         # Some providers get swamped with requests, so we allow retries
         if _try <= max_tries:
-            time.sleep(randint(3,10)*0.1)  # sleep between 0.3 and 1 second
+            time.sleep(1)
             return check_url(url, time_out=time_out, max_tries=max_tries, _try=_try + 1)
         return False
 
