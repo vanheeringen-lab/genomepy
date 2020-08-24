@@ -138,7 +138,7 @@ def generate_exports():
             g = Genome(name)
             env_name = re.sub(r"[^\w]+", "_", name).upper()
             env.append(f"export {env_name}={g.filename}")
-        except FastaIndexingError:
+        except (FastaIndexingError, FileNotFoundError):
             pass
     return env
 
