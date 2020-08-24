@@ -126,6 +126,51 @@ def test_list_installed_genomes():
     assert genomes == ["regexp"]
 
 
+def test__lazy_provider_selection():
+    # Xenopus_tropicalis_v9.1 can be found on both Ensembl and NCBI.
+    # Ensembl is first in lazy selection.
+
+    # find genome in specified provider (NCBI)
+    name = "Xenopus_tropicalis_v9.1"
+    provider = "NCBI"
+    p = genomepy.functions._lazy_provider_selection(name, provider)
+    assert "NcbiProvider" in str(p)
+
+    # find the first provider (Ensembl)
+    provider = None
+    p = genomepy.functions._lazy_provider_selection(name, provider)
+    assert "EnsemblProvider" in str(p)
+
+    # cant find genome anywhere
+    name = "not_a_genome"
+    with pytest.raises(genomepy.GenomeDownloadError):
+        genomepy.functions._lazy_provider_selection(name, provider)
+
+
+def test__provider_selection():
+    # specified provider
+    name = "Xenopus_tropicalis_v9.1"
+    localname = "test_genome"
+    genomes_dir = os.getcwd()
+    provider = "NCBI"
+    p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
+    assert "NcbiProvider" in str(p)
+
+    # provider from readme
+    readme = os.path.join(genomes_dir, localname, "README.txt")
+    os.makedirs(os.path.dirname(readme), exist_ok=True)
+    with open(readme, "w") as r:
+        r.write("provider: NCBI")
+    provider = None
+    p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
+    assert "NcbiProvider" in str(p)
+    shutil.rmtree(os.path.dirname(readme))
+
+    # lazy provider
+    p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
+    assert "EnsemblProvider" in str(p)
+
+
 @pytest.mark.skipif(not travis or not linux, reason="slow")
 def test_install_genome():
     localname = "my_genome"

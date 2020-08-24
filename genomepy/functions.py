@@ -8,6 +8,7 @@ from appdirs import user_config_dir
 from glob import glob
 from pyfaidx import FastaIndexingError
 from genomepy.genome import Genome
+from genomepy.exceptions import GenomeDownloadError
 from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
 from genomepy.utils import (
@@ -15,6 +16,7 @@ from genomepy.utils import (
     get_genomes_dir,
     glob_ext_files,
     mkdir_p,
+    read_readme,
     sanitize_annotation,
 )
 
@@ -171,9 +173,39 @@ def generate_env(fname=None):
             fout.write(f"{env}\n")
 
 
+def _lazy_provider_selection(name, provider=None):
+    """return the first PROVIDER which has genome NAME"""
+    providers = _providers(provider)
+    for p in providers:
+        if name in p.genomes:
+            return p
+    else:
+        raise GenomeDownloadError(
+            f"{name} not found on {', '.join([p.name for p in providers])}."
+        )
+
+
+def _provider_selection(name, localname, genomes_dir, provider=None):
+    """
+    Return a provider object
+
+    First tries to return a specified provider,
+    Second tries to return the provider from the README
+    Third tries to return the first provider which has the genome (Ensembl>UCSC>NCBI)
+    """
+    if provider is None:
+        readme = os.path.join(genomes_dir, localname, "README.txt")
+        m, _ = read_readme(readme)
+        p = m["provider"].lower()
+        if p in ["ensembl", "ucsc", "ncbi"]:
+            provider = p
+
+    return _lazy_provider_selection(name, provider)
+
+
 def install_genome(
     name,
-    provider,
+    provider=None,
     genomes_dir=None,
     localname=None,
     mask="soft",
@@ -195,8 +227,8 @@ def install_genome(
     name : str
         Genome name
 
-    provider : str
-        Provider name
+    provider : str , optional
+        Provider name. will try Ensembl, UCSC and NCBI (in that order) if not specified.
 
     genomes_dir : str , optional
         Where to store the fasta files
@@ -255,7 +287,7 @@ def install_genome(
     )
     if (not genome_found or force) and not only_annotation:
         # Download genome from provider
-        p = ProviderBase.create(provider)
+        p = _provider_selection(name, localname, genomes_dir, provider)
         p.download_genome(
             name,
             genomes_dir,
@@ -290,7 +322,7 @@ def install_genome(
     annotation_found = len(glob_ext_files(out_dir, "gtf")) >= 1
     if (not annotation_found or force) and annotation:
         # Download annotation from provider
-        p = ProviderBase.create(provider)
+        p = _provider_selection(name, localname, genomes_dir, provider)
         p.download_annotation(name, genomes_dir, localname=localname, **kwargs)
 
         # Sanitize annotation if needed (requires genome)

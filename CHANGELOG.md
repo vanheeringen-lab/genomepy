@@ -8,10 +8,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - check to see if providers are online + error message if not
+- automatic provider selection for `genomepy install`
+- optinal provider flag for `genomepy install`
 
 ### Changed
 - `genomepy.utils.check_url` now has a timeout and a retry system
 - `genomepy search` and `genomepy providers` now only check online providers
+- `genomepy install` no longer requires a provider argument. Providers may still be passed with the `-p/--provider` flag.
+- If no provider is passed to `genomepy install`, the first provider with the genome is used (order: Ensembl > UCSC > NCBI).
 
 ## [0.8.4] - 2020-07-29
 - Fix bug where Genome.sizes dict contains str instead of int (#110).
