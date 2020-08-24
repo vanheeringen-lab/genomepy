@@ -88,12 +88,12 @@ def test_get_version(p):
     # note: this test will break every time ensembl releases a new version
     ftp_site = "http://ftp.ensembl.org/pub"
     v = p.get_version(ftp_site)
-    assert v == "100"
+    assert v == "101"
 
     if not travis:
         ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
         v = p.get_version(ftp_site)
-        assert v == "47"
+        assert v == "48"
 
     sleep(1)
 
