@@ -221,17 +221,14 @@ def test_generate_exports():
     not travis or not linux, reason="only works if a genome was installed"
 )
 def test_generate_env():
-    # already used, but we had to install a genome first to test it
     config_dir = str(user_config_dir("genomepy"))
     path = os.path.join(config_dir, "exports.txt")
-    if os.path.exists(path):
-        os.unlink(path)
 
     # give file path
     my_path = "~/exports.txt"
     genomepy.functions.generate_env(my_path)
-    assert os.path.exists(os.path.expanduser(my_path))
-    os.unlink(os.path.expanduser(my_path))
+    assert os.path.exists(my_path)
+    os.unlink(my_path)
 
     # give file name
     my_file = os.path.join(config_dir, "my_exports.txt")
@@ -240,8 +237,11 @@ def test_generate_env():
     os.unlink(os.path.expanduser(my_file))
 
     # give nothing
+    if os.path.exists(path):
+        os.unlink(path)
     genomepy.functions.generate_env()
     assert os.path.exists(path)
+
     with open(path) as f:
         exports = []
         for line in f.readlines():
