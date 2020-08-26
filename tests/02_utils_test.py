@@ -222,7 +222,7 @@ def test_is_number():
 def test_check_url():
     assert genomepy.utils.check_url("http://ftp.xenbase.org/pub/Genomics/JGI/README")
     # wrong/offline urls:
-    assert not genomepy.utils.check_url("http://not_an_url")
+    assert not genomepy.utils.check_url("https://www.thiswebsiteisoffline.nl/")
 
 
 def test_read_url(

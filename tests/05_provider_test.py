@@ -46,7 +46,7 @@ def test_provider_status():
 
     with pytest.raises(ConnectionError):
         genomepy.provider.provider_status(
-            "test", "http://thiswebsitedoesnotexist.nl"
+            "test", "https://www.thiswebsiteisoffline.nl/"
         )
 
 
