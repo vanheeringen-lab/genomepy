@@ -7,7 +7,6 @@ import subprocess as sp
 
 from tempfile import NamedTemporaryFile
 from platform import system
-from pytest_socket import SocketBlockedError
 
 linux = system() == "Linux"
 
@@ -138,6 +137,7 @@ def test_glob_ext_files(file="tests/data/small_genome.fa"):
     assert file not in genomepy.utils.glob_ext_files("tests/data")
     assert file + ".gz" in genomepy.utils.glob_ext_files("tests/data")
     assert len(genomepy.utils.glob_ext_files("tests/data", "fake_ext")) == 0
+    assert len(genomepy.utils.glob_ext_files("tests/data/regexp")) == 1
 
 
 def test_get_genomes_dir(genomes_dir="tests/data"):
@@ -221,14 +221,8 @@ def test_is_number():
 
 def test_check_url():
     assert genomepy.utils.check_url("http://ftp.xenbase.org/pub/Genomics/JGI/README")
+    # wrong/offline urls:
     assert not genomepy.utils.check_url("http://not_an_url")
-
-
-@pytest.mark.disable_socket
-def test_check_url_offline():
-    with pytest.raises(SocketBlockedError):
-        # would have returned False (bool) in a real scenario
-        genomepy.utils.check_url("http://ftp.xenbase.org/pub/Genomics/JGI/README")
 
 
 def test_read_url(

@@ -28,6 +28,7 @@ from genomepy.utils import (
     check_url,
     is_number,
     mkdir_p,
+    get_genomes_dir,
 )
 from genomepy.__about__ import __version__
 
@@ -36,8 +37,17 @@ my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
 if not os.path.exists(my_cache_dir):
     os.makedirs(my_cache_dir)
 cached = Bucket(my_cache_dir, days=7)
+goldfish_cache = Bucket(my_cache_dir, minutes=10)
 
 config = norns.config("genomepy", default="cfg/default.yaml")
+
+
+# not a class method as (I think) "self" cannot be ignored by Bucketcache
+@goldfish_cache(ignore=["url", "max_tries"])
+def provider_status(name, url, max_tries=1):
+    """check if provider is online (stores results for 10 minutes)"""
+    if not check_url(url, max_tries=max_tries):
+        raise ConnectionError(f"{name} appears to be offline.\n")
 
 
 class ProviderBase(object):
@@ -173,7 +183,7 @@ class ProviderBase(object):
     def download_genome(
         self,
         name,
-        genomes_dir,
+        genomes_dir=None,
         localname=None,
         mask="soft",
         regex=None,
@@ -189,7 +199,7 @@ class ProviderBase(object):
         name : str
             Genome / species name
 
-        genomes_dir : str
+        genomes_dir : str , optional
             Directory to install genome
 
         localname : str , optional
@@ -208,15 +218,13 @@ class ProviderBase(object):
             If set to True the genome FASTA file will be compressed using bgzip.
             If not specified, the setting from the configuration file will be used.
         """
+        name = safe(name)
         self.check_name(name)
 
         link = self.get_genome_download_link(name, mask=mask, **kwargs)
 
-        original_name = name
-        name = safe(name)
         localname = get_localname(name, localname)
-
-        genomes_dir = os.path.expanduser(genomes_dir)
+        genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
         out_dir = os.path.join(genomes_dir, localname)
         if not os.path.exists(out_dir):
             mkdir_p(out_dir)
@@ -292,7 +300,7 @@ class ProviderBase(object):
         metadata = {
             "name": localname,
             "provider": self.name,
-            "original name": original_name,
+            "original name": name,
             "original filename": os.path.split(link)[-1],
             "assembly_accession": self.assembly_accession(self.genomes.get(name)),
             "tax_id": self.genome_taxid(self.genomes.get(name)),
@@ -415,7 +423,7 @@ class ProviderBase(object):
         metadata["annotation url"] = link
         write_readme(readme, metadata, lines)
 
-    def download_annotation(self, name, genomes_dir, localname=None, **kwargs):
+    def download_annotation(self, name, genomes_dir=None, localname=None, **kwargs):
         """
         Download annotation file to to a specific directory
 
@@ -424,7 +432,7 @@ class ProviderBase(object):
         name : str
             Genome / species name
 
-        genomes_dir : str
+        genomes_dir : str , optional
             Directory to install annotation
 
         localname : str , optional
@@ -434,6 +442,8 @@ class ProviderBase(object):
 
         link = self.get_annotation_download_link(name, **kwargs)
 
+        localname = get_localname(name, localname)
+        genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
         self.attempt_and_report(name, localname, link, genomes_dir)
 
     def _search_taxids(self, genome, term):
@@ -488,20 +498,21 @@ class ProviderBase(object):
         tuples with name and metadata
         """
         genomes = self.genomes
-        term = str(term)
+        term = safe(str(term))
         if term.startswith("GCA_") and self.name != "NCBI":
             for row in self._search_accessions(term):
                 yield (row)
-        elif safe(term) in genomes:
-            yield self._genome_info_tuple(term)
 
         elif is_number(term):
             for name in genomes:
                 if self._search_taxids(genome=genomes[name], term=term):
                     yield self._genome_info_tuple(name)
 
+        elif term in genomes:
+            yield self._genome_info_tuple(term)
+
         else:
-            term = safe(term).lower()
+            term = term.lower()
             for name in genomes:
                 if self._search_descriptions(genome=genomes[name], term=term):
                     yield self._genome_info_tuple(name)
@@ -535,11 +546,10 @@ class EnsemblProvider(ProviderBase):
     }
 
     def __init__(self):
-        if not check_url(self.rest_url, max_tries=3):
-            raise ConnectionError("Ensembl appears to be offline.\n")
         # Necessary for bucketcache, otherwise methods with identical names
         # from different classes will use the same cache :-O!
         self.name = "Ensembl"
+        provider_status(self.name, self.rest_url, max_tries=3)
         # Populate on init, so that methods can be cached
         self.genomes = self._get_genomes()
         self.accession_fields = ["assembly_accession"]
@@ -550,7 +560,6 @@ class EnsemblProvider(ProviderBase):
             "url_name",
             "display_name",
         ]
-        self.version = None
 
     @cached(method=True)
     def _request_json(self, ext):
@@ -598,16 +607,15 @@ class EnsemblProvider(ProviderBase):
             genome.get("genebuild", "na"),
         )
 
+    @goldfish_cache(method=True)
     def get_version(self, ftp_site):
-        """Retrieve current version from Ensembl FTP.
-        """
+        """Retrieve current version from Ensembl FTP."""
         with urlopen(ftp_site + "/current_README") as response:
             p = re.compile(r"Ensembl (Genomes|Release) (\d+)")
             m = p.search(response.read().decode())
         if m:
             version = m.group(2)
             sys.stderr.write("Using version {}\n".format(version))
-            self.version = version
             return version
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
@@ -639,10 +647,8 @@ class EnsemblProvider(ProviderBase):
             ftp_site = "http://ftp.ensembl.org/pub"
 
         # Ensembl release version
-        version = self.version
-        if kwargs.get("version"):
-            version = kwargs.get("version")
-        elif not version:
+        version = kwargs.get("version")
+        if version is None:
             version = self.get_version(ftp_site)
 
         # division dependent url format
@@ -705,10 +711,8 @@ class EnsemblProvider(ProviderBase):
             ftp_site = "http://ftp.ensembl.org/pub"
 
         # Ensembl release version
-        version = self.version
-        if kwargs.get("version"):
-            version = kwargs.get("version")
-        elif not version:
+        version = kwargs.get("version")
+        if version is None:
             version = self.get_version(ftp_site)
 
         if division != "vertebrates":
@@ -752,11 +756,10 @@ class UcscProvider(ProviderBase):
     }
 
     def __init__(self):
-        if not check_url(self.base_url):
-            raise ConnectionError("UCSC appears to be offline.\n")
         # Necessary for bucketcache, otherwise methods with identical names
         # from different classes will use the same cache :-O!
         self.name = "UCSC"
+        provider_status(self.name, self.base_url)
         # Populate on init, so that methods can be cached
         self.genomes = self._get_genomes()
         self.accession_fields = []
@@ -779,7 +782,7 @@ class UcscProvider(ProviderBase):
     def assembly_accession(self, genome):
         """Return the assembly accession (GCA_*) for a genome.
 
-        UCSC does not server the assembly accession through the REST API.
+        UCSC does not serve the assembly accession through the REST API.
         Therefore, the readme.html is scanned for a GCA assembly id. If it is
         not found, the linked NCBI assembly page will be checked. Especially
         for older genome builds, the GCA will not be present, in which case
@@ -966,11 +969,10 @@ class NcbiProvider(ProviderBase):
     provider_specific_install_options = {}
 
     def __init__(self):
-        if not check_url(self.assembly_url):
-            raise ConnectionError("NCBI appears to be offline.\n")
         # Necessary for bucketcache, otherwise methods with identical names
         # from different classes will use the same cache :-O!
         self.name = "NCBI"
+        provider_status(self.name, self.assembly_url)
         # Populate on init, so that methods can be cached
         self.genomes = self._get_genomes()
         self.accession_fields = ["assembly_accession", "gbrs_paired_asm"]
@@ -1238,7 +1240,7 @@ class UrlProvider(ProviderBase):
         if check_url(link):
             return link
 
-    def download_annotation(self, url, genomes_dir, localname=None, **kwargs):
+    def download_annotation(self, url, genomes_dir=None, localname=None, **kwargs):
         """
         Attempts to download a gtf or gff3 file from the same location as the genome url
 
@@ -1261,6 +1263,7 @@ class UrlProvider(ProviderBase):
         """
         name = get_localname(url)
         localname = get_localname(name, localname)
+        genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
 
         if kwargs.get("to_annotation"):
             link = self.get_annotation_download_link(None, **kwargs)

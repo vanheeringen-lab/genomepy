@@ -62,7 +62,7 @@ if not skip:
             genomes_dir=tmp,
             localname=localname,
             bgzip=bgzip,
-            force=force,
+            force=False,
         )
 
         # force test

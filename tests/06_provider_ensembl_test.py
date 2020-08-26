@@ -85,7 +85,7 @@ def test_genome_info_tuple(p):
 
 
 def test_get_version(p):
-    # note: this test will break every time ensembl releases a new version
+    # note: this test will break every time Ensembl releases a new version
     ftp_site = "http://ftp.ensembl.org/pub"
     v = p.get_version(ftp_site)
     assert v == "101"
@@ -126,14 +126,16 @@ def test_get_genome_download_link(p):
         + "danio_rerio/dna/Danio_rerio.GRCz11.dna_rm.toplevel.fa.gz"
     )
 
-    # vertebrate: any version
-    p.version = None
-    link = p.get_genome_download_link("GRCz11", **{"toplevel": True})
-    for substring in [
-        "http://ftp.ensembl.org/pub/release-",
-        "/fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna_sm.toplevel.fa.gz",
-    ]:
-        assert substring in link
+    # vertebrate: latest version
+    version = p.get_version("http://ftp.ensembl.org/pub")
+    link = p.get_genome_download_link(
+        "GRCz11", **{"version": version, "toplevel": True}
+    )
+    expected_link = (
+        f"http://ftp.ensembl.org/pub/release-{version}/"
+        "fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna_sm.toplevel.fa.gz"
+    )
+    assert link == expected_link
 
     sleep(1)
 
@@ -142,26 +144,25 @@ def test_get_annotation_download_link(p):
     if not travis:
         # non vertebrate
         link = p.get_annotation_download_link("TAIR10", **{"version": 46})
-        assert (
-            link
-            == "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
-            + "gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.46.gtf.gz"
+        expected_link = (
+            "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
+            "gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.46.gtf.gz"
         )
+        assert link == expected_link
 
     # vertebrate
     link = p.get_annotation_download_link("GRCz11", **{"version": 98})
-    assert (
-        link
-        == "http://ftp.ensembl.org/pub/release-98/gtf/"
-        + "danio_rerio/Danio_rerio.GRCz11.98.gtf.gz"
+    expected_link = (
+        "http://ftp.ensembl.org/pub/release-98/gtf/"
+        "danio_rerio/Danio_rerio.GRCz11.98.gtf.gz"
     )
+    assert link == expected_link
 
-    # vertebrate: any version
-    p.version = None
-    link = p.get_annotation_download_link("GRCz11")
-    for substring in [
-        "http://ftp.ensembl.org/pub/release-",
-        "/gtf/danio_rerio/Danio_rerio.GRCz11.",
-        ".gtf.gz",
-    ]:
-        assert substring in link
+    # vertebrate: latest version
+    version = p.get_version("http://ftp.ensembl.org/pub")
+    link = p.get_annotation_download_link("GRCz11", **{"version": version})
+    expected_link = (
+        f"http://ftp.ensembl.org/pub/release-{version}/"
+        f"gtf/danio_rerio/Danio_rerio.GRCz11.{version}.gtf.gz"
+    )
+    assert link == expected_link

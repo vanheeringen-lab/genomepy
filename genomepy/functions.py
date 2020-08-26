@@ -5,7 +5,6 @@ import re
 import sys
 
 from appdirs import user_config_dir
-from glob import glob
 from pyfaidx import FastaIndexingError
 from genomepy.genome import Genome
 from genomepy.exceptions import GenomeDownloadError
@@ -18,6 +17,7 @@ from genomepy.utils import (
     mkdir_p,
     read_readme,
     sanitize_annotation,
+    safe,
 )
 
 config = norns.config("genomepy", default="cfg/default.yaml")
@@ -51,7 +51,7 @@ def manage_config(cmd):
 
 
 def _online_providers():
-    """return a list of online providers as objects"""
+    """Return a list of online providers as objects"""
     providers = []
     for p in ProviderBase.list_providers():
         try:
@@ -63,9 +63,8 @@ def _online_providers():
 
 def _providers(provider=None):
     """
-    return a list of provider objects.
-
-    Either containing the specified provider, or all online providers
+    Return a list of provider objects:
+    either the specified provider, or all online providers
     """
     return [ProviderBase.create(provider)] if provider else _online_providers()
 
@@ -92,7 +91,7 @@ def list_available_genomes(provider=None):
 
 def _is_genome_dir(dirname):
     """
-    Check if a directory contains a fasta file
+    Check if a directory contains a fasta file of the same name
 
     Parameters
     ----------
@@ -103,7 +102,8 @@ def _is_genome_dir(dirname):
     ------
     bool
     """
-    return len(glob(f"{dirname}/*.fa")) > 0
+    name = os.path.basename(os.path.abspath(os.path.expanduser(dirname)))
+    return any([f for f in glob_ext_files(dirname) if os.path.join(name, name) in f])
 
 
 def list_installed_genomes(genomes_dir=None):
@@ -120,22 +120,19 @@ def list_installed_genomes(genomes_dir=None):
     list with genome names
     """
     genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
-
-    return (
-        [
-            f
-            for f in os.listdir(genomes_dir)
-            if _is_genome_dir(os.path.join(genomes_dir, f))
+    if os.path.exists(genomes_dir):
+        return [
+            subdir
+            for subdir in os.listdir(genomes_dir)
+            if _is_genome_dir(os.path.join(genomes_dir, subdir))
         ]
-        if os.path.exists(genomes_dir)
-        else []
-    )
+    return []
 
 
-def generate_exports():
+def generate_exports(genomes_dir=None):
     """Print export commands for setting environment variables."""
     env = []
-    for name in list_installed_genomes():
+    for name in list_installed_genomes(genomes_dir):
         try:
             g = Genome(name)
             env_name = re.sub(r"[^\w]+", "_", name).upper()
@@ -145,8 +142,9 @@ def generate_exports():
     return env
 
 
-def generate_env(fname=None):
-    """Generate file with exports.
+def generate_env(fname=None, genomes_dir=None):
+    """
+    Generate file with exports.
 
     By default this is .config/genomepy/exports.txt.
 
@@ -156,6 +154,9 @@ def generate_env(fname=None):
     ----------
     fname: str, optional
         Absolute path or name of the output file.
+
+    genomes_dir: str, optional
+        Directory with installed genomes to export.
     """
     path_name = os.path.expanduser(str(fname))
     if fname and os.path.exists(os.path.dirname(path_name)):
@@ -169,7 +170,7 @@ def generate_env(fname=None):
         absname = os.path.join(config_dir, name)
 
     with open(absname, "w") as fout:
-        for env in generate_exports():
+        for env in generate_exports(genomes_dir):
             fout.write(f"{env}\n")
 
 
@@ -277,14 +278,13 @@ def install_genome(
             URL only: direct link to annotation file.
             Required if this is not the same directory as the fasta.
     """
-    genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
+    name = safe(name)
     localname = get_localname(name, localname)
+    genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
     out_dir = os.path.join(genomes_dir, localname)
 
     # Check if genome already exists, or if downloading is forced
-    genome_found = (
-        len([f for f in glob_ext_files(out_dir) if f"{localname}.fa" in f]) >= 1
-    )
+    genome_found = _is_genome_dir(out_dir)
     if (not genome_found or force) and not only_annotation:
         # Download genome from provider
         p = _provider_selection(name, localname, genomes_dir, provider)
@@ -301,7 +301,7 @@ def install_genome(
         genome_found = True
 
         # Export installed genome(s)
-        generate_env()
+        generate_env(genomes_dir=genomes_dir)
 
     # Generates a Fasta object, index, gaps and sizes file
     g = None
@@ -319,14 +319,14 @@ def install_genome(
         ]
     ):
         annotation = True
-    annotation_found = len(glob_ext_files(out_dir, "gtf")) >= 1
+    annotation_found = bool(glob_ext_files(out_dir, "gtf"))
     if (not annotation_found or force) and annotation:
         # Download annotation from provider
         p = _provider_selection(name, localname, genomes_dir, provider)
         p.download_annotation(name, genomes_dir, localname=localname, **kwargs)
 
         # Sanitize annotation if needed (requires genome)
-        annotation_found = len(glob_ext_files(out_dir, "gtf")) >= 1
+        annotation_found = bool(glob_ext_files(out_dir, "gtf"))
         if genome_found and annotation_found and not skip_sanitizing:
             sanitize_annotation(g)
 
@@ -337,8 +337,7 @@ def install_genome(
 
 
 def manage_plugins(command, plugin_names=None):
-    """List, enable or disable plugins.
-    """
+    """List, enable or disable plugins."""
     if command not in ["list", "enable", "disable"]:
         raise ValueError(f"Invalid plugin command: {command}")
 
@@ -361,11 +360,11 @@ def manage_plugins(command, plugin_names=None):
         else:
             plugin_names = []
 
-        if command == "enable":
+        if command in ["enable", "activate"]:
             for name in plugin_names:
                 if name not in active_plugins:
                     active_plugins.append(name)
-        elif command == "disable":
+        elif command in ["disable", "deactivate"]:
             for name in plugin_names:
                 if name in active_plugins:
                     active_plugins.remove(name)
@@ -396,7 +395,7 @@ def search(term, provider=None):
 
     Parameters
     ----------
-    term : str
+    term : str or int
         Search term, case-insensitive.
 
     provider : str , optional
@@ -407,6 +406,7 @@ def search(term, provider=None):
     tuple
         genome information (name/identifier and description)
     """
+    term = safe(str(term))
     providers = _providers(provider)
     for p in providers:
         for row in p.search(term):

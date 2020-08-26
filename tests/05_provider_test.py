@@ -5,7 +5,6 @@ import pytest
 
 from tempfile import TemporaryDirectory
 from platform import system
-from pytest_socket import SocketBlockedError
 
 linux = system() == "Linux"
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
@@ -42,6 +41,15 @@ def p():
     return genomepy.provider.ProviderBase()
 
 
+def test_provider_status():
+    genomepy.provider.provider_status("test", "https://www.google.com")
+
+    with pytest.raises(ConnectionError):
+        genomepy.provider.provider_status(
+            "test", "http://thiswebsitedoesnotexist.nl"
+        )
+
+
 def test_providerbase__init__(p):
     assert list(p._providers) == ["ensembl", "ucsc", "ncbi", "url"]
     assert p.name is None
@@ -54,15 +62,6 @@ def test_create(p):
 
     with pytest.raises(ValueError):
         p.create("error")
-
-
-@pytest.mark.disable_socket
-def test_create_offline(p):
-    providers = ["ensembl", "ucsc", "ncbi"]
-    for provider in providers:
-        with pytest.raises(SocketBlockedError):
-            # would have been a ConnectionError in a real scenario
-            p.create(provider)
 
 
 def test_register_provider_and_list_providers(p):

@@ -211,17 +211,15 @@ def glob_ext_files(dirname, ext="fa"):
     dirname: str
         Directory name.
 
-    ext: str
+    ext: str , optional
         Filename extension (default: fa).
 
     Returns
     -------
         File names.
     """
-    fnames = glob(os.path.join(dirname, "*." + ext + "*"))
-    return [
-        fname for fname in fnames if fname.endswith(ext) or fname.endswith(ext + ".gz")
-    ]
+    fnames = glob(os.path.join(dirname, f"*.{ext}*"))
+    return [f for f in fnames if f.endswith((ext, f"{ext}.gz"))]
 
 
 def get_genomes_dir(genomes_dir=None, check_exist=True):
