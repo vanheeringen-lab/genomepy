@@ -289,14 +289,14 @@ def install_genome(
 
 
 def manage_plugins(command, plugin_names=None):
-    """List, enable or disable plugins.
-    """
-    if command not in ["list", "enable", "disable"]:
-        raise ValueError(f"Invalid plugin command: {command}")
-
+    """List, enable or disable plugins."""
+    plugin_names = [] if plugin_names is None else plugin_names
     plugins = init_plugins()
-    active_plugins = config.get("plugin", [])
+    for name in plugin_names:
+        if name not in plugins:
+            raise ValueError(f"Unknown plugin: {name}")
 
+    active_plugins = config.get("plugin", [])
     if command == "list":
         print("{:20}{}".format("plugin", "enabled"))
         for plugin in sorted(plugins):
@@ -305,22 +305,20 @@ def manage_plugins(command, plugin_names=None):
                     plugin, {False: "", True: "*"}[plugin in active_plugins]
                 )
             )
-    else:
-        if plugin_names:
-            for name in plugin_names:
-                if name not in plugins:
-                    raise ValueError(f"Unknown plugin: {name}")
-        else:
-            plugin_names = []
+        return
 
-        if command == "enable":
-            for name in plugin_names:
-                if name not in active_plugins:
-                    active_plugins.append(name)
-        elif command == "disable":
-            for name in plugin_names:
-                if name in active_plugins:
-                    active_plugins.remove(name)
+    elif command == "enable":
+        for name in plugin_names:
+            if name not in active_plugins:
+                active_plugins.append(name)
+
+    elif command == "disable":
+        for name in plugin_names:
+            if name in active_plugins:
+                active_plugins.remove(name)
+
+    else:
+        raise ValueError(f"Invalid plugin command: {command}")
 
     config["plugin"] = active_plugins
     config.save()
