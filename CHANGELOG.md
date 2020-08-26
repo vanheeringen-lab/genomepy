@@ -16,6 +16,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `genomepy search` and `genomepy providers` now only check online providers
 - `genomepy install` no longer requires a provider argument. Providers may still be passed with the `-p/--provider` flag.
 - If no provider is passed to `genomepy install`, the first provider with the genome is used (order: Ensembl > UCSC > NCBI).
+- API changes to `download_genome` and `download_annotation` for consistency
+- Short lived cache for provider status and Ensembl version
+
+### Fixed
+- `search` and `install` now consistently use safe search terms (no spaces)
 
 ## [0.8.4] - 2020-07-29
 - Fix bug where Genome.sizes dict contains str instead of int (#110).
