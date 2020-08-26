@@ -106,6 +106,9 @@ def test_list_installed_genomes():
     genomes = genomepy.functions.list_installed_genomes(gdir)
     assert genomes == ["regexp"]
 
+    empty_list = genomepy.functions.list_installed_genomes("./thisdirdoesnotexist")
+    assert empty_list == []
+
 
 def test__lazy_provider_selection():
     # Xenopus_tropicalis_v9.1 can be found on both Ensembl and NCBI.
@@ -223,7 +226,6 @@ def test_generate_env():
     path = os.path.join(config_dir, "exports.txt")
     if os.path.exists(path):
         os.unlink(path)
-    assert not os.path.exists(path)
 
     # give file path
     my_path = "~/exports.txt"

@@ -142,7 +142,7 @@ def generate_exports(genomes_dir=None):
     return env
 
 
-def generate_env(fname=None, genomes_dir=None):
+def generate_env(fname="exports.txt", genomes_dir=None):
     """
     Generate file with exports.
 
@@ -158,17 +158,10 @@ def generate_env(fname=None, genomes_dir=None):
     genomes_dir: str, optional
         Directory with installed genomes to export.
     """
-    path_name = os.path.expanduser(str(fname))
-    if fname and os.path.exists(os.path.dirname(path_name)):
-        absname = os.path.abspath(path_name)
-    else:
-        config_dir = user_config_dir("genomepy")
-        if not os.path.exists(config_dir):
-            manage_config("generate")
-
-        name = "exports.txt" if fname is None else fname
-        absname = os.path.join(config_dir, name)
-
+    fname1 = os.path.expanduser(fname)
+    fname2 = os.path.join(user_config_dir("genomepy"), fname)
+    absname = fname if os.path.isabs(fname1) else fname2
+    mkdir_p(os.path.dirname(absname))
     with open(absname, "w") as fout:
         for env in generate_exports(genomes_dir):
             fout.write(f"{env}\n")
