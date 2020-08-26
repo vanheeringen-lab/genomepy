@@ -40,7 +40,12 @@ before_script:
 script:
   - black --check setup.py genomepy/ tests/
   - flake8 setup.py genomepy/ tests/
-  - pytest -vv --disable-pytest-warnings --cov=genomepy --cov-config=tests/.coveragerc --cov-report=xml tests/*
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      pytest -v --disable-pytest-warnings --cov=genomepy --cov-config=tests/.coveragerc --cov-report=xml tests/*
+    else
+      # fails fast to return the error
+      pytest -vx --disable-pytest-warnings tests/*
+    fi
 
 after_script:
   # send the coverage data to Code Climate
