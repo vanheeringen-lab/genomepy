@@ -23,8 +23,7 @@ if not skip:
     def masking(request):
         return request.param
 
-
-    @pytest.mark.xfail(condition=travis)
+    @pytest.mark.xfail(condition=travis, reason="Ensembl")
     def test_ensembl_genome_download_links(assembly, masking, release_version):
         """Test Ensembl links with various options
 
@@ -43,9 +42,8 @@ if not skip:
         )
         sleep(1)
 
-
     # @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
-    @pytest.mark.xfail(condition=travis)
+    @pytest.mark.xfail(condition=travis, reason="Ensembl")
     def test_ensemblgenomes_genome_download_links(masking):
         """Test Ensembl FTP links for various genomes
 
@@ -59,7 +57,6 @@ if not skip:
             assert p.get_genome_download_link(genome, mask=mask)
             sleep(1)
 
-
     def test_ucsc_genome_download_links(masking):
         """Test UCSC HTTP links for various genomes
 
@@ -70,7 +67,6 @@ if not skip:
         for genome in ["sacCer3", "hg38"]:
             assert p.get_genome_download_link(genome, mask=masking)
             sleep(1)
-
 
     def test_ncbi_genome_download_links(masking):
         """Test NCBI HTTPS links for various genomes

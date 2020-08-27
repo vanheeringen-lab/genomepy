@@ -42,7 +42,7 @@ def p():
     return p
 
 
-@pytest.mark.xfail(condition=travis)
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_ensemblprovider__init__(p):
     p2 = genomepy.provider.ProviderBase().create("Ensembl")
     assert p.name == p2.name == "Ensembl"
@@ -51,7 +51,7 @@ def test_ensemblprovider__init__(p):
     sleep(1)
 
 
-@pytest.mark.xfail(condition=travis)
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test__request_json(p):
     divisions = p._request_json("http://rest.ensembl.org/", "info/divisions?")
     assert isinstance(divisions, list)
@@ -66,7 +66,7 @@ def test__request_json(p):
     sleep(1)
 
 
-@pytest.mark.xfail(condition=travis)
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test__get_genomes(p):
     assert isinstance(p.genomes, dict)
     assert "KH" in p.genomes
@@ -79,7 +79,7 @@ def test__get_genomes(p):
     sleep(1)
 
 
-@pytest.mark.xfail(condition=travis)
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_genome_info_tuple(p):
     t = p._genome_info_tuple("KH")
     assert isinstance(t, tuple)
@@ -88,7 +88,7 @@ def test_genome_info_tuple(p):
     sleep(1)
 
 
-@pytest.mark.xfail(condition=travis)
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_get_version(p):
     # note: this test will break every time Ensembl releases a new version
     ftp_site = "http://ftp.ensembl.org/pub"
@@ -103,7 +103,7 @@ def test_get_version(p):
     sleep(1)
 
 
-@pytest.mark.xfail(condition=travis)
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_get_genome_download_link(p):
     if not travis:
         # non vertebrate: soft masked
@@ -146,7 +146,7 @@ def test_get_genome_download_link(p):
     sleep(1)
 
 
-@pytest.mark.xfail(condition=travis)
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_get_annotation_download_link(p):
     if not travis:
         # non vertebrate
