@@ -228,7 +228,7 @@ def test_generate_env():
     my_path = "~/exports.txt"
     genomepy.functions.generate_env(my_path)
     assert os.path.exists(os.path.expanduser(my_path))
-    os.unlink(my_path)
+    os.unlink(os.path.expanduser(my_path))
 
     # give file name
     my_file = os.path.join(config_dir, "my_exports.txt")
