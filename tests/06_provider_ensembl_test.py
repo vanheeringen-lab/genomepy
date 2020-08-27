@@ -51,7 +51,7 @@ def test_ensemblprovider__init__(p):
 
 
 def test__request_json(p):
-    divisions = p._request_json("info/divisions?")
+    divisions = p._request_json("http://rest.ensembl.org/", "info/divisions?")
     assert isinstance(divisions, list)
     assert "EnsemblVertebrates" in divisions
 
@@ -59,7 +59,7 @@ def test__request_json(p):
 
     # test not r.ok
     with pytest.raises(requests.exceptions.HTTPError):
-        p._request_json("error")
+        p._request_json("http://rest.ensembl.org/", "error")
 
     sleep(1)
 

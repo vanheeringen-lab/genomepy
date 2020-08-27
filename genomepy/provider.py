@@ -26,28 +26,23 @@ from genomepy.utils import (
     read_url,
     safe,
     check_url,
+    retry,
     is_number,
     mkdir_p,
     get_genomes_dir,
 )
 from genomepy.__about__ import __version__
 
-# store the output of slow commands (marked with @cached) for fast reuse
+# Store the output of slow commands (marked with @cache and @goldfish_cache) for fast reuse.
+# Bucketcache creates a new pickle for each function + set of unique variables,
+# but cannot ignore "self", so staticmethods are required.
 my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
 if not os.path.exists(my_cache_dir):
     os.makedirs(my_cache_dir)
-cached = Bucket(my_cache_dir, days=7)
+cache = Bucket(my_cache_dir, days=7)
 goldfish_cache = Bucket(my_cache_dir, minutes=10)
 
 config = norns.config("genomepy", default="cfg/default.yaml")
-
-
-# not a class method as (I think) "self" cannot be ignored by Bucketcache
-@goldfish_cache(ignore=["url", "max_tries"])
-def provider_status(name, url, max_tries=1):
-    """check if provider is online (stores results for 10 minutes)"""
-    if not check_url(url, max_tries=max_tries):
-        raise ConnectionError(f"{name} appears to be offline.\n")
 
 
 class ProviderBase(object):
@@ -103,6 +98,13 @@ class ProviderBase(object):
             return subclass
 
         return decorator
+
+    @staticmethod
+    @goldfish_cache(ignore=["url", "max_tries"])
+    def provider_status(name, url, max_tries=1):
+        """check if provider is online (stores results for 10 minutes)"""
+        if not check_url(url, max_tries, 5):
+            raise ConnectionError(f"{name} appears to be offline.\n")
 
     @classmethod
     def list_providers(cls):
@@ -505,7 +507,7 @@ class ProviderBase(object):
 
         elif is_number(term):
             for name in genomes:
-                if self._search_taxids(genome=genomes[name], term=term):
+                if self._search_taxids(genomes[name], term):
                     yield self._genome_info_tuple(name)
 
         elif term in genomes:
@@ -514,7 +516,9 @@ class ProviderBase(object):
         else:
             term = term.lower()
             for name in genomes:
-                if self._search_descriptions(genome=genomes[name], term=term):
+                if term == safe(name).lower() or self._search_descriptions(
+                    genomes[name], term
+                ):
                     yield self._genome_info_tuple(name)
 
 
@@ -546,12 +550,10 @@ class EnsemblProvider(ProviderBase):
     }
 
     def __init__(self):
-        # Necessary for bucketcache, otherwise methods with identical names
-        # from different classes will use the same cache :-O!
         self.name = "Ensembl"
-        provider_status(self.name, self.rest_url, max_tries=3)
+        self.provider_status(self.name, self.rest_url, max_tries=5)
         # Populate on init, so that methods can be cached
-        self.genomes = self._get_genomes()
+        self.genomes = self._get_genomes(self._request_json, self.rest_url)
         self.accession_fields = ["assembly_accession"]
         self.taxid_fields = ["taxonomy_id"]
         self.description_fields = [
@@ -561,32 +563,31 @@ class EnsemblProvider(ProviderBase):
             "display_name",
         ]
 
-    @cached(method=True)
-    def _request_json(self, ext):
+    @staticmethod
+    def _request_json(rest_url, ext):
         """Make a REST request and return as json."""
-        if self.rest_url.endswith("/") and ext.startswith("/"):
+        if rest_url.endswith("/") and ext.startswith("/"):
             ext = ext[1:]
 
-        r = requests.get(
-            self.rest_url + ext, headers={"Content-Type": "application/json"}
-        )
+        r = requests.get(rest_url + ext, headers={"Content-Type": "application/json"})
 
         if not r.ok:
             r.raise_for_status()
 
         return r.json()
 
-    @cached(method=True)
-    def _get_genomes(self):
+    @staticmethod
+    @cache
+    def _get_genomes(request_json, rest_url):
         sys.stderr.write("Downloading assembly summaries from Ensembl\n")
 
         genomes = {}
-        divisions = self._request_json("info/divisions?")
+        divisions = retry(request_json, 3, rest_url, "info/divisions?")
         for division in divisions:
             if division == "EnsemblBacteria":
                 continue
-            division_genomes = self._request_json(
-                "info/genomes/division/{}?".format(division)
+            division_genomes = retry(
+                request_json, 3, rest_url, f"info/genomes/division/{division}?"
             )
             for genome in division_genomes:
                 genomes[safe(genome["assembly_name"])] = genome
@@ -607,16 +608,21 @@ class EnsemblProvider(ProviderBase):
             genome.get("genebuild", "na"),
         )
 
-    @goldfish_cache(method=True)
-    def get_version(self, ftp_site):
+    @staticmethod
+    @goldfish_cache
+    def get_version(ftp_site):
         """Retrieve current version from Ensembl FTP."""
-        with urlopen(ftp_site + "/current_README") as response:
-            p = re.compile(r"Ensembl (Genomes|Release) (\d+)")
-            m = p.search(response.read().decode())
-        if m:
-            version = m.group(2)
-            sys.stderr.write("Using version {}\n".format(version))
-            return version
+
+        def _get_version(_ftp_site):
+            with urlopen(_ftp_site + "/current_README") as response:
+                p = re.compile(r"Ensembl (Genomes|Release) (\d+)")
+                m = p.search(response.read().decode())
+            if m:
+                version = m.group(2)
+                sys.stderr.write("Using version {}\n".format(version))
+                return version
+
+        return retry(_get_version, 3, ftp_site)
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
@@ -677,10 +683,10 @@ class EnsemblProvider(ProviderBase):
         # try to get the (much smaller) primary assembly,
         # unless specified otherwise
         link = get_url("primary_assembly")
-        if kwargs.get("toplevel") or not check_url(link):
+        if kwargs.get("toplevel") or not check_url(link, 5, 5):
             link = get_url()
 
-        if check_url(link):
+        if check_url(link, 5, 5):
             return link
 
         raise GenomeDownloadError(
@@ -729,7 +735,7 @@ class EnsemblProvider(ProviderBase):
             version,
         )
 
-        if check_url(link):
+        if check_url(link, 5, 5):
             return link
 
 
@@ -756,30 +762,29 @@ class UcscProvider(ProviderBase):
     }
 
     def __init__(self):
-        # Necessary for bucketcache, otherwise methods with identical names
-        # from different classes will use the same cache :-O!
         self.name = "UCSC"
-        provider_status(self.name, self.base_url)
+        self.provider_status(self.name, self.base_url)
         # Populate on init, so that methods can be cached
-        self.genomes = self._get_genomes()
+        self.genomes = self._get_genomes(self.rest_url)
         self.accession_fields = []
         self.taxid_fields = ["taxId"]
         self.description_fields = ["description", "scientificName"]
 
-    @cached(method=True)
-    def _get_genomes(self):
+    @staticmethod
+    @cache
+    def _get_genomes(rest_url):
         sys.stderr.write("Downloading assembly summaries from UCSC\n")
 
-        r = requests.get(self.rest_url, headers={"Content-Type": "application/json"})
+        r = requests.get(rest_url, headers={"Content-Type": "application/json"})
         if not r.ok:
             r.raise_for_status()
         ucsc_json = r.json()
         genomes = ucsc_json["ucscGenomes"]
         return genomes
 
-    # staticmethod, but the decorators cannot be combined
-    @cached(method=True)
-    def assembly_accession(self, genome):
+    @staticmethod
+    @cache
+    def assembly_accession(genome):
         """Return the assembly accession (GCA_*) for a genome.
 
         UCSC does not serve the assembly accession through the REST API.
@@ -969,12 +974,10 @@ class NcbiProvider(ProviderBase):
     provider_specific_install_options = {}
 
     def __init__(self):
-        # Necessary for bucketcache, otherwise methods with identical names
-        # from different classes will use the same cache :-O!
         self.name = "NCBI"
-        provider_status(self.name, self.assembly_url)
+        self.provider_status(self.name, self.assembly_url)
         # Populate on init, so that methods can be cached
-        self.genomes = self._get_genomes()
+        self.genomes = self._get_genomes(self.assembly_url)
         self.accession_fields = ["assembly_accession", "gbrs_paired_asm"]
         self.taxid_fields = ["species_taxid", "taxid"]
         self.description_fields = [
@@ -985,8 +988,9 @@ class NcbiProvider(ProviderBase):
             "paired_asm_comp",
         ]
 
-    @cached(method=True)
-    def _get_genomes(self):
+    @staticmethod
+    @cache
+    def _get_genomes(assembly_url):
         """Parse genomes from assembly summary txt files."""
         sys.stderr.write(
             "Downloading assembly summaries from NCBI, this will take a while...\n"
@@ -1001,7 +1005,7 @@ class NcbiProvider(ProviderBase):
         ]
         for fname in names:
             urlcleanup()
-            with urlopen(os.path.join(self.assembly_url, fname)) as response:
+            with urlopen(os.path.join(assembly_url, fname)) as response:
                 lines = response.read().decode("utf-8").splitlines()
             header = lines[1].strip("# ").split("\t")
             for line in lines[2:]:

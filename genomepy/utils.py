@@ -334,21 +334,32 @@ def is_number(term):
         return True
 
 
-def check_url(url, time_out=3, max_tries=1, _try=1):
+def retry(func, tries, *args):
+    """
+    Retry functions with potential connection errors.
+
+    *args are passed as variables to func.
+    """
+    _try = 1
+    while _try <= tries:
+        try:
+            answer = func(*args)
+            return answer
+        except (urllib.request.URLError, timeout):
+            time.sleep(1)
+            _try += 1
+
+
+def check_url(url, max_tries=1, time_out=3):
     """Check if URL works. Returns bool"""
-    try:
-        ret = urllib.request.urlopen(url, timeout=time_out)
+
+    def _check_url(_url=url, _time_out=time_out):
+        ret = urllib.request.urlopen(_url, timeout=_time_out)
         # check return code for http(s) urls
-        if url.startswith("ftp") or ret.getcode() == 200:
+        if _url.startswith("ftp") or ret.getcode() == 200:
             return True
 
-    except (urllib.request.URLError, timeout):
-        # Some providers get swamped with requests, so we allow retries
-        if _try <= max_tries:
-            time.sleep(1)
-            return check_url(url, time_out=time_out, max_tries=max_tries, _try=_try + 1)
-
-    return False
+    return retry(_check_url, max_tries, url, time_out)
 
 
 def read_url(url):

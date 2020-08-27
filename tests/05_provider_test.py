@@ -41,13 +41,11 @@ def p():
     return genomepy.provider.ProviderBase()
 
 
-def test_provider_status():
-    genomepy.provider.provider_status("online_provider", "https://www.google.com")
+def test_provider_status(p):
+    p.provider_status("online_provider", "https://www.google.com")
 
     with pytest.raises(ConnectionError):
-        genomepy.provider.provider_status(
-            "offline_provider", "https://www.thiswebsiteisoffline.nl/"
-        )
+        p.provider_status("offline_provider", "https://www.thiswebsiteisoffline.nl/")
 
 
 def test_providerbase__init__(p):

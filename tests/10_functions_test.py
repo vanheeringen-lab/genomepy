@@ -275,8 +275,15 @@ def test_list_available_providers():
 
 def test_search():
     # unrecognized provider/genome will cause an exception or stopiteration respectively
-    search = genomepy.functions.search("xenopus tropicalis", "ensembl")
+    # case insensitive description search
+    search = genomepy.functions.search("xEnOpUs TrOpIcAlIs", "ensembl")
     metadata = next(search)
+
+    # case insensitive assembly name search
+    search = genomepy.functions.search("XeNoPuS_tRoPiCaLiS_v9.1", "ensembl")
+    metadata2 = next(search)
+
+    assert metadata == metadata2
     assert isinstance(metadata, list)
     assert "Xenopus_tropicalis_v9.1" in str(metadata[0])
     assert "Ensembl" in str(metadata[1])

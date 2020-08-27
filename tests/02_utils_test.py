@@ -3,6 +3,7 @@ import genomepy
 import pytest
 import os
 import shutil
+import urllib.request
 import subprocess as sp
 
 from tempfile import NamedTemporaryFile
@@ -217,6 +218,20 @@ def test_is_number():
     assert genomepy.utils.is_number("1234")
     assert genomepy.utils.is_number(1234)
     assert not genomepy.utils.is_number("abcd")
+
+
+def test_retry(capsys):
+    # runs passed function
+    txt = "hello world"
+    genomepy.utils.retry(print, 1, txt)
+    captured = capsys.readouterr().out.strip()
+    assert captured == txt
+
+    # handles URLErrors
+    def _offline_func():
+        raise urllib.request.URLError("this function is offline")
+
+    assert genomepy.utils.retry(_offline_func, 1) is None
 
 
 def test_check_url():
