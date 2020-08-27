@@ -160,9 +160,9 @@ def generate_env(fname="exports.txt", genomes_dir=None):
     """
     fname1 = os.path.expanduser(fname)
     fname2 = os.path.join(user_config_dir("genomepy"), fname)
-    absname = fname1 if os.path.isabs(fname1) else fname2
-    mkdir_p(os.path.dirname(absname))
-    with open(absname, "w") as fout:
+    fname = fname1 if os.path.isabs(fname1) else fname2
+    mkdir_p(os.path.dirname(fname))
+    with open(fname, "w") as fout:
         for env in generate_exports(genomes_dir):
             fout.write(f"{env}\n")
 
