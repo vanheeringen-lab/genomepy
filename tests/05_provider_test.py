@@ -48,7 +48,6 @@ def test_provider_status(p):
         p.provider_status("offline_provider", "https://www.thiswebsiteisoffline.nl/")
 
 
-@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_providerbase__init__(p):
     assert list(p._providers) == ["ensembl", "ucsc", "ncbi", "url"]
     assert p.name is None
@@ -63,7 +62,6 @@ def test_create(p):
         p.create("error")
 
 
-@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_register_provider_and_list_providers(p):
     assert isinstance(p._providers, dict)
 

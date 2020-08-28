@@ -103,7 +103,7 @@ class ProviderBase(object):
     @goldfish_cache(ignore=["url", "max_tries"])
     def provider_status(name, url, max_tries=1):
         """check if provider is online (stores results for 10 minutes)"""
-        if not check_url(url, max_tries, 5):
+        if not check_url(url, max_tries, 10):
             raise ConnectionError(f"{name} appears to be offline.\n")
 
     @classmethod
@@ -551,7 +551,7 @@ class EnsemblProvider(ProviderBase):
 
     def __init__(self):
         self.name = "Ensembl"
-        self.provider_status(self.name, self.rest_url + "info/ping?", max_tries=5)
+        self.provider_status(self.name, self.rest_url + "info/ping?", max_tries=2)
         # Populate on init, so that methods can be cached
         self.genomes = self._get_genomes(self._request_json, self.rest_url)
         self.accession_fields = ["assembly_accession"]
@@ -678,10 +678,10 @@ class EnsemblProvider(ProviderBase):
         # try to get the (much smaller) primary assembly,
         # unless specified otherwise
         link = get_url("primary_assembly")
-        if kwargs.get("toplevel") or not check_url(link, 5, 5):
+        if kwargs.get("toplevel") or not check_url(link, 2, 10):
             link = get_url()
 
-        if check_url(link, 5, 5):
+        if check_url(link, 2, 10):
             return link
 
         raise GenomeDownloadError(
@@ -732,7 +732,7 @@ class EnsemblProvider(ProviderBase):
             version,
         )
 
-        if check_url(link, 5, 5):
+        if check_url(link, 2, 10):
             return link
 
 

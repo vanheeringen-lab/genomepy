@@ -4,8 +4,6 @@ import os
 import pytest
 import requests
 
-from time import sleep
-
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
@@ -38,7 +36,6 @@ def validate_gzipped_bed(fname):
 @pytest.fixture(scope="module")
 def p():
     p = genomepy.provider.EnsemblProvider()
-    sleep(1)  # Ensembl cant handle too many requests
     return p
 
 
@@ -48,22 +45,16 @@ def test_ensemblprovider__init__(p):
     assert p.name == p2.name == "Ensembl"
     assert p.taxid_fields == ["taxonomy_id"]
 
-    sleep(1)
-
 
 @pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test__request_json(p):
-    divisions = p._request_json("http://rest.ensembl.org/", "info/divisions?")
+    divisions = p._request_json("https://rest.ensembl.org/", "info/divisions?")
     assert isinstance(divisions, list)
     assert "EnsemblVertebrates" in divisions
 
-    sleep(1)
-
     # test not r.ok
     with pytest.raises(requests.exceptions.HTTPError):
-        p._request_json("http://rest.ensembl.org/", "error")
-
-    sleep(1)
+        p._request_json("https://rest.ensembl.org/", "error")
 
 
 @pytest.mark.xfail(condition=travis, reason="Ensembl")
@@ -76,16 +67,12 @@ def test__get_genomes(p):
         assert field in genome
     assert genome["taxonomy_id"] == 7719
 
-    sleep(1)
-
 
 @pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_genome_info_tuple(p):
     t = p._genome_info_tuple("KH")
     assert isinstance(t, tuple)
     assert t[2:4] == ("Ciona intestinalis", "7719")
-
-    sleep(1)
 
 
 @pytest.mark.xfail(condition=travis, reason="Ensembl")
@@ -96,8 +83,6 @@ def test_get_version(p):
 
     v = p.get_version(p._request_json, "https://rest.ensembl.org/")
     assert v == "48"
-
-    sleep(1)
 
 
 @pytest.mark.xfail(condition=travis, reason="Ensembl")
@@ -138,8 +123,6 @@ def test_get_genome_download_link(p):
         "fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna_sm.toplevel.fa.gz"
     )
     assert link == expected_link
-
-    sleep(1)
 
 
 @pytest.mark.xfail(condition=travis, reason="Ensembl")
