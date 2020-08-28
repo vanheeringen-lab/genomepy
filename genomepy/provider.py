@@ -534,7 +534,7 @@ class EnsemblProvider(ProviderBase):
     The bacteria division is not yet supported.
     """
 
-    rest_url = "http://rest.ensembl.org/"
+    rest_url = "https://rest.ensembl.org/"
     provider_specific_install_options = {
         "toplevel": {
             "long": "toplevel",
@@ -551,7 +551,7 @@ class EnsemblProvider(ProviderBase):
 
     def __init__(self):
         self.name = "Ensembl"
-        self.provider_status(self.name, self.rest_url, max_tries=5)
+        self.provider_status(self.name, self.rest_url + "info/ping?", max_tries=5)
         # Populate on init, so that methods can be cached
         self.genomes = self._get_genomes(self._request_json, self.rest_url)
         self.accession_fields = ["assembly_accession"]
@@ -609,20 +609,13 @@ class EnsemblProvider(ProviderBase):
         )
 
     @staticmethod
-    @goldfish_cache
-    def get_version(ftp_site):
+    @goldfish_cache(ignore=["request_json", "rest_url"])
+    def get_version(request_json, rest_url, vertebrates=False):
         """Retrieve current version from Ensembl FTP."""
-
-        def _get_version(_ftp_site):
-            with urlopen(_ftp_site + "/current_README") as response:
-                p = re.compile(r"Ensembl (Genomes|Release) (\d+)")
-                m = p.search(response.read().decode())
-            if m:
-                version = m.group(2)
-                sys.stderr.write("Using version {}\n".format(version))
-                return version
-
-        return retry(_get_version, 3, ftp_site)
+        ext = "/info/data/?" if vertebrates else "/info/eg_version?"
+        ret = retry(request_json, 3, rest_url, ext)
+        releases = ret["releases"] if vertebrates else [ret["version"]]
+        return str(max(releases))
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
@@ -650,12 +643,14 @@ class EnsemblProvider(ProviderBase):
 
         ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
         if division == "vertebrates":
-            ftp_site = "http://ftp.ensembl.org/pub"
+            ftp_site = "ftp://ftp.ensembl.org/pub"
 
         # Ensembl release version
         version = kwargs.get("version")
         if version is None:
-            version = self.get_version(ftp_site)
+            version = self.get_version(
+                self._request_json, self.rest_url, division == "vertebrates"
+            )
 
         # division dependent url format
         ftp_dir = "{}/release-{}/fasta/{}/dna".format(
@@ -714,12 +709,14 @@ class EnsemblProvider(ProviderBase):
 
         ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
         if division == "vertebrates":
-            ftp_site = "http://ftp.ensembl.org/pub"
+            ftp_site = "ftp://ftp.ensembl.org/pub"
 
         # Ensembl release version
         version = kwargs.get("version")
         if version is None:
-            version = self.get_version(ftp_site)
+            version = self.get_version(
+                self._request_json, self.rest_url, division == "vertebrates"
+            )
 
         if division != "vertebrates":
             ftp_site += f"/{division}"

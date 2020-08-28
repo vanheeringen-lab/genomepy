@@ -91,34 +91,30 @@ def test_genome_info_tuple(p):
 @pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_get_version(p):
     # note: this test will break every time Ensembl releases a new version
-    ftp_site = "http://ftp.ensembl.org/pub"
-    v = p.get_version(ftp_site)
+    v = p.get_version(p._request_json, "https://rest.ensembl.org/", True)
     assert v == "101"
 
-    if not travis:
-        ftp_site = "ftp://ftp.ensemblgenomes.org/pub"
-        v = p.get_version(ftp_site)
-        assert v == "48"
+    v = p.get_version(p._request_json, "https://rest.ensembl.org/")
+    assert v == "48"
 
     sleep(1)
 
 
 @pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_get_genome_download_link(p):
-    if not travis:
-        # non vertebrate: soft masked
-        link = p.get_genome_download_link("TAIR10", mask="soft", **{"version": 46})
-        assert (
-            link
-            == "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
-            + "fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz"
-        )
+    # non vertebrate: soft masked
+    link = p.get_genome_download_link("TAIR10", mask="soft", **{"version": 46})
+    assert (
+        link
+        == "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
+        + "fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz"
+    )
 
     # vertebrate with primary assembly: unmasked
     link = p.get_genome_download_link("GRCz11", mask="none", **{"version": 98})
     assert (
         link
-        == "http://ftp.ensembl.org/pub/release-98/fasta/"
+        == "ftp://ftp.ensembl.org/pub/release-98/fasta/"
         + "danio_rerio/dna/Danio_rerio.GRCz11.dna.primary_assembly.fa.gz"
     )
 
@@ -128,17 +124,17 @@ def test_get_genome_download_link(p):
     )
     assert (
         link
-        == "http://ftp.ensembl.org/pub/release-98/fasta/"
+        == "ftp://ftp.ensembl.org/pub/release-98/fasta/"
         + "danio_rerio/dna/Danio_rerio.GRCz11.dna_rm.toplevel.fa.gz"
     )
 
     # vertebrate: latest version
-    version = p.get_version("http://ftp.ensembl.org/pub")
+    version = p.get_version(p._request_json, "https://rest.ensembl.org/", True)
     link = p.get_genome_download_link(
         "GRCz11", **{"version": version, "toplevel": True}
     )
     expected_link = (
-        f"http://ftp.ensembl.org/pub/release-{version}/"
+        f"ftp://ftp.ensembl.org/pub/release-{version}/"
         "fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna_sm.toplevel.fa.gz"
     )
     assert link == expected_link
@@ -148,28 +144,27 @@ def test_get_genome_download_link(p):
 
 @pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_get_annotation_download_link(p):
-    if not travis:
-        # non vertebrate
-        link = p.get_annotation_download_link("TAIR10", **{"version": 46})
-        expected_link = (
-            "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
-            "gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.46.gtf.gz"
-        )
-        assert link == expected_link
+    # non vertebrate
+    link = p.get_annotation_download_link("TAIR10", **{"version": 46})
+    expected_link = (
+        "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
+        "gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.46.gtf.gz"
+    )
+    assert link == expected_link
 
     # vertebrate
     link = p.get_annotation_download_link("GRCz11", **{"version": 98})
     expected_link = (
-        "http://ftp.ensembl.org/pub/release-98/gtf/"
+        "ftp://ftp.ensembl.org/pub/release-98/gtf/"
         "danio_rerio/Danio_rerio.GRCz11.98.gtf.gz"
     )
     assert link == expected_link
 
     # vertebrate: latest version
-    version = p.get_version("http://ftp.ensembl.org/pub")
+    version = p.get_version(p._request_json, "https://rest.ensembl.org/", True)
     link = p.get_annotation_download_link("GRCz11", **{"version": version})
     expected_link = (
-        f"http://ftp.ensembl.org/pub/release-{version}/"
+        f"ftp://ftp.ensembl.org/pub/release-{version}/"
         f"gtf/danio_rerio/Danio_rerio.GRCz11.{version}.gtf.gz"
     )
     assert link == expected_link
