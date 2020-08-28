@@ -41,6 +41,13 @@ def p():
     return genomepy.provider.ProviderBase()
 
 
+def test_provider_status(p):
+    p.provider_status("online_provider", "https://www.google.com")
+
+    with pytest.raises(ConnectionError):
+        p.provider_status("offline_provider", "https://www.thiswebsiteisoffline.nl/")
+
+
 def test_providerbase__init__(p):
     assert list(p._providers) == ["ensembl", "ucsc", "ncbi", "url"]
     assert p.name is None
@@ -49,7 +56,7 @@ def test_providerbase__init__(p):
 
 
 def test_create(p):
-    p.create("Ensembl")
+    p.create("ncbi")
 
     with pytest.raises(ValueError):
         p.create("error")
@@ -73,8 +80,8 @@ def test_list_available_genomes(p):
 
 
 def test_check_name(p):
-    p = p.create("Ensembl")
-    p.check_name("KH")
+    p = p.create("ucsc")
+    p.check_name("ailMel1")
     with pytest.raises(genomepy.exceptions.GenomeDownloadError):
         p.check_name("not_a_real_genome")
 
@@ -85,15 +92,15 @@ def get_genome_download_link(p):
 
 
 def test_genome_taxid(p):
-    p = p.create("Ensembl")
-    taxid = p.genome_taxid(p.genomes["KH"])
-    assert taxid == 7719
+    p = p.create("ucsc")
+    taxid = p.genome_taxid(p.genomes["ailMel1"])
+    assert taxid == 9646
 
 
 def test_assembly_accession(p):
-    p = p.create("Ensembl")
-    accession = p.assembly_accession(p.genomes["KH"])
-    assert accession.startswith("GCA_000224145")
+    p = p.create("ucsc")
+    accession = p.assembly_accession(p.genomes["ailMel1"])
+    assert accession.startswith("GCA_000004335")
 
 
 @pytest.mark.skipif(not travis or not linux, reason="slow")
@@ -182,7 +189,9 @@ def test_attempt_and_report(p, capsys):
         p.attempt_and_report(name, localname, annot_url, tmpdir)
 
     captured = capsys.readouterr().err.strip()
-    assert captured.startswith(f"Downloading annotation from {annot_url}")
+    assert captured.startswith(
+        f"Downloading annotation from None.\nTarget URL: {annot_url}"
+    )
 
 
 @pytest.mark.skipif(not travis or not linux, reason="slow")
@@ -213,23 +222,23 @@ def test_download_annotation(p):
 
 
 def test__search_taxids(p):
-    p = p.create("Ensembl")
-    assert not p._search_taxids(p.genomes["KH"], "not_an_id")
-    assert p._search_taxids(p.genomes["KH"], "7719")
+    p = p.create("ucsc")
+    assert not p._search_taxids(p.genomes["ailMel1"], "not_an_id")
+    assert p._search_taxids(p.genomes["ailMel1"], "9646")
 
 
 def test__search_descriptions(p):
-    p = p.create("Ensembl")
-    assert "scientific_name" in p.description_fields
-    assert p.genomes["KH"]["scientific_name"] == "Ciona intestinalis"
-    desc = genomepy.utils.safe("Ciona intestinalis").lower()
-    assert p._search_descriptions(p.genomes["KH"], desc)
-    assert not p._search_descriptions(p.genomes["KH"], "not_in_description")
+    p = p.create("ucsc")
+    assert "scientificName" in p.description_fields
+    assert p.genomes["ailMel1"]["scientificName"] == "Ailuropoda melanoleuca"
+    desc = genomepy.utils.safe("Ailuropoda melanoleuca").lower()
+    assert p._search_descriptions(p.genomes["ailMel1"], desc)
+    assert not p._search_descriptions(p.genomes["ailMel1"], "not_in_description")
 
 
 def test_search(p):
-    p = p.create("Ensembl")
-    for method in ["KH", "7719", "Ciona intestinalis"]:
+    p = p.create("ucsc")
+    for method in ["ailMel1", "9646", "Ailuropoda melanoleuca"]:
         genomes = p.search(method)
         for genome in genomes:
-            assert genome[0] == "KH"
+            assert genome[0] == "ailMel1"

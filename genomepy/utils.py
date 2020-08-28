@@ -13,6 +13,7 @@ import time
 from glob import glob
 from norns import exceptions
 from pyfaidx import Fasta
+from socket import timeout
 from tempfile import TemporaryDirectory
 
 config = norns.config("genomepy", default="cfg/default.yaml")
@@ -210,17 +211,15 @@ def glob_ext_files(dirname, ext="fa"):
     dirname: str
         Directory name.
 
-    ext: str
+    ext: str , optional
         Filename extension (default: fa).
 
     Returns
     -------
         File names.
     """
-    fnames = glob(os.path.join(dirname, "*." + ext + "*"))
-    return [
-        fname for fname in fnames if fname.endswith(ext) or fname.endswith(ext + ".gz")
-    ]
+    fnames = glob(os.path.join(dirname, f"*.{ext}*"))
+    return [f for f in fnames if f.endswith((ext, f"{ext}.gz"))]
 
 
 def get_genomes_dir(genomes_dir=None, check_exist=True):
@@ -335,15 +334,32 @@ def is_number(term):
         return True
 
 
-def check_url(url):
+def retry(func, tries, *args):
+    """
+    Retry functions with potential connection errors.
+
+    *args are passed as variables to func.
+    """
+    _try = 1
+    while _try <= tries:
+        try:
+            answer = func(*args)
+            return answer
+        except (urllib.request.URLError, timeout):
+            time.sleep(1)
+            _try += 1
+
+
+def check_url(url, max_tries=1, time_out=15):
     """Check if URL works. Returns bool"""
-    try:
-        ret = urllib.request.urlopen(url)
+
+    def _check_url(_url=url, _time_out=time_out):
+        ret = urllib.request.urlopen(_url, timeout=_time_out)
         # check return code for http(s) urls
-        if url.startswith("ftp") or ret.getcode() == 200:
+        if _url.startswith("ftp") or ret.getcode() == 200:
             return True
-    except urllib.request.URLError:
-        return False
+
+    return retry(_check_url, max_tries, url, time_out)
 
 
 def read_url(url):

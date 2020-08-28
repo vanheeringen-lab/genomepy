@@ -22,6 +22,7 @@ if not skip:
     def masking(request):
         return request.param
 
+    @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
     def test_ensembl_genome_download_links(assembly, masking, release_version):
         """Test Ensembl links with various options
 
@@ -30,11 +31,9 @@ if not skip:
         Vertebrates are downloaded from HTTP.
         """
         p = genomepy.provider.ProviderBase.create("Ensembl")
-
         mask = masking if masking != "unmasked" else "none"
         toplevel = False if assembly == "primary_assembly" else True
         version = release_version
-
         assert p.get_genome_download_link(
             "GRCh38.p13", mask=mask, toplevel=toplevel, version=version
         )
@@ -46,19 +45,15 @@ if not skip:
         These genomes are hosted on ftp.ensemblgenomes.org.
         """
         p = genomepy.provider.ProviderBase.create("Ensembl")
-
         mask = masking if masking != "unmasked" else "none"
-
         for genome in ["Amel_4.5", "WBcel235"]:
             assert p.get_genome_download_link(genome, mask=mask)
-            p.version = None  # reset version for next genome
 
     def test_ucsc_genome_download_links(masking):
         """Test UCSC HTTP links for various genomes
 
         Also test masking (unmasked should be ignored)."""
         p = genomepy.provider.ProviderBase.create("UCSC")
-
         for genome in ["sacCer3", "hg38"]:
             assert p.get_genome_download_link(genome, mask=masking)
 
@@ -69,6 +64,5 @@ if not skip:
 
         These genomes are hosted on ftp://ftp.ncbi.nlm.nih.gov."""
         p = genomepy.provider.ProviderBase.create("NCBI")
-
         for genome in ["Charlie1.0", "GRCh38.p13"]:
             assert p.get_genome_download_link(genome, mask=masking)
