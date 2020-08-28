@@ -4,7 +4,10 @@ import os
 import pytest
 import requests
 
+from platform import system
+
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+linux = system() == "Linux"
 
 
 def validate_gzipped_gtf(fname):
@@ -39,14 +42,12 @@ def p():
     return p
 
 
-@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_ensemblprovider__init__(p):
     p2 = genomepy.provider.ProviderBase().create("Ensembl")
     assert p.name == p2.name == "Ensembl"
     assert p.taxid_fields == ["taxonomy_id"]
 
 
-@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test__request_json(p):
     divisions = p._request_json("https://rest.ensembl.org/", "info/divisions?")
     assert isinstance(divisions, list)
@@ -57,7 +58,6 @@ def test__request_json(p):
         p._request_json("https://rest.ensembl.org/", "error")
 
 
-@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test__get_genomes(p):
     assert isinstance(p.genomes, dict)
     assert "KH" in p.genomes
@@ -68,14 +68,12 @@ def test__get_genomes(p):
     assert genome["taxonomy_id"] == 7719
 
 
-@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_genome_info_tuple(p):
     t = p._genome_info_tuple("KH")
     assert isinstance(t, tuple)
     assert t[2:4] == ("Ciona intestinalis", "7719")
 
 
-@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_get_version(p):
     # note: this test will break every time Ensembl releases a new version
     v = p.get_version(p._request_json, "https://rest.ensembl.org/", True)
@@ -85,7 +83,7 @@ def test_get_version(p):
     assert v == "48"
 
 
-@pytest.mark.xfail(condition=travis, reason="Ensembl")
+@pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_get_genome_download_link(p):
     # non vertebrate: soft masked
     link = p.get_genome_download_link("TAIR10", mask="soft", **{"version": 46})
@@ -125,7 +123,7 @@ def test_get_genome_download_link(p):
     assert link == expected_link
 
 
-@pytest.mark.xfail(condition=travis, reason="Ensembl")
+@pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_get_annotation_download_link(p):
     # non vertebrate
     link = p.get_annotation_download_link("TAIR10", **{"version": 46})

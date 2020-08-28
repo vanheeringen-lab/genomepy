@@ -22,7 +22,7 @@ if not skip:
     def masking(request):
         return request.param
 
-    @pytest.mark.xfail(condition=travis, reason="Ensembl")
+    @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
     def test_ensembl_genome_download_links(assembly, masking, release_version):
         """Test Ensembl links with various options
 
@@ -38,8 +38,7 @@ if not skip:
             "GRCh38.p13", mask=mask, toplevel=toplevel, version=version
         )
 
-    # @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
-    @pytest.mark.xfail(condition=travis, reason="Ensembl")
+    @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
     def test_ensemblgenomes_genome_download_links(masking):
         """Test Ensembl FTP links for various genomes
 
