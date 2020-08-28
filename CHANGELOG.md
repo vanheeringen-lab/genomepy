@@ -217,3 +217,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-m hard` option to `install` to hard-mask sequences.
 - Added `-l` option to `install` for a custom name.
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
+
+[Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.8.4]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.3...0.8.4
+[0.8.3]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.2...0.8.3
+[0.8.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.1...0.8.2
+[0.8.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.7.2...0.8.1
+[0.7.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.7.1...0.7.2
+[0.7.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.7.0...0.7.1
+[0.7.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.6.1...0.7.0
+[0.6.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.6.0...0.6.1
+[0.6.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.5.5...0.6.0
+[0.5.5]: https://github.com/vanheeringen-lab/genomepy/compare/0.5.4...0.5.5
+[0.5.4]: https://github.com/vanheeringen-lab/genomepy/compare/0.5.2...0.5.4
+[0.5.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.3.1...0.5.2
+[0.3.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.3.0...0.3.1
+[0.3.0]: https://github.com/vanheeringen-lab/genomepy/releases/tag/0.3.0
