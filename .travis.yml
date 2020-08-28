@@ -27,7 +27,9 @@ before_install:
   - ./miniconda.sh -b -p $HOME/miniconda -f
   - export PATH=$HOME/miniconda/bin:$PATH
   - conda config --set always_yes yes
-  - sudo openvpn path/to/conf.ovpn &>>openvpn-client.log &
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      sudo openvpn path/to/conf.ovpn &>>openvpn-client.log &
+    fi
 
 install:
   - conda env create -n genomepy python=$PYTHON_VERSION -f environment.yml
