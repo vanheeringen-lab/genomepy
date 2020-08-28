@@ -232,7 +232,7 @@ class ProviderBase(object):
             mkdir_p(out_dir)
 
         sys.stderr.write(
-            f"Downloading genome from {self.name}." f"\nTarget URL: {link}...\n"
+            f"Downloading genome from {self.name}.\nTarget URL: {link}...\n"
         )
 
         # download to tmp dir. Move genome on completion.
@@ -405,7 +405,7 @@ class ProviderBase(object):
             return
 
         sys.stderr.write(
-            f"Downloading annotation from {self.name}." f"\nTarget URL: {link}...\n"
+            f"Downloading annotation from {self.name}.\nTarget URL: {link}...\n"
         )
         try:
             self.download_and_generate_annotation(genomes_dir, link, localname)

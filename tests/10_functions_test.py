@@ -221,6 +221,7 @@ def test_generate_exports():
     not travis or not linux, reason="only works if a genome was installed"
 )
 def test_generate_env():
+    # already used, but we had to install a genome first to test it
     config_dir = str(user_config_dir("genomepy"))
     path = os.path.join(config_dir, "exports.txt")
 
