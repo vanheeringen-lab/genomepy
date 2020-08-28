@@ -331,7 +331,6 @@ def install_genome(
 
 def manage_plugins(command, plugin_names=None):
     """List, enable or disable plugins."""
-    plugin_names = [] if plugin_names is None else plugin_names
     plugins = init_plugins()
     for name in plugin_names if plugin_names else []:
         if name not in plugins:
