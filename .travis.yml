@@ -11,11 +11,6 @@ env:
   jobs:
     - PYTHON_VERSION: "3.6"
 
-addons:
-  apt:
-    packages:
-    - openvpn
-
 before_install:
   # install miniconda
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
@@ -27,9 +22,6 @@ before_install:
   - ./miniconda.sh -b -p $HOME/miniconda -f
   - export PATH=$HOME/miniconda/bin:$PATH
   - conda config --set always_yes yes
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      sudo openvpn path/to/conf.ovpn &>>openvpn-client.log &
-    fi
 
 install:
   - conda env create -n genomepy python=$PYTHON_VERSION -f environment.yml
