@@ -13,11 +13,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
   - if no provider is passed to `genomepy install`, the first provider with the genome is used (order: Ensembl > UCSC > NCBI).
 
 ### Changed
+- Ensembl genomes always download over ftp (http was too unstable)
+- Ensembl release versions obtained via REST API (http was too unstable)
 - `genomepy search` and `genomepy providers` only check online providers
 - Online function now have a timeout and a retry system
 - API changes to `download_genome` and `download_annotation` for consistency
 
 ### Fixed
+- Ensembl status check uses lighter url (more stable)
 - `search` and `install` now consistently use safe search terms (no spaces)
 - `search` now uses UTF-8, no longer crashing for \u2019 (some quotation mark).
 - `search` case insensitivity fixed for assembly names.
