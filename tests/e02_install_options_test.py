@@ -62,7 +62,7 @@ if not skip:
             genomes_dir=tmp,
             localname=localname,
             bgzip=bgzip,
-            force=force,
+            force=False,
         )
 
         # force test
@@ -87,6 +87,7 @@ if not skip:
         assert t0 != t1 if force else t0 == t1
 
         shutil.rmtree(tmp)
+        sleep(1)
 
     def test_install_annotation_options(
         force, localname, genome="ASM14646v1", provider="NCBI"
@@ -137,3 +138,4 @@ if not skip:
         assert t0 != t1 if force else t0 == t1
 
         shutil.rmtree(tmp)
+        sleep(1)

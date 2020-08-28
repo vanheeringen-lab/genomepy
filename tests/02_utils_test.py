@@ -3,6 +3,7 @@ import genomepy
 import pytest
 import os
 import shutil
+import urllib.request
 import subprocess as sp
 
 from tempfile import NamedTemporaryFile
@@ -137,6 +138,7 @@ def test_glob_ext_files(file="tests/data/small_genome.fa"):
     assert file not in genomepy.utils.glob_ext_files("tests/data")
     assert file + ".gz" in genomepy.utils.glob_ext_files("tests/data")
     assert len(genomepy.utils.glob_ext_files("tests/data", "fake_ext")) == 0
+    assert len(genomepy.utils.glob_ext_files("tests/data/regexp")) == 1
 
 
 def test_get_genomes_dir(genomes_dir="tests/data"):
@@ -218,9 +220,24 @@ def test_is_number():
     assert not genomepy.utils.is_number("abcd")
 
 
+def test_retry(capsys):
+    # runs passed function
+    txt = "hello world"
+    genomepy.utils.retry(print, 1, txt)
+    captured = capsys.readouterr().out.strip()
+    assert captured == txt
+
+    # handles URLErrors
+    def _offline_func():
+        raise urllib.request.URLError("this function is offline")
+
+    assert genomepy.utils.retry(_offline_func, 1) is None
+
+
 def test_check_url():
     assert genomepy.utils.check_url("http://ftp.xenbase.org/pub/Genomics/JGI/README")
-    assert not genomepy.utils.check_url("http://not_an_url")
+    # wrong/offline urls:
+    assert not genomepy.utils.check_url("https://www.thiswebsiteisoffline.nl/")
 
 
 def test_read_url(

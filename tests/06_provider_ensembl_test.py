@@ -4,6 +4,8 @@ import os
 import pytest
 import requests
 
+from time import sleep
+
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
@@ -35,25 +37,36 @@ def validate_gzipped_bed(fname):
 
 @pytest.fixture(scope="module")
 def p():
-    return genomepy.provider.EnsemblProvider()
+    p = genomepy.provider.EnsemblProvider()
+    sleep(1)  # Ensembl cant handle too many requests
+    return p
 
 
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_ensemblprovider__init__(p):
     p2 = genomepy.provider.ProviderBase().create("Ensembl")
     assert p.name == p2.name == "Ensembl"
     assert p.taxid_fields == ["taxonomy_id"]
 
+    sleep(1)
 
+
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test__request_json(p):
-    divisions = p._request_json("info/divisions?")
+    divisions = p._request_json("http://rest.ensembl.org/", "info/divisions?")
     assert isinstance(divisions, list)
     assert "EnsemblVertebrates" in divisions
 
+    sleep(1)
+
     # test not r.ok
     with pytest.raises(requests.exceptions.HTTPError):
-        p._request_json("error")
+        p._request_json("http://rest.ensembl.org/", "error")
+
+    sleep(1)
 
 
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test__get_genomes(p):
     assert isinstance(p.genomes, dict)
     assert "KH" in p.genomes
@@ -63,15 +76,21 @@ def test__get_genomes(p):
         assert field in genome
     assert genome["taxonomy_id"] == 7719
 
+    sleep(1)
 
+
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_genome_info_tuple(p):
     t = p._genome_info_tuple("KH")
     assert isinstance(t, tuple)
     assert t[2:4] == ("Ciona intestinalis", "7719")
 
+    sleep(1)
 
+
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_get_version(p):
-    # note: this test will break every time ensembl releases a new version
+    # note: this test will break every time Ensembl releases a new version
     ftp_site = "http://ftp.ensembl.org/pub"
     v = p.get_version(ftp_site)
     assert v == "101"
@@ -81,7 +100,10 @@ def test_get_version(p):
         v = p.get_version(ftp_site)
         assert v == "48"
 
+    sleep(1)
 
+
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_get_genome_download_link(p):
     if not travis:
         # non vertebrate: soft masked
@@ -110,40 +132,44 @@ def test_get_genome_download_link(p):
         + "danio_rerio/dna/Danio_rerio.GRCz11.dna_rm.toplevel.fa.gz"
     )
 
-    # vertebrate: any version
-    p.version = None
-    link = p.get_genome_download_link("GRCz11", **{"toplevel": True})
-    for substring in [
-        "http://ftp.ensembl.org/pub/release-",
-        "/fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna_sm.toplevel.fa.gz",
-    ]:
-        assert substring in link
+    # vertebrate: latest version
+    version = p.get_version("http://ftp.ensembl.org/pub")
+    link = p.get_genome_download_link(
+        "GRCz11", **{"version": version, "toplevel": True}
+    )
+    expected_link = (
+        f"http://ftp.ensembl.org/pub/release-{version}/"
+        "fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna_sm.toplevel.fa.gz"
+    )
+    assert link == expected_link
+
+    sleep(1)
 
 
+@pytest.mark.xfail(condition=travis, reason="Ensembl")
 def test_get_annotation_download_link(p):
     if not travis:
         # non vertebrate
         link = p.get_annotation_download_link("TAIR10", **{"version": 46})
-        assert (
-            link
-            == "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
-            + "gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.46.gtf.gz"
+        expected_link = (
+            "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/"
+            "gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.46.gtf.gz"
         )
+        assert link == expected_link
 
     # vertebrate
     link = p.get_annotation_download_link("GRCz11", **{"version": 98})
-    assert (
-        link
-        == "http://ftp.ensembl.org/pub/release-98/gtf/"
-        + "danio_rerio/Danio_rerio.GRCz11.98.gtf.gz"
+    expected_link = (
+        "http://ftp.ensembl.org/pub/release-98/gtf/"
+        "danio_rerio/Danio_rerio.GRCz11.98.gtf.gz"
     )
+    assert link == expected_link
 
-    # vertebrate: any version
-    p.version = None
-    link = p.get_annotation_download_link("GRCz11")
-    for substring in [
-        "http://ftp.ensembl.org/pub/release-",
-        "/gtf/danio_rerio/Danio_rerio.GRCz11.",
-        ".gtf.gz",
-    ]:
-        assert substring in link
+    # vertebrate: latest version
+    version = p.get_version("http://ftp.ensembl.org/pub")
+    link = p.get_annotation_download_link("GRCz11", **{"version": version})
+    expected_link = (
+        f"http://ftp.ensembl.org/pub/release-{version}/"
+        f"gtf/danio_rerio/Danio_rerio.GRCz11.{version}.gtf.gz"
+    )
+    assert link == expected_link
