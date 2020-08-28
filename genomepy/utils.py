@@ -350,7 +350,7 @@ def retry(func, tries, *args):
             _try += 1
 
 
-def check_url(url, max_tries=1, time_out=10):
+def check_url(url, max_tries=1, time_out=15):
     """Check if URL works. Returns bool"""
 
     def _check_url(_url=url, _time_out=time_out):

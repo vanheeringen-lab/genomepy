@@ -103,7 +103,7 @@ class ProviderBase(object):
     @goldfish_cache(ignore=["url", "max_tries"])
     def provider_status(name, url, max_tries=1):
         """check if provider is online (stores results for 10 minutes)"""
-        if not check_url(url, max_tries, 10):
+        if not check_url(url, max_tries):
             raise ConnectionError(f"{name} appears to be offline.\n")
 
     @classmethod
@@ -678,10 +678,10 @@ class EnsemblProvider(ProviderBase):
         # try to get the (much smaller) primary assembly,
         # unless specified otherwise
         link = get_url("primary_assembly")
-        if kwargs.get("toplevel") or not check_url(link, 2, 10):
+        if kwargs.get("toplevel") or not check_url(link, 2):
             link = get_url()
 
-        if check_url(link, 2, 10):
+        if check_url(link, 2):
             return link
 
         raise GenomeDownloadError(
@@ -732,7 +732,7 @@ class EnsemblProvider(ProviderBase):
             version,
         )
 
-        if check_url(link, 2, 10):
+        if check_url(link, 2):
             return link
 
 
