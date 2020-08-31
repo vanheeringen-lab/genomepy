@@ -3,13 +3,12 @@ import os
 import norns
 import re
 import sys
-
-from appdirs import user_config_dir
-from pyfaidx import FastaIndexingError
-from genomepy.genome import Genome
+from appdirs import user_config_dir, user_cache_dir
+from genomepy.__about__ import __version__
 from genomepy.exceptions import GenomeDownloadError
-from genomepy.provider import ProviderBase
+from genomepy.genome import Genome
 from genomepy.plugin import get_active_plugins, init_plugins
+from genomepy.provider import ProviderBase
 from genomepy.utils import (
     get_localname,
     get_genomes_dir,
@@ -19,8 +18,17 @@ from genomepy.utils import (
     sanitize_annotation,
     safe,
 )
+from pyfaidx import FastaIndexingError
+from shutil import rmtree
 
 config = norns.config("genomepy", default="cfg/default.yaml")
+
+
+def clean():
+    """Remove cached data on providers"""
+    my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
+    rmtree(my_cache_dir)
+    mkdir_p(my_cache_dir)
 
 
 def manage_config(cmd):

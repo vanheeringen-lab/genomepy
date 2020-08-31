@@ -1,5 +1,6 @@
 """Search, download and use genome FASTA files."""
 from genomepy.functions import (  # noqa: F401
+    clean,
     install_genome,
     list_available_providers,
     list_available_genomes,

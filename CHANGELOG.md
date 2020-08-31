@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - automatic provider selection for `genomepy install`
   - optional provider flag for `genomepy install` (`-p/--provider`)
   - if no provider is passed to `genomepy install`, the first provider with the genome is used (order: Ensembl > UCSC > NCBI).
+- `genomepy clean` removes local caches. Will be reloaded when required.
 
 ### Changed
 - Ensembl genomes always download over ftp (http was too unstable)
