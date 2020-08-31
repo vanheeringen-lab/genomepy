@@ -23,6 +23,14 @@ def cli():
     pass
 
 
+@click.command("clean", short_help="remove provider data")
+def clean():
+    """
+    Remove cached data on providers (e.g. available genomes).
+    """
+    genomepy.clean()
+
+
 @click.command("config", short_help="manage configuration")
 @click.argument("command")
 def config(command):
@@ -279,6 +287,7 @@ def search(term, provider=None):
         print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")
 
 
+cli.add_command(clean)
 cli.add_command(config)
 cli.add_command(genomes)
 cli.add_command(install)
