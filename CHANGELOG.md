@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.9.0] - 2020-09-01
+
 ### Added
 - check to see if providers are online + error message if not
 - automatic provider selection for `genomepy install`
