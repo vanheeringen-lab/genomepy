@@ -2,22 +2,33 @@
 import os
 import norns
 import re
-
-from appdirs import user_config_dir
-from glob import glob
-from pyfaidx import FastaIndexingError
+import sys
+from appdirs import user_config_dir, user_cache_dir
+from genomepy.__about__ import __version__
+from genomepy.exceptions import GenomeDownloadError
 from genomepy.genome import Genome
-from genomepy.provider import ProviderBase
 from genomepy.plugin import get_active_plugins, init_plugins
+from genomepy.provider import ProviderBase
 from genomepy.utils import (
     get_localname,
     get_genomes_dir,
     glob_ext_files,
     mkdir_p,
+    read_readme,
     sanitize_annotation,
+    safe,
 )
+from pyfaidx import FastaIndexingError
+from shutil import rmtree
 
 config = norns.config("genomepy", default="cfg/default.yaml")
+
+
+def clean():
+    """Remove cached data on providers"""
+    my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
+    rmtree(my_cache_dir)
+    mkdir_p(my_cache_dir)
 
 
 def manage_config(cmd):
@@ -47,6 +58,25 @@ def manage_config(cmd):
         raise ValueError(f"Invalid config command: {cmd}")
 
 
+def _online_providers():
+    """Return a list of online providers as objects"""
+    providers = []
+    for p in ProviderBase.list_providers():
+        try:
+            providers.append(ProviderBase.create(p))
+        except ConnectionError as e:
+            sys.stderr.write(str(e))
+    return providers
+
+
+def _providers(provider=None):
+    """
+    Return a list of provider objects:
+    either the specified provider, or all online providers
+    """
+    return [ProviderBase.create(provider)] if provider else _online_providers()
+
+
 def list_available_genomes(provider=None):
     """
     List all available genomes.
@@ -61,12 +91,7 @@ def list_available_genomes(provider=None):
     -------
     list with genome names
     """
-    if provider:
-        providers = [ProviderBase.create(provider)]
-    else:
-        # if provider is not specified search all providers
-        providers = [ProviderBase.create(p) for p in ProviderBase.list_providers()]
-
+    providers = _providers(provider)
     for p in providers:
         for row in p.list_available_genomes():
             yield [p.name] + list(row)
@@ -74,7 +99,7 @@ def list_available_genomes(provider=None):
 
 def _is_genome_dir(dirname):
     """
-    Check if a directory contains a fasta file
+    Check if a directory contains a fasta file of the same name
 
     Parameters
     ----------
@@ -85,7 +110,8 @@ def _is_genome_dir(dirname):
     ------
     bool
     """
-    return len(glob(f"{dirname}/*.fa")) > 0
+    name = os.path.basename(os.path.abspath(os.path.expanduser(dirname)))
+    return any([f for f in glob_ext_files(dirname) if os.path.join(name, name) in f])
 
 
 def list_installed_genomes(genomes_dir=None):
@@ -102,33 +128,31 @@ def list_installed_genomes(genomes_dir=None):
     list with genome names
     """
     genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
-
-    return (
-        [
-            f
-            for f in os.listdir(genomes_dir)
-            if _is_genome_dir(os.path.join(genomes_dir, f))
+    if os.path.exists(genomes_dir):
+        return [
+            subdir
+            for subdir in os.listdir(genomes_dir)
+            if _is_genome_dir(os.path.join(genomes_dir, subdir))
         ]
-        if os.path.exists(genomes_dir)
-        else []
-    )
+    return []
 
 
-def generate_exports():
+def generate_exports(genomes_dir=None):
     """Print export commands for setting environment variables."""
     env = []
-    for name in list_installed_genomes():
+    for name in list_installed_genomes(genomes_dir):
         try:
             g = Genome(name)
             env_name = re.sub(r"[^\w]+", "_", name).upper()
             env.append(f"export {env_name}={g.filename}")
-        except FastaIndexingError:
+        except (FastaIndexingError, FileNotFoundError):
             pass
     return env
 
 
-def generate_env(fname=None):
-    """Generate file with exports.
+def generate_env(fname="exports.txt", genomes_dir=None):
+    """
+    Generate file with exports.
 
     By default this is .config/genomepy/exports.txt.
 
@@ -138,26 +162,52 @@ def generate_env(fname=None):
     ----------
     fname: str, optional
         Absolute path or name of the output file.
+
+    genomes_dir: str, optional
+        Directory with installed genomes to export.
     """
-    path_name = os.path.expanduser(str(fname))
-    if fname and os.path.exists(os.path.dirname(path_name)):
-        absname = os.path.abspath(path_name)
-    else:
-        config_dir = user_config_dir("genomepy")
-        if not os.path.exists(config_dir):
-            manage_config("generate")
-
-        name = "exports.txt" if fname is None else fname
-        absname = os.path.join(config_dir, name)
-
-    with open(absname, "w") as fout:
-        for env in generate_exports():
+    fname1 = os.path.expanduser(fname)
+    fname2 = os.path.join(user_config_dir("genomepy"), fname)
+    fname = fname1 if os.path.isabs(fname1) else fname2
+    mkdir_p(os.path.dirname(fname))
+    with open(fname, "w") as fout:
+        for env in generate_exports(genomes_dir):
             fout.write(f"{env}\n")
+
+
+def _lazy_provider_selection(name, provider=None):
+    """return the first PROVIDER which has genome NAME"""
+    providers = _providers(provider)
+    for p in providers:
+        if name in p.genomes:
+            return p
+    else:
+        raise GenomeDownloadError(
+            f"{name} not found on {', '.join([p.name for p in providers])}."
+        )
+
+
+def _provider_selection(name, localname, genomes_dir, provider=None):
+    """
+    Return a provider object
+
+    First tries to return a specified provider,
+    Second tries to return the provider from the README
+    Third tries to return the first provider which has the genome (Ensembl>UCSC>NCBI)
+    """
+    if provider is None:
+        readme = os.path.join(genomes_dir, localname, "README.txt")
+        m, _ = read_readme(readme)
+        p = m["provider"].lower()
+        if p in ["ensembl", "ucsc", "ncbi"]:
+            provider = p
+
+    return _lazy_provider_selection(name, provider)
 
 
 def install_genome(
     name,
-    provider,
+    provider=None,
     genomes_dir=None,
     localname=None,
     mask="soft",
@@ -179,8 +229,8 @@ def install_genome(
     name : str
         Genome name
 
-    provider : str
-        Provider name
+    provider : str , optional
+        Provider name. will try Ensembl, UCSC and NCBI (in that order) if not specified.
 
     genomes_dir : str , optional
         Where to store the fasta files
@@ -229,17 +279,16 @@ def install_genome(
             URL only: direct link to annotation file.
             Required if this is not the same directory as the fasta.
     """
-    genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
+    name = safe(name)
     localname = get_localname(name, localname)
+    genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
     out_dir = os.path.join(genomes_dir, localname)
 
     # Check if genome already exists, or if downloading is forced
-    genome_found = (
-        len([f for f in glob_ext_files(out_dir) if f"{localname}.fa" in f]) >= 1
-    )
+    genome_found = _is_genome_dir(out_dir)
     if (not genome_found or force) and not only_annotation:
         # Download genome from provider
-        p = ProviderBase.create(provider)
+        p = _provider_selection(name, localname, genomes_dir, provider)
         p.download_genome(
             name,
             genomes_dir,
@@ -253,7 +302,7 @@ def install_genome(
         genome_found = True
 
         # Export installed genome(s)
-        generate_env()
+        generate_env(genomes_dir=genomes_dir)
 
     # Generates a Fasta object, index, gaps and sizes file
     g = None
@@ -271,14 +320,14 @@ def install_genome(
         ]
     ):
         annotation = True
-    annotation_found = len(glob_ext_files(out_dir, "gtf")) >= 1
+    annotation_found = bool(glob_ext_files(out_dir, "gtf"))
     if (not annotation_found or force) and annotation:
         # Download annotation from provider
-        p = ProviderBase.create(provider)
+        p = _provider_selection(name, localname, genomes_dir, provider)
         p.download_annotation(name, genomes_dir, localname=localname, **kwargs)
 
         # Sanitize annotation if needed (requires genome)
-        annotation_found = len(glob_ext_files(out_dir, "gtf")) >= 1
+        annotation_found = bool(glob_ext_files(out_dir, "gtf"))
         if genome_found and annotation_found and not skip_sanitizing:
             sanitize_annotation(g)
 
@@ -289,14 +338,13 @@ def install_genome(
 
 
 def manage_plugins(command, plugin_names=None):
-    """List, enable or disable plugins.
-    """
-    if command not in ["list", "enable", "disable"]:
-        raise ValueError(f"Invalid plugin command: {command}")
-
+    """List, enable or disable plugins."""
     plugins = init_plugins()
-    active_plugins = config.get("plugin", [])
+    for name in plugin_names if plugin_names else []:
+        if name not in plugins:
+            raise ValueError(f"Unknown plugin: {name}")
 
+    active_plugins = config.get("plugin", [])
     if command == "list":
         print("{:20}{}".format("plugin", "enabled"))
         for plugin in sorted(plugins):
@@ -305,22 +353,20 @@ def manage_plugins(command, plugin_names=None):
                     plugin, {False: "", True: "*"}[plugin in active_plugins]
                 )
             )
-    else:
-        if plugin_names:
-            for name in plugin_names:
-                if name not in plugins:
-                    raise ValueError(f"Unknown plugin: {name}")
-        else:
-            plugin_names = []
+        return
 
-        if command == "enable":
-            for name in plugin_names:
-                if name not in active_plugins:
-                    active_plugins.append(name)
-        elif command == "disable":
-            for name in plugin_names:
-                if name in active_plugins:
-                    active_plugins.remove(name)
+    elif command in ["enable", "activate"]:
+        for name in plugin_names:
+            if name not in active_plugins:
+                active_plugins.append(name)
+
+    elif command in ["disable", "deactivate"]:
+        for name in plugin_names:
+            if name in active_plugins:
+                active_plugins.remove(name)
+
+    else:
+        raise ValueError(f"Invalid plugin command: {command}")
 
     config["plugin"] = active_plugins
     config.save()
@@ -348,7 +394,7 @@ def search(term, provider=None):
 
     Parameters
     ----------
-    term : str
+    term : str or int
         Search term, case-insensitive.
 
     provider : str , optional
@@ -357,15 +403,10 @@ def search(term, provider=None):
     Yields
     ------
     tuple
-        genome information (name/identfier and description)
+        genome information (name/identifier and description)
     """
-    if provider:
-        providers = [ProviderBase.create(provider)]
-    else:
-        # if provider is not specified search all providers
-        providers = [ProviderBase.create(p) for p in ProviderBase.list_providers()]
+    term = safe(str(term))
+    providers = _providers(provider)
     for p in providers:
         for row in p.search(term):
-            yield [
-                x.encode("latin-1") for x in list(row[:1]) + [p.name] + list(row[1:])
-            ]
+            yield [x.encode("utf-8") for x in list(row[:1]) + [p.name] + list(row[1:])]

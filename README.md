@@ -80,7 +80,7 @@ You can find the binaries [here](http://hgdownload.cse.ucsc.edu/admin/exe/).
    Use name for genomepy install
   ```
 
-2.  Install your genome (with annotation): `$ genomepy install --annotation GRCz11 ensembl`
+2.  Install your genome (with annotation): `$ genomepy install --annotation GRCz11 --provider ensembl `
 
   Default genome directory: `~/.local/share/genomes/`
 
@@ -111,7 +111,7 @@ installed separately for the indexing to work.
 
 Note 2: splice-aware indexing is performed by Hisat2 and STAR.
 Splice-aware indexing requires the annotation to be downloaded as well. 
-You will recieve a warning if indexing is performed without annotation for these aligners.
+You will receive a warning if indexing is performed without annotation for these aligners.
 
 Note 3: STAR can further improve mapping to (novel) splice junctions by indexing again (2-pass mapping mode). 
 The second pass is currently not supported by genomepy.
@@ -131,7 +131,7 @@ Created config file /home/simon/.config/genomepy/genomepy.yaml
 
 By default genomes will be saved in `~/.local/share/genomes`. 
 
-To set the default genome directory to `/data/genomes` for instance, 
+To set the default genome directory, to `/data/genomes` for instance,
 edit `~/.config/genomepy/genomepy.yaml` and change the following line:
 
 ```
@@ -224,10 +224,17 @@ UCB_Xtro_10.0              NCBI        GCA_000004195.4    Xenopus tropicalis    
 ```
 
 Lets say we want to download the *Xenopus tropicalis* genome from UCSC.
-Copy the name returned by the search function and it with the provider name to install:
+Copy the name returned by the search function to install:
 
 ```
-$ genomepy install xenTro9 UCSC
+$ genomepy install xenTro9
+```
+
+Since we did not specify the provider here, genomepy will use the first provider it can find with `xenTro9`. Since we learned in `genomepy search` that only UCSC uses this name, it will be UCSC.
+We can also specify genomepy to use UCSC by giving it the provider name with `-p`:
+
+```
+$ genomepy install xenTro9 -p UCSC
 Downloading genome from http://hgdownload.soe.ucsc.edu/goldenPath/xenTro9/bigZips/xenTro9.fa.gz...
 Genome download successful, starting post processing...
 
@@ -240,7 +247,7 @@ Here, genomes are downloaded to the directory specified in the config file.
 To choose a different directory, use the `-g` option.
 
 ```
-$ genomepy install sacCer3 UCSC -g /path/to/my/genomes
+$ genomepy install sacCer3 -p UCSC -g /path/to/my/genomes
 Downloading genome from http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz...
 Genome download successful, starting post processing...
 
@@ -254,7 +261,7 @@ You can use a regular expression to filter for matching sequences
 the following command downloads hg38 and saves only the major chromosomes:
 
 ```
-$ genomepy install hg38 UCSC -r 'chr[0-9XY]+$'
+$ genomepy install hg38 -p UCSC -r 'chr[0-9XY]+$'
 downloading from http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz...
 done...
 name: hg38
@@ -295,13 +302,13 @@ You can choose to download gene annotation files with the `--annotation` option.
 These will be saved in (gzipped) BED and GTF format. 
 
 ```
-$ genomepy  install hg38 UCSC --annotation
+$ genomepy  install hg38 -p UCSC --annotation
 ```
 
 To facilitate the downloading of genomes not supported by either NCBI, UCSC, or Ensembl, genomes 
 can also be downloaded directly from an url:
 ```
-$ genomepy install https://research.nhgri.nih.gov/hydra/download/assembly/\Hm105_Dovetail_Assembly_1.0.fa.gz url
+$ genomepy install https://research.nhgri.nih.gov/hydra/download/assembly/\Hm105_Dovetail_Assembly_1.0.fa.gz -p url
 ```
 This installs the genome under the filename of the link, but can be changed with the `--localname` 
 option
@@ -322,6 +329,7 @@ gmap
 hisat2              
 minimap2            
 star
+blacklist
 ```
 
 Enable plugins as follows:

@@ -47,9 +47,9 @@ def test_cache(capsys):
     if os.path.exists(my_cache_dir):
         rmtree(my_cache_dir)
     os.makedirs(my_cache_dir)
-    cached = Bucket(my_cache_dir, days=7)
+    cache = Bucket(my_cache_dir, days=7)
 
-    @cached
+    @cache
     def expensive_method():
         print("Method called.")
 

@@ -23,6 +23,14 @@ def cli():
     pass
 
 
+@click.command("clean", short_help="remove provider data")
+def clean():
+    """
+    Remove cached data on providers (e.g. available genomes).
+    """
+    genomepy.clean()
+
+
 @click.command("config", short_help="manage configuration")
 @click.argument("command")
 def config(command):
@@ -48,10 +56,16 @@ def genomes(provider=None):
 
 # extended options for genomepy install
 general_install_options = {
+    "provider": {
+        "short": "p",
+        "long": "provider",
+        "help": "download from this provider",
+        "default": None,
+    },
     "genomes_dir": {
         "short": "g",
         "long": "genomes_dir",
-        "help": "genomes directory",
+        "help": "create output directory here",
         "default": None,
     },
     "localname": {
@@ -178,7 +192,6 @@ def custom_options(options):
 
 
 @custom_options(get_install_options())
-@click.argument("provider")
 @click.argument("name")
 @cli.command()
 def install(
@@ -197,10 +210,10 @@ def install(
     force,
     **kwargs,
 ):
-    """Install genome NAME from provider PROVIDER in directory GENOME_DIR."""
+    """install a genome & run active plugins"""
     genomepy.install_genome(
         name,
-        provider,
+        provider=provider,
         genomes_dir=genomes_dir,
         localname=localname,
         mask=mask,
@@ -274,6 +287,7 @@ def search(term, provider=None):
         print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")
 
 
+cli.add_command(clean)
 cli.add_command(config)
 cli.add_command(genomes)
 cli.add_command(install)

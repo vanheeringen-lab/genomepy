@@ -38,7 +38,7 @@ def p():
     return genomepy.provider.UcscProvider()
 
 
-def test_ensemblprovider__init__(p):
+def test_ucscprovider__init__(p):
     p2 = genomepy.provider.ProviderBase().create("UCSC")
     assert p.name == p2.name == "UCSC"
     assert p.taxid_fields == ["taxId"]

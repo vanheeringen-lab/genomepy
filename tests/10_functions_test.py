@@ -3,11 +3,25 @@ import pytest
 import os
 import shutil
 
-from appdirs import user_config_dir
+from appdirs import user_config_dir, user_cache_dir
 from platform import system
 
 linux = system() == "Linux"
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+
+
+def test_clean():
+    my_cache_dir = os.path.join(
+        user_cache_dir("genomepy"), genomepy.__about__.__version__
+    )
+
+    genomepy.provider.ProviderBase.create("UCSC")  # pickles UCSC genomes
+    assert os.path.exists(my_cache_dir)  # dir exists
+    assert os.listdir(my_cache_dir)  # contains >=1 pickle(s)
+
+    genomepy.clean()
+    assert os.path.exists(my_cache_dir)  # dir exists
+    assert not os.listdir(my_cache_dir)  # contains 0 pickles
 
 
 def test_manage_config(capsys):
@@ -42,6 +56,21 @@ def test_manage_config(capsys):
     genomepy.functions.manage_config("show")
     captured = capsys.readouterr().out.strip()
     assert captured.startswith("bgzip: false")
+
+
+def test__online_providers():
+    ops = genomepy.functions._online_providers()
+    assert len(ops) == 4
+    assert "genomepy.provider.EnsemblProvider" in str(ops[0])
+
+
+def test__providers():
+    ops = genomepy.functions._providers("Ensembl")
+    assert len(ops) == 1
+
+    ops = genomepy.functions._providers()
+    assert len(ops) == 4
+    assert "genomepy.provider.EnsemblProvider" in str(ops[0])
 
 
 def test_list_available_genomes():
@@ -79,7 +108,7 @@ def test_list_available_genomes():
 
 def test__is_genome_dir():
     # dir contains a fasta
-    assert genomepy.functions._is_genome_dir("tests/data")
+    assert genomepy.functions._is_genome_dir("tests/data/regexp")
     # dir does not contain a fasta
     assert not genomepy.functions._is_genome_dir("tests/genome")
 
@@ -90,6 +119,54 @@ def test_list_installed_genomes():
     gdir = os.path.join(os.getcwd(), "tests", "data")
     genomes = genomepy.functions.list_installed_genomes(gdir)
     assert genomes == ["regexp"]
+
+    empty_list = genomepy.functions.list_installed_genomes("./thisdirdoesnotexist")
+    assert empty_list == []
+
+
+def test__lazy_provider_selection():
+    # Xenopus_tropicalis_v9.1 can be found on both Ensembl and NCBI.
+    # Ensembl is first in lazy selection.
+
+    # find genome in specified provider (NCBI)
+    name = "Xenopus_tropicalis_v9.1"
+    provider = "NCBI"
+    p = genomepy.functions._lazy_provider_selection(name, provider)
+    assert "NcbiProvider" in str(p)
+
+    # find the first provider (Ensembl)
+    provider = None
+    p = genomepy.functions._lazy_provider_selection(name, provider)
+    assert "EnsemblProvider" in str(p)
+
+    # cant find genome anywhere
+    name = "not_a_genome"
+    with pytest.raises(genomepy.GenomeDownloadError):
+        genomepy.functions._lazy_provider_selection(name, provider)
+
+
+def test__provider_selection():
+    # specified provider
+    name = "Xenopus_tropicalis_v9.1"
+    localname = "test_genome"
+    genomes_dir = os.getcwd()
+    provider = "NCBI"
+    p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
+    assert "NcbiProvider" in str(p)
+
+    # provider from readme
+    readme = os.path.join(genomes_dir, localname, "README.txt")
+    os.makedirs(os.path.dirname(readme), exist_ok=True)
+    with open(readme, "w") as r:
+        r.write("provider: NCBI")
+    provider = None
+    p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
+    assert "NcbiProvider" in str(p)
+    shutil.rmtree(os.path.dirname(readme))
+
+    # lazy provider
+    p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
+    assert "EnsemblProvider" in str(p)
 
 
 @pytest.mark.skipif(not travis or not linux, reason="slow")
@@ -161,9 +238,6 @@ def test_generate_env():
     # already used, but we had to install a genome first to test it
     config_dir = str(user_config_dir("genomepy"))
     path = os.path.join(config_dir, "exports.txt")
-    if os.path.exists(path):
-        os.unlink(path)
-    assert not os.path.exists(path)
 
     # give file path
     my_path = "~/exports.txt"
@@ -178,8 +252,11 @@ def test_generate_env():
     os.unlink(os.path.expanduser(my_file))
 
     # give nothing
+    if os.path.exists(path):
+        os.unlink(path)
     genomepy.functions.generate_env()
     assert os.path.exists(path)
+
     with open(path) as f:
         exports = []
         for line in f.readlines():
@@ -212,11 +289,27 @@ def test_list_available_providers():
 
 
 def test_search():
-    # unrecognized provider/genome will cause an Exception or StopIteration respectively
-    search = genomepy.functions.search("Xenopus Tropicalis", "Ensembl")
+    # unrecognized provider/genome will cause an exception or stopiteration respectively
+    # case insensitive description search
+    search = genomepy.functions.search("xEnOpUs TrOpIcAlIs", "ensembl")
     metadata = next(search)
+
+    # case insensitive assembly name search
+    search = genomepy.functions.search("XeNoPuS_tRoPiCaLiS_v9.1", "ensembl")
+    metadata2 = next(search)
+
+    assert metadata == metadata2
     assert isinstance(metadata, list)
     assert "Xenopus_tropicalis_v9.1" in str(metadata[0])
     assert "Ensembl" in str(metadata[1])
     assert "GCA_000004195" in str(metadata[2])
     assert "8364" in str(metadata[4])
+
+
+def test_accession_search():
+    search = [row for row in genomepy.functions.search("GCA_000004195.3")]
+    assert 3 == len(search)
+    providers = [row[1] for row in search]
+    assert b"Ensembl" in providers
+    assert b"NCBI" in providers
+    assert b"UCSC" in providers

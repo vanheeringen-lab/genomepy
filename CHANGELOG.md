@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.9.0] - 2020-09-01
+
+### Added
+- check to see if providers are online + error message if not
+- automatic provider selection for `genomepy install`
+  - optional provider flag for `genomepy install` (`-p/--provider`)
+  - if no provider is passed to `genomepy install`, the first provider with the genome is used (order: Ensembl > UCSC > NCBI).
+- `genomepy clean` removes local caches. Will be reloaded when required.
+
+### Changed
+- Ensembl genomes always download over ftp (http was too unstable)
+- Ensembl release versions obtained via REST API (http was too unstable)
+- `genomepy search` and `genomepy providers` only check online providers
+- Online function now have a timeout and a retry system
+- API changes to `download_genome` and `download_annotation` for consistency
+
+### Fixed
+- Ensembl status check uses lighter url (more stable)
+- `search` and `install` now consistently use safe search terms (no spaces)
+- `search` now uses UTF-8, no longer crashing for \u2019 (some quotation mark).
+- `search` case insensitivity fixed for assembly names.
+- Bucketcache now stores less data, increasing responsiveness.
+
+
 ## [0.8.4] - 2020-07-29
 - Fix bug where Genome.sizes dict contains str instead of int (#110).
 - Fix bug with UTF-8 in README (#109).
@@ -196,3 +220,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-m hard` option to `install` to hard-mask sequences.
 - Added `-l` option to `install` for a custom name.
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
+
+[Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.8.4]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.3...0.8.4
+[0.8.3]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.2...0.8.3
+[0.8.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.1...0.8.2
+[0.8.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.7.2...0.8.1
+[0.7.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.7.1...0.7.2
+[0.7.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.7.0...0.7.1
+[0.7.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.6.1...0.7.0
+[0.6.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.6.0...0.6.1
+[0.6.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.5.5...0.6.0
+[0.5.5]: https://github.com/vanheeringen-lab/genomepy/compare/0.5.4...0.5.5
+[0.5.4]: https://github.com/vanheeringen-lab/genomepy/compare/0.5.2...0.5.4
+[0.5.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.3.1...0.5.2
+[0.3.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.3.0...0.3.1
+[0.3.0]: https://github.com/vanheeringen-lab/genomepy/releases/tag/0.3.0
