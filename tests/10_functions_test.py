@@ -2,7 +2,7 @@ import genomepy
 import pytest
 import os
 
-from appdirs import user_config_dir, user_cache_dir
+from appdirs import user_config_dir
 from platform import system
 
 linux = system() == "Linux"
@@ -10,19 +10,22 @@ travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
 def test_clean():
-    my_cache_dir = os.path.join(
-        user_cache_dir("genomepy"), genomepy.__about__.__version__
-    )
+    # test moved to 01_tests to prevent errors in parallel tests
+    pass
 
-    genomepy.provider.ProviderBase.create("UCSC")  # pickles UCSC genomes
-    assert os.path.exists(my_cache_dir)  # dir exists
-    assert os.listdir(my_cache_dir)  # contains >=1 pickle(s)
-
-    genomepy.clean()
-    assert os.path.exists(my_cache_dir)  # dir exists
-    assert not os.listdir(my_cache_dir)  # contains 0 pickles
-
-    genomepy.clean()  # no errors when cache dir is empty
+    # my_cache_dir = os.path.join(
+    #     user_cache_dir("genomepy"), genomepy.__about__.__version__
+    # )
+    #
+    # genomepy.provider.ProviderBase.create("UCSC")  # pickles UCSC genomes
+    # assert os.path.exists(my_cache_dir)  # dir exists
+    # assert os.listdir(my_cache_dir)  # contains >=1 pickle(s)
+    #
+    # genomepy.clean()
+    # assert os.path.exists(my_cache_dir)  # dir exists
+    # assert not os.listdir(my_cache_dir)  # contains 0 pickles
+    #
+    # genomepy.clean()  # no errors when cache dir is empty
 
 
 def test_manage_config(capsys):

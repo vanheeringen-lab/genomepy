@@ -35,7 +35,7 @@ from genomepy.__about__ import __version__
 
 # Store the output of slow commands (marked with @cache and @goldfish_cache) for fast reuse.
 # Bucketcache creates a new pickle for each function + set of unique variables,
-# but cannot ignore "self", so staticmethods are required.
+# to avoid storing self.genomes, ignore=["self"] or use @staticmethod.
 my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
 if not os.path.exists(my_cache_dir):
     os.makedirs(my_cache_dir)
@@ -99,12 +99,11 @@ class ProviderBase(object):
 
         return decorator
 
-    @staticmethod
-    @goldfish_cache(ignore=["url", "max_tries"])
-    def provider_status(name, url, max_tries=1):
+    @goldfish_cache(ignore=["self", "max_tries"])
+    def provider_status(self, url, max_tries=1):
         """check if provider is online (stores results for 10 minutes)"""
         if not check_url(url, max_tries):
-            raise ConnectionError(f"{name} appears to be offline.\n")
+            raise ConnectionError(f"{self.name} appears to be offline.\n")
 
     @classmethod
     def list_providers(cls):
@@ -551,9 +550,9 @@ class EnsemblProvider(ProviderBase):
 
     def __init__(self):
         self.name = "Ensembl"
-        self.provider_status(self.name, self.rest_url + "info/ping?", max_tries=2)
+        self.provider_status(self.rest_url + "info/ping?", max_tries=2)
         # Populate on init, so that methods can be cached
-        self.genomes = self._get_genomes(self._request_json, self.rest_url)
+        self.genomes = self._get_genomes(self.rest_url)
         self.accession_fields = ["assembly_accession"]
         self.taxid_fields = ["taxonomy_id"]
         self.description_fields = [
@@ -576,18 +575,17 @@ class EnsemblProvider(ProviderBase):
 
         return r.json()
 
-    @staticmethod
-    @cache
-    def _get_genomes(request_json, rest_url):
+    @cache(ignore=["self"])
+    def _get_genomes(self, rest_url):
         sys.stderr.write("Downloading assembly summaries from Ensembl\n")
 
         genomes = {}
-        divisions = retry(request_json, 3, rest_url, "info/divisions?")
+        divisions = retry(self._request_json, 3, rest_url, "info/divisions?")
         for division in divisions:
             if division == "EnsemblBacteria":
                 continue
             division_genomes = retry(
-                request_json, 3, rest_url, f"info/genomes/division/{division}?"
+                self._request_json, 3, rest_url, f"info/genomes/division/{division}?"
             )
             for genome in division_genomes:
                 genomes[safe(genome["assembly_name"])] = genome
@@ -608,12 +606,11 @@ class EnsemblProvider(ProviderBase):
             genome.get("genebuild", "na"),
         )
 
-    @staticmethod
-    @goldfish_cache(ignore=["request_json", "rest_url"])
-    def get_version(request_json, rest_url, vertebrates=False):
+    @goldfish_cache(ignore=["self", "rest_url"])
+    def get_version(self, rest_url, vertebrates=False):
         """Retrieve current version from Ensembl FTP."""
         ext = "/info/data/?" if vertebrates else "/info/eg_version?"
-        ret = retry(request_json, 3, rest_url, ext)
+        ret = retry(self._request_json, 3, rest_url, ext)
         releases = ret["releases"] if vertebrates else [ret["version"]]
         return str(max(releases))
 
@@ -648,9 +645,7 @@ class EnsemblProvider(ProviderBase):
         # Ensembl release version
         version = kwargs.get("version")
         if version is None:
-            version = self.get_version(
-                self._request_json, self.rest_url, division == "vertebrates"
-            )
+            version = self.get_version(self.rest_url, division == "vertebrates")
 
         # division dependent url format
         ftp_dir = "{}/release-{}/fasta/{}/dna".format(
@@ -714,9 +709,7 @@ class EnsemblProvider(ProviderBase):
         # Ensembl release version
         version = kwargs.get("version")
         if version is None:
-            version = self.get_version(
-                self._request_json, self.rest_url, division == "vertebrates"
-            )
+            version = self.get_version(self.rest_url, division == "vertebrates")
 
         if division != "vertebrates":
             ftp_site += f"/{division}"
@@ -760,7 +753,7 @@ class UcscProvider(ProviderBase):
 
     def __init__(self):
         self.name = "UCSC"
-        self.provider_status(self.name, self.base_url)
+        self.provider_status(self.base_url)
         # Populate on init, so that methods can be cached
         self.genomes = self._get_genomes(self.rest_url)
         self.accession_fields = []
@@ -972,7 +965,7 @@ class NcbiProvider(ProviderBase):
 
     def __init__(self):
         self.name = "NCBI"
-        self.provider_status(self.name, self.assembly_url)
+        self.provider_status(self.assembly_url)
         # Populate on init, so that methods can be cached
         self.genomes = self._get_genomes(self.assembly_url)
         self.accession_fields = ["assembly_accession", "gbrs_paired_asm"]

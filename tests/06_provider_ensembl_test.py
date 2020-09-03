@@ -76,10 +76,10 @@ def test_genome_info_tuple(p):
 
 def test_get_version(p):
     # note: this test will break every time Ensembl releases a new version
-    v = p.get_version(p._request_json, "https://rest.ensembl.org/", True)
+    v = p.get_version("https://rest.ensembl.org/", True)
     assert v == "101"
 
-    v = p.get_version(p._request_json, "https://rest.ensembl.org/")
+    v = p.get_version("https://rest.ensembl.org/")
     assert v == "48"
 
 
@@ -112,7 +112,7 @@ def test_get_genome_download_link(p):
     )
 
     # vertebrate: latest version
-    version = p.get_version(p._request_json, "https://rest.ensembl.org/", True)
+    version = p.get_version("https://rest.ensembl.org/", True)
     link = p.get_genome_download_link(
         "GRCz11", **{"version": version, "toplevel": True}
     )
@@ -142,7 +142,7 @@ def test_get_annotation_download_link(p):
     assert link == expected_link
 
     # vertebrate: latest version
-    version = p.get_version(p._request_json, "https://rest.ensembl.org/", True)
+    version = p.get_version("https://rest.ensembl.org/", True)
     link = p.get_annotation_download_link("GRCz11", **{"version": version})
     expected_link = (
         f"ftp://ftp.ensembl.org/pub/release-{version}/"
