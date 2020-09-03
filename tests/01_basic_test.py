@@ -23,6 +23,11 @@ def test_flake8_formatting():
     assert ret == 0
 
 
+@pytest.mark.skipif(travis, reason="clear the slate")
+def test_clean():
+    genomepy.clean()
+
+
 def test_import():
     # __init__.py
     assert str(genomepy.search).startswith("<function search at")

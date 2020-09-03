@@ -69,16 +69,16 @@ def test_genome_info_tuple(p):
 
 def test_get_genome_download_link(p):
     link = p.get_genome_download_link("sacCer3", mask="soft")
-    assert (
-        link
-        == "http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz"
-    )
+    assert link in [
+        "http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz",
+        "http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/sacCer3.fa.gz",
+    ]
 
     link = p.get_genome_download_link("danRer7", mask="hard")
-    assert (
-        link
-        == "http://hgdownload.soe.ucsc.edu/goldenPath/danRer7/bigZips/danRer7.fa.masked.gz"
-    )
+    assert link in [
+        "http://hgdownload.soe.ucsc.edu/goldenPath/danRer7/bigZips/chromFaMasked.tar.gz",
+        "http://hgdownload.soe.ucsc.edu/goldenPath/danRer7/bigZips/danRer7.fa.masked.gz",
+    ]
 
 
 def test__post_process_download(p):
