@@ -23,6 +23,8 @@ def test_clean():
     assert os.path.exists(my_cache_dir)  # dir exists
     assert not os.listdir(my_cache_dir)  # contains 0 pickles
 
+    genomepy.clean()  # no errors when cache dir is empty
+
 
 def test_manage_config(capsys):
     # make a new config

@@ -14,12 +14,12 @@ from genomepy.utils import (
     get_genomes_dir,
     glob_ext_files,
     mkdir_p,
+    rm_rf,
     read_readme,
     sanitize_annotation,
     safe,
 )
 from pyfaidx import FastaIndexingError
-from shutil import rmtree
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -27,8 +27,9 @@ config = norns.config("genomepy", default="cfg/default.yaml")
 def clean():
     """Remove cached data on providers"""
     my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
-    rmtree(my_cache_dir)
+    rm_rf(my_cache_dir)
     mkdir_p(my_cache_dir)
+    print("All clean!")
 
 
 def manage_config(cmd):
