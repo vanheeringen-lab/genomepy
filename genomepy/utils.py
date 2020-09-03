@@ -522,7 +522,6 @@ def sanitize_annotation(genome):
         "\nGenome and annotation do not have matching sequence names! "
         "Creating matching annotation files...\n"
     )
-    # bgzip, genome_file = bgunzip_and_name(genome)
     genome_file, bgzip = gunzip_and_name(genome.filename)
 
     # try to find the (gtf) contig position in genome header
@@ -563,10 +562,9 @@ def sanitize_annotation(genome):
         for src, dst, gzip_file in zip(
             [new_gtf_file, new_bed_file],
             [gtf_file, bed_file],
-            [genome.annotation_gtf_file, genome.annotation_bed_file],
+            [gzip_file, genome.annotation_bed_file.endswith(".gz")],
         ):
             os.replace(src, dst)
-            gzip_file = True if gzip_file.endswith(".gz") else False
             gzip_and_name(dst, gzip_file)
 
     metadata, lines = read_readme(readme)
