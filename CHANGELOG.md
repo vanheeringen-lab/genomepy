@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - added retries to UCSC and NCBI
 - added retries to Travis tests
+- Bucketcache improvements
 
 ### Fixed
 
