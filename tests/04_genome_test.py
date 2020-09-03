@@ -1,7 +1,6 @@
 import genomepy
 import os
 import pytest
-import shutil
 
 from stat import S_IREAD, S_IRGRP, S_IROTH
 from genomepy.provider import ProviderBase
@@ -74,7 +73,7 @@ def test__parse_filename(genome="tests/data/small_genome.fa.gz"):
     g.genomes_dir = "tests/data/"
     filename = g._parse_filename(os.path.basename(genome))
     assert filename == "tests/data/small_genome/small_genome.fa.gz"
-    shutil.rmtree("tests/data/small_genome")
+    genomepy.utils.rm_rf("tests/data/small_genome")
 
     # genome not found
     with pytest.raises(FileNotFoundError):

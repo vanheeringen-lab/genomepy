@@ -1,7 +1,6 @@
 import genomepy
 import pytest
 import os
-import shutil
 
 from appdirs import user_config_dir, user_cache_dir
 from platform import system
@@ -164,7 +163,7 @@ def test__provider_selection():
     provider = None
     p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
     assert "NcbiProvider" in str(p)
-    shutil.rmtree(os.path.dirname(readme))
+    genomepy.utils.rm_rf(os.path.dirname(readme))
 
     # lazy provider
     p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
@@ -230,7 +229,7 @@ def test_generate_exports():
     exports = genomepy.functions.generate_exports()
     assert f"export TESTGENOME={path}" in exports
 
-    shutil.rmtree(os.path.join(gd, "testgenome"))
+    genomepy.utils.rm_rf(os.path.join(gd, "testgenome"))
 
 
 @pytest.mark.skipif(

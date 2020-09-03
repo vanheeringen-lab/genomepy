@@ -2,8 +2,8 @@ import genomepy
 import gzip
 import os
 import pytest
-import shutil
 
+from shutil import copyfile
 from tempfile import TemporaryDirectory
 
 
@@ -77,7 +77,7 @@ def test__post_process_download(p):
     with TemporaryDirectory(dir=out_dir) as tmpdir:
         # copy fa file for unmasking
         g = os.path.join(tmpdir, localname + ".fa")
-        shutil.copyfile("tests/data/gap.fa", g)
+        copyfile("tests/data/gap.fa", g)
 
         p._post_process_download(
             name=name, localname=localname, out_dir=tmpdir, mask="hard"

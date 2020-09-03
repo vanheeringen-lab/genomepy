@@ -1,5 +1,4 @@
 import genomepy
-import shutil
 import pytest
 import os
 
@@ -22,7 +21,7 @@ if not skip:
         g = genomepy.Genome("hg38", genomes_dir=tmp)
         seq = g["chr6"][166168664:166168679]
         assert str(seq) == "CCTCCTCGCTCTCTT"
-        shutil.rmtree(tmp)
+        genomepy.utils.rm_rf(tmp)
 
     @pytest.mark.skipif(travis, reason="slow")
     def test_ensembl_human():
@@ -36,7 +35,7 @@ if not skip:
         g = genomepy.Genome("GRCh38.p13", genomes_dir=tmp)
         seq = g["6"][166168664:166168679]
         assert str(seq) == "CCTCCTCGCTCTCTT"
-        shutil.rmtree(tmp)
+        genomepy.utils.rm_rf(tmp)
 
     @pytest.mark.skipif(travis, reason="slow")
     def test_ncbi_human():
@@ -50,4 +49,4 @@ if not skip:
         g = genomepy.Genome("GRCh38.p13", genomes_dir=tmp)
         seq = g["6"][166168664:166168679]
         assert str(seq) == "CCTCCTCGCTCTCTT"
-        shutil.rmtree(tmp)
+        genomepy.utils.rm_rf(tmp)

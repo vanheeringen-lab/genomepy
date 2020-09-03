@@ -1,7 +1,6 @@
 import os
-from shutil import rmtree
 from genomepy.plugin import Plugin
-from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
+from genomepy.utils import mkdir_p, rm_rf, cmd_ok, run_index_cmd
 
 
 class Bowtie2Plugin(Plugin):
@@ -14,7 +13,7 @@ class Bowtie2Plugin(Plugin):
         index_name = genome.plugin["bowtie2"]["index_name"]
         if force:
             # Start from scratch
-            rmtree(index_dir, ignore_errors=True)
+            rm_rf(index_dir)
         mkdir_p(index_dir)
 
         if not any(fname.endswith(".bt2") for fname in os.listdir(index_dir)):
