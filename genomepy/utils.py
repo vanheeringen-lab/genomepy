@@ -177,6 +177,11 @@ def mkdir_p(path):
     os.makedirs(path, exist_ok=True)
 
 
+def rm_rf(path):
+    """ 'rm -rf' in Python """
+    shutil.rmtree(path, ignore_errors=True)
+
+
 def cmd_ok(cmd):
     """Returns True if cmd can be run."""
     try:

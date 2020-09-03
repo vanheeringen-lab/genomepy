@@ -115,6 +115,18 @@ def test_mkdir_p(path="./tests/dir1/dir2/nestled_dir"):
     assert not os.path.isdir(path)
 
 
+def test_rm_rf(path="./tests/dir1/dir2/nestled_dir"):
+    genomepy.utils.mkdir_p(path)
+    assert os.path.isdir(path)
+
+    # try to remove an existing dir
+    genomepy.utils.rm_rf(path)
+    assert not os.path.isdir(path)
+
+    # try to remove a non-existing dir
+    genomepy.utils.rm_rf(path)
+
+
 def test_cmd_ok():
     assert genomepy.utils.cmd_ok("STAR")
     assert genomepy.utils.cmd_ok("bwa")

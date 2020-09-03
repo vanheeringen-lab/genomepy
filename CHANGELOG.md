@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- `genomepy clean` wont complain when there is nothing to clean
 - properly gzip the annotation.gtf if it was unzipped during sanitizing.
 
 ## [0.9.0] - 2020-09-01
@@ -250,6 +251,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.9.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.4...0.9.0
 [0.8.4]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.3...0.8.4
 [0.8.3]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.2...0.8.3
 [0.8.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.1...0.8.2

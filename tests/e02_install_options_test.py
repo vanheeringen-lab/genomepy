@@ -2,7 +2,6 @@ import genomepy
 import gzip
 import os
 import pytest
-import shutil
 
 from tempfile import mkdtemp
 from time import sleep
@@ -86,7 +85,7 @@ if not skip:
         t1 = os.path.getmtime(path)
         assert t0 != t1 if force else t0 == t1
 
-        shutil.rmtree(tmp)
+        genomepy.utils.rm_rf(tmp)
 
     def test_install_annotation_options(
         force, localname, genome="ASM14646v1", provider="NCBI"
@@ -136,4 +135,4 @@ if not skip:
         t1 = os.path.getmtime(gtf)
         assert t0 != t1 if force else t0 == t1
 
-        shutil.rmtree(tmp)
+        genomepy.utils.rm_rf(tmp)
