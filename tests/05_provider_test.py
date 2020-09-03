@@ -202,9 +202,10 @@ def test_download_annotation(p):
     p = p.create("UCSC")
     name = "xenTro2"
 
-    annot_url = (
-        "http://hgdownload.cse.ucsc.edu/goldenPath/xenTro2/database/ensGene.txt.gz"
-    )
+    annot_urls = [
+        "http://hgdownload.cse.ucsc.edu/goldenPath/xenTro2/database/ensGene.txt.gz",
+        "http://hgdownload.cse.ucsc.edu/goldenPath/xenTro2/database/refGene.txt.gz",
+    ]
     with TemporaryDirectory(dir=out_dir) as tmpdir:
         p.download_annotation(name=name, genomes_dir=tmpdir, localname=localname)
 
@@ -218,7 +219,7 @@ def test_download_annotation(p):
         # check attempt_download_and_report_back output
         readme = os.path.join(tmpdir, localname, "README.txt")
         metadata, lines = genomepy.utils.read_readme(readme)
-        assert metadata["annotation url"] == annot_url
+        assert metadata["annotation url"] in annot_urls
 
 
 def test__search_taxids(p):

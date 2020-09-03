@@ -871,7 +871,7 @@ class UcscProvider(ProviderBase):
         for genome_url in urls:
             link = genome_url.format(name)
 
-            if check_url(link):
+            if check_url(link, 2):
                 return link
 
         raise GenomeDownloadError(
@@ -937,7 +937,7 @@ class UcscProvider(ProviderBase):
         }
 
         # download gtf format if possible, txt format if not
-        gtfs_exists = check_url(gtf_url)
+        gtfs_exists = check_url(gtf_url, 2)
         base_url = gtf_url + name + "." if gtfs_exists else txt_url
         base_ext = ".gtf.gz" if gtfs_exists else ".txt.gz"
 
@@ -945,7 +945,7 @@ class UcscProvider(ProviderBase):
         file = kwargs.get("ucsc_annotation_type")
         if file:
             link = base_url + annot_files[file.lower()] + base_ext
-            if check_url(link):
+            if check_url(link, 2):
                 return link
             sys.stderr.write(
                 f"Specified annotation type ({file}) not found for {name}.\n"
@@ -955,7 +955,7 @@ class UcscProvider(ProviderBase):
             # download first available annotation type found
             for file in annot_files.values():
                 link = base_url + file + base_ext
-                if check_url(link):
+                if check_url(link, 2):
                     return link
 
 
@@ -1050,7 +1050,7 @@ class NcbiProvider(ProviderBase):
         link = link.replace("ftp://", "https://")
         link += "/" + link.split("/")[-1] + "_genomic.fna.gz"
 
-        if check_url(link):
+        if check_url(link, 2):
             return link
 
         raise GenomeDownloadError(
@@ -1141,7 +1141,7 @@ class NcbiProvider(ProviderBase):
         link = link.replace("ftp://", "https://")
         link += "/" + link.split("/")[-1] + "_genomic.gff.gz"
 
-        if check_url(link):
+        if check_url(link, 2):
             return link
 
 
