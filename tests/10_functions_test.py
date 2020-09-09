@@ -4,6 +4,7 @@ import os
 
 from appdirs import user_config_dir
 from platform import system
+import pyfaidx
 
 linux = system() == "Linux"
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
@@ -317,3 +318,55 @@ def test_accession_search():
     assert b"Ensembl" in providers
     assert b"NCBI" in providers
     assert b"UCSC" in providers
+
+
+def test_as_seqdict():
+    test_data = [
+        "tests/data/as_fasta/test.bed",
+        "tests/data/as_fasta/test.fa",
+        "tests/data/as_fasta/test.fasta",
+        "tests/data/as_fasta/test.txt",
+        # pybedtools.BedTool("tests/data/as_fasta/test.bed"),
+        ["chrI:110-120", "chrII:130-140", "chrIII:410-420"],
+        # np.array(['chrI:110-120', 'chrII:130-140', 'chrIII:410-420']),
+        pyfaidx.Fasta("tests/data/as_fasta/test.fa"),
+    ]
+
+    # test differnt inputs
+    for dataset in test_data:
+        result = genomepy.functions.as_seqdict(dataset, genome="tests/data/small_genome.fa.gz")
+        assert type(result) == type({}), "no dict returned"
+        assert "chrI:110-120" in result, "key not present"
+        assert "chrII:130-140" in result, "key not present"
+        assert "chrIII:410-420" in result, "key not present"
+        assert result["chrI:110-120"] == "CTCTCAACTT", "sequence incorrect"
+        assert result["chrII:130-140"] == "TGTCTCTCGC", "sequence incorrect"
+        assert result["chrIII:410-420"] == "TCCCAACTTA", "sequence incorrect"
+
+    # test minsize argument
+    for dataset in test_data:
+        with pytest.raises(ValueError):
+            result = genomepy.functions.as_seqdict(
+                dataset, genome="tests/data/small_genome.fa.gz", minsize=100
+            )
+
+    # raise error on empty file
+    with pytest.raises(IOError):
+        genomepy.functions.as_seqdict("tests/data/as_fasta/empty.fa")
+
+    # test genome@chrom:start-end format
+    datasets = [
+        "tests/data/as_fasta/test.with_genome.txt",
+        [
+            "tests/data/small_genome.fa.gz@chrI:110-120",
+            "tests/data/small_genome.fa.gz@chrII:130-140",
+            "tests/data/small_genome.fa.gz@chrIII:410-420",
+        ],
+    ]
+
+    for dataset in datasets:
+        assert sorted(genomepy.functions.as_seqdict(dataset).values()) == [
+            "CTCTCAACTT",
+            "TCCCAACTTA",
+            "TGTCTCTCGC",
+        ]
