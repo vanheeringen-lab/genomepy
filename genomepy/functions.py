@@ -3,7 +3,7 @@ import os
 import re
 import sys
 from functools import singledispatch
-from io import TextIOWrapper 
+from io import TextIOWrapper
 
 from appdirs import user_config_dir, user_cache_dir
 import norns
@@ -439,7 +439,7 @@ def _genomepy_convert(to_convert, genome, minsize=None):
     """
     Convert a variety of inputs using track2fasta().
     """
-    if genome == None:
+    if genome is None:
         raise ValueError("input file is not a FASTA file, need a genome!")
 
     g = Genome(genome)
@@ -485,30 +485,30 @@ def _as_seqdict_genome_regions(regions, minsize=None):
 def as_seqdict(to_convert, genome=None, minsize=None):
     """
     Convert input to a dictionary with name as key and sequence as value.
-    
+
     If the input contains genomic coordinates, the genome needs to be
     specified. If minsize is specified all sequences will be checked if they
-    are not shorter than minsize. If regions (or a region file) are used as 
+    are not shorter than minsize. If regions (or a region file) are used as
     the input, the genome can optionally be specified in the region using the
     following format: genome@chrom:start-end.
-    
+
     Current supported input types include:
     * FASTA, BED and region files.
     * List or numpy.ndarray of regions.
     * pyfaidx.Fasta object.
     * pybedtools.BedTool object.
-    
+
     Parameters
     ----------
     to_convert : list, str, pyfaidx.Fasta or pybedtools.BedTool
         Input to convert to FASTA-like dictionary
-        
+
     genome : str, optional
         Genomepy genome name.
-    
+
     minsize : int or None, optional
         If specified, check if all sequences have at least size minsize.
-        
+
     Returns
     -------
         dict with sequence names as key and sequences as value.
@@ -563,7 +563,7 @@ def _as_seqdict_filename(to_convert, genome=None, minsize=None):
             raise IOError(f"empty file {to_convert}")
 
         if region_p.match(line.strip()):
-            regions = [l.strip() for l in [line] + f.readlines()]
+            regions = [region.strip() for region in [line] + f.readlines()]
             return _as_seqdict_genome_regions(regions, minsize=None)
 
     # Biopython parser resulted in empty dict
@@ -572,7 +572,7 @@ def _as_seqdict_filename(to_convert, genome=None, minsize=None):
 
 
 @as_seqdict.register(pyfaidx.Fasta)
-def _as_seqdict_filename(to_convert, genome=None, minsize=None):
+def _as_seqdict_pyfaidx(to_convert, genome=None, minsize=None):
     """
     Accepts pyfaidx.Fasta object as input.
     """
