@@ -22,18 +22,18 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 **Pssst, hey there!** Is genomepy not doing what you want? Does it fail? Is it clunky? Is the documentation unclear? Have any other ideas on how to improve it? Don't be shy and [let us know](https://github.com/vanheeringen-lab/genomepy/issues)!
 
 ## Table of Contents
-1.  [Installation](#Installation)
-2.  [Quick usage](#Quick-usage)
-3.  [Plugins and indexing](#Plugins-and-indexing)
-4.  [Configuration](#Configuration)
-5.  [Usage](#Usage)
-    * [Command line](#Command-line)
-    * [Python](#Python)
-6.  [Known Issues](#Known-Issues)
-7.  [Citation](#Citation)
-8.  [Getting help](#Getting-help)
-9.  [Contributing](#Contributing)
-10.  [License](#License)
+1.  [Installation](#installation)
+2.  [Quick usage](#quick-usage)
+3.  [Plugins and indexing](#plugins-and-indexing)
+4.  [Configuration](#configuration)
+5.  [Usage](#usage)
+    * [Command line](#command-line)
+    * [Python](#python)
+6.  [Known issues](#known-issues)
+7.  [Citation](#citation)
+8.  [Getting help](#getting-help)
+9.  [Contributing](#contributing)
+10.  [License](#license)
 
 
 ## Installation
@@ -439,32 +439,40 @@ cache using `genomepy clean`.
 
 ### Python
 
-```python
+```
 >>> import genomepy
 >>> for row in genomepy.search("GRCh38"):
-...     print("\t".join(row))
-...
-UCSC	hg38	Human Dec. 2013 (GRCh38/hg38) Genome at UCSC
-NCBI	GRCh38.p10	Homo sapiens; Genome Reference Consortium
-NCBI	GRCh38	Homo sapiens; Genome Reference Consortium
-NCBI	GRCh38.p1	Homo sapiens; Genome Reference Consortium
-NCBI	GRCh38.p2	Homo sapiens; Genome Reference Consortium
-NCBI	GRCh38.p3	Homo sapiens; Genome Reference Consortium
-NCBI	GRCh38.p4	Homo sapiens; Genome Reference Consortium
-NCBI	GRCh38.p5	Homo sapiens; Genome Reference Consortium
-NCBI	GRCh38.p6	Homo sapiens; Genome Reference Consortium
-NCBI	GRCh38.p7	Homo sapiens; Genome Reference Consortium
-NCBI	GRCh38.p8	Homo sapiens; Genome Reference Consortium
-NCBI	GRCh38.p9	Homo sapiens; Genome Reference Consortium
-Ensembl	GRCh38.p10	Human
->>> genomepy.install_genome("hg38", "UCSC", genomes_dir="/data/genomes")
-downloading...
-done...
+...    print("\t".join([x.decode('utf-8') for x in row]))
+...    
+GRCh38.p13	Ensembl	GCA_000001405.28	Homo sapiens	9606	2014-01-Ensembl/2020-03
+hg38	UCSC	GCA_000001405.27	Homo sapiens	9606	Dec. 2013 (GRCh38/hg38)
+GRCh38	NCBI	GCA_000001405.15	Homo sapiens	9606	Genome Reference Consortium
+GRCh38.p1	NCBI	GCA_000001405.16	Homo sapiens	9606	Genome Reference Consortium
+GRCh38.p2	NCBI	GCA_000001405.17	Homo sapiens	9606	Genome Reference Consortium
+GRCh38.p3	NCBI	GCA_000001405.18	Homo sapiens	9606	Genome Reference Consortium
+GRCh38.p4	NCBI	GCA_000001405.19	Homo sapiens	9606	Genome Reference Consortium
+GRCh38.p5	NCBI	GCA_000001405.20	Homo sapiens	9606	Genome Reference Consortium
+GRCh38.p6	NCBI	GCA_000001405.21	Homo sapiens	9606	Genome Reference Consortium
+GRCh38.p7	NCBI	GCA_000001405.22	Homo sapiens	9606	Genome Reference Consortium
+GRCh38.p8	NCBI	GCA_000001405.23	Homo sapiens	9606	Genome Reference Consortium
+GRCh38.p9	NCBI	GCA_000001405.24	Homo sapiens	9606	Genome Reference Consortium
+GRCh38.p10	NCBI	GCA_000001405.25	Homo sapiens	9606	Genome Reference Consortium
+GRCh38.p11	NCBI	GCA_000001405.26	Homo sapiens	9606	Genome Reference Consortium
+GRCh38.p12	NCBI	GCA_000001405.27	Homo sapiens	9606	Genome Reference Consortium
+GRCh38.p13	NCBI	GCA_000001405.28	Homo sapiens	9606	Genome Reference Consortium
+
+>>> genomepy.install_genome("hg38", "UCSC", genomes_dir="./data/genomes")
+Downloading genome from UCSC.
+Target URL: http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz...
+Genome download successful, starting post processing...
 name: hg38
-fasta: /data/genomes/hg38/hg38.fa
->>> g = genomepy.Genome("hg38", genomes_dir="/data/genomes")
->>> g["chr6"][166502000:166503000]
-tgtatggtccctagaggggccagagtcacagagatggaaagtggatggcgggtgccgggggctggggagctactgtgcagggggacagagctttagttctgcaagatgaaacagttctggagatggacggtggggatgggggcccagcaatgggaacgtgcttaatgccactgaactgggcacttaaacgtggtgaaaactgtaaaagtcatgtgtatttttctacaattaaaaaaaATCTGCCACAGAGTTAAAAAAATAACCACTATTTTCTGGAAATGGGAAGGAAAAGTTACAGCATGTAATTAAGATGACAATTTATAATGAACAAGGCAAATCTTTTCATCTTTGCCTTTTGGGCATATTCAATCTTTGCCCAGAATTAAGCACCTTTCAAGATTAATTCTCTAATAATTCTAGTTGAACAACACAACCTTTTCCTTCAAGCTTGCAATTAAATAAGGCTATTTTTAGCTGTAAGGATCACGCTGACCTTCAGGAGCAATGAGAACCGGCACTCCCGGCCTGAGTGGATGCACGGGGAGTGTGTCTAACACACAGGCGTCAACAGCCAGGGCCGCACGAGGAGGAGGAGTGGCAACGTCCACACAGACTCACAACACGGCACTCCGACTTGGAGGGTAATTAATACCAGGTTAACTTCTGGGATGACCTTGGCAACGACCCAAGGTGACAGGCCAGGCTCTGCAATCACCTCCCAATTAAGGAGAGGCGAAAGGGGACTCCCAGGGCTCAGAGCACCACGGGGTTCTAGGTCAGACCCACTTTGAAATGGAAATCTGGCCTTGTGCTGCTGCTCTTGTGGGGAGACAGCAGCTGCGGAGGCTGCTCTCTTCATGGGATTACTCTGGATAAAGTCTTTTTTGATTCTACgttgagcatcccttatctgaaatgcctgaaaccggaagtgtttaggatttggggattttgcaatatttacttatatataatgagatatcttggagatgggccacaa
+local name: hg38
+fasta: ./data/genomes/hg38/hg38.fa
+
+>>> g = genomepy.Genome("hg38", genomes_dir="./data/genomes")
+>>> g["chr6"][166502000:166502100]
+>chr6:166502001-166502100
+tgtatggtccctagaggggccagagtcacagagatggaaagtggatggcgggtgccgggggctggggagctactgtgcagggggacagagctttagttct
 ```
 
 The `genomepy.Genome()` method returns a Genome object. This has all the
