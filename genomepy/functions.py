@@ -18,6 +18,8 @@ from genomepy.utils import (
     read_readme,
     sanitize_annotation,
     safe,
+    check_url,
+    try_except_pass,
 )
 from pyfaidx import FastaIndexingError
 
@@ -180,12 +182,14 @@ def _lazy_provider_selection(name, provider=None):
     """return the first PROVIDER which has genome NAME"""
     providers = _providers(provider)
     for p in providers:
-        if name in p.genomes:
+        if name in p.genomes or (
+            p.name == "URL" and try_except_pass(ValueError, check_url, name)
+        ):
             return p
-    else:
-        raise GenomeDownloadError(
-            f"{name} not found on {', '.join([p.name for p in providers])}."
-        )
+
+    raise GenomeDownloadError(
+        f"{name} not found on {', '.join([p.name for p in providers])}."
+    )
 
 
 def _provider_selection(name, localname, genomes_dir, provider=None):
