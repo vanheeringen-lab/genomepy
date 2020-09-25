@@ -182,9 +182,9 @@ def _lazy_provider_selection(name, provider=None):
     """return the first PROVIDER which has genome NAME"""
     providers = _providers(provider)
     for p in providers:
-        if name in p.genomes:
-            return p
-        elif p.name == "URL" and try_except_pass(ValueError, check_url, name):
+        if name in p.genomes or (
+            p.name == "URL" and try_except_pass(ValueError, check_url, name)
+        ):
             return p
     else:
         raise GenomeDownloadError(
