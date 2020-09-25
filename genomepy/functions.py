@@ -186,10 +186,10 @@ def _lazy_provider_selection(name, provider=None):
             p.name == "URL" and try_except_pass(ValueError, check_url, name)
         ):
             return p
-    else:
-        raise GenomeDownloadError(
-            f"{name} not found on {', '.join([p.name for p in providers])}."
-        )
+
+    raise GenomeDownloadError(
+        f"{name} not found on {', '.join([p.name for p in providers])}."
+    )
 
 
 def _provider_selection(name, localname, genomes_dir, provider=None):
