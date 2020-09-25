@@ -339,6 +339,14 @@ def is_number(term):
         return True
 
 
+def try_except_pass(errors, func, *args):
+    """try to return FUNC with ARGS, pass on ERRORS"""
+    try:
+        return func(*args)
+    except errors:
+        pass
+
+
 def retry(func, tries, *args):
     """
     Retry functions with potential connection errors.
