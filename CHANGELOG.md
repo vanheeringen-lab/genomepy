@@ -11,11 +11,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - added retries to UCSC and NCBI
 - added retries to Travis tests
 - Bucketcache improvements
+- `genomepy search` will keep searching after an exact match is found
 
 ### Fixed
 
 - `genomepy clean` wont complain when there is nothing to clean
 - properly gzip the annotation.gtf if it was unzipped during sanitizing.
+- `genomepy install` can use the URL provider again
 
 ## [0.9.0] - 2020-09-01
 

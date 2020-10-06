@@ -81,7 +81,7 @@ def write_readme(readme, metadata, lines):
 
 
 def generate_gap_bed(fname, outname):
-    """ Generate a BED file with gap locations.
+    """Generate a BED file with gap locations.
 
     Parameters
     ----------
@@ -99,7 +99,7 @@ def generate_gap_bed(fname, outname):
 
 
 def generate_fa_sizes(fname, outname):
-    """ Generate a fa.sizes file.
+    """Generate a fa.sizes file.
 
     Parameters
     ----------
@@ -337,6 +337,14 @@ def is_number(term):
     """check if term is a number. Returns bool"""
     if isinstance(term, int) or term.isdigit():
         return True
+
+
+def try_except_pass(errors, func, *args):
+    """try to return FUNC with ARGS, pass on ERRORS"""
+    try:
+        return func(*args)
+    except errors:
+        pass
 
 
 def retry(func, tries, *args):

@@ -509,13 +509,10 @@ class ProviderBase(object):
                 if self._search_taxids(genomes[name], term):
                     yield self._genome_info_tuple(name)
 
-        elif term in genomes:
-            yield self._genome_info_tuple(term)
-
         else:
             term = term.lower()
             for name in genomes:
-                if term == safe(name).lower() or self._search_descriptions(
+                if term in safe(name).lower() or self._search_descriptions(
                     genomes[name], term
                 ):
                     yield self._genome_info_tuple(name)

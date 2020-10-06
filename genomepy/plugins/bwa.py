@@ -27,7 +27,10 @@ class BwaPlugin(Plugin):
         props = {
             "index_dir": os.path.join(os.path.dirname(genome.filename), "index", "bwa"),
             "index_name": os.path.join(
-                os.path.dirname(genome.filename), "index", "bwa", f"{genome.name}.fa",
+                os.path.dirname(genome.filename),
+                "index",
+                "bwa",
+                f"{genome.name}.fa",
             ),
         }
         return props
