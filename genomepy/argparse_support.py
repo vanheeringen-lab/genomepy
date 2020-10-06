@@ -24,7 +24,7 @@ def parse_genome(auto_install=False, genomes_dir=None):
                 if auto_install:
                     print("Trying to install it automatically using genomepy...")
                     install_genome(name, annotation=True, genomes_dir=genomes_dir)
-                    genome = Genome(name)
+                    genome = Genome(name, genomes_dir=genomes_dir)
                 else:
                     print("You can install it using `genomepy install`.")
                     sys.exit(1)
