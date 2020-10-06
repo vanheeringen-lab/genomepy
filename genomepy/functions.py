@@ -432,10 +432,13 @@ def _check_minsize(fa, minsize):
     Raise ValueError if there is any sequence that is shorter than minsize.
     If minsize is None the size will not be checked.
     """
-    if minsize is not None:
-        for name, seq in fa.items():
-            if len(seq) < minsize:
-                raise ValueError(f"sequence {name} is shorter than {minsize}")
+    if minsize is None:
+        return fa
+
+    for name, seq in fa.items():
+        if len(seq) < minsize:
+            raise ValueError(f"sequence {name} is shorter than {minsize}")
+
     return fa
 
 
@@ -462,10 +465,11 @@ def _as_seqdict_genome_regions(regions, minsize=None):
     genomic_regions = {}
     for region in regions:
         genome, region = region.split("@")
-        if genome not in genomic_regions:
-            Genome(genome)
-            genomic_regions[genome] = []
-        genomic_regions[genome].append(region)
+        genomic_regions.setdefault(genome, []).append(region)
+
+    # test if all genomes are installed
+    for genome in genomic_regions:
+        Genome(genome)
 
     tmpfa = NamedTemporaryFile(mode="w", delete=False)
     for genome, g_regions in genomic_regions.items():
