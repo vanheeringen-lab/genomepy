@@ -334,7 +334,9 @@ def test_as_seqdict():
 
     # test differnt inputs
     for dataset in test_data:
-        result = genomepy.functions.as_seqdict(dataset, genome="tests/data/small_genome.fa.gz")
+        result = genomepy.functions.as_seqdict(
+            dataset, genome="tests/data/small_genome.fa.gz"
+        )
         assert "chrI:110-120" in result, "key not present"
         assert "chrII:130-140" in result, "key not present"
         assert "chrIII:410-420" in result, "key not present"
