@@ -1,6 +1,9 @@
 import genomepy
+import genomepy.argparse_support
 import pytest
 import os
+import argparse
+from tempfile import TemporaryDirectory
 
 from appdirs import user_config_dir
 from platform import system
@@ -317,3 +320,24 @@ def test_accession_search():
     assert b"Ensembl" in providers
     assert b"NCBI" in providers
     assert b"UCSC" in providers
+
+
+def test_argparse_plugin():
+    action = genomepy.argparse_support.parse_genome
+
+    with TemporaryDirectory() as tmpdir:
+        parser = argparse.ArgumentParser()
+        parser.add_argument(
+            "-g", dest="genome", action=action(auto_install=True, genomes_dir=tmpdir)
+        )
+        args = parser.parse_args(
+            ["-g", "ASM2732v1"],
+        )
+        assert isinstance(args.genome, genomepy.Genome)
+
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-g", dest="genome", action=action())
+        args = parser.parse_args(["-g", "non_existing"])
+    assert pytest_wrapped_e.type == SystemExit
+    assert pytest_wrapped_e.value.code == 1
