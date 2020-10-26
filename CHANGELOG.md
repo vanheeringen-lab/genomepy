@@ -7,7 +7,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.9.0] - 2020-09-01
+
+### Added
 - `genomepy install` flag `-k/--keep-alt` to keep alternative regions
+- argparse custom type for a genome command line argument
 
 ### Changed
 
