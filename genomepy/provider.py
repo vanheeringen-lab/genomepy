@@ -187,6 +187,7 @@ class ProviderBase(object):
         genomes_dir=None,
         localname=None,
         mask="soft",
+        keep_alt=False,
         regex=None,
         invert_match=False,
         bgzip=None,
@@ -208,6 +209,9 @@ class ProviderBase(object):
 
         mask: str , optional
             Masking, soft, hard or none (all other strings)
+
+        keep_alt : bool , optional
+            Set to true to keep these alternative regions.
 
         regex : str , optional
             Regular expression to select specific chromosome / scaffold names.
@@ -263,21 +267,28 @@ class ProviderBase(object):
                 if ret != 0:
                     raise Exception(f"Error gunzipping genome {fname}")
 
+            def regex_filer(_fname, _regex, _v):
+                os.rename(_fname, _fname + "_to_regex")
+                infa = _fname + "_to_regex"
+                outfa = _fname
+                filter_fasta(infa, outfa, regex=_regex, v=_v, force=True)
+
+                return [k for k in Fasta(infa).keys() if k not in Fasta(outfa).keys()]
+
+            not_included = []
+            # remove alternative regions
+            if not keep_alt:
+                not_included.extend(regex_filer(fname, "alt", True))
+
+            # keep/remove user defined regions
+            if regex:
+                not_included.extend(regex_filer(fname, regex, invert_match))
+
             # process genome (e.g. masking)
             if hasattr(self, "_post_process_download"):
                 self._post_process_download(
                     name=name, localname=localname, out_dir=tmp_dir, mask=mask
                 )
-
-            if regex:
-                os.rename(fname, fname + "_to_regex")
-                infa = fname + "_to_regex"
-                outfa = fname
-                filter_fasta(infa, outfa, regex=regex, v=invert_match, force=True)
-
-                not_included = [
-                    k for k in Fasta(infa).keys() if k not in Fasta(outfa).keys()
-                ]
 
             # bgzip genome if requested
             if bgzip or config.get("bgzip"):

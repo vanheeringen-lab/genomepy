@@ -12,6 +12,8 @@ from genomepy.provider import ProviderBase
 from genomepy.utils import (
     get_localname,
     get_genomes_dir,
+    generate_gap_bed,
+    generate_fa_sizes,
     glob_ext_files,
     mkdir_p,
     rm_rf,
@@ -216,6 +218,7 @@ def install_genome(
     genomes_dir=None,
     localname=None,
     mask="soft",
+    keep_alt=False,
     regex=None,
     invert_match=False,
     bgzip=None,
@@ -245,6 +248,11 @@ def install_genome(
 
     mask : str , optional
         Default is 'soft', choices 'hard'/'soft/'none' for respective masking level.
+
+    keep_alt : bool , optional
+        Some genomes contain alternative regions. These regions cause issues with
+        sequence alignment, as they are inherently duplications of the consensus regions.
+        Set to true to keep these alternative regions.
 
     regex : str , optional
         Regular expression to select specific chromosome / scaffold names.
@@ -298,6 +306,7 @@ def install_genome(
             name,
             genomes_dir,
             mask=mask,
+            keep_alt=keep_alt,
             regex=regex,
             invert_match=invert_match,
             localname=localname,
@@ -313,6 +322,10 @@ def install_genome(
     g = None
     if genome_found:
         g = Genome(localname, genomes_dir=genomes_dir)
+        if force:
+            # overwrite previous versions
+            generate_fa_sizes(g.genome_file, g.sizes_file)
+            generate_gap_bed(g.genome_file, g.gaps_file)
 
     # Check if any annotation flags are given, if annotation already exists, or if downloading is forced
     if any(

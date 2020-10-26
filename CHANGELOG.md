@@ -6,18 +6,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `genomepy install` flag `-k/--keep-alt` to keep alternative regions
+
 ### Changed
 
 - added retries to UCSC and NCBI
 - added retries to Travis tests
 - Bucketcache improvements
-- `genomepy search` will keep searching after an exact match is found
+- `genomepy search` keeps searching after an exact match is found
+- `genomepy install` removes alternative regions by default
 
 ### Fixed
 
 - `genomepy clean` wont complain when there is nothing to clean
-- properly gzip the annotation.gtf if it was unzipped during sanitizing.
+- properly gzip the annotation.gtf if it was unzipped during sanitizing
 - `genomepy install` can use the URL provider again
+- `genomepy install` with `-f/--force` will overwrite previouse sizes and gaps files
 
 ## [0.9.0] - 2020-09-01
 
