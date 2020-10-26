@@ -1,9 +1,11 @@
 import genomepy
+import genomepy.argparse_support
 import pytest
 import os
-import shutil
+import argparse
+from tempfile import TemporaryDirectory
 
-from appdirs import user_config_dir, user_cache_dir
+from appdirs import user_config_dir
 from platform import system
 
 linux = system() == "Linux"
@@ -11,17 +13,22 @@ travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
 def test_clean():
-    my_cache_dir = os.path.join(
-        user_cache_dir("genomepy"), genomepy.__about__.__version__
-    )
+    # test moved to 01_tests to prevent errors in parallel tests
+    pass
 
-    genomepy.provider.ProviderBase.create("UCSC")  # pickles UCSC genomes
-    assert os.path.exists(my_cache_dir)  # dir exists
-    assert os.listdir(my_cache_dir)  # contains >=1 pickle(s)
-
-    genomepy.clean()
-    assert os.path.exists(my_cache_dir)  # dir exists
-    assert not os.listdir(my_cache_dir)  # contains 0 pickles
+    # my_cache_dir = os.path.join(
+    #     user_cache_dir("genomepy"), genomepy.__about__.__version__
+    # )
+    #
+    # genomepy.provider.ProviderBase.create("UCSC")  # pickles UCSC genomes
+    # assert os.path.exists(my_cache_dir)  # dir exists
+    # assert os.listdir(my_cache_dir)  # contains >=1 pickle(s)
+    #
+    # genomepy.clean()
+    # assert os.path.exists(my_cache_dir)  # dir exists
+    # assert not os.listdir(my_cache_dir)  # contains 0 pickles
+    #
+    # genomepy.clean()  # no errors when cache dir is empty
 
 
 def test_manage_config(capsys):
@@ -162,7 +169,7 @@ def test__provider_selection():
     provider = None
     p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
     assert "NcbiProvider" in str(p)
-    shutil.rmtree(os.path.dirname(readme))
+    genomepy.utils.rm_rf(os.path.dirname(readme))
 
     # lazy provider
     p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
@@ -228,7 +235,7 @@ def test_generate_exports():
     exports = genomepy.functions.generate_exports()
     assert f"export TESTGENOME={path}" in exports
 
-    shutil.rmtree(os.path.join(gd, "testgenome"))
+    genomepy.utils.rm_rf(os.path.join(gd, "testgenome"))
 
 
 @pytest.mark.skipif(
@@ -313,3 +320,24 @@ def test_accession_search():
     assert b"Ensembl" in providers
     assert b"NCBI" in providers
     assert b"UCSC" in providers
+
+
+def test_argparse_plugin():
+    action = genomepy.argparse_support.parse_genome
+
+    with TemporaryDirectory() as tmpdir:
+        parser = argparse.ArgumentParser()
+        parser.add_argument(
+            "-g", dest="genome", action=action(auto_install=True, genomes_dir=tmpdir)
+        )
+        args = parser.parse_args(
+            ["-g", "ASM2732v1"],
+        )
+        assert isinstance(args.genome, genomepy.Genome)
+
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-g", dest="genome", action=action())
+        args = parser.parse_args(["-g", "non_existing"])
+    assert pytest_wrapped_e.type == SystemExit
+    assert pytest_wrapped_e.value.code == 1

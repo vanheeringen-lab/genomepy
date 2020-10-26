@@ -6,9 +6,37 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
 ## [0.9.0] - 2020-09-01
 
 ### Added
+- `genomepy install` flag `-k/--keep-alt` to keep alternative regions
+- argparse custom type for a genome command line argument
+
+### Changed
+
+- added retries to UCSC and NCBI
+- added retries to Travis tests
+- Bucketcache improvements
+- `genomepy search` keeps searching after an exact match is found
+- `genomepy install` removes alternative regions by default
+
+### Fixed
+
+- `genomepy clean` wont complain when there is nothing to clean
+- properly gzip the annotation.gtf if it was unzipped during sanitizing
+- `genomepy install` can use the URL provider again
+- `genomepy install` with `-f/--force` will overwrite previouse sizes and gaps files
+
+## [0.9.0] - 2020-09-01
+
+### Added
+
 - check to see if providers are online + error message if not
 - automatic provider selection for `genomepy install`
   - optional provider flag for `genomepy install` (`-p/--provider`)
@@ -16,6 +44,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `genomepy clean` removes local caches. Will be reloaded when required.
 
 ### Changed
+
 - Ensembl genomes always download over ftp (http was too unstable)
 - Ensembl release versions obtained via REST API (http was too unstable)
 - `genomepy search` and `genomepy providers` only check online providers
@@ -23,14 +52,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - API changes to `download_genome` and `download_annotation` for consistency
 
 ### Fixed
+
 - Ensembl status check uses lighter url (more stable)
 - `search` and `install` now consistently use safe search terms (no spaces)
 - `search` now uses UTF-8, no longer crashing for \u2019 (some quotation mark).
 - `search` case insensitivity fixed for assembly names.
 - Bucketcache now stores less data, increasing responsiveness.
 
-
 ## [0.8.4] - 2020-07-29
+
+### Fixed
+
 - Fix bug where Genome.sizes dict contains str instead of int (#110).
 - Fix bug with UTF-8 in README (#109).
 - Fix bug where BED files with chr:start-end in 4th column are not recognized as BED files.
@@ -38,19 +70,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [0.8.3] - 2020-06-03
 
 ### Fixed
+
 - Fixed bug introduced by fixing a bug: Provider-specific options for `genomepy install` on command line work again
 - UCSC annotations can now once again be obtained from knownGene.txt
 
 ### Added
+
 - UCSC gene annotations will now be downloaded in GTF format where possible
 - Desired UCSC gene annotation type can now be specified in the `genomepy install` command using `--ucsc-annotation`
 
 ### Changed
+
 - Added the NCBI RefSeq gene annotation to the list of potential UCSC gene annotations for download
 
 ## [0.8.2] - 2020-05-25
 
 ### Fixed
+
 - `Genome.sizes` and `Genome.gaps` are now populated automatically.
 - backwards compatibility with old configuration files (with `genome_dir` instead of `genomes_dir`)
 - updating the README.txt will only happen if you have write permission
@@ -64,6 +100,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [0.8.1] - 2020-05-11
 
 ### Added
+
 - Now using the UCSC REST API
 - `genomepy search` now accepts taxonomy IDs
 - `genomepy search` will now return taxonomy IDs and Accession numbers
@@ -80,6 +117,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
     - STAR and HISAT2 will now generate splice-aware indexes if annotation files are available.
 
 ### Changed
+
 - `Genome.props` has been renamed to `Genome.plugin`
 - sizes no longer a plugin, but always gets executed
 - `genomepy FUNCTION --help` texts expanded
@@ -88,18 +126,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - more descriptive feedback to installing & many errors
 
 ### Removed
+
 - Sizes plugin
 - Old tests
 - Removed outdated dependency `xmltodict`
 
 ### Fixed
+
 - `genomepy config` options made more robust
 - README.txt will no longer:
   - update 3x for each command
   - drop regex info
   - have duplicate lines
 
-### Refactoring
+### Changed
+
 - Genome class moved to `genome.py`
 - Many functions moved to `utils.py`
 - Many other functions made static methods of a class
@@ -123,17 +164,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [0.7.2] - 2019-03-31
 
 ### Fixed
+
 - Fix minor issue with hg19 wrong blacklist url
 - Ensembl downloads over http instead of https (release 99 no longer has https)
 
 ## [0.7.1] - 2019-11-20
 
 ### Fixed
+
 - STAR is not longer enabled by default
 
 ## [0.7.0] - 2019-11-18
 
 ### Added
+
 - Direct downloading from url through url provider.
 - Added `--force` flag. Files will no longer be overwritten by default.
 - Provider specific options:
@@ -143,12 +187,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added STAR index plugin
 
 ### Changed
+
 - Providers are now case-insensitive.
 - Extended testing.
 - Increased minimal Python version to 3.6.
 - Removed gaps from plugins, added gaps to core functionality.
 
 ### Fixed
+
 - bugfix: NCBI will show all versions of an assembly (will no longer filter on BioSample ID, instead filters on asm_name).
 - fix: gaps file will be generated when needed.
 
@@ -222,6 +268,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.9.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.4...0.9.0
 [0.8.4]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.3...0.8.4
 [0.8.3]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.2...0.8.3
 [0.8.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.1...0.8.2

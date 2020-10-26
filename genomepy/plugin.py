@@ -6,8 +6,7 @@ config = norns.config("genomepy", default="cfg/default.yaml")
 
 
 class Plugin(object):
-    """Plugin base class.
-    """
+    """Plugin base class."""
 
     active = False
 
@@ -29,8 +28,7 @@ class Plugin(object):
 
 
 def find_plugins():
-    """Locate and initialize all available plugins.
-    """
+    """Locate and initialize all available plugins."""
     plugin_dir = os.path.dirname(os.path.realpath(__file__))
     plugin_dir = os.path.join(plugin_dir, "plugins")
     plugin_files = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
@@ -105,8 +103,7 @@ def deactivate(name):
 
 
 def get_active_plugins():
-    """Returns all active plugin instances.
-    """
+    """Returns all active plugin instances."""
     return [inst for name, inst in plugins.items() if inst.active]
 
 

@@ -1,7 +1,6 @@
 import os
-from shutil import rmtree
 from genomepy.plugin import Plugin
-from genomepy.utils import mkdir_p, cmd_ok, run_index_cmd
+from genomepy.utils import mkdir_p, rm_rf, cmd_ok, run_index_cmd
 
 
 class BwaPlugin(Plugin):
@@ -14,7 +13,7 @@ class BwaPlugin(Plugin):
         index_name = genome.plugin["bwa"]["index_name"]
         if force:
             # Start from scratch
-            rmtree(index_dir, ignore_errors=True)
+            rm_rf(index_dir)
         mkdir_p(index_dir)
 
         if not any(fname.endswith(".bwt") for fname in os.listdir(index_dir)):
@@ -28,7 +27,10 @@ class BwaPlugin(Plugin):
         props = {
             "index_dir": os.path.join(os.path.dirname(genome.filename), "index", "bwa"),
             "index_name": os.path.join(
-                os.path.dirname(genome.filename), "index", "bwa", f"{genome.name}.fa",
+                os.path.dirname(genome.filename),
+                "index",
+                "bwa",
+                f"{genome.name}.fa",
             ),
         }
         return props

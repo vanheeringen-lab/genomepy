@@ -1,9 +1,9 @@
 import os
 import subprocess as sp
-from shutil import rmtree
 from genomepy.plugin import Plugin
 from genomepy.utils import (
     mkdir_p,
+    rm_rf,
     cmd_ok,
     run_index_cmd,
     bgzip_and_name,
@@ -21,7 +21,7 @@ class Hisat2Plugin(Plugin):
             return
 
         index_dir = genome.plugin["hisat2"]["index_dir"]
-        rmtree(index_dir, ignore_errors=True)
+        rm_rf(index_dir)
         mkdir_p(index_dir)
 
         # gunzip genome if bgzipped and return up-to-date genome name
