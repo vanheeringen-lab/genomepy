@@ -12,14 +12,18 @@ from genomepy.provider import ProviderBase
 from genomepy.utils import (
     get_localname,
     get_genomes_dir,
+    generate_gap_bed,
+    generate_fa_sizes,
     glob_ext_files,
     mkdir_p,
+    rm_rf,
     read_readme,
     sanitize_annotation,
     safe,
+    check_url,
+    try_except_pass,
 )
 from pyfaidx import FastaIndexingError
-from shutil import rmtree
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -27,8 +31,9 @@ config = norns.config("genomepy", default="cfg/default.yaml")
 def clean():
     """Remove cached data on providers"""
     my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
-    rmtree(my_cache_dir)
+    rm_rf(my_cache_dir)
     mkdir_p(my_cache_dir)
+    print("All clean!")
 
 
 def manage_config(cmd):
@@ -179,12 +184,14 @@ def _lazy_provider_selection(name, provider=None):
     """return the first PROVIDER which has genome NAME"""
     providers = _providers(provider)
     for p in providers:
-        if name in p.genomes:
+        if name in p.genomes or (
+            p.name == "URL" and try_except_pass(ValueError, check_url, name)
+        ):
             return p
-    else:
-        raise GenomeDownloadError(
-            f"{name} not found on {', '.join([p.name for p in providers])}."
-        )
+
+    raise GenomeDownloadError(
+        f"{name} not found on {', '.join([p.name for p in providers])}."
+    )
 
 
 def _provider_selection(name, localname, genomes_dir, provider=None):
@@ -211,6 +218,7 @@ def install_genome(
     genomes_dir=None,
     localname=None,
     mask="soft",
+    keep_alt=False,
     regex=None,
     invert_match=False,
     bgzip=None,
@@ -240,6 +248,11 @@ def install_genome(
 
     mask : str , optional
         Default is 'soft', choices 'hard'/'soft/'none' for respective masking level.
+
+    keep_alt : bool , optional
+        Some genomes contain alternative regions. These regions cause issues with
+        sequence alignment, as they are inherently duplications of the consensus regions.
+        Set to true to keep these alternative regions.
 
     regex : str , optional
         Regular expression to select specific chromosome / scaffold names.
@@ -293,6 +306,7 @@ def install_genome(
             name,
             genomes_dir,
             mask=mask,
+            keep_alt=keep_alt,
             regex=regex,
             invert_match=invert_match,
             localname=localname,
@@ -308,6 +322,10 @@ def install_genome(
     g = None
     if genome_found:
         g = Genome(localname, genomes_dir=genomes_dir)
+        if force:
+            # overwrite previous versions
+            generate_fa_sizes(g.genome_file, g.sizes_file)
+            generate_gap_bed(g.genome_file, g.gaps_file)
 
     # Check if any annotation flags are given, if annotation already exists, or if downloading is forced
     if any(

@@ -80,6 +80,12 @@ general_install_options = {
         "help": "DNA masking: hard/soft/none (default: soft)",
         "default": "soft",
     },
+    "keep_alt": {
+        "short": "k",
+        "long": "keep-alt",
+        "help": "keep alternative regions",
+        "flag_value": True,
+    },
     "regex": {
         "short": "r",
         "long": "regex",
@@ -200,6 +206,7 @@ def install(
     genomes_dir,
     localname,
     mask,
+    keep_alt,
     regex,
     invert_match,
     bgzip,
@@ -217,6 +224,7 @@ def install(
         genomes_dir=genomes_dir,
         localname=localname,
         mask=mask,
+        keep_alt=keep_alt,
         regex=regex,
         invert_match=invert_match,
         bgzip=bgzip,

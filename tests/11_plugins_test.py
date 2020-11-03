@@ -2,9 +2,9 @@ import os
 import genomepy
 import pytest
 import re
-import shutil
 import subprocess as sp
 
+from shutil import copyfile
 from platform import system
 from time import sleep
 
@@ -49,11 +49,11 @@ def genome(request):
 
     genomes_dir = os.path.join(os.getcwd(), ".genomepy_plugin_tests")
     if os.path.exists(genomes_dir):
-        shutil.rmtree(genomes_dir)
+        genomepy.utils.rm_rf(genomes_dir)
     genome_dir = os.path.join(genomes_dir, name)
     genomepy.utils.mkdir_p(genome_dir)
     fname = os.path.join(genome_dir, f"{name}.fa.gz")
-    shutil.copyfile(fafile, fname)
+    copyfile(fafile, fname)
 
     # unzip genome if required
     if request.param == "unzipped":
@@ -62,7 +62,7 @@ def genome(request):
         # add annotation (for STAR and hisat2), but only once
         gtf_file = "tests/data/ce10.annotation.gtf.gz"
         aname = os.path.join(genome_dir, f"{name}.annotation.gtf.gz")
-        shutil.copyfile(gtf_file, aname)
+        copyfile(gtf_file, aname)
 
     return genomepy.Genome(name, genomes_dir=genomes_dir)
 
@@ -235,4 +235,4 @@ def test_plugin_cleanup():
 
     # cleanup after testing pluging
     genome_dir = os.path.join(os.getcwd(), ".genomepy_plugin_tests")
-    shutil.rmtree(genome_dir)
+    genomepy.utils.rm_rf(genome_dir)

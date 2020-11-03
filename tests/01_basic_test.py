@@ -23,6 +23,17 @@ def test_flake8_formatting():
     assert ret == 0
 
 
+# @pytest.mark.skipif(travis, reason="clear the slate")
+def test_clean():
+    genomepy.clean()
+
+    my_cache_dir = os.path.join(
+        user_cache_dir("genomepy"), genomepy.__about__.__version__
+    )
+    assert not os.listdir(my_cache_dir)
+    genomepy.clean()
+
+
 def test_import():
     # __init__.py
     assert str(genomepy.search).startswith("<function search at")

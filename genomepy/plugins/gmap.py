@@ -1,8 +1,8 @@
 import os.path
-from shutil import move, rmtree
+from shutil import move
 from tempfile import TemporaryDirectory
 from genomepy.plugin import Plugin
-from genomepy.utils import cmd_ok, run_index_cmd, gunzip_and_name, bgzip_and_name
+from genomepy.utils import cmd_ok, rm_rf, run_index_cmd, gunzip_and_name, bgzip_and_name
 
 
 class GmapPlugin(Plugin):
@@ -14,7 +14,7 @@ class GmapPlugin(Plugin):
         index_dir = genome.plugin["gmap"]["index_dir"]
         if force:
             # Start from scratch
-            rmtree(index_dir, ignore_errors=True)
+            rm_rf(index_dir)
 
         if not os.path.exists(index_dir):
             # unzip genome if zipped and return up-to-date genome name

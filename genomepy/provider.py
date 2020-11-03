@@ -35,7 +35,7 @@ from genomepy.__about__ import __version__
 
 # Store the output of slow commands (marked with @cache and @goldfish_cache) for fast reuse.
 # Bucketcache creates a new pickle for each function + set of unique variables,
-# but cannot ignore "self", so staticmethods are required.
+# to avoid storing self.genomes, ignore=["self"] or use @staticmethod.
 my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
 if not os.path.exists(my_cache_dir):
     os.makedirs(my_cache_dir)
@@ -99,12 +99,11 @@ class ProviderBase(object):
 
         return decorator
 
-    @staticmethod
-    @goldfish_cache(ignore=["url", "max_tries"])
-    def provider_status(name, url, max_tries=1):
+    @goldfish_cache(ignore=["self", "max_tries"])
+    def provider_status(self, url, max_tries=1):
         """check if provider is online (stores results for 10 minutes)"""
         if not check_url(url, max_tries):
-            raise ConnectionError(f"{name} appears to be offline.\n")
+            raise ConnectionError(f"{self.name} appears to be offline.\n")
 
     @classmethod
     def list_providers(cls):
@@ -188,6 +187,7 @@ class ProviderBase(object):
         genomes_dir=None,
         localname=None,
         mask="soft",
+        keep_alt=False,
         regex=None,
         invert_match=False,
         bgzip=None,
@@ -209,6 +209,9 @@ class ProviderBase(object):
 
         mask: str , optional
             Masking, soft, hard or none (all other strings)
+
+        keep_alt : bool , optional
+            Set to true to keep these alternative regions.
 
         regex : str , optional
             Regular expression to select specific chromosome / scaffold names.
@@ -264,21 +267,28 @@ class ProviderBase(object):
                 if ret != 0:
                     raise Exception(f"Error gunzipping genome {fname}")
 
+            def regex_filer(_fname, _regex, _v):
+                os.rename(_fname, _fname + "_to_regex")
+                infa = _fname + "_to_regex"
+                outfa = _fname
+                filter_fasta(infa, outfa, regex=_regex, v=_v, force=True)
+
+                return [k for k in Fasta(infa).keys() if k not in Fasta(outfa).keys()]
+
+            not_included = []
+            # remove alternative regions
+            if not keep_alt:
+                not_included.extend(regex_filer(fname, "alt", True))
+
+            # keep/remove user defined regions
+            if regex:
+                not_included.extend(regex_filer(fname, regex, invert_match))
+
             # process genome (e.g. masking)
             if hasattr(self, "_post_process_download"):
                 self._post_process_download(
                     name=name, localname=localname, out_dir=tmp_dir, mask=mask
                 )
-
-            if regex:
-                os.rename(fname, fname + "_to_regex")
-                infa = fname + "_to_regex"
-                outfa = fname
-                filter_fasta(infa, outfa, regex=regex, v=invert_match, force=True)
-
-                not_included = [
-                    k for k in Fasta(infa).keys() if k not in Fasta(outfa).keys()
-                ]
 
             # bgzip genome if requested
             if bgzip or config.get("bgzip"):
@@ -510,13 +520,10 @@ class ProviderBase(object):
                 if self._search_taxids(genomes[name], term):
                     yield self._genome_info_tuple(name)
 
-        elif term in genomes:
-            yield self._genome_info_tuple(term)
-
         else:
             term = term.lower()
             for name in genomes:
-                if term == safe(name).lower() or self._search_descriptions(
+                if term in safe(name).lower() or self._search_descriptions(
                     genomes[name], term
                 ):
                     yield self._genome_info_tuple(name)
@@ -551,9 +558,9 @@ class EnsemblProvider(ProviderBase):
 
     def __init__(self):
         self.name = "Ensembl"
-        self.provider_status(self.name, self.rest_url + "info/ping?", max_tries=2)
+        self.provider_status(self.rest_url + "info/ping?", max_tries=2)
         # Populate on init, so that methods can be cached
-        self.genomes = self._get_genomes(self._request_json, self.rest_url)
+        self.genomes = self._get_genomes(self.rest_url)
         self.accession_fields = ["assembly_accession"]
         self.taxid_fields = ["taxonomy_id"]
         self.description_fields = [
@@ -576,18 +583,17 @@ class EnsemblProvider(ProviderBase):
 
         return r.json()
 
-    @staticmethod
-    @cache
-    def _get_genomes(request_json, rest_url):
+    @cache(ignore=["self"])
+    def _get_genomes(self, rest_url):
         sys.stderr.write("Downloading assembly summaries from Ensembl\n")
 
         genomes = {}
-        divisions = retry(request_json, 3, rest_url, "info/divisions?")
+        divisions = retry(self._request_json, 3, rest_url, "info/divisions?")
         for division in divisions:
             if division == "EnsemblBacteria":
                 continue
             division_genomes = retry(
-                request_json, 3, rest_url, f"info/genomes/division/{division}?"
+                self._request_json, 3, rest_url, f"info/genomes/division/{division}?"
             )
             for genome in division_genomes:
                 genomes[safe(genome["assembly_name"])] = genome
@@ -608,12 +614,11 @@ class EnsemblProvider(ProviderBase):
             genome.get("genebuild", "na"),
         )
 
-    @staticmethod
-    @goldfish_cache(ignore=["request_json", "rest_url"])
-    def get_version(request_json, rest_url, vertebrates=False):
+    @goldfish_cache(ignore=["self", "rest_url"])
+    def get_version(self, rest_url, vertebrates=False):
         """Retrieve current version from Ensembl FTP."""
         ext = "/info/data/?" if vertebrates else "/info/eg_version?"
-        ret = retry(request_json, 3, rest_url, ext)
+        ret = retry(self._request_json, 3, rest_url, ext)
         releases = ret["releases"] if vertebrates else [ret["version"]]
         return str(max(releases))
 
@@ -648,9 +653,7 @@ class EnsemblProvider(ProviderBase):
         # Ensembl release version
         version = kwargs.get("version")
         if version is None:
-            version = self.get_version(
-                self._request_json, self.rest_url, division == "vertebrates"
-            )
+            version = self.get_version(self.rest_url, division == "vertebrates")
 
         # division dependent url format
         ftp_dir = "{}/release-{}/fasta/{}/dna".format(
@@ -714,9 +717,7 @@ class EnsemblProvider(ProviderBase):
         # Ensembl release version
         version = kwargs.get("version")
         if version is None:
-            version = self.get_version(
-                self._request_json, self.rest_url, division == "vertebrates"
-            )
+            version = self.get_version(self.rest_url, division == "vertebrates")
 
         if division != "vertebrates":
             ftp_site += f"/{division}"
@@ -760,7 +761,7 @@ class UcscProvider(ProviderBase):
 
     def __init__(self):
         self.name = "UCSC"
-        self.provider_status(self.name, self.base_url)
+        self.provider_status(self.base_url)
         # Populate on init, so that methods can be cached
         self.genomes = self._get_genomes(self.rest_url)
         self.accession_fields = []
@@ -871,7 +872,7 @@ class UcscProvider(ProviderBase):
         for genome_url in urls:
             link = genome_url.format(name)
 
-            if check_url(link):
+            if check_url(link, 2):
                 return link
 
         raise GenomeDownloadError(
@@ -937,7 +938,7 @@ class UcscProvider(ProviderBase):
         }
 
         # download gtf format if possible, txt format if not
-        gtfs_exists = check_url(gtf_url)
+        gtfs_exists = check_url(gtf_url, 2)
         base_url = gtf_url + name + "." if gtfs_exists else txt_url
         base_ext = ".gtf.gz" if gtfs_exists else ".txt.gz"
 
@@ -945,7 +946,7 @@ class UcscProvider(ProviderBase):
         file = kwargs.get("ucsc_annotation_type")
         if file:
             link = base_url + annot_files[file.lower()] + base_ext
-            if check_url(link):
+            if check_url(link, 2):
                 return link
             sys.stderr.write(
                 f"Specified annotation type ({file}) not found for {name}.\n"
@@ -955,7 +956,7 @@ class UcscProvider(ProviderBase):
             # download first available annotation type found
             for file in annot_files.values():
                 link = base_url + file + base_ext
-                if check_url(link):
+                if check_url(link, 2):
                     return link
 
 
@@ -972,7 +973,7 @@ class NcbiProvider(ProviderBase):
 
     def __init__(self):
         self.name = "NCBI"
-        self.provider_status(self.name, self.assembly_url)
+        self.provider_status(self.assembly_url)
         # Populate on init, so that methods can be cached
         self.genomes = self._get_genomes(self.assembly_url)
         self.accession_fields = ["assembly_accession", "gbrs_paired_asm"]
@@ -1050,7 +1051,7 @@ class NcbiProvider(ProviderBase):
         link = link.replace("ftp://", "https://")
         link += "/" + link.split("/")[-1] + "_genomic.fna.gz"
 
-        if check_url(link):
+        if check_url(link, 2):
             return link
 
         raise GenomeDownloadError(
@@ -1141,7 +1142,7 @@ class NcbiProvider(ProviderBase):
         link = link.replace("ftp://", "https://")
         link += "/" + link.split("/")[-1] + "_genomic.gff.gz"
 
-        if check_url(link):
+        if check_url(link, 2):
             return link
 
 

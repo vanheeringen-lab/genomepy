@@ -1,8 +1,8 @@
 import os
-from shutil import rmtree
 from genomepy.plugin import Plugin
 from genomepy.utils import (
     mkdir_p,
+    rm_rf,
     cmd_ok,
     run_index_cmd,
     gunzip_and_name,
@@ -18,7 +18,7 @@ class StarPlugin(Plugin):
             return
 
         index_dir = genome.plugin["star"]["index_dir"]
-        rmtree(index_dir, ignore_errors=True)
+        rm_rf(index_dir)
         mkdir_p(index_dir)
 
         # gunzip genome if bgzipped and return up-to-date genome name

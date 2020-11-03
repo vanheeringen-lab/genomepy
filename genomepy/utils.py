@@ -81,7 +81,7 @@ def write_readme(readme, metadata, lines):
 
 
 def generate_gap_bed(fname, outname):
-    """ Generate a BED file with gap locations.
+    """Generate a BED file with gap locations.
 
     Parameters
     ----------
@@ -99,7 +99,7 @@ def generate_gap_bed(fname, outname):
 
 
 def generate_fa_sizes(fname, outname):
-    """ Generate a fa.sizes file.
+    """Generate a fa.sizes file.
 
     Parameters
     ----------
@@ -175,6 +175,11 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
 def mkdir_p(path):
     """ 'mkdir -p' in Python """
     os.makedirs(path, exist_ok=True)
+
+
+def rm_rf(path):
+    """ 'rm -rf' in Python """
+    shutil.rmtree(path, ignore_errors=True)
 
 
 def cmd_ok(cmd):
@@ -332,6 +337,14 @@ def is_number(term):
     """check if term is a number. Returns bool"""
     if isinstance(term, int) or term.isdigit():
         return True
+
+
+def try_except_pass(errors, func, *args):
+    """try to return FUNC with ARGS, pass on ERRORS"""
+    try:
+        return func(*args)
+    except errors:
+        pass
 
 
 def retry(func, tries, *args):
@@ -517,7 +530,6 @@ def sanitize_annotation(genome):
         "\nGenome and annotation do not have matching sequence names! "
         "Creating matching annotation files...\n"
     )
-    # bgzip, genome_file = bgunzip_and_name(genome)
     genome_file, bgzip = gunzip_and_name(genome.filename)
 
     # try to find the (gtf) contig position in genome header
@@ -558,10 +570,9 @@ def sanitize_annotation(genome):
         for src, dst, gzip_file in zip(
             [new_gtf_file, new_bed_file],
             [gtf_file, bed_file],
-            [genome.annotation_gtf_file, genome.annotation_bed_file],
+            [gzip_file, genome.annotation_bed_file.endswith(".gz")],
         ):
             os.replace(src, dst)
-            gzip_file = True if gzip_file.endswith(".gz") else False
             gzip_and_name(dst, gzip_file)
 
     metadata, lines = read_readme(readme)
