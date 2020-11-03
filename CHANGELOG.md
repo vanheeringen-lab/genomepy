@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [0.9.1] - 2020-10-26
 
 ### Added
+
 - `genomepy install` flag `-k/--keep-alt` to keep alternative regions
 - argparse custom type for a genome command line argument
 
@@ -268,6 +269,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.9.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.0...0.9.1
 [0.9.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.4...0.9.0
 [0.8.4]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.3...0.8.4
 [0.8.3]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.2...0.8.3
