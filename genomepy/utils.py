@@ -4,6 +4,7 @@ import norns
 import re
 import sys
 import urllib.request
+import requests
 import subprocess as sp
 import tarfile
 import gzip
@@ -14,9 +15,28 @@ from glob import glob
 from norns import exceptions
 from pyfaidx import Fasta
 from socket import timeout
+from tqdm import tqdm
 from tempfile import TemporaryDirectory
 
 config = norns.config("genomepy", default="cfg/default.yaml")
+
+
+def download_file(url, filename):
+    """
+    Helper method handling downloading large files from `url` to `filename`.
+    Displays a progress bar with download speeds in MB/s.
+    Returns a pointer to `filename`.
+    """
+    chunkSize = 1024
+    r = requests.get(url, stream=True)
+    with open(filename, 'wb') as f:
+        pbar = tqdm(desc="Download progress", unit_scale=True, unit_divisor=1024,
+                    total=int(r.headers['Content-Length']), unit="B", leave=False)
+        for chunk in r.iter_content(chunk_size=chunkSize):
+            if chunk:  # filter out keep-alive new chunks
+                pbar.update(len(chunk))
+                f.write(chunk)
+    return filename
 
 
 def read_readme(readme):
@@ -145,21 +165,33 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
 
     if os.path.exists(outfa):
         if force:
-            os.unlink(outfa)
-            if os.path.exists(outfa + ".fai"):
-                os.unlink(outfa + ".fai")
+            rm_rf(outfa)
+            rm_rf(f"{outfa}.fai")
         else:
             raise FileExistsError(
                 f"{outfa} already exists, set force to True to overwrite"
             )
 
-    filt_function = re.compile(regex).search
-    fa = Fasta(infa, filt_function=filt_function)
-    seqs = fa.keys()
-    if v:
-        original_fa = Fasta(infa)
-        seqs = [s for s in original_fa.keys() if s not in seqs]
-        fa = original_fa
+    fa = Fasta(infa)
+    filt_function = re.compile(regex)
+    seqs = []
+    print('regex2')
+    for key in tqdm(fa.keys()): #, desc="Filter progress", unit="sequences", leave=False):
+        if filt_function.search(key):
+            seqs.append(key)
+        elif v:
+            seqs.append(key)
+
+    # tqdm(desc="Download progress", unit_scale=True, unit_divisor=1024,
+    #      total=int(r.headers['Content-Length']), unit="B", leave=False)
+
+    # filt_function = re.compile(regex).search
+    # fa = Fasta(infa, filt_function=filt_function)
+    # seqs = fa.keys()
+    # if v:
+    #     original_fa = Fasta(infa)
+    #     seqs = [s for s in original_fa.keys() if s not in seqs]
+    #     fa = original_fa
 
     if len(seqs) == 0:
         raise Exception("No sequences left after filtering!")
