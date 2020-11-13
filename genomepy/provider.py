@@ -322,10 +322,19 @@ class ProviderBase(object):
             "date": time.strftime("%Y-%m-%d %H:%M:%S"),
         }
         lines = []
-        if regex:
-            regex_line = f"regex: {regex}"
-            if invert_match:
-                regex_line += " (inverted match)"
+        if not keep_alt or regex:
+            regex_line = "regex: "
+            if not keep_alt:
+                regex_line += "'alt' (inverted match)"
+
+            if not keep_alt and regex:
+                regex_line += " and "
+
+            if regex:
+                regex_line += f"'{regex}'"
+                if invert_match:
+                    regex_line += " (inverted match)"
+
             lines += ["", regex_line, "sequences that were excluded:"]
             for seq in not_included:
                 lines.append(f"\t{seq}")
