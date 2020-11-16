@@ -221,7 +221,7 @@ def test_star(capsys, genome, threads=2):
     captured = capsys.readouterr().out.strip()
     if genome.annotation_gtf_file:
         # check if splice-aware index is generated
-        assert captured == ""
+        assert captured.startswith("Creating star index...")
         # check if annotation file is still the same
         assert os.path.exists(genome.annotation_gtf_file)
         assert genome.annotation_gtf_file.endswith(".gtf.gz")
