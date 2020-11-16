@@ -30,12 +30,13 @@ def download_file(url, filename):
     """
     chunk_size = 1024
     r = requests.get(url, stream=True)
+    file_size = int(r.headers.get("Content-Length", 0))
     with open(filename, "wb") as f:
         pbar = tqdm(
             desc="Download",
             unit_scale=True,
             unit_divisor=1024,
-            total=int(r.headers["Content-Length"]),
+            total=file_size,
             unit="B",
             leave=False,
         )

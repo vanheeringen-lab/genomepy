@@ -226,7 +226,7 @@ def test_star(capsys, genome, threads=2):
         assert os.path.exists(genome.annotation_gtf_file)
         assert genome.annotation_gtf_file.endswith(".gtf.gz")
     else:
-        assert captured == "Creating STAR index without annotation file."
+        assert captured.startswith("Creating STAR index without annotation file.")
 
 
 def test_plugin_cleanup():
