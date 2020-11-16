@@ -1,5 +1,6 @@
 """Utility functions."""
 import os
+import itertools
 import norns
 import re
 import sys
@@ -27,12 +28,18 @@ def download_file(url, filename):
     Displays a progress bar with download speeds in MB/s.
     Returns a pointer to `filename`.
     """
-    chunkSize = 1024
+    chunk_size = 1024
     r = requests.get(url, stream=True)
-    with open(filename, 'wb') as f:
-        pbar = tqdm(desc="Download progress", unit_scale=True, unit_divisor=1024,
-                    total=int(r.headers['Content-Length']), unit="B", leave=False)
-        for chunk in r.iter_content(chunk_size=chunkSize):
+    with open(filename, "wb") as f:
+        pbar = tqdm(
+            desc="Download",
+            unit_scale=True,
+            unit_divisor=1024,
+            total=int(r.headers["Content-Length"]),
+            unit="B",
+            leave=False,
+        )
+        for chunk in r.iter_content(chunk_size=chunk_size):
             if chunk:  # filter out keep-alive new chunks
                 pbar.update(len(chunk))
                 f.write(chunk)
@@ -165,8 +172,8 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
 
     if os.path.exists(outfa):
         if force:
-            rm_rf(outfa)
-            rm_rf(f"{outfa}.fai")
+            os.unlink(outfa)
+            os.unlink(f"{outfa}.fai")
         else:
             raise FileExistsError(
                 f"{outfa} already exists, set force to True to overwrite"
@@ -175,23 +182,11 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
     fa = Fasta(infa)
     filt_function = re.compile(regex)
     seqs = []
-    print('regex2')
-    for key in tqdm(fa.keys()): #, desc="Filter progress", unit="sequences", leave=False):
-        if filt_function.search(key):
+    for key in fa.keys():
+        if (filt_function.search(key) and not v) or (
+            not filt_function.search(key) and v
+        ):
             seqs.append(key)
-        elif v:
-            seqs.append(key)
-
-    # tqdm(desc="Download progress", unit_scale=True, unit_divisor=1024,
-    #      total=int(r.headers['Content-Length']), unit="B", leave=False)
-
-    # filt_function = re.compile(regex).search
-    # fa = Fasta(infa, filt_function=filt_function)
-    # seqs = fa.keys()
-    # if v:
-    #     original_fa = Fasta(infa)
-    #     seqs = [s for s in original_fa.keys() if s not in seqs]
-    #     fa = original_fa
 
     if len(seqs) == 0:
         raise Exception("No sequences left after filtering!")
@@ -211,7 +206,10 @@ def mkdir_p(path):
 
 def rm_rf(path):
     """ 'rm -rf' in Python """
-    shutil.rmtree(path, ignore_errors=True)
+    if os.path.isfile(path):
+        os.unlink(path)
+    elif os.path.isdir(path):
+        shutil.rmtree(path, ignore_errors=True)
 
 
 def cmd_ok(cmd):
@@ -229,9 +227,16 @@ def cmd_ok(cmd):
 
 def run_index_cmd(name, cmd):
     """Run command, show errors if the returncode is non-zero."""
-    sys.stderr.write(f"Creating {name} index...\n")
-    # Create index
     p = sp.Popen(cmd, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
+
+    # show a spinner while the command is running
+    spinner = itertools.cycle(["-", "\\", "|", "/"])
+    while p.poll() is None:
+        sys.stdout.write(f"\rCreating {name} index... {next(spinner)}")
+        time.sleep(0.15)
+        sys.stdout.flush()
+    sys.stdout.write("\n")
+
     stdout, stderr = p.communicate()
     if p.returncode != 0:
         sys.stderr.write(f"Index for {name} failed\n")

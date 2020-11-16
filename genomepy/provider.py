@@ -9,7 +9,7 @@ import shutil
 import subprocess as sp
 
 from tempfile import TemporaryDirectory
-from urllib.request import urlopen, urlretrieve, urlcleanup
+from urllib.request import urlopen, urlcleanup
 from bucketcache import Bucket
 from pyfaidx import Fasta
 from appdirs import user_cache_dir
@@ -261,8 +261,10 @@ class ProviderBase(object):
             def regex_filer(_fname, _regex, _v):
                 infa = _fname + "_to_regex"
                 os.rename(_fname, infa)
-                # filter the faste and store the output's keys
-                keys_out = filter_fasta(infa, _fname, regex=_regex, v=_v, force=True).keys()
+                # filter the fasta and store the output's keys
+                keys_out = filter_fasta(
+                    infa, outfa=_fname, regex=_regex, v=_v, force=True
+                ).keys()
                 keys_in = Fasta(infa).keys()
                 return [k for k in keys_in if k not in keys_out]
 
@@ -273,7 +275,6 @@ class ProviderBase(object):
 
             # keep/remove user defined regions
             if regex:
-                print('regex')
                 not_included.extend(regex_filer(fname, regex, invert_match))
 
             # process genome (e.g. masking)
@@ -285,7 +286,12 @@ class ProviderBase(object):
             # bgzip genome if requested
             if bgzip or config.get("bgzip"):
                 # bgzip to stdout, track progress, and output to file
-                cmd = f"bgzip -fc {fname} | tqdm --bytes --desc Bgzip progress --log ERROR | cat > {fname}.gz"
+                fsize = int(os.path.getsize(fname) * 10 ** -6)
+                cmd = (
+                    f"bgzip -fc {fname} | "
+                    f"tqdm --bytes --desc Bgzipping {fsize}MB fasta --log ERROR | "
+                    f"cat > {fname}.gz"
+                )
                 ret = sp.check_call(cmd, shell=True)
                 if ret != 0:
                     raise Exception(f"Error bgzipping {name}. Is tabix installed?")
@@ -341,7 +347,7 @@ class ProviderBase(object):
         with TemporaryDirectory(dir=out_dir) as tmpdir:
             ext, gz = get_file_info(annot_url)
             annot_file = os.path.join(tmpdir, localname + ".annotation" + ext)
-            urlretrieve(annot_url, annot_file)
+            download_file(annot_url, annot_file)
 
             # unzip input file (if needed)
             if gz:

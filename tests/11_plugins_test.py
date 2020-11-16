@@ -186,7 +186,7 @@ def test_hisat2(capsys, genome, threads=2):
         assert os.path.exists(genome.annotation_gtf_file)
         assert genome.annotation_gtf_file.endswith(".gtf.gz")
     else:
-        assert captured == "Creating Hisat2 index without annotation file."
+        assert captured.startswith("Creating Hisat2 index without annotation file.")
 
 
 def test_minimap2(genome, threads=2):

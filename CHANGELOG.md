@@ -7,10 +7,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- progress bars for downloading and bgzipping (the slow stuff)
 
 ### Changed
+- removed dependency of psutils
+- added dependency of tqdm
 
 ### Fixed
+- an oopsie in the regex filter functions slowing down `install`.
+- rm_rf to also remove a file, if specified.
 
 ## [0.9.1] - 2020-10-26
 
