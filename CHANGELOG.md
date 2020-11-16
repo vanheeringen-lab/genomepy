@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - progress bars for downloading and bgzipping (the slow stuff)
+- spinner to indexing plugins
 
 ### Changed
 - removed dependency of psutils
@@ -15,7 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 - an oopsie in the regex filter functions slowing down `install`.
-- rm_rf to also remove a file, if specified.
+- rm_rf and mkdir_p to behave more like their namesakes.
 
 ## [0.9.1] - 2020-10-26
 
