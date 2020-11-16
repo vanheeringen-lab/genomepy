@@ -170,14 +170,12 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
     if infa == outfa:
         raise ValueError("Input and output FASTA are the same file.")
 
+    if force:
+        rm_rf(outfa)
+        rm_rf(f"{outfa}.fai")
+
     if os.path.exists(outfa):
-        if force:
-            os.unlink(outfa)
-            os.unlink(f"{outfa}.fai")
-        else:
-            raise FileExistsError(
-                f"{outfa} already exists, set force to True to overwrite"
-            )
+        raise FileExistsError(f"{outfa} already exists, set force to True to overwrite")
 
     fa = Fasta(infa)
     filt_function = re.compile(regex)
