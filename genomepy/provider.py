@@ -8,15 +8,15 @@ import time
 import shutil
 import subprocess as sp
 
-from psutil import virtual_memory
 from tempfile import TemporaryDirectory
-from urllib.request import urlopen, urlretrieve, urlcleanup
+from urllib.request import urlopen, urlcleanup
 from bucketcache import Bucket
 from pyfaidx import Fasta
 from appdirs import user_cache_dir
 
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.utils import (
+    download_file,
     read_readme,
     write_readme,
     filter_fasta,
@@ -243,17 +243,8 @@ class ProviderBase(object):
         with TemporaryDirectory(dir=out_dir) as tmp_dir:
             fname = os.path.join(tmp_dir, f"{localname}.fa")
 
-            # actual download
             urlcleanup()
-            with urlopen(link) as response:
-                # check available memory vs file size.
-                available_memory = int(virtual_memory().available)
-                file_size = int(response.info()["Content-Length"])
-                # download file in chunks if >75% of memory would be used
-                cutoff = int(available_memory * 0.75)
-                chunk_size = None if file_size < cutoff else cutoff
-                with open(fname, "wb") as f_out:
-                    shutil.copyfileobj(response, f_out, chunk_size)
+            download_file(link, fname)
             sys.stderr.write(
                 "Genome download successful, starting post processing...\n"
             )
@@ -268,12 +259,14 @@ class ProviderBase(object):
                     raise Exception(f"Error gunzipping genome {fname}")
 
             def regex_filer(_fname, _regex, _v):
-                os.rename(_fname, _fname + "_to_regex")
                 infa = _fname + "_to_regex"
-                outfa = _fname
-                filter_fasta(infa, outfa, regex=_regex, v=_v, force=True)
-
-                return [k for k in Fasta(infa).keys() if k not in Fasta(outfa).keys()]
+                os.rename(_fname, infa)
+                # filter the fasta and store the output's keys
+                keys_out = filter_fasta(
+                    infa, outfa=_fname, regex=_regex, v=_v, force=True
+                ).keys()
+                keys_in = Fasta(infa).keys()
+                return [k for k in keys_in if k not in keys_out]
 
             not_included = []
             # remove alternative regions
@@ -292,7 +285,14 @@ class ProviderBase(object):
 
             # bgzip genome if requested
             if bgzip or config.get("bgzip"):
-                ret = sp.check_call(["bgzip", "-f", fname])
+                # bgzip to stdout, track progress, and output to file
+                fsize = int(os.path.getsize(fname) * 10 ** -6)
+                cmd = (
+                    f"bgzip -fc {fname} | "
+                    f"tqdm --bytes --desc Bgzipping {fsize}MB fasta --log ERROR | "
+                    f"cat > {fname}.gz"
+                )
+                ret = sp.check_call(cmd, shell=True)
                 if ret != 0:
                     raise Exception(f"Error bgzipping {name}. Is tabix installed?")
                 fname += ".gz"
@@ -347,7 +347,7 @@ class ProviderBase(object):
         with TemporaryDirectory(dir=out_dir) as tmpdir:
             ext, gz = get_file_info(annot_url)
             annot_file = os.path.join(tmpdir, localname + ".annotation" + ext)
-            urlretrieve(annot_url, annot_file)
+            download_file(annot_url, annot_file)
 
             # unzip input file (if needed)
             if gz:

@@ -95,9 +95,9 @@ def test_filter_fasta(fname="tests/data/regexp/regexp.fa"):
     ]
     for regex, match, no_match in regexps:
         fa = genomepy.utils.filter_fasta(fname, tmpfa, regex=regex, v=False, force=True)
-        assert len(fa.keys()) == match
+        assert len(fa.keys()) == match, regex
         fa = genomepy.utils.filter_fasta(fname, tmpfa, regex=regex, v=True, force=True)
-        assert len(fa.keys()) == no_match
+        assert len(fa.keys()) == no_match, regex
 
 
 def test_mkdir_p(path="./tests/dir1/dir2/nestled_dir"):
@@ -117,9 +117,17 @@ def test_mkdir_p(path="./tests/dir1/dir2/nestled_dir"):
 
 def test_rm_rf(path="./tests/dir1/dir2/nestled_dir"):
     genomepy.utils.mkdir_p(path)
-    assert os.path.isdir(path)
+    fname = os.path.join(path, "file.txt")
+    with open(fname, "w") as f:
+        f.write("hello world!")
+
+    # try to remove an existing file
+    assert os.path.isfile(fname)
+    genomepy.utils.rm_rf(fname)
+    assert not os.path.isfile(fname)
 
     # try to remove an existing dir
+    assert os.path.isdir(path)
     genomepy.utils.rm_rf(path)
     assert not os.path.isdir(path)
 
