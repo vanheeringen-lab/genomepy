@@ -1,9 +1,11 @@
 """Utility functions."""
 import os
+import itertools
 import norns
 import re
 import sys
 import urllib.request
+import requests
 import subprocess as sp
 import tarfile
 import gzip
@@ -14,9 +16,35 @@ from glob import glob
 from norns import exceptions
 from pyfaidx import Fasta
 from socket import timeout
+from tqdm.auto import tqdm
 from tempfile import TemporaryDirectory
 
 config = norns.config("genomepy", default="cfg/default.yaml")
+
+
+def download_file(url, filename):
+    """
+    Helper method handling downloading large files from `url` to `filename`.
+    Displays a progress bar with download speeds in MB/s.
+    Returns a pointer to `filename`.
+    """
+    chunk_size = 1024
+    r = requests.get(url, stream=True)
+    file_size = int(r.headers.get("Content-Length", 0))
+    with open(filename, "wb") as f:
+        pbar = tqdm(
+            desc="Download",
+            unit_scale=True,
+            unit_divisor=1024,
+            total=file_size,
+            unit="B",
+            leave=False,
+        )
+        for chunk in r.iter_content(chunk_size=chunk_size):
+            if chunk:  # filter out keep-alive new chunks
+                pbar.update(len(chunk))
+                f.write(chunk)
+    return filename
 
 
 def read_readme(readme):
@@ -143,23 +171,21 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
     if infa == outfa:
         raise ValueError("Input and output FASTA are the same file.")
 
-    if os.path.exists(outfa):
-        if force:
-            os.unlink(outfa)
-            if os.path.exists(outfa + ".fai"):
-                os.unlink(outfa + ".fai")
-        else:
-            raise FileExistsError(
-                f"{outfa} already exists, set force to True to overwrite"
-            )
+    if force:
+        rm_rf(outfa)
+        rm_rf(f"{outfa}.fai")
 
-    filt_function = re.compile(regex).search
-    fa = Fasta(infa, filt_function=filt_function)
-    seqs = fa.keys()
-    if v:
-        original_fa = Fasta(infa)
-        seqs = [s for s in original_fa.keys() if s not in seqs]
-        fa = original_fa
+    if os.path.exists(outfa):
+        raise FileExistsError(f"{outfa} already exists, set force to True to overwrite")
+
+    fa = Fasta(infa)
+    filt_function = re.compile(regex)
+    seqs = []
+    for key in fa.keys():
+        if (filt_function.search(key) and not v) or (
+            not filt_function.search(key) and v
+        ):
+            seqs.append(key)
 
     if len(seqs) == 0:
         raise Exception("No sequences left after filtering!")
@@ -174,12 +200,17 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
 
 def mkdir_p(path):
     """ 'mkdir -p' in Python """
+    path = os.path.expanduser(path)
     os.makedirs(path, exist_ok=True)
 
 
 def rm_rf(path):
     """ 'rm -rf' in Python """
-    shutil.rmtree(path, ignore_errors=True)
+    path = os.path.expanduser(path)
+    if os.path.isfile(path):
+        os.unlink(path)
+    elif os.path.isdir(path):
+        shutil.rmtree(path, ignore_errors=True)
 
 
 def cmd_ok(cmd):
@@ -197,9 +228,16 @@ def cmd_ok(cmd):
 
 def run_index_cmd(name, cmd):
     """Run command, show errors if the returncode is non-zero."""
-    sys.stderr.write(f"Creating {name} index...\n")
-    # Create index
     p = sp.Popen(cmd, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
+
+    # show a spinner while the command is running
+    spinner = itertools.cycle(["-", "\\", "|", "/"])
+    while p.poll() is None:
+        sys.stdout.write(f"\rCreating {name} index... {next(spinner)}")
+        time.sleep(0.15)
+        sys.stdout.flush()
+    sys.stdout.write("\n")
+
     stdout, stderr = p.communicate()
     if p.returncode != 0:
         sys.stderr.write(f"Index for {name} failed\n")
