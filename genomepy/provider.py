@@ -246,9 +246,7 @@ class ProviderBase(object):
 
         urlcleanup()
         download_file(link, fname)
-        sys.stderr.write(
-            "Genome download successful, starting post processing...\n"
-        )
+        sys.stderr.write("Genome download successful, starting post processing...\n")
 
         # unzip genome
         if link.endswith(".tar.gz"):
