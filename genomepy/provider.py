@@ -8,7 +8,7 @@ import time
 import shutil
 import subprocess as sp
 
-from tempfile import TemporaryDirectory
+from tempfile import mkdtemp
 from urllib.request import urlopen, urlcleanup
 from bucketcache import Bucket
 from pyfaidx import Fasta
@@ -30,6 +30,7 @@ from genomepy.utils import (
     is_number,
     mkdir_p,
     get_genomes_dir,
+    rm_rf,
 )
 from genomepy.__about__ import __version__
 
@@ -240,67 +241,68 @@ class ProviderBase(object):
 
         # download to tmp dir. Move genome on completion.
         # tmp dir is in genome_dir to prevent moving the genome between disks
-        with TemporaryDirectory(dir=out_dir) as tmp_dir:
-            fname = os.path.join(tmp_dir, f"{localname}.fa")
+        tmp_dir = mkdtemp(dir=out_dir)
+        fname = os.path.join(tmp_dir, f"{localname}.fa")
 
-            urlcleanup()
-            download_file(link, fname)
-            sys.stderr.write(
-                "Genome download successful, starting post processing...\n"
+        urlcleanup()
+        download_file(link, fname)
+        sys.stderr.write(
+            "Genome download successful, starting post processing...\n"
+        )
+
+        # unzip genome
+        if link.endswith(".tar.gz"):
+            tar_to_bigfile(fname, fname)
+        elif link.endswith(".gz"):
+            os.rename(fname, fname + ".gz")
+            ret = sp.check_call(["gunzip", "-f", fname])
+            if ret != 0:
+                raise Exception(f"Error gunzipping genome {fname}")
+
+        def regex_filer(_fname, _regex, _v):
+            infa = _fname + "_to_regex"
+            os.rename(_fname, infa)
+            # filter the fasta and store the output's keys
+            keys_out = filter_fasta(
+                infa, outfa=_fname, regex=_regex, v=_v, force=True
+            ).keys()
+            keys_in = Fasta(infa).keys()
+            return [k for k in keys_in if k not in keys_out]
+
+        not_included = []
+        # remove alternative regions
+        if not keep_alt:
+            not_included.extend(regex_filer(fname, "alt", True))
+
+        # keep/remove user defined regions
+        if regex:
+            not_included.extend(regex_filer(fname, regex, invert_match))
+
+        # process genome (e.g. masking)
+        if hasattr(self, "_post_process_download"):
+            self._post_process_download(
+                name=name, localname=localname, out_dir=tmp_dir, mask=mask
             )
 
-            # unzip genome
-            if link.endswith(".tar.gz"):
-                tar_to_bigfile(fname, fname)
-            elif link.endswith(".gz"):
-                os.rename(fname, fname + ".gz")
-                ret = sp.check_call(["gunzip", "-f", fname])
-                if ret != 0:
-                    raise Exception(f"Error gunzipping genome {fname}")
+        # bgzip genome if requested
+        if bgzip or config.get("bgzip"):
+            # bgzip to stdout, track progress, and output to file
+            fsize = int(os.path.getsize(fname) * 10 ** -6)
+            cmd = (
+                f"bgzip -fc {fname} | "
+                f"tqdm --bytes --desc Bgzipping {fsize}MB fasta --log ERROR | "
+                f"cat > {fname}.gz"
+            )
+            ret = sp.check_call(cmd, shell=True)
+            if ret != 0:
+                raise Exception(f"Error bgzipping {name}. Is tabix installed?")
+            fname += ".gz"
 
-            def regex_filer(_fname, _regex, _v):
-                infa = _fname + "_to_regex"
-                os.rename(_fname, infa)
-                # filter the fasta and store the output's keys
-                keys_out = filter_fasta(
-                    infa, outfa=_fname, regex=_regex, v=_v, force=True
-                ).keys()
-                keys_in = Fasta(infa).keys()
-                return [k for k in keys_in if k not in keys_out]
-
-            not_included = []
-            # remove alternative regions
-            if not keep_alt:
-                not_included.extend(regex_filer(fname, "alt", True))
-
-            # keep/remove user defined regions
-            if regex:
-                not_included.extend(regex_filer(fname, regex, invert_match))
-
-            # process genome (e.g. masking)
-            if hasattr(self, "_post_process_download"):
-                self._post_process_download(
-                    name=name, localname=localname, out_dir=tmp_dir, mask=mask
-                )
-
-            # bgzip genome if requested
-            if bgzip or config.get("bgzip"):
-                # bgzip to stdout, track progress, and output to file
-                fsize = int(os.path.getsize(fname) * 10 ** -6)
-                cmd = (
-                    f"bgzip -fc {fname} | "
-                    f"tqdm --bytes --desc Bgzipping {fsize}MB fasta --log ERROR | "
-                    f"cat > {fname}.gz"
-                )
-                ret = sp.check_call(cmd, shell=True)
-                if ret != 0:
-                    raise Exception(f"Error bgzipping {name}. Is tabix installed?")
-                fname += ".gz"
-
-            # transfer the genome from the tmpdir to the genome_dir
-            src = fname
-            dst = os.path.join(genomes_dir, localname, os.path.basename(fname))
-            shutil.move(src, dst)
+        # transfer the genome from the tmpdir to the genome_dir
+        src = fname
+        dst = os.path.join(genomes_dir, localname, os.path.basename(fname))
+        shutil.move(src, dst)
+        rm_rf(tmp_dir)
 
         sys.stderr.write("\n")
         sys.stderr.write("name: {}\n".format(name))
@@ -352,69 +354,71 @@ class ProviderBase(object):
         if not os.path.exists(out_dir):
             mkdir_p(out_dir)
 
-        # download to tmp dir. Move files on completion.
-        with TemporaryDirectory(dir=out_dir) as tmpdir:
-            ext, gz = get_file_info(annot_url)
-            annot_file = os.path.join(tmpdir, localname + ".annotation" + ext)
-            download_file(annot_url, annot_file)
+        # download to tmp dir. Move genome on completion.
+        # tmp dir is in genome_dir to prevent moving the genome between disks
+        tmp_dir = mkdtemp(dir=out_dir)
+        ext, gz = get_file_info(annot_url)
+        annot_file = os.path.join(tmp_dir, localname + ".annotation" + ext)
+        download_file(annot_url, annot_file)
 
-            # unzip input file (if needed)
-            if gz:
-                cmd = "mv {0} {1} && gunzip -f {1}"
-                sp.check_call(cmd.format(annot_file, annot_file + ".gz"), shell=True)
+        # unzip input file (if needed)
+        if gz:
+            cmd = "mv {0} {1} && gunzip -f {1}"
+            sp.check_call(cmd.format(annot_file, annot_file + ".gz"), shell=True)
 
-            # generate intermediate file (GenePred)
-            pred_file = annot_file.replace(ext, ".gp")
-            if "bed" in ext:
-                cmd = "bedToGenePred {0} {1}"
-            elif "gff" in ext:
-                cmd = "gff3ToGenePred -geneNameAttr=gene {0} {1}"
-            elif "gtf" in ext:
-                cmd = "gtfToGenePred {0} {1}"
-            elif "txt" in ext:
-                # UCSC annotations only
-                with open(annot_file) as f:
-                    cols = f.readline().split("\t")
+        # generate intermediate file (GenePred)
+        pred_file = annot_file.replace(ext, ".gp")
+        if "bed" in ext:
+            cmd = "bedToGenePred {0} {1}"
+        elif "gff" in ext:
+            cmd = "gff3ToGenePred -geneNameAttr=gene {0} {1}"
+        elif "gtf" in ext:
+            cmd = "gtfToGenePred {0} {1}"
+        elif "txt" in ext:
+            # UCSC annotations only
+            with open(annot_file) as f:
+                cols = f.readline().split("\t")
 
-                # extract the genePred format columns
-                start_col = 1
-                for i, col in enumerate(cols):
-                    if col in ["+", "-"]:
-                        start_col = i - 1
-                        break
-                end_col = start_col + 10
-                cmd = (
-                    f"""cat {{0}} | cut -f {start_col}-{end_col} | """
-                    # knownGene.txt.gz has spotty fields, this replaces non-integer fields with zeroes
-                    + """awk 'BEGIN {{FS=OFS="\t"}} !($11 ~ /^[0-9]+$/) {{$11="0"}}1' > {1}"""
-                )
-            else:
-                raise TypeError(f"file type extension {ext} not recognized!")
+            # extract the genePred format columns
+            start_col = 1
+            for i, col in enumerate(cols):
+                if col in ["+", "-"]:
+                    start_col = i - 1
+                    break
+            end_col = start_col + 10
+            cmd = (
+                f"""cat {{0}} | cut -f {start_col}-{end_col} | """
+                # knownGene.txt.gz has spotty fields, this replaces non-integer fields with zeroes
+                + """awk 'BEGIN {{FS=OFS="\t"}} !($11 ~ /^[0-9]+$/) {{$11="0"}}1' > {1}"""
+            )
+        else:
+            raise TypeError(f"file type extension {ext} not recognized!")
 
-            sp.check_call(cmd.format(annot_file, pred_file), shell=True)
+        sp.check_call(cmd.format(annot_file, pred_file), shell=True)
 
-            # generate gzipped gtf file (if required)
-            gtf_file = annot_file.replace(ext, ".gtf")
-            if "gtf" not in ext:
-                cmd = "genePredToGtf -source=genomepy file {0} {1} && gzip -f {1}"
-                sp.check_call(cmd.format(pred_file, gtf_file), shell=True)
+        # generate gzipped gtf file (if required)
+        gtf_file = annot_file.replace(ext, ".gtf")
+        if "gtf" not in ext:
+            cmd = "genePredToGtf -source=genomepy file {0} {1} && gzip -f {1}"
+            sp.check_call(cmd.format(pred_file, gtf_file), shell=True)
 
-            # generate gzipped bed file (if required)
-            bed_file = annot_file.replace(ext, ".bed")
-            if "bed" not in ext:
-                cmd = "genePredToBed {0} {1} && gzip -f {1}"
-                sp.check_call(cmd.format(pred_file, bed_file), shell=True)
+        # generate gzipped bed file (if required)
+        bed_file = annot_file.replace(ext, ".bed")
+        if "bed" not in ext:
+            cmd = "genePredToBed {0} {1} && gzip -f {1}"
+            sp.check_call(cmd.format(pred_file, bed_file), shell=True)
 
-            # if input file was gtf/bed, gzip it
-            if ext in [".gtf", ".bed"]:
-                cmd = "gzip -f {}"
-                sp.check_call(cmd.format(annot_file), shell=True)
+        # if input file was gtf/bed, gzip it
+        if ext in [".gtf", ".bed"]:
+            cmd = "gzip -f {}"
+            sp.check_call(cmd.format(annot_file), shell=True)
 
-            # transfer the files from the tmpdir to the genome_dir
-            for f in [gtf_file + ".gz", bed_file + ".gz"]:
-                src = f
-                dst = os.path.join(out_dir, os.path.basename(f))
-                shutil.move(src, dst)
+        # transfer the files from the tmpdir to the genome_dir
+        for f in [gtf_file + ".gz", bed_file + ".gz"]:
+            src = f
+            dst = os.path.join(out_dir, os.path.basename(f))
+            shutil.move(src, dst)
+        rm_rf(tmp_dir)
 
     def attempt_and_report(self, name, localname, link, genomes_dir):
         if not link:

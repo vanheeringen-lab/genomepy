@@ -17,7 +17,7 @@ from norns import exceptions
 from pyfaidx import Fasta
 from socket import timeout
 from tqdm.auto import tqdm
-from tempfile import TemporaryDirectory
+from tempfile import mkdtemp
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -208,7 +208,10 @@ def rm_rf(path):
     """ 'rm -rf' in Python """
     path = os.path.expanduser(path)
     if os.path.isfile(path):
-        os.unlink(path)
+        try:
+            os.unlink(path)
+        except OSError:  # in case of NTFS related issues
+            pass
     elif os.path.isdir(path):
         shutil.rmtree(path, ignore_errors=True)
 
@@ -315,19 +318,20 @@ def get_localname(name, localname=None):
 def tar_to_bigfile(fname, outfile):
     """Convert tar of multiple FASTAs to one file."""
     fnames = []
-    with TemporaryDirectory() as tmpdir:
-        # Extract files to temporary directory
-        with tarfile.open(fname) as tar:
-            tar.extractall(path=tmpdir)
-        for root, _, files in os.walk(tmpdir):
-            fnames += [os.path.join(root, fname) for fname in files]
+    # Extract files to temporary directory
+    tmp_dir = mkdtemp(dir=".")
+    with tarfile.open(fname) as tar:
+        tar.extractall(path=tmp_dir)
+    for root, _, files in os.walk(tmp_dir):
+        fnames += [os.path.join(root, fname) for fname in files]
 
-        # Concatenate
-        with open(outfile, "w") as out:
-            for infile in fnames:
-                for line in open(infile):
-                    out.write(line)
-                os.unlink(infile)
+    # Concatenate
+    with open(outfile, "w") as out:
+        for infile in fnames:
+            for line in open(infile):
+                out.write(line)
+
+    rm_rf(tmp_dir)
 
 
 def gunzip_and_name(fname):
@@ -593,25 +597,26 @@ def sanitize_annotation(genome):
         return
 
     # all checks passed! Generate a new set of annotation files
-    with TemporaryDirectory(dir=genome.genome_dir) as tmpdir:
-        # generate corrected gtf file
-        new_gtf_file = os.path.join(tmpdir, os.path.basename(gtf_file))
-        missing_contigs = sanitize_gtf(gtf_file, new_gtf_file, conversion_table)
+    tmp_dir = mkdtemp(dir=genome.genome_dir)
+    # generate corrected gtf file
+    new_gtf_file = os.path.join(tmp_dir, os.path.basename(gtf_file))
+    missing_contigs = sanitize_gtf(gtf_file, new_gtf_file, conversion_table)
 
-        # generate corrected bed file from the gtf
-        cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1}"
-        new_bed_file = new_gtf_file.replace("gtf", "bed")
-        sp.check_call(cmd.format(new_gtf_file, new_bed_file), shell=True)
+    # generate corrected bed file from the gtf
+    cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1}"
+    new_bed_file = new_gtf_file.replace("gtf", "bed")
+    sp.check_call(cmd.format(new_gtf_file, new_bed_file), shell=True)
 
-        # overwrite old files and gzip new files in needed
-        bed_file = gtf_file.replace("gtf", "bed")
-        for src, dst, gzip_file in zip(
-            [new_gtf_file, new_bed_file],
-            [gtf_file, bed_file],
-            [gzip_file, genome.annotation_bed_file.endswith(".gz")],
-        ):
-            os.replace(src, dst)
-            gzip_and_name(dst, gzip_file)
+    # overwrite old files and gzip new files in needed
+    bed_file = gtf_file.replace("gtf", "bed")
+    for src, dst, gzip_file in zip(
+        [new_gtf_file, new_bed_file],
+        [gtf_file, bed_file],
+        [gzip_file, genome.annotation_bed_file.endswith(".gz")],
+    ):
+        os.replace(src, dst)
+        gzip_and_name(dst, gzip_file)
+    rm_rf(tmp_dir)
 
     metadata, lines = read_readme(readme)
     metadata["sanitized annotation"] = "yes"
