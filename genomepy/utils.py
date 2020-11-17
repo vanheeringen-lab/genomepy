@@ -16,7 +16,7 @@ from glob import glob
 from norns import exceptions
 from pyfaidx import Fasta
 from socket import timeout
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from tempfile import TemporaryDirectory
 
 config = norns.config("genomepy", default="cfg/default.yaml")
