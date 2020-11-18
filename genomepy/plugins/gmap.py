@@ -1,6 +1,6 @@
 import os.path
 from shutil import move
-from tempfile import TemporaryDirectory
+from tempfile import mkdtemp
 from genomepy.plugin import Plugin
 from genomepy.utils import cmd_ok, rm_rf, run_index_cmd, gunzip_and_name, bgzip_and_name
 
@@ -22,14 +22,15 @@ class GmapPlugin(Plugin):
 
             # gmap outputs a folder named genome.name
             # its content is moved to index dir, consistent with other plugins
-            with TemporaryDirectory() as tmpdir:
-                # Create index
-                cmd = f"gmap_build -D {tmpdir} -d {genome.name} {fname}"
-                run_index_cmd("gmap", cmd)
+            tmp_dir = mkdtemp(dir=".")
+            # Create index
+            cmd = f"gmap_build -D {tmp_dir} -d {genome.name} {fname}"
+            run_index_cmd("gmap", cmd)
 
-                # Move files to index_dir
-                src = os.path.join(tmpdir, genome.name)
-                move(src, index_dir)
+            # Move files to index_dir
+            src = os.path.join(tmp_dir, genome.name)
+            move(src, index_dir)
+            rm_rf(tmp_dir)
 
             # re-zip genome if unzipped
             bgzip_and_name(fname, bgzip)
