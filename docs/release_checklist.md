@@ -3,7 +3,8 @@
 1. Create release candidate with `git flow`:
 
 ```
-$ git flow release start ${new_version} 
+new_version=0.0.0
+git flow release start ${new_version}
 ```
 
 2. Update version in `genomepy/__about__.py`
@@ -19,9 +20,13 @@ $ git flow release start ${new_version}
 
 ```
 python setup.py sdist bdist_wheel
-twine upload --repository-url https://test.pypi.org/legacy/ dist/genomepy-${version}*
 
-pip install --extra-index-url https://test.pypi.org/simple/ genomepy==${version}
+# twine must be up to date (3.3.0 works). System installed twine can interfere.
+twine upload --repository-url https://test.pypi.org/legacy/ dist/genomepy-${new_version}*
+
+# the \ is to escape the ==, so the variable ${new_version} can be called
+pip install --extra-index-url https://test.pypi.org/simple/ genomepy\==${new_version}
+
 genomepy search xenopus_tropicalis
 ```
 
