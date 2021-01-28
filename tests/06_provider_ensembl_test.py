@@ -77,10 +77,10 @@ def test_genome_info_tuple(p):
 def test_get_version(p):
     # note: this test will break every time Ensembl releases a new version
     v = p.get_version("https://rest.ensembl.org/", True)
-    assert v == "101"
+    assert v == "102"
 
     v = p.get_version("https://rest.ensembl.org/")
-    assert v == "48"
+    assert v == "49"
 
 
 @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
