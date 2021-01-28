@@ -46,7 +46,7 @@ if not skip:
         """
         p = genomepy.provider.ProviderBase.create("Ensembl")
         mask = masking if masking != "unmasked" else "none"
-        for genome in ["Amel_4.5", "WBcel235"]:
+        for genome in ["Amel_HAv3.1", "WBcel235"]:
             assert p.get_genome_download_link(genome, mask=mask)
 
     def test_ucsc_genome_download_links(masking):
