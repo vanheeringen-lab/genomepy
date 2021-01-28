@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - progress bars for downloading and bgzipping (the slow stuff)
-- spinner to indexing plugins
+- spinner to indexing plugins (the slowest stuff)
 
 ### Changed
 - removed dependency of psutils
