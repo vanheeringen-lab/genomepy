@@ -80,9 +80,7 @@ def connect_ftp_link(link, timeout=None):
     try:
         ftp = FTP(host, timeout=timeout)
     except gaierror:
-        raise GenomeDownloadError(
-            f"FTP host not found: {host}"
-        )
+        raise GenomeDownloadError(f"FTP host not found: {host}")
 
     ftp.login()
     return ftp, target
