@@ -48,7 +48,7 @@ git push --follow-tags origin develop
 
 ```
 python setup.py sdist bdist_wheel
-twine upload dist/genomepy-${version}*
+twine upload dist/genomepy-${new_version}*
 ```
 
 10. Create release on github (if it not already exists)
