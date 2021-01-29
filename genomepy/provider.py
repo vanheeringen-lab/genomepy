@@ -1055,14 +1055,10 @@ class NcbiProvider(ProviderBase):
         ------
         str with the http/ftp download link.
         """
-        genome = self.genomes[safe(name)]
+        # only soft masked genomes available. can be (un)masked in _post_process_download
+        link = self._ftp_or_html_link(name, file_suffix="_genomic.fna.gz")
 
-        # only soft masked genomes available. can be (un)masked in _post _process_download
-        link = genome["ftp_path"]
-        link = link.replace("ftp://", "https://")
-        link += "/" + link.split("/")[-1] + "_genomic.fna.gz"
-
-        if check_url(link, 2):
+        if link:
             return link
 
         raise GenomeDownloadError(
@@ -1092,10 +1088,9 @@ class NcbiProvider(ProviderBase):
             masking level: soft/hard/none, default=soft
         """
         # Create mapping of accessions to names
-        genome = self.genomes[safe(name)]
-        url = genome["ftp_path"]
-        url += f"/{url.split('/')[-1]}_assembly_report.txt"
-        url = url.replace("ftp://", "https://")
+        url = self._ftp_or_html_link(
+            name, file_suffix="_assembly_report.txt", skip_check=True
+        )
 
         tr = {}
         urlcleanup()
@@ -1148,13 +1143,21 @@ class NcbiProvider(ProviderBase):
         name : str
             Genome name
         """
-        genome = self.genomes[safe(name)]
-        link = genome["ftp_path"]
-        link = link.replace("ftp://", "https://")
-        link += "/" + link.split("/")[-1] + "_genomic.gff.gz"
+        return self._ftp_or_html_link(name, file_suffix="_genomic.gff.gz")
 
-        if check_url(link, 2):
-            return link
+    def _ftp_or_html_link(self, name, file_suffix, skip_check=False):
+        """
+        NCBI's files are accessible over FTP and HTTPS
+        Try HTTPS first and return the first functioning link
+        """
+        genome = self.genomes[safe(name)]
+        ftp_link = genome["ftp_path"]
+        html_link = ftp_link.replace("ftp://", "https://")
+        for link in [html_link, ftp_link]:
+            link += "/" + link.split("/")[-1] + file_suffix
+
+            if check_url(link, max_tries=2, time_out=10) or skip_check:
+                return link
 
 
 @register_provider("URL")

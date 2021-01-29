@@ -12,6 +12,7 @@ import gzip
 import shutil
 import time
 
+from ftplib import FTP
 from glob import glob
 from norns import exceptions
 from pyfaidx import Fasta
@@ -25,26 +26,58 @@ config = norns.config("genomepy", default="cfg/default.yaml")
 def download_file(url, filename):
     """
     Helper method handling downloading large files from `url` to `filename`.
-    Displays a progress bar with download speeds in MB/s.
     Returns a pointer to `filename`.
     """
-    chunk_size = 1024
-    r = requests.get(url, stream=True)
-    file_size = int(r.headers.get("Content-Length", 0))
-    with open(filename, "wb") as f:
-        pbar = tqdm(
+
+    def decorated_pbar(total):
+        """Displays a progress bar with download speeds in MB/s."""
+        return tqdm(
             desc="Download",
             unit_scale=True,
             unit_divisor=1024,
-            total=file_size,
+            total=total,
             unit="B",
-            leave=False,
         )
-        for chunk in r.iter_content(chunk_size=chunk_size):
-            if chunk:  # filter out keep-alive new chunks
-                pbar.update(len(chunk))
-                f.write(chunk)
+
+    def write_n_update_pbar(data):
+        pbar.update(len(data))
+        f.write(data)
+
+    if url.startswith("ftp"):
+        ftp, target = connect_ftp_link(url)
+        file_size = ftp.size(target)
+        with open(filename, "wb") as f:
+            pbar = decorated_pbar(file_size)
+
+            ftp.retrbinary(f"RETR {target}", write_n_update_pbar)
+            ftp.quit()  # logout
+
+    else:
+        r = requests.get(url, stream=True)
+        file_size = int(r.headers.get("Content-Length", 0))
+        with open(filename, "wb") as f:
+            pbar = decorated_pbar(file_size)
+
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:  # filter out keep-alive new chunks
+                    write_n_update_pbar(chunk)
+
+    pbar.close()  # stop updating pbar
     return filename
+
+
+def connect_ftp_link(link, timeout=None):
+    """
+    anonymous login to ftp
+    accepts link in the form of ftp://ftp.name.domain/... and ftp.name.domain/...
+    """
+    link = link.replace("ftp://", "")
+    host = link.split("/")[0]
+    target = link.split(host)[1]
+
+    ftp = FTP(host, timeout=timeout)
+    ftp.login()
+    return ftp, target
 
 
 def read_readme(readme):
@@ -400,7 +433,7 @@ def retry(func, tries, *args):
         try:
             answer = func(*args)
             return answer
-        except (urllib.request.URLError, timeout):
+        except (urllib.error.URLError, timeout):
             time.sleep(1)
             _try += 1
 
@@ -409,10 +442,17 @@ def check_url(url, max_tries=1, time_out=15):
     """Check if URL works. Returns bool"""
 
     def _check_url(_url=url, _time_out=time_out):
-        ret = urllib.request.urlopen(_url, timeout=_time_out)
-        # check return code for http(s) urls
-        if _url.startswith("ftp") or ret.getcode() == 200:
-            return True
+        if _url.startswith("ftp"):
+            ftp, target = connect_ftp_link(url, timeout=_time_out)
+            listing = ftp.nlst(target)
+            ftp.quit()  # logout
+            if listing:
+                return True
+        else:
+            ret = urllib.request.urlopen(_url, timeout=_time_out)
+            if ret.getcode() == 200:
+                return True
+        return False
 
     return retry(_check_url, max_tries, url, time_out)
 
