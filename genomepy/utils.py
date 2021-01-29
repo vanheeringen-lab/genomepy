@@ -16,9 +16,11 @@ from ftplib import FTP
 from glob import glob
 from norns import exceptions
 from pyfaidx import Fasta
-from socket import timeout
+from socket import gaierror, timeout
 from tqdm.auto import tqdm
 from tempfile import mkdtemp
+
+from genomepy.exceptions import GenomeDownloadError
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -75,7 +77,13 @@ def connect_ftp_link(link, timeout=None):
     host = link.split("/")[0]
     target = link.split(host)[1]
 
-    ftp = FTP(host, timeout=timeout)
+    try:
+        ftp = FTP(host, timeout=timeout)
+    except gaierror:
+        raise GenomeDownloadError(
+            f"FTP host not found: {host}"
+        )
+
     ftp.login()
     return ftp, target
 
