@@ -1,9 +1,11 @@
 """Utility functions."""
 import os
+import itertools
 import norns
 import re
 import sys
 import urllib.request
+import requests
 import subprocess as sp
 import tarfile
 import gzip
@@ -14,9 +16,35 @@ from glob import glob
 from norns import exceptions
 from pyfaidx import Fasta
 from socket import timeout
-from tempfile import TemporaryDirectory
+from tqdm.auto import tqdm
+from tempfile import mkdtemp
 
 config = norns.config("genomepy", default="cfg/default.yaml")
+
+
+def download_file(url, filename):
+    """
+    Helper method handling downloading large files from `url` to `filename`.
+    Displays a progress bar with download speeds in MB/s.
+    Returns a pointer to `filename`.
+    """
+    chunk_size = 1024
+    r = requests.get(url, stream=True)
+    file_size = int(r.headers.get("Content-Length", 0))
+    with open(filename, "wb") as f:
+        pbar = tqdm(
+            desc="Download",
+            unit_scale=True,
+            unit_divisor=1024,
+            total=file_size,
+            unit="B",
+            leave=False,
+        )
+        for chunk in r.iter_content(chunk_size=chunk_size):
+            if chunk:  # filter out keep-alive new chunks
+                pbar.update(len(chunk))
+                f.write(chunk)
+    return filename
 
 
 def read_readme(readme):
@@ -143,23 +171,21 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
     if infa == outfa:
         raise ValueError("Input and output FASTA are the same file.")
 
-    if os.path.exists(outfa):
-        if force:
-            os.unlink(outfa)
-            if os.path.exists(outfa + ".fai"):
-                os.unlink(outfa + ".fai")
-        else:
-            raise FileExistsError(
-                f"{outfa} already exists, set force to True to overwrite"
-            )
+    if force:
+        rm_rf(outfa)
+        rm_rf(f"{outfa}.fai")
 
-    filt_function = re.compile(regex).search
-    fa = Fasta(infa, filt_function=filt_function)
-    seqs = fa.keys()
-    if v:
-        original_fa = Fasta(infa)
-        seqs = [s for s in original_fa.keys() if s not in seqs]
-        fa = original_fa
+    if os.path.exists(outfa):
+        raise FileExistsError(f"{outfa} already exists, set force to True to overwrite")
+
+    fa = Fasta(infa)
+    filt_function = re.compile(regex)
+    seqs = []
+    for key in fa.keys():
+        if (filt_function.search(key) and not v) or (
+            not filt_function.search(key) and v
+        ):
+            seqs.append(key)
 
     if len(seqs) == 0:
         raise Exception("No sequences left after filtering!")
@@ -174,12 +200,20 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
 
 def mkdir_p(path):
     """ 'mkdir -p' in Python """
+    path = os.path.expanduser(path)
     os.makedirs(path, exist_ok=True)
 
 
 def rm_rf(path):
     """ 'rm -rf' in Python """
-    shutil.rmtree(path, ignore_errors=True)
+    path = os.path.expanduser(path)
+    if os.path.isfile(path):
+        try:
+            os.unlink(path)
+        except OSError:  # in case of NTFS related issues
+            pass
+    elif os.path.isdir(path):
+        shutil.rmtree(path, ignore_errors=True)
 
 
 def cmd_ok(cmd):
@@ -197,9 +231,16 @@ def cmd_ok(cmd):
 
 def run_index_cmd(name, cmd):
     """Run command, show errors if the returncode is non-zero."""
-    sys.stderr.write(f"Creating {name} index...\n")
-    # Create index
     p = sp.Popen(cmd, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
+
+    # show a spinner while the command is running
+    spinner = itertools.cycle(["-", "\\", "|", "/"])
+    while p.poll() is None:
+        sys.stdout.write(f"\rCreating {name} index... {next(spinner)}")
+        time.sleep(0.15)
+        sys.stdout.flush()
+    sys.stdout.write("\n")
+
     stdout, stderr = p.communicate()
     if p.returncode != 0:
         sys.stderr.write(f"Index for {name} failed\n")
@@ -277,19 +318,20 @@ def get_localname(name, localname=None):
 def tar_to_bigfile(fname, outfile):
     """Convert tar of multiple FASTAs to one file."""
     fnames = []
-    with TemporaryDirectory() as tmpdir:
-        # Extract files to temporary directory
-        with tarfile.open(fname) as tar:
-            tar.extractall(path=tmpdir)
-        for root, _, files in os.walk(tmpdir):
-            fnames += [os.path.join(root, fname) for fname in files]
+    # Extract files to temporary directory
+    tmp_dir = mkdtemp(dir=".")
+    with tarfile.open(fname) as tar:
+        tar.extractall(path=tmp_dir)
+    for root, _, files in os.walk(tmp_dir):
+        fnames += [os.path.join(root, fname) for fname in files]
 
-        # Concatenate
-        with open(outfile, "w") as out:
-            for infile in fnames:
-                for line in open(infile):
-                    out.write(line)
-                os.unlink(infile)
+    # Concatenate
+    with open(outfile, "w") as out:
+        for infile in fnames:
+            for line in open(infile):
+                out.write(line)
+
+    rm_rf(tmp_dir)
 
 
 def gunzip_and_name(fname):
@@ -555,25 +597,26 @@ def sanitize_annotation(genome):
         return
 
     # all checks passed! Generate a new set of annotation files
-    with TemporaryDirectory(dir=genome.genome_dir) as tmpdir:
-        # generate corrected gtf file
-        new_gtf_file = os.path.join(tmpdir, os.path.basename(gtf_file))
-        missing_contigs = sanitize_gtf(gtf_file, new_gtf_file, conversion_table)
+    tmp_dir = mkdtemp(dir=genome.genome_dir)
+    # generate corrected gtf file
+    new_gtf_file = os.path.join(tmp_dir, os.path.basename(gtf_file))
+    missing_contigs = sanitize_gtf(gtf_file, new_gtf_file, conversion_table)
 
-        # generate corrected bed file from the gtf
-        cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1}"
-        new_bed_file = new_gtf_file.replace("gtf", "bed")
-        sp.check_call(cmd.format(new_gtf_file, new_bed_file), shell=True)
+    # generate corrected bed file from the gtf
+    cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1}"
+    new_bed_file = new_gtf_file.replace("gtf", "bed")
+    sp.check_call(cmd.format(new_gtf_file, new_bed_file), shell=True)
 
-        # overwrite old files and gzip new files in needed
-        bed_file = gtf_file.replace("gtf", "bed")
-        for src, dst, gzip_file in zip(
-            [new_gtf_file, new_bed_file],
-            [gtf_file, bed_file],
-            [gzip_file, genome.annotation_bed_file.endswith(".gz")],
-        ):
-            os.replace(src, dst)
-            gzip_and_name(dst, gzip_file)
+    # overwrite old files and gzip new files in needed
+    bed_file = gtf_file.replace("gtf", "bed")
+    for src, dst, gzip_file in zip(
+        [new_gtf_file, new_bed_file],
+        [gtf_file, bed_file],
+        [gzip_file, genome.annotation_bed_file.endswith(".gz")],
+    ):
+        os.replace(src, dst)
+        gzip_and_name(dst, gzip_file)
+    rm_rf(tmp_dir)
 
     metadata, lines = read_readme(readme)
     metadata["sanitized annotation"] = "yes"

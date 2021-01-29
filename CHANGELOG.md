@@ -6,11 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.9.2] - 2021-01-28
+
 ### Added
+- progress bars for downloading and bgzipping (the slow stuff)
+- spinner to indexing plugins (the slowest stuff)
 
 ### Changed
+- removed dependency of psutils
+- added dependency of tqdm
 
 ### Fixed
+- an oopsie in the regex filter functions slowing down `install`.
+- rm_rf and mkdir_p to behave more like their namesakes.
 
 ## [0.9.1] - 2020-10-26
 
@@ -269,6 +277,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.9.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.1...0.9.2
 [0.9.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.0...0.9.1
 [0.9.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.4...0.9.0
 [0.8.4]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.3...0.8.4

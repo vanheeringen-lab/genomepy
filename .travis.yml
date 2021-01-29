@@ -22,9 +22,10 @@ before_install:
   - ./miniconda.sh -b -p $HOME/miniconda -f
   - export PATH=$HOME/miniconda/bin:$PATH
   - conda config --set always_yes yes
+  - conda install conda-forge::mamba
 
 install:
-  - conda env create -n genomepy python=$PYTHON_VERSION -f environment.yml
+  - mamba env create -n genomepy python=$PYTHON_VERSION -f environment.yml
   - source activate genomepy
   - python setup.py develop
   - python setup.py build
