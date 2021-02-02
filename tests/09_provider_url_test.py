@@ -81,16 +81,40 @@ def test_get_annotation_download_link(p):
         bad_url = "http://good_url.bad_ext"
         p.get_annotation_download_link(None, **{"to_annotation": bad_url})
 
-    bad_url = "http://good_url_but_doesnt_exist.gtf"
-    link = p.get_annotation_download_link(None, **{"to_annotation": bad_url})
-    assert link is None
 
+def test_search_url_for_annotations(p):
+    url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_genome.fa.gz"
+    links = p.search_url_for_annotations(url, "XENTR_9.1")
+    expected = [
+        "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_Xenbase.gtf",
+        "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_GCA.gff3",
+        "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_GCF.gff3",
+        "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_Xenbase.gff3",
+    ]
+    assert len(links) == 4
+    assert links == expected
 
-def test_search_url_for_annotation(p):
-    url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XT9_1.fa.gz"
-    link = p.search_url_for_annotation(url)
-    expected = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_Xenbase.gtf"
-    assert link == expected
+    url = (
+        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/"
+        "GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.fna.gz"
+    )
+    links = p.search_url_for_annotations(url, "GCF_000027325.1_ASM2732v1")
+    expected = [
+        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/"
+        + "GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gtf.gz",
+        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/"
+        + "GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz",
+    ]
+    assert len(links) == 2
+    assert links == expected
+
+    # no annot file
+    with pytest.raises(FileNotFoundError):
+        url = (
+            "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/fasta/"
+            "arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.gz"
+        )
+        p.search_url_for_annotations(url, "Arabidopsis_thaliana")
 
 
 @pytest.mark.skipif(not travis or not linux, reason="slow")
