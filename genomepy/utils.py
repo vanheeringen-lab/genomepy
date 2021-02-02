@@ -4,19 +4,20 @@ import itertools
 import norns
 import re
 import sys
+import urllib.error
 import urllib.request
 import requests
 import subprocess as sp
 import tarfile
 import gzip
 import shutil
+import socket
 import time
 
 from ftplib import FTP
 from glob import glob
 from norns import exceptions
 from pyfaidx import Fasta
-from socket import gaierror, timeout
 from tqdm.auto import tqdm
 from tempfile import mkdtemp
 
@@ -79,7 +80,7 @@ def connect_ftp_link(link, timeout=None):
 
     try:
         ftp = FTP(host, timeout=timeout)
-    except gaierror:
+    except socket.gaierror:
         raise GenomeDownloadError(f"FTP host not found: {host}")
 
     ftp.login()
@@ -341,16 +342,29 @@ def get_localname(name, localname=None):
         return safe(name)
     else:
         # try to get the name from the url
-        name = name[name.rfind("/") + 1 :]
-        name = safe(name[: name.find(".fa")])
-        # remove potential unwanted text from the name (ex: _genomes or .est_)
-        unwanted = ["genome", "sequence", "cds", "pep", "transcript", "EST"]
-        name = re.sub(
-            r"(\.?_?){}(s?\.?_?)".format("(s?\.?_?)|".join(unwanted)),  # noqa: W605
-            "",
-            name,
-            flags=re.IGNORECASE,
-        )
+        name = name.split("/")[-1]  # remove path
+        name = name.replace(".gz", "")  # remove .gz
+        name = os.path.splitext(name)[0]  # remove .fa/.fna/.fasta etc
+        name = safe(name)  # remove spaces
+        # remove unwanted substrings from the name (ex: _genomes or .est_)
+        unwanted = [
+            "genome",
+            "genomic",
+            "sequence",
+            "dna",
+            "cds",
+            "pep",
+            "transcript",
+            "EST",
+            "toplevel",
+            "primary",
+            "assembly",
+        ]
+        spacers = "(-?_?\.?)"  # noqa: W605
+        for substring in unwanted:
+            name = re.sub(
+                f"{spacers}{substring}(s?){spacers}", "", name, flags=re.IGNORECASE
+            )
         return name
 
 
@@ -439,28 +453,28 @@ def retry(func, tries, *args):
         try:
             answer = func(*args)
             return answer
-        except (urllib.error.URLError, timeout):
+        except (urllib.error.URLError, socket.timeout):
             time.sleep(1)
             _try += 1
 
 
-def check_url(url, max_tries=1, time_out=15):
+def check_url(url, max_tries=1, timeout=15):
     """Check if URL works. Returns bool"""
 
-    def _check_url(_url=url, _time_out=time_out):
+    def _check_url(_url, _timeout):
         if _url.startswith("ftp"):
-            ftp, target = connect_ftp_link(url, timeout=_time_out)
+            ftp, target = connect_ftp_link(_url, timeout=_timeout)
             listing = ftp.nlst(target)
             ftp.quit()  # logout
             if listing:
                 return True
         else:
-            ret = urllib.request.urlopen(_url, timeout=_time_out)
+            ret = urllib.request.urlopen(_url, timeout=_timeout)
             if ret.getcode() == 200:
                 return True
         return False
 
-    return retry(_check_url, max_tries, url, time_out)
+    return retry(_check_url, max_tries, url, timeout)
 
 
 def read_url(url):
