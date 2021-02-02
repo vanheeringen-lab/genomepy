@@ -49,7 +49,7 @@ class Genome(Fasta):
         # file paths
         self.genome_file = self.filename
         self.genome_dir = os.path.dirname(self.filename)
-        self.index_file = self.filename + ".fai"
+        self.index_file = self.genome_file + ".fai"
         self.sizes_file = self.genome_file + ".sizes"
         self.gaps_file = os.path.join(self.genome_dir, self.name + ".gaps.bed")
         self.readme_file = os.path.join(self.genome_dir, "README.txt")
