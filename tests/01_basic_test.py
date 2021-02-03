@@ -23,15 +23,17 @@ def test_flake8_formatting():
     assert ret == 0
 
 
-# @pytest.mark.skipif(travis, reason="clear the slate")
+@pytest.mark.skipif(not travis, reason="it works locally all right")
 def test_clean():
+    # test moved from 10 to prevent errors in parallel tests
     genomepy.clean()
 
     my_cache_dir = os.path.join(
         user_cache_dir("genomepy"), genomepy.__about__.__version__
     )
-    assert not os.listdir(my_cache_dir)
-    genomepy.clean()
+    assert os.path.exists(my_cache_dir)  # dir exists
+    assert not os.listdir(my_cache_dir)  # contains 0 pickles
+    genomepy.clean()  # no errors when cache dir is empty
 
 
 def test_import():

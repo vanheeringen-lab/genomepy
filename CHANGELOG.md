@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.9.3] - 2021-02-03
+
+### Changed
+- URL provider got better at searching for annotation files
+- NCBI provider will fall back on FTP if HTTPS is offline
+
+### Fixed
+- genomes from ftp locations not working
+
 ## [0.9.2] - 2021-01-28
 
 ### Added
@@ -277,6 +286,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.9.3]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.2...0.9.3
 [0.9.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.1...0.9.2
 [0.9.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.0...0.9.1
 [0.9.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.4...0.9.0

@@ -371,7 +371,7 @@ class ProviderBase(object):
         elif "gff" in ext:
             cmd = "gff3ToGenePred -geneNameAttr=gene {0} {1}"
         elif "gtf" in ext:
-            cmd = "gtfToGenePred {0} {1}"
+            cmd = "gtfToGenePred -ignoreGroupsWithoutExons {0} {1}"
         elif "txt" in ext:
             # UCSC annotations only
             with open(annot_file) as f:
@@ -524,7 +524,7 @@ class ProviderBase(object):
         term = safe(str(term))
         if term.startswith("GCA_") and self.name != "NCBI":
             for row in self._search_accessions(term):
-                yield (row)
+                yield row
 
         elif is_number(term):
             for name in genomes:
@@ -1055,14 +1055,10 @@ class NcbiProvider(ProviderBase):
         ------
         str with the http/ftp download link.
         """
-        genome = self.genomes[safe(name)]
+        # only soft masked genomes available. can be (un)masked in _post_process_download
+        link = self._ftp_or_html_link(name, file_suffix="_genomic.fna.gz")
 
-        # only soft masked genomes available. can be (un)masked in _post _process_download
-        link = genome["ftp_path"]
-        link = link.replace("ftp://", "https://")
-        link += "/" + link.split("/")[-1] + "_genomic.fna.gz"
-
-        if check_url(link, 2):
+        if link:
             return link
 
         raise GenomeDownloadError(
@@ -1092,10 +1088,9 @@ class NcbiProvider(ProviderBase):
             masking level: soft/hard/none, default=soft
         """
         # Create mapping of accessions to names
-        genome = self.genomes[safe(name)]
-        url = genome["ftp_path"]
-        url += f"/{url.split('/')[-1]}_assembly_report.txt"
-        url = url.replace("ftp://", "https://")
+        url = self._ftp_or_html_link(
+            name, file_suffix="_assembly_report.txt", skip_check=True
+        )
 
         tr = {}
         urlcleanup()
@@ -1148,13 +1143,21 @@ class NcbiProvider(ProviderBase):
         name : str
             Genome name
         """
-        genome = self.genomes[safe(name)]
-        link = genome["ftp_path"]
-        link = link.replace("ftp://", "https://")
-        link += "/" + link.split("/")[-1] + "_genomic.gff.gz"
+        return self._ftp_or_html_link(name, file_suffix="_genomic.gff.gz")
 
-        if check_url(link, 2):
-            return link
+    def _ftp_or_html_link(self, name, file_suffix, skip_check=False):
+        """
+        NCBI's files are accessible over FTP and HTTPS
+        Try HTTPS first and return the first functioning link
+        """
+        genome = self.genomes[safe(name)]
+        ftp_link = genome["ftp_path"]
+        html_link = ftp_link.replace("ftp://", "https://")
+        for link in [html_link, ftp_link]:
+            link += "/" + link.split("/")[-1] + file_suffix
+
+            if skip_check or check_url(link, max_tries=2, timeout=10):
+                return link
 
 
 @register_provider("URL")
@@ -1188,6 +1191,9 @@ class UrlProvider(ProviderBase):
         same as if no genomes were found at the other providers"""
         yield from ()
 
+    def _genome_info_tuple(self, name):
+        return tuple()
+
     def get_genome_download_link(self, url, mask=None, **kwargs):
         return url
 
@@ -1203,55 +1209,41 @@ class UrlProvider(ProviderBase):
                     "Only (gzipped) gtf, gff and bed files are supported.\n"
                 )
 
-            if check_url(link):
-                return link
+            return link
 
     @staticmethod
-    def search_url_for_annotation(url):
-        """Attempts to find a gtf or gff3 file in the same location as the genome url"""
+    def search_url_for_annotations(url, name):
+        """Attempts to find gtf or gff3 files in the same location as the genome url"""
         urldir = os.path.dirname(url)
         sys.stderr.write(
-            "You have requested gene annotation to be downloaded.\n"
+            "You have requested the gene annotation to be downloaded.\n"
             "Genomepy will check the remote directory:\n"
             f"{urldir} for annotation files...\n"
         )
 
-        # try to find a GTF or GFF3 file
-        name = get_localname(url)
-        with urlopen(urldir) as f:
-            for urlline in f.readlines():
-                urlstr = str(urlline)
-                if any(
-                    substring in urlstr.lower() for substring in [".gtf", name + ".gff"]
-                ):
-                    break
+        def fuzzy_annotation_search(search_name, search_list):
+            """Returns all files containing both name and an annotation extension"""
+            hits = []
+            for ext in ["gtf", "gff"]:
+                # .*? = non greedy filler. 3? = optional 3 (for gff3). (\.gz)? = optional .gz
+                expr = f"{search_name}.*?\.{ext}3?(\.gz)?"  # noqa: W605
+                for line in search_list:
+                    hit = re.search(expr, line, flags=re.IGNORECASE)
+                    if hit:
+                        hits.append(hit[0])
+            return hits
 
-        # retrieve the filename from the HTML line
-        fname = ""
-        for split in re.split('>|<|><|/|"', urlstr):
-            if split.lower().endswith(
-                (
-                    ".gtf",
-                    ".gtf.gz",
-                    name + ".gff",
-                    name + ".gff.gz",
-                    name + ".gff3",
-                    name + ".gff3.gz",
-                )
-            ):
-                fname = split
-                break
-        else:
+        # try to find a GTF or GFF3 file
+        dirty_list = [str(line) for line in urlopen(urldir).readlines()]
+        fnames = fuzzy_annotation_search(name, dirty_list)
+        if not fnames:
             raise FileNotFoundError(
                 "Could not parse the remote directory. "
                 "Please supply a URL using --url-to-annotation.\n"
             )
 
-        # set variables for downloading
-        link = urldir + "/" + fname
-
-        if check_url(link):
-            return link
+        links = [urldir + "/" + fname for fname in fnames]
+        return links
 
     def download_annotation(self, url, genomes_dir=None, localname=None, **kwargs):
         """
@@ -1279,8 +1271,20 @@ class UrlProvider(ProviderBase):
         genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
 
         if kwargs.get("to_annotation"):
-            link = self.get_annotation_download_link(None, **kwargs)
+            links = [self.get_annotation_download_link(None, **kwargs)]
         else:
-            link = self.search_url_for_annotation(url)
+            # can return multiple possible hits
+            links = self.search_url_for_annotations(url, name)
 
-        self.attempt_and_report(name, localname, link, genomes_dir)
+        for link in links:
+            try:
+                self.attempt_and_report(name, localname, link, genomes_dir)
+                break
+            except GenomeDownloadError as e:
+                if not link == links[-1]:
+                    sys.stdout.write(
+                        "\nOne of the potential annotations was incompatible with genomepy."
+                        + "\nAttempting another...\n\n"
+                    )
+                    continue
+                return e
