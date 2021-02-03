@@ -176,7 +176,7 @@ def test__provider_selection():
     assert "EnsemblProvider" in str(p)
 
 
-@pytest.mark.skipif(not travis or not linux, reason="slow")
+@pytest.mark.skipif(not travis, reason="slow")
 def test_install_genome():
     localname = "my_genome"
     genomepy.functions.install_genome(
@@ -210,9 +210,7 @@ def test_install_genome():
     assert metadata["name"] == localname
 
 
-@pytest.mark.skipif(
-    not travis or not linux, reason="only works if a genome was installed"
-)
+@pytest.mark.skipif(not travis, reason="a genome must be installed")
 def test_generate_exports():
     # already used, but we had to install a genome first to test it
     exports = genomepy.functions.generate_exports()
@@ -238,9 +236,7 @@ def test_generate_exports():
     genomepy.utils.rm_rf(os.path.join(gd, "testgenome"))
 
 
-@pytest.mark.skipif(
-    not travis or not linux, reason="only works if a genome was installed"
-)
+@pytest.mark.skipif(not travis, reason="a genome must be installed")
 def test_generate_env():
     # already used, but we had to install a genome first to test it
     config_dir = str(user_config_dir("genomepy"))

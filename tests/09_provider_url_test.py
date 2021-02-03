@@ -111,16 +111,19 @@ def test_search_url_for_annotations(p):
     # no annot file
     with pytest.raises(FileNotFoundError):
         url = (
-            "ftp://ftp.ensemblgenomes.org/pub/plants/release-46/fasta/"
-            "arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.gz"
+            "http://ftp.ensembl.org/pub/release-100/fasta/marmota_marmota_marmota/"
+            "dna/Marmota_marmota_marmota.marMar2.1.dna.toplevel.fa.gz"
         )
-        p.search_url_for_annotations(url, "Arabidopsis_thaliana")
+        p.search_url_for_annotations(url, "Marmota_marmota_marmota.marMar2.1")
 
 
-@pytest.mark.skipif(not travis or not linux, reason="slow")
+@pytest.mark.skipif(not travis, reason="slow")
 def test_download_annotation(p):
     out_dir = os.getcwd()
-    annot_url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_Xenbase.gtf"
+    annot_url = (
+        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/"
+        "GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz"
+    )
     localname = "my_annot"
     with TemporaryDirectory(dir=out_dir) as tmpdir:
         p.download_annotation(

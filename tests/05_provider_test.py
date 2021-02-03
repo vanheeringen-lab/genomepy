@@ -103,7 +103,7 @@ def test_assembly_accession(p):
     assert accession.startswith("GCA_000004335")
 
 
-@pytest.mark.skipif(not travis or not linux, reason="slow")
+@pytest.mark.skipif(not travis, reason="slow")
 def test_download_genome(
     p,
     name="sacCer3",
@@ -146,7 +146,7 @@ def test_get_annotation_download_link(p):
         p.get_annotation_download_link(None)
 
 
-@pytest.mark.skipif(not travis or not linux, reason="slow")
+@pytest.mark.skipif(not travis, reason="slow")
 def test_download_and_generate_annotation(p):
     out_dir = os.getcwd()
     localname = "my_annot"
@@ -194,7 +194,7 @@ def test_attempt_and_report(p, capsys):
     )
 
 
-@pytest.mark.skipif(not travis or not linux, reason="slow")
+@pytest.mark.skipif(not travis, reason="slow")
 def test_download_annotation(p):
     out_dir = os.getcwd()
     localname = "my_annot"
