@@ -9,7 +9,8 @@ env:
   global:
     - CC_TEST_REPORTER_ID=951f438ac8a0fa93801ff0bf69922df59fe03800bf7ea8ab77a3c26cda444979
   jobs:
-    - PYTHON_VERSION: "3.6"
+    - PYTHON_VERSION=3.6
+    - PYTHON_VERSION=3.9
 
 before_install:
   # install miniconda
@@ -32,8 +33,13 @@ install:
 
 before_script:
   # install codeclimate test coverage
-  - if [[ "$TRAVIS_OS_NAME" != "linux" ]]; then
-      wget -O cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64;
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+#      wget -O cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64;
+#      chmod +x ./cc-test-reporter;
+#      ./cc-test-reporter before-build;
+#    fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      wget -O cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-darwin-amd64;
       chmod +x ./cc-test-reporter;
       ./cc-test-reporter before-build;
     fi
@@ -47,6 +53,6 @@ script:
 
 after_script:
   # send the coverage data to Code Climate
-  - if [[ "$TRAVIS_OS_NAME" != "linux" ]]; then
+  - if [ -f ./cc-test-reporter ]; then
       ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT;
     fi
