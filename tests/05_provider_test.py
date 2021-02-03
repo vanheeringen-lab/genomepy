@@ -103,7 +103,7 @@ def test_assembly_accession(p):
     assert accession.startswith("GCA_000004335")
 
 
-@pytest.mark.skipif(not travis or not linux, reason="slow")
+@pytest.mark.skipif(not travis, reason="slow")
 def test_download_genome(
     p,
     name="sacCer3",
@@ -146,7 +146,9 @@ def test_get_annotation_download_link(p):
         p.get_annotation_download_link(None)
 
 
-@pytest.mark.skipif(not travis or not linux, reason="slow")
+@pytest.mark.skipif(
+    not travis or (travis and linux), reason="FTP does not work on Travis-Linux"
+)
 def test_download_and_generate_annotation(p):
     out_dir = os.getcwd()
     localname = "my_annot"
@@ -157,8 +159,9 @@ def test_download_and_generate_annotation(p):
             genomes_dir=tmpdir, annot_url=annot_url, localname=localname
         )
 
+    # FTP used here to test FTP file downloading
     annot_url = (
-        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/"
+        "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/"
         + "GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz"
     )
     with TemporaryDirectory(dir=out_dir) as tmpdir:
@@ -194,7 +197,7 @@ def test_attempt_and_report(p, capsys):
     )
 
 
-@pytest.mark.skipif(not travis or not linux, reason="slow")
+@pytest.mark.skipif(not travis, reason="slow")
 def test_download_annotation(p):
     out_dir = os.getcwd()
     localname = "my_annot"

@@ -153,7 +153,7 @@ def test_bwa(genome, threads=2):
     assert os.path.exists(fname)
 
 
-@pytest.mark.skipif(not travis or not linux, reason="slow")
+@pytest.mark.skipif(not travis, reason="slow")
 def test_gmap(genome, threads=2):
     """Create gmap index."""
     p = GmapPlugin()
@@ -206,7 +206,7 @@ def test_minimap2(genome, threads=2):
     assert os.path.exists(fname)
 
 
-@pytest.mark.skipif(not travis or not linux, reason="slow")
+@pytest.mark.skipif(not travis, reason="slow")
 def test_star(capsys, genome, threads=2):
     """Create star index."""
     p = StarPlugin()

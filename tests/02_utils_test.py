@@ -185,10 +185,18 @@ def test_get_localname(name="XENTR_9.1", localname="my genome"):
     result = genomepy.utils.get_localname(name=name)
     assert result == genomepy.utils.safe(name)
 
-    # URL input
+    # URL input (simple)
     url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_genome.fa.gz"
     result = genomepy.utils.get_localname(name=url)
     assert result == name
+
+    # URL input (complex)
+    url2 = (
+        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/"
+        "GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.fna.gz"
+    )
+    result = genomepy.utils.get_localname(name=url2)
+    assert result == "GCF_000027325.1_ASM2732v1"
 
 
 def test_tar_to_bigfile():
