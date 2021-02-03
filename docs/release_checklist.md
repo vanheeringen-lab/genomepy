@@ -27,7 +27,15 @@ twine upload --repository-url https://test.pypi.org/legacy/ dist/genomepy-${new_
 # the \ is to escape the ==, so the variable ${new_version} can be called
 pip install --extra-index-url https://test.pypi.org/simple/ genomepy\==${new_version}
 
-genomepy search xenopus_tropicalis
+# tests
+genomepy --version;
+genomepy --help;
+genomepy install --help;
+genomepy clean
+genomepy search xenopus_tropicalis;
+genomepy install TAIR10 -af -p ensembl;
+genomepy install sacCer3 -af -p ucsc;
+genomepy install ASM2732v1 -af -p ncbi;
 ```
 
 6. Finish the release:
@@ -57,8 +65,14 @@ twine upload dist/genomepy-${new_version}*
 * Download the tarball from the github release (`.tar.gz`). 
 * Attach downloaded tarball to release as binary (this way the download count get tracked).
 
+11a. Update bioconda package
 
-11. Update bioconda package
+* wait for the bioconda bot to create a PR
+* update dependencies in the bioconda recipe.yaml if needed
+* approve the PR
+* comment: @bioconda-bot please merge
+
+11b. Update bioconda package
 
 * fork bioconda/bioconda-recipes
 * follow the steps in the [docs](https://bioconda.github.io/contributor/workflow.html)
