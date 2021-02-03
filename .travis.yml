@@ -32,7 +32,7 @@ install:
 
 before_script:
   # install codeclimate test coverage
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+  - if [[ "$TRAVIS_OS_NAME" != "linux" ]]; then
       wget -O cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64;
       chmod +x ./cc-test-reporter;
       ./cc-test-reporter before-build;
@@ -47,6 +47,6 @@ script:
 
 after_script:
   # send the coverage data to Code Climate
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+  - if [[ "$TRAVIS_OS_NAME" != "linux" ]]; then
       ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT;
     fi
