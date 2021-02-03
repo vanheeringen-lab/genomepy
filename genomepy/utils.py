@@ -14,7 +14,7 @@ import shutil
 import socket
 import time
 
-from ftplib import FTP
+from ftplib import FTP, all_errors
 from glob import glob
 from norns import exceptions
 from pyfaidx import Fasta
@@ -464,7 +464,10 @@ def check_url(url, max_tries=1, timeout=15):
     def _check_url(_url, _timeout):
         if _url.startswith("ftp"):
             ftp, target = connect_ftp_link(_url, timeout=_timeout)
-            listing = ftp.nlst(target)
+            try:
+                listing = ftp.nlst(target)
+            except all_errors:
+                listing = []
             ftp.quit()  # logout
             if listing:
                 return True
