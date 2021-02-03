@@ -1156,7 +1156,7 @@ class NcbiProvider(ProviderBase):
         for link in [html_link, ftp_link]:
             link += "/" + link.split("/")[-1] + file_suffix
 
-            if check_url(link, max_tries=2, timeout=10) or skip_check:
+            if skip_check or check_url(link, max_tries=2, timeout=10):
                 return link
 
 
