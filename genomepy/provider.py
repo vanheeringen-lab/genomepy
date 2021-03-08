@@ -13,6 +13,7 @@ from urllib.request import urlopen, urlcleanup
 from bucketcache import Bucket
 from pyfaidx import Fasta
 from appdirs import user_cache_dir
+from tqdm.auto import tqdm
 
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.utils import (
@@ -1005,22 +1006,34 @@ class NcbiProvider(ProviderBase):
             "Downloading assembly summaries from NCBI, this will take a while...\n"
         )
 
+        def load_summary(url):
+            """
+            lazy loading of the url so we can parse while downloading
+            """
+            for row in urlopen(url):
+                yield row
+
         genomes = {}
         # order is important as asm_name can repeat (overwriting the older name)
         names = [
+            "assembly_summary_genbank_historical.txt",
             "assembly_summary_refseq_historical.txt",
             "assembly_summary_genbank.txt",
             "assembly_summary_refseq.txt",
         ]
         for fname in names:
             urlcleanup()
-            with urlopen(os.path.join(assembly_url, fname)) as response:
-                lines = response.read().decode("utf-8").splitlines()
-            header = lines[1].strip("# ").split("\t")
-            for line in lines[2:]:
-                vals = line.strip("# ").split("\t")
-                # overwrites older asm_names
-                genomes[safe(vals[15])] = dict(zip(header, vals))
+
+            lines = load_summary(f"{assembly_url}/{fname}")
+            _ = next(lines)  # line 0 = comment
+            header = (
+                next(lines).decode("utf-8").strip("# ").strip("\n").split("\t")
+            )  # line 1 = header
+            for line in tqdm(lines, desc=fname[17:-4], unit_scale=1, unit=" genomes"):
+                line = line.decode("utf-8").strip("\n").split("\t")
+                if line[19] != "na":  # ftp_path must exist
+                    name = safe(line[15])  # overwrites older asm_names
+                    genomes[name] = dict(zip(header, line))
         return genomes
 
     def _genome_info_tuple(self, name):
