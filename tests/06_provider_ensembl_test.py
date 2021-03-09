@@ -76,12 +76,12 @@ def test_genome_info_tuple(p):
 
 def test_get_version(p):
     v = p.get_version("https://rest.ensembl.org/", True)
-    assert isinstance(v, int)
-    assert v > 100
+    assert v.isnumeric()
+    assert int(v) > 100
 
     v = p.get_version("https://rest.ensembl.org/")
-    assert isinstance(v, int)
-    assert v > 48
+    assert v.isnumeric()
+    assert int(v) > 48
 
 
 @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
