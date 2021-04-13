@@ -1,5 +1,5 @@
 import genomepy
-import gzip
+import genomepy.utils
 import os
 import pytest
 
@@ -10,11 +10,10 @@ from platform import system
 skip = False
 if not skip:
 
-    def validate_gzipped_gtf(fname):
+    def validate_gtf(fname):
         assert os.path.exists(fname)
-        with gzip.open(fname, "r") as f:
+        with open(fname, "r") as f:
             for line in f:
-                line = line.decode()
                 if line.startswith("#"):
                     continue
                 vals = line.split("\t")
@@ -22,11 +21,10 @@ if not skip:
                 int(vals[3]), int(vals[4])
                 break
 
-    def validate_gzipped_bed(fname):
+    def validate_bed(fname):
         assert os.path.exists(fname)
-        with gzip.open(fname, "r") as f:
+        with open(fname, "r") as f:
             for line in f:
-                line = line.decode()
                 if line.startswith("#"):
                     continue
                 vals = line.split("\t")
@@ -42,32 +40,26 @@ if not skip:
     def localname(request):
         return request.param
 
-    @pytest.fixture(scope="module", params=["unzipped", "bgzipped"])
-    def bgzip(request):
-        return request.param
-
     def test_install_genome_options(
-        force, localname, bgzip, genome="ASM2732v1", provider="NCBI"
+        force, localname, genome="ASM2732v1", provider="NCBI"
     ):
         """Test force, localname and bgzip"""
         tmp = mkdtemp()
         force = False if force == "no-overwrite" else True
         localname = None if localname == "original_name" else "My_localname"
-        bgzip = False if bgzip == "unzipped" else True
 
         genomepy.install_genome(
             genome,
             provider,
             genomes_dir=tmp,
             localname=localname,
-            bgzip=bgzip,
             force=False,
         )
+        sleep(1)
 
         # force test
-        ext = ".fa.gz" if bgzip else ".fa"
         name = genomepy.utils.get_localname(genome, localname)
-        path = os.path.join(tmp, name, name + ext)
+        path = os.path.join(tmp, name, name + ".fa")
 
         t0 = os.path.getmtime(path)
         # OSX rounds down getmtime to the second
@@ -78,9 +70,9 @@ if not skip:
             provider,
             genomes_dir=tmp,
             localname=localname,
-            bgzip=bgzip,
             force=force,
         )
+        sleep(1)
 
         t1 = os.path.getmtime(path)
         assert t0 != t1 if force else t0 == t1
@@ -110,12 +102,13 @@ if not skip:
             skip_sanitizing=True,
             force=False,
         )
+        sleep(1)
 
-        gtf = os.path.join(tmp, name, name + ".annotation.gtf.gz")
-        validate_gzipped_gtf(gtf)
+        gtf = os.path.join(tmp, name, name + ".annotation.gtf")
+        validate_gtf(gtf)
 
-        bed = os.path.join(tmp, name, name + ".annotation.bed.gz")
-        validate_gzipped_bed(bed)
+        bed = os.path.join(tmp, name, name + ".annotation.bed")
+        validate_bed(bed)
 
         # force test
         t0 = os.path.getmtime(gtf)
@@ -131,6 +124,7 @@ if not skip:
             skip_sanitizing=True,
             force=force,
         )
+        sleep(1)
 
         t1 = os.path.getmtime(gtf)
         assert t0 != t1 if force else t0 == t1

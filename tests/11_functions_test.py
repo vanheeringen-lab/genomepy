@@ -1,4 +1,5 @@
 import genomepy
+import genomepy.utils
 import genomepy.argparse_support
 import pytest
 import os
@@ -176,11 +177,11 @@ def test__provider_selection():
     assert "EnsemblProvider" in str(p)
 
 
-@pytest.mark.skipif(not travis, reason="slow")
+# TODO: restore-->   @pytest.mark.skipif(not travis, reason="slow")
 def test_install_genome():
     localname = "my_genome"
     genomepy.functions.install_genome(
-        name="fr3",
+        name="dm3",
         provider="UCSC",
         genomes_dir=None,
         localname=localname,
@@ -196,7 +197,7 @@ def test_install_genome():
     gaps_file = os.path.join(genomes_dir, localname, localname + ".gaps.bed")
     assert os.path.exists(gaps_file)
     annotation_file = os.path.join(
-        genomes_dir, localname, localname + ".annotation.gtf.gz"
+        genomes_dir, localname, localname + ".annotation.gtf"
     )
     assert os.path.exists(annotation_file)
 
@@ -210,7 +211,7 @@ def test_install_genome():
     assert metadata["name"] == localname
 
 
-@pytest.mark.skipif(not travis, reason="a genome must be installed")
+# TODO: restore-->   @pytest.mark.skipif(not travis, reason="a genome must be installed")
 def test_generate_exports():
     # already used, but we had to install a genome first to test it
     exports = genomepy.functions.generate_exports()
@@ -218,25 +219,27 @@ def test_generate_exports():
     # check if my_genome was installed in the last test
     assert any([x for x in exports if x.startswith("export MY_GENOME")])
 
-    # add genome that throws a FastaIndexingError
+    # add genome that throws an IndexNotFoundError
     gd = genomepy.utils.get_genomes_dir(None, True)
-    os.makedirs(os.path.join(gd, "testgenome"), exist_ok=True)
-    path = os.path.join(gd, "testgenome", "testgenome.fa")
+    name = "testgenome"
+    os.makedirs(os.path.join(gd, name), exist_ok=True)
+    path = os.path.join(gd, name, f"{name}.fa")
     with open(path, "w") as fa:
-        fa.write("forbidden characters")
+        fa.write("genome without index")
     exports = genomepy.functions.generate_exports()
     assert f"export TESTGENOME={path}" not in exports
 
     # add genome that works
     with open(path, "w") as fa:
         fa.write(">chr1\nallowed characters")
+    genomepy.Genome(name, gd)  # create index
     exports = genomepy.functions.generate_exports()
     assert f"export TESTGENOME={path}" in exports
 
     genomepy.utils.rm_rf(os.path.join(gd, "testgenome"))
 
 
-@pytest.mark.skipif(not travis, reason="a genome must be installed")
+# TODO: restore-->   @pytest.mark.skipif(not travis, reason="a genome must be installed")
 def test_generate_env():
     # already used, but we had to install a genome first to test it
     config_dir = str(user_config_dir("genomepy"))

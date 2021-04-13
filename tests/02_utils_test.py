@@ -1,9 +1,11 @@
 import filecmp
 import genomepy
+import genomepy.utils
 import pytest
 import os
 import shutil
 import urllib.request
+import urllib.error
 import subprocess as sp
 
 from tempfile import NamedTemporaryFile
@@ -49,6 +51,27 @@ def test_write_readme():
     os.unlink(readme)
 
 
+def test_update_readme():
+    wd = os.getcwd()
+    readme = os.path.join(wd, "README.txt")
+
+    # new data added
+    updated_metadata = {"key": "value"}
+    extra_lines = ["let's add some text to the lines section"]
+    genomepy.utils.update_readme(readme, updated_metadata, extra_lines)
+    metadata, lines = genomepy.utils.read_readme(readme)
+    assert metadata["key"] == updated_metadata["key"]
+    assert extra_lines[0] in lines
+
+    # new data overwrites
+    updated_metadata = {"key": "value2"}
+    genomepy.utils.update_readme(readme, updated_metadata)
+    metadata, lines = genomepy.utils.read_readme(readme)
+    assert metadata["key"] == updated_metadata["key"]
+
+    os.unlink(readme)
+
+
 def test_generate_gap_bed(fname="tests/data/gap.fa", outname="tests/data/gap.bed"):
     tmp = NamedTemporaryFile().name
     genomepy.utils.generate_gap_bed(fname, tmp)
@@ -71,19 +94,10 @@ def test_generate_fa_sizes(infa="tests/data/gap.fa"):
 def test_filter_fasta(fname="tests/data/regexp/regexp.fa"):
     tmpfa = NamedTemporaryFile(suffix=".fa").name
 
-    # input is output error
-    with pytest.raises(ValueError):
-        genomepy.utils.filter_fasta(fname, fname)
-
-    # output exists error
-    with pytest.raises(FileExistsError):
-        existing_file = "tests/data/gap.fa"
-        genomepy.utils.filter_fasta(fname, existing_file)
-
     # no sequences left after filtering
     with pytest.raises(Exception):
         regex = "missing_chromosome"
-        genomepy.utils.filter_fasta(fname, tmpfa, regex=regex)
+        genomepy.utils.filter_fasta(fname, regex=regex)
 
     # function proper
     regexps = [
@@ -94,10 +108,15 @@ def test_filter_fasta(fname="tests/data/regexp/regexp.fa"):
         ("chr.*", 4, 13),
     ]
     for regex, match, no_match in regexps:
-        fa = genomepy.utils.filter_fasta(fname, tmpfa, regex=regex, v=False, force=True)
-        assert len(fa.keys()) == match, regex
-        fa = genomepy.utils.filter_fasta(fname, tmpfa, regex=regex, v=True, force=True)
-        assert len(fa.keys()) == no_match, regex
+        keys = genomepy.utils.filter_fasta(
+            fname, regex=regex, invert_match=False, outfa=tmpfa
+        ).keys()
+        assert len(keys) == match, regex
+
+        keys = genomepy.utils.filter_fasta(
+            fname, regex=regex, invert_match=True, outfa=tmpfa
+        ).keys()
+        assert len(keys) == no_match, regex
 
 
 def test_mkdir_p(path="./tests/dir1/dir2/nestled_dir"):
@@ -257,7 +276,7 @@ def test_retry(capsys):
 
     # handles URLErrors
     def _offline_func():
-        raise urllib.request.URLError("this function is offline")
+        raise urllib.error.URLError("this function is offline")
 
     assert genomepy.utils.retry(_offline_func, 1) is None
 
@@ -281,142 +300,3 @@ def test_get_file_info(fname="tests/data/small_genome.fa.gz"):
 
     ext, gz = genomepy.utils.get_file_info(fname[:-2] + "fai")
     assert ext == ".fai" and not gz
-
-
-def test_match_contigs():
-    sizes_file = "tests/data/small_genome.fa.sizes"
-    gtf_file = "tests/data/small_genome.annotation.gtf"
-
-    # generate sizes file
-    with open(sizes_file, "w") as f:
-        f.write("""chr2\t1234""")
-
-    # generate empty gtf file
-    with open(gtf_file, "w") as f:
-        f.write("# skip this line\n")
-    match = genomepy.utils.match_contigs(gtf_file, sizes_file)
-    assert match is None
-
-    # generate matching gtf file
-    with open(gtf_file, "w") as f:
-        f.write("# skip this line\n")
-        f.write("""chr2\tvanHeeringen-lab""")
-    match = genomepy.utils.match_contigs(gtf_file, sizes_file)
-    assert match
-
-    # generate mismatching gtf file
-    with open(gtf_file, "w") as f:
-        f.write("# skip this line\n")
-        f.write("""2\tvanHeeringen-lab""")
-    match = genomepy.utils.match_contigs(gtf_file, sizes_file)
-    assert match is False
-
-
-def test_contig_pos():
-    gtf_file = "tests/data/small_genome.annotation.gtf"
-    genome_file = "tests/data/contig_pos.fa"
-
-    # generate gtf file
-    with open(gtf_file, "w") as f:
-        f.write("chr2\tvanHeeringen-lab\n" "chr3\tvanHeeringen-lab\n")
-
-    # generate non-matching genome file
-    with open(genome_file, "w") as f:
-        f.write(">no matches\n")
-    element_pos = genomepy.utils.contig_pos(gtf_file, genome_file)
-    assert element_pos == -1
-
-    # generate matching genome file
-    with open(genome_file, "w") as f:
-        f.write(">chr3 this matches\n")
-    element_pos = genomepy.utils.contig_pos(gtf_file, genome_file)
-    assert element_pos == 0
-
-    # generate different matching genome file
-    with open(genome_file, "w") as f:
-        f.write(">this matches chr2\n")
-    element_pos = genomepy.utils.contig_pos(gtf_file, genome_file)
-    assert element_pos == 2
-
-    os.unlink(genome_file)
-
-
-def test_contig_conversion():
-    genome_file = "tests/data/contig_pos.fa"
-
-    # generate genome file
-    with open(genome_file, "w") as f:
-        f.write(">this matches chr2\n" ">that matches chr3\n")
-    ids, duplicate_contigs = genomepy.utils.contig_conversion(genome_file, 2)
-    assert not duplicate_contigs
-    assert ids["chr2"] == "this"
-    assert ids["chr3"] == "that"
-
-    # assume "matches" is the contig name
-    ids, duplicate_contigs = genomepy.utils.contig_conversion(genome_file, 1)
-    assert "matches" in duplicate_contigs
-    assert ids["matches"] == "that"
-
-    os.unlink(genome_file)
-
-
-def test_sanitize_gtf():
-    old_gtf = "tests/data/old_gtf.gtf"
-    new_gtf = "tests/data/new_gtf.gtf"
-    ids = {"1": "chr1", "2": "chr2"}  # replace 1,2 with chr1, chr2
-
-    with open(old_gtf, "w") as gtf:
-        gtf.write("1\tgene1\n" "2\tgene2\n" "3\tgene3\n")
-    result = open(old_gtf).read()
-    assert result == "1\tgene1\n2\tgene2\n3\tgene3\n"
-
-    missing_contigs = genomepy.utils.sanitize_gtf(old_gtf, new_gtf, ids)
-    result = open(new_gtf).read()
-    assert result == "chr1\tgene1\nchr2\tgene2\n3\tgene3\n"
-    assert missing_contigs == ["3"]
-
-    os.unlink(old_gtf)
-    os.unlink(new_gtf)
-
-
-def test_sanitize_annotation(genome="tests/data/small_genome.fa.gz"):
-    class TestGenome:
-        def __init__(self, filename=genome):
-            self.filename = filename
-            self.genome_dir = os.path.dirname(genome)
-            self.annotation_gtf_file = genome[:-5] + "annotation.gtf.gz"
-            self.annotation_bed_file = genome[:-5] + "annotation.bed.gz"
-            self.sizes_file = genome[:-2] + "sizes"
-            self.readme_file = os.path.join(self.genome_dir, "README.txt")
-
-    # generate sizes file (already tested)
-    sp.check_call(f"gunzip -f {genome}", shell=True)
-    sizes_file = genome[:-2] + "sizes"
-    genomepy.utils.generate_fa_sizes(genome[:-3], sizes_file)
-    sp.check_call(f"bgzip -f {genome[:-3]}", shell=True)
-
-    # generate gtf file
-    gtf_file = genome[:-5] + "annotation.gtf"
-    with open(gtf_file, "w") as f:
-        f.write("# skip this line\n")
-        f.write(
-            """chr2\tvanHeeringen-lab\tgene\t2\t22\t.\t+\t.\tgene_id "vH-1"; transcript_id "vH-1.1";\n"""
-        )
-    sp.check_call(f"gzip -f {gtf_file}", shell=True)
-
-    # generate bed file
-    bed_file = gtf_file.replace("gtf", "bed.gz")
-    sp.check_call(f"touch {bed_file}", shell=True)
-
-    # function proper
-    g = TestGenome(genome)
-    genomepy.utils.sanitize_annotation(g)
-
-    sp.check_call(f"gunzip -f {gtf_file}.gz", shell=True)
-    result = open(gtf_file).read()
-    assert result.startswith("# skip this line\nchr2\tvanHeeringen-lab")
-
-    # cleanup
-    os.unlink(sizes_file)
-    os.unlink(gtf_file)
-    os.unlink(bed_file)

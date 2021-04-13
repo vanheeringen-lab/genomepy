@@ -13,7 +13,7 @@ import gzip
 import shutil
 import socket
 import time
-
+from typing import Optional
 from ftplib import FTP, all_errors
 from glob import glob
 from norns import exceptions
@@ -148,6 +148,15 @@ def write_readme(readme, metadata, lines):
             print(line, file=f)
 
 
+def update_readme(readme, updated_metadata: dict = None, extra_lines: list = None):
+    metadata, lines = read_readme(readme)
+    if updated_metadata:
+        metadata = {**metadata, **updated_metadata}
+    if extra_lines:
+        lines = lines + extra_lines
+    write_readme(readme, metadata, lines)
+
+
 def generate_gap_bed(fname, outname):
     """Generate a BED file with gap locations.
 
@@ -183,7 +192,23 @@ def generate_fa_sizes(fname, outname):
             sizes.write(f"{seqname}\t{len(seq)}\n")
 
 
-def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
+def _fa_to_file(fasta: Fasta, contigs: list, filepath: str):
+    tmp_dir = mkdtemp(dir=os.path.dirname(filepath))
+    tmpfa = os.path.join(tmp_dir, "regex.fa")
+    with open(tmpfa, "w") as out:
+        for chrom in contigs:
+            out.write(f">{fasta[chrom].name}\n")
+            out.write(f"{fasta[chrom][:].seq}\n")
+    os.rename(tmpfa, filepath)
+    rm_rf(tmp_dir)
+
+
+def filter_fasta(
+    infa: str,
+    regex: str = ".*",
+    invert_match: Optional[bool] = False,
+    outfa: str = None,
+) -> Fasta:
     """Filter fasta file based on regex.
 
     Parameters
@@ -191,50 +216,30 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
     infa : str
         Filename of input fasta file.
 
-    outfa : str
-        Filename of output fasta file. Cannot be the same as infa.
+    outfa : str, optional
+        Filename of output fasta file.
+        Overwrites infa if left blank.
 
     regex : str, optional
         Regular expression used for selecting sequences.
+        Matches everything if left blank.
 
-    v : bool, optional
-        If set to True, select all sequence *not* matching regex.
-
-    force : bool, optional
-        If set to True, overwrite outfa if it already exists.
+    invert_match : bool, optional
+        Select all sequence *not* matching regex if set.
 
     Returns
     -------
         fasta : Fasta instance
             pyfaidx Fasta instance of newly created file
     """
-    if infa == outfa:
-        raise ValueError("Input and output FASTA are the same file.")
-
-    if force:
-        rm_rf(outfa)
-        rm_rf(f"{outfa}.fai")
-
-    if os.path.exists(outfa):
-        raise FileExistsError(f"{outfa} already exists, set force to True to overwrite")
-
     fa = Fasta(infa)
-    filt_function = re.compile(regex)
-    seqs = []
-    for key in fa.keys():
-        if (filt_function.search(key) and not v) or (
-            not filt_function.search(key) and v
-        ):
-            seqs.append(key)
-
+    seqs = [k for k in fa.keys() if bool(re.search(regex, k)) is not invert_match]
     if len(seqs) == 0:
         raise Exception("No sequences left after filtering!")
 
-    with open(outfa, "w") as out:
-        for chrom in seqs:
-            out.write(f">{fa[chrom].name}\n")
-            out.write(f"{fa[chrom][:].seq}\n")
-
+    outfa = outfa if outfa else infa
+    _fa_to_file(fa, seqs, outfa)
+    rm_rf(f"{infa}.fai")  # old index
     return Fasta(outfa)
 
 
@@ -308,7 +313,7 @@ def glob_ext_files(dirname, ext="fa"):
     return [f for f in fnames if f.endswith((ext, f"{ext}.gz"))]
 
 
-def get_genomes_dir(genomes_dir=None, check_exist=True):
+def get_genomes_dir(genomes_dir: str = None, check_exist: Optional[bool] = True) -> str:
     """import genomes_dir if none is given, and check validity"""
     if not genomes_dir:
         # backwards compatibility for "genome_dir" (this fixes issue #87)
@@ -372,7 +377,7 @@ def tar_to_bigfile(fname, outfile):
     """Convert tar of multiple FASTAs to one file."""
     fnames = []
     # Extract files to temporary directory
-    tmp_dir = mkdtemp(dir=".")
+    tmp_dir = mkdtemp(dir=os.path.dirname(outfile))
     with tarfile.open(fname) as tar:
         tar.extractall(path=tmp_dir)
     for root, _, files in os.walk(tmp_dir):
@@ -387,7 +392,7 @@ def tar_to_bigfile(fname, outfile):
     rm_rf(tmp_dir)
 
 
-def gunzip_and_name(fname):
+def gunzip_and_name(fname: str) -> (str, bool):
     """
     Gunzips the file if gzipped (also works on bgzipped files)
     Returns up-to-date filename and if it was gunzipped
@@ -502,221 +507,3 @@ def get_file_info(fname):
         fname = fname[:-3]
     split = os.path.splitext(fname)
     return split[1], gz
-
-
-# def match_contigs(gtf_file, sizes_file):
-#     """Check if genome and annotation have (properly) matching contig names"""
-#     # grab the first non-comment line and extract the first element (contig name)
-#     with open(gtf_file, "r") as gtf:
-#         for line in gtf:
-#             if not line.startswith("#"):
-#                 gtf_id = line.split("\t")[0]
-#                 break
-#         else:
-#             sys.stderr.write(f"No genes found in {gtf_file}. Skipping sanitizing.")
-#             return None  # cannot continue
-#
-#     # check if contig name matches the first element in any of the genome headers
-#     with open(sizes_file, "r") as sizes:
-#         for line in sizes:
-#             fa_id = line.split("\t")[0]
-#             if fa_id == gtf_id:
-#                 return True  # contig names match
-#
-#     return False  # contig names do not match
-
-
-def contig_pos(gtf_file, genome_file):
-    """
-    Determine which element in the fasta header contains the
-    location identifiers used in the annotation.gtf
-
-    returns the position of the matching element, -1 for no match.
-    """
-    # all headers in the file should be formatted the same. so take the first
-    header = []
-    with open(genome_file, "r") as fa:
-        for line in fa:
-            if line.startswith(">"):
-                header = line.strip(">\n").split(" ")
-                break
-
-    # go over the whole gtf until a match is found
-    element_pos = -1
-    with open(gtf_file, "r") as gtf:
-        for line in gtf:
-            if not line.startswith("#"):
-                loc_id = line.strip().split("\t")[0]
-                try:
-                    element_pos = header.index(loc_id)
-                    break
-                except ValueError:
-                    continue
-
-    return element_pos
-
-
-def contig_conversion(genome_file, element_pos):
-    """
-    build a conversion table
-    returns a list of duplicate contig names
-    """
-    conversion_table = {}
-    duplicate_contigs = []
-    with open(genome_file, "r") as fa:
-        for line in fa:
-            if line.startswith(">"):
-                line = line.strip(">\n").split(" ")
-                if line[element_pos] in conversion_table:
-                    duplicate_contigs.append(line[element_pos])
-                conversion_table[line[element_pos]] = line[0]
-    return conversion_table, list(set(duplicate_contigs))
-
-
-def sanitize_gtf(old_gtf_file, new_gtf_file, conversion_table):
-    """
-    create a new gtf file with renamed contigs based on the conversion table
-    returns a list of contigs not present in the genome
-    """
-    missing_contigs = []
-    with open(old_gtf_file, "r") as oldgtf, open(new_gtf_file, "w") as newgtf:
-        for line in oldgtf:
-            line = line.split("\t")
-            try:
-                line[0] = conversion_table[line[0]]
-            except KeyError:
-                missing_contigs.append(line[0])
-                continue  # drop contigs missing in the fasta
-            line = "\t".join(line)
-            newgtf.write(line)
-    return list(set(missing_contigs))
-
-
-def filter_gtf(old_gtf_file, new_gtf_file, sizes_file):
-    """
-    filter the gtf for contigs in the genome (sizes file)
-    """
-    fa_contig_names = []
-    with open(sizes_file, "r") as sizes:
-        for line in sizes:
-            fa_contig_names.append(line.split("\t")[0])
-
-    missing_contigs = []
-    with open(old_gtf_file, "r") as oldgtf, open(new_gtf_file, "w") as newgtf:
-        for line in oldgtf:
-            if not line.startswith("#"):
-                gtf_contig_name = line.split("\t")[0]
-                if gtf_contig_name in fa_contig_names:
-                    newgtf.write(line)
-                else:
-                    missing_contigs.append(gtf_contig_name)
-
-    return list(set(missing_contigs))
-
-
-def sanitize_annotation(genome):
-    """
-    Matches the contig names in annotation.gtf to those in genome.fa.
-
-    The fasta and gtf formats dictate the 1st field in the genome header and gtf should match.
-    In some cases the genome.fa has multiple names per header, the 1st field not matching those in the gtf.
-    If this occurs a conversion table can be made to rename the sequence names in either file.
-
-    This script changes the names in the gtf to match those in the genome.fa, if needed.
-    A bed format annotation file is made from the gtf afterward.
-    """
-
-    def cleanup(reason, error=False):
-        """rezip gtf if needed, update readme and give an error message"""
-        gzip_and_name(gtf_file, gzip_file)
-
-        _metadata, _lines = read_readme(readme)
-        _metadata["sanitized annotation"] = reason
-        write_readme(readme, _metadata, _lines)
-
-        if error:
-            sys.stderr.write(
-                "\nWARNING: Cannot correct annotation files automatically!\n"
-                + "Leaving original version in place.\n"
-            )
-
-    readme = genome.readme_file
-    gtf_file = genome.annotation_gtf_file
-    gtf_file, gzip_file = gunzip_and_name(gtf_file)
-    genome_file, bgzip = gunzip_and_name(genome.filename)
-
-    # try to find the (gtf) contig position in genome header
-    element_pos = contig_pos(gtf_file, genome_file)
-    if element_pos == -1:
-        # cannot fix names, cannot filter
-        bgzip_and_name(genome_file, bgzip)
-        cleanup("not possible", error=True)
-        return
-
-    elif element_pos >= 1:
-        # can fix names, can filter
-
-        # build a conversion table and check for duplicate contigs
-        conversion_table, duplicate_contigs = contig_conversion(
-            genome_file, element_pos
-        )
-        # re-zip genome if it was unzipped earlier
-        bgzip_and_name(genome_file, bgzip)
-
-        # clean up if sanitizing is not possible
-        if duplicate_contigs:
-            sys.stderr.write(
-                "\nGenome contains duplicate contig names!\n"
-                "The following contigs were found duplicate found: "
-                f"{', '.join(duplicate_contigs)}.\n"
-            )
-            cleanup("not possible", error=True)
-            return
-
-        # all checks passed! Generate a new set of annotation files
-        tmp_dir = mkdtemp(dir=genome.genome_dir)
-        # generate corrected gtf file
-        new_gtf_file = os.path.join(tmp_dir, os.path.basename(gtf_file))
-        missing_contigs = sanitize_gtf(gtf_file, new_gtf_file, conversion_table)
-
-    else:
-        # no need to fix names, can filter
-
-        # re-zip genome if it was unzipped earlier
-        bgzip_and_name(genome_file, bgzip)
-
-        # all checks passed! Generate a new set of annotation files
-        tmp_dir = mkdtemp(dir=genome.genome_dir)
-        # generate corrected gtf file
-        new_gtf_file = os.path.join(tmp_dir, os.path.basename(gtf_file))
-        missing_contigs = filter_gtf(gtf_file, new_gtf_file, genome.sizes_file)
-
-        if not missing_contigs:
-            cleanup("not required", error=False)
-            return
-
-    # generate corrected bed file from the gtf
-    cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1}"
-    new_bed_file = new_gtf_file.replace("gtf", "bed")
-    sp.check_call(cmd.format(new_gtf_file, new_bed_file), shell=True)
-
-    # overwrite old files and gzip new files in needed
-    bed_file = gtf_file.replace("gtf", "bed")
-    for src, dst, gzip_file in zip(
-        [new_gtf_file, new_bed_file],
-        [gtf_file, bed_file],
-        [gzip_file, genome.annotation_bed_file.endswith(".gz")],
-    ):
-        os.replace(src, dst)
-        gzip_and_name(dst, gzip_file)
-    rm_rf(tmp_dir)
-
-    metadata, lines = read_readme(readme)
-    metadata["sanitized annotation"] = "yes"
-    if missing_contigs:
-        lines += [
-            "",
-            "The following contigs were not found in the genome:",
-            f"{', '.join(missing_contigs)}.",
-        ]
-    write_readme(readme, metadata, lines)
