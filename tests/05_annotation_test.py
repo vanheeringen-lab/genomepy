@@ -1,3 +1,6 @@
+import os
+from tempfile import mkdtemp
+
 import genomepy
 import genomepy.utils
 
@@ -262,18 +265,21 @@ def test_bed_from_gtf():
 
 
 def test_sanitize(capsys):
-    bed_file = "tests/data/data.annotation.bed"
-    gtf_file = "tests/data/data.annotation.gtf"
-    genome_file = "tests/data/data.fa"
-    sizes_file = "tests/data/data.fa.sizes"
+    tmp_dir = mkdtemp(dir="tests")
+    genome = "testgenome"
+    genomepy.utils.mkdir_p(os.path.join(tmp_dir, genome))
+
+    bed_file = os.path.join(tmp_dir, genome, genome + ".annotation.bed")
+    gtf_file = os.path.join(tmp_dir, genome, genome + ".annotation.gtf")
+    genome_file = os.path.join(tmp_dir, genome, genome + ".fa")
+    sizes_file = os.path.join(tmp_dir, genome, genome + ".fa.sizes")
 
     # no genome
     with open(bed_file, "w") as f:
         f.write("\n")
     with open(gtf_file, "w") as f:
         f.write("\n")
-    genomepy.utils.rm_rf(genome_file)
-    a = genomepy.annotation.Annotation("data", "tests")
+    a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize()
     captured = capsys.readouterr().err.strip()
     assert captured == "A genome is required for sanitizing!"
@@ -291,7 +297,7 @@ def test_sanitize(capsys):
         f.write(">chr1\n")
         f.write("ATCGATCG\n")
     genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
-    a = genomepy.annotation.Annotation("data", "tests")
+    a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize()
 
     with open(bed_file) as f:
@@ -316,7 +322,7 @@ def test_sanitize(capsys):
         f.write(">chr1\n")
         f.write("ATCGATCG\n")
     genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
-    a = genomepy.annotation.Annotation("data", "tests")
+    a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize(filter_contigs=False)
 
     with open(gtf_file) as f:
@@ -337,7 +343,7 @@ def test_sanitize(capsys):
         f.write(">not_chr1\n")
         f.write("ATCGATCG\n")
     genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
-    a = genomepy.annotation.Annotation("data", "tests")
+    a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize()
     metadata, _ = genomepy.utils.read_readme(a.readme_file)
     assert metadata["sanitized annotation"] == "not possible"
@@ -357,7 +363,7 @@ def test_sanitize(capsys):
         f.write(">this2 matches chr1\n")
         f.write("ATCGATCG\n")
     genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
-    a = genomepy.annotation.Annotation("data", "tests")
+    a = genomepy.annotation.Annotation(genome, tmp_dir)
     # assert a._is_conforming() is False
     #
     # i = a._conforming_index()
@@ -382,9 +388,4 @@ def test_sanitize(capsys):
         lines = f.readlines()
     assert lines == ["this2\t0\t100\tGP_1234.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n"]
 
-    genomepy.utils.rm_rf(a.annotation_gtf_file)
-    genomepy.utils.rm_rf(a.annotation_bed_file)
-    genomepy.utils.rm_rf(a.genome_file)
-    genomepy.utils.rm_rf(a.index_file)
-    genomepy.utils.rm_rf(a.sizes_file)
-    genomepy.utils.rm_rf(a.readme_file)
+    genomepy.utils.rm_rf(tmp_dir)
