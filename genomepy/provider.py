@@ -216,8 +216,7 @@ class ProviderBase(object):
         localname = get_localname(name, localname)
         genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
         out_dir = os.path.join(genomes_dir, localname)
-        if not os.path.exists(out_dir):
-            mkdir_p(out_dir)
+        mkdir_p(out_dir)
 
         sys.stderr.write(
             f"Downloading genome from {self.name}.\nTarget URL: {link}...\n"
@@ -270,8 +269,7 @@ class ProviderBase(object):
             "annotation url": "na",
             "date": time.strftime("%Y-%m-%d %H:%M:%S"),
         }
-        lines = []
-        write_readme(readme, metadata, lines)
+        write_readme(readme, metadata)
 
     def get_annotation_download_link(self, name, **kwargs):
         raise NotImplementedError()
@@ -282,8 +280,7 @@ class ProviderBase(object):
 
         # create output directory if missing
         out_dir = os.path.join(genomes_dir, localname)
-        if not os.path.exists(out_dir):
-            mkdir_p(out_dir)
+        mkdir_p(out_dir)
 
         # download to tmp dir. Move genome on completion.
         # tmp dir is in genome_dir to prevent moving the genome between disks

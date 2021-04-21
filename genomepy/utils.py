@@ -13,7 +13,7 @@ import gzip
 import shutil
 import socket
 import time
-from typing import Optional
+from typing import Optional, Tuple
 from ftplib import FTP, all_errors
 from glob import glob
 from norns import exceptions
@@ -87,7 +87,7 @@ def connect_ftp_link(link, timeout=None):
     return ftp, target
 
 
-def read_readme(readme):
+def read_readme(readme: str) -> Tuple[dict, list]:
     """
     parse readme file
 
@@ -139,16 +139,17 @@ def read_readme(readme):
     return metadata, lines
 
 
-def write_readme(readme, metadata, lines):
+def write_readme(readme: str, metadata: dict, lines: list = None):
     """Create a new readme with updated information"""
     with open(readme, "w") as f:
         for k, v in metadata.items():
             print(f"{k}: {v}", file=f)
-        for line in lines:
-            print(line, file=f)
+        if lines:
+            for line in lines:
+                print(line, file=f)
 
 
-def update_readme(readme, updated_metadata: dict = None, extra_lines: list = None):
+def update_readme(readme: str, updated_metadata: dict = None, extra_lines: list = None):
     metadata, lines = read_readme(readme)
     if updated_metadata:
         metadata = {**metadata, **updated_metadata}
