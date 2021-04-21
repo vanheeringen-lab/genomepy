@@ -92,12 +92,10 @@ def test_generate_fa_sizes(infa="tests/data/gap.fa"):
 
 
 def test_filter_fasta(fname="tests/data/regexp/regexp.fa"):
-    tmpfa = NamedTemporaryFile(suffix=".fa").name
-
     # no sequences left after filtering
-    with pytest.raises(Exception):
+    with pytest.raises(Exception), NamedTemporaryFile(suffix=".fa") as tmpfa:
         regex = "missing_chromosome"
-        genomepy.utils.filter_fasta(fname, regex=regex)
+        genomepy.utils.filter_fasta(fname, regex=regex, outfa=tmpfa.name)
 
     # function proper
     regexps = [
@@ -108,15 +106,17 @@ def test_filter_fasta(fname="tests/data/regexp/regexp.fa"):
         ("chr.*", 4, 13),
     ]
     for regex, match, no_match in regexps:
-        keys = genomepy.utils.filter_fasta(
-            fname, regex=regex, invert_match=False, outfa=tmpfa
-        ).keys()
-        assert len(keys) == match, regex
+        with NamedTemporaryFile(suffix=".fa") as tmpfa:
+            keys = genomepy.utils.filter_fasta(
+                fname, regex=regex, invert_match=False, outfa=tmpfa.name
+            ).keys()
+            assert len(keys) == match, regex
 
-        keys = genomepy.utils.filter_fasta(
-            fname, regex=regex, invert_match=True, outfa=tmpfa
-        ).keys()
-        assert len(keys) == no_match, regex
+        with NamedTemporaryFile(suffix=".fa") as tmpfa:
+            keys = genomepy.utils.filter_fasta(
+                fname, regex=regex, invert_match=True, outfa=tmpfa.name
+            ).keys()
+            assert len(keys) == no_match, regex
 
 
 def test_mkdir_p(path="./tests/dir1/dir2/nestled_dir"):

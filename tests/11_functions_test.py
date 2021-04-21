@@ -177,7 +177,7 @@ def test__provider_selection():
     assert "EnsemblProvider" in str(p)
 
 
-# TODO: restore-->   @pytest.mark.skipif(not travis, reason="slow")
+@pytest.mark.skipif(not travis, reason="slow")
 def test_install_genome():
     localname = "my_genome"
     genomepy.functions.install_genome(
@@ -201,17 +201,8 @@ def test_install_genome():
     )
     assert os.path.exists(annotation_file)
 
-    readme = os.path.join(os.path.dirname(genome_file), "README.txt")
-    with open(readme) as f:
-        metadata = {}
-        for line in f.readlines():
-            vals = line.strip().split(":")
-            metadata[vals[0].strip()] = (":".join(vals[1:])).strip()
 
-    assert metadata["name"] == localname
-
-
-# TODO: restore-->   @pytest.mark.skipif(not travis, reason="a genome must be installed")
+@pytest.mark.skipif(not travis, reason="a genome must be installed")
 def test_generate_exports():
     # already used, but we had to install a genome first to test it
     exports = genomepy.functions.generate_exports()
@@ -239,7 +230,7 @@ def test_generate_exports():
     genomepy.utils.rm_rf(os.path.join(gd, "testgenome"))
 
 
-# TODO: restore-->   @pytest.mark.skipif(not travis, reason="a genome must be installed")
+@pytest.mark.skipif(not travis, reason="a genome must be installed")
 def test_generate_env():
     # already used, but we had to install a genome first to test it
     config_dir = str(user_config_dir("genomepy"))
@@ -337,6 +328,6 @@ def test_argparse_plugin():
     with pytest.raises(SystemExit) as pytest_wrapped_e:
         parser = argparse.ArgumentParser()
         parser.add_argument("-g", dest="genome", action=action())
-        args = parser.parse_args(["-g", "non_existing"])
+        _ = parser.parse_args(["-g", "non_existing"])
     assert pytest_wrapped_e.type == SystemExit
     assert pytest_wrapped_e.value.code == 1
