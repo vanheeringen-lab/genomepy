@@ -312,6 +312,10 @@ def test_sanitize(capsys):
     assert metadata["sanitized annotation"] == "contigs filtered"
 
     # conforming, filter off
+    genomepy.utils.rm_rf(os.path.join(tmp_dir, genome))
+    genomepy.utils.mkdir_p(os.path.join(tmp_dir, genome))
+    with open(bed_file, "w") as f:
+        f.write("chr1\t0\t100\n")
     with open(gtf_file, "w") as f:
         f.write(
             "chr1\tgenomepy\texon\t1\t100\t.\t+\t.\t"
@@ -335,6 +339,8 @@ def test_sanitize(capsys):
     assert metadata["sanitized annotation"] == "not required and not filtered"
 
     # not conforming, no fix possible
+    genomepy.utils.rm_rf(os.path.join(tmp_dir, genome))
+    genomepy.utils.mkdir_p(os.path.join(tmp_dir, genome))
     with open(bed_file, "w") as f:
         f.write("chr1\t0\t100\n")
     with open(gtf_file, "w") as f:
@@ -349,6 +355,8 @@ def test_sanitize(capsys):
     assert metadata["sanitized annotation"] == "not possible"
 
     # not conforming, fix possible
+    genomepy.utils.rm_rf(os.path.join(tmp_dir, genome))
+    genomepy.utils.mkdir_p(os.path.join(tmp_dir, genome))
     with open(bed_file, "w") as f:
         f.write("chr1\t0\t100\n")
     with open(gtf_file, "w") as f:
