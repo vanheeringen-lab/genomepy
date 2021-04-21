@@ -137,7 +137,6 @@ class Annotation:
         return a list of discarded contigs.
         """
         missing_contigs = []
-        genome_contigs = self.genome_contigs
         tmp_dir = mkdtemp(dir=self.genome_dir)
         filtered_gtf_file = os.path.join(
             tmp_dir, os.path.basename(self.annotation_gtf_file)
@@ -148,7 +147,7 @@ class Annotation:
             for line in old:
                 if not line.startswith("#"):
                     gtf_contig_name = line.split("\t")[0]
-                    if gtf_contig_name in genome_contigs:
+                    if gtf_contig_name in self.genome_contigs:
                         new.write(line)
                     else:
                         missing_contigs.append(gtf_contig_name)
@@ -162,10 +161,8 @@ class Annotation:
         Check if genome and annotation contigs conform.
         Returns bool.
         """
-        genome_contigs = self.genome_contigs
-        annotation_contigs = self.annotation_contigs
-        conforming = bool(set(genome_contigs) & set(annotation_contigs))
-        return conforming
+        overlapping_contigs = set(self.genome_contigs) & set(self.annotation_contigs)
+        return bool(overlapping_contigs)
 
     def _conforming_index(self) -> int:
         """
@@ -290,32 +287,28 @@ class Annotation:
             sys.stderr.write("A genome is required for sanitizing!")
             return
 
+        status = "not required"
+        extra_lines = []
         if self._is_conforming():
-            contigs_filtered_out = (
-                self.filter_genome_contigs() if filter_contigs else []
-            )
-            if contigs_filtered_out:
-                self.bed_from_gtf()
-                update_readme(
-                    self.readme_file,
-                    {"sanitized annotation": "contigs filtered"},
-                    [
+            if filter_contigs is False:
+                status = "not required and not filtered"
+            else:
+                contigs_filtered_out = self.filter_genome_contigs()
+                if contigs_filtered_out:
+                    self.bed_from_gtf()
+                    status = "contigs filtered"
+                    extra_lines = [
                         "",
                         "The following contigs were filtered out of the gene annotation:",
                         f"{', '.join(contigs_filtered_out)}",
-                    ],
-                )
-            else:
-                status = (
-                    "not required"
-                    if filter_contigs
-                    else "not required and not filtered"
-                )
-                update_readme(self.readme_file, {"sanitized annotation": status})
+                    ]
+            update_readme(
+                self.readme_file, {"sanitized annotation": status}, extra_lines
+            )
             return
 
         matching_contig_index = self._conforming_index()
-        if not self._is_conformable(matching_contig_index):
+        if self._is_conformable(matching_contig_index) is False:
             # example not possible: ASM2732v1
             update_readme(self.readme_file, {"sanitized annotation": "not possible"})
             return
@@ -332,23 +325,20 @@ class Annotation:
             )
         missing_contigs = self._conform_gtf(conversion_dict, filter_contigs)
         self.bed_from_gtf()
-
-        # update documentation
         status = "sanitized"
-        extra_lines = []
-        if missing_contigs and filter_contigs:
-            status = "sanitized and filtered"
+        if missing_contigs:
             extra_lines = [
                 "",
                 "The following contigs were filtered out of the gene annotation:",
                 f"{', '.join(missing_contigs)}",
             ]
-        elif missing_contigs and not filter_contigs:
-            extra_lines = [
-                "",
-                "The following contigs could not be sanitized in the gene annotation, and were kept as-is:",
-                f"{', '.join(missing_contigs)}",
-            ]
+            if filter_contigs:
+                status = "sanitized and filtered"
+            else:
+                extra_lines[1] = (
+                    "The following contigs could not be sanitized"
+                    " in the gene annotation, and were kept as-is:"
+                )
             sys.stderr.write(" ".join(extra_lines))
         update_readme(self.readme_file, {"sanitized annotation": status}, extra_lines)
 
