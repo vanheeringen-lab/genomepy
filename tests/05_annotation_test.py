@@ -272,6 +272,7 @@ def test_sanitize(capsys):
         f.write("\n")
     with open(gtf_file, "w") as f:
         f.write("\n")
+    genomepy.utils.rm_rf(genome_file)
     a = genomepy.annotation.Annotation("data", "tests")
     a.sanitize()
     captured = capsys.readouterr().err.strip()
