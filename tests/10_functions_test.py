@@ -65,18 +65,13 @@ def test_manage_config(capsys):
     assert captured.startswith("bgzip: false")
 
 
-def test__online_providers():
-    ops = genomepy.functions._online_providers()
+def test_online_providers():
+    ops = genomepy.functions.online_providers()
     assert len(ops) == 4
-    assert "genomepy.provider.EnsemblProvider" in str(ops[0])
+    assert "genomepy.provider.UrlProvider" in str(ops[-1])
 
-
-def test__providers():
-    ops = genomepy.functions._providers("Ensembl")
+    ops = genomepy.functions.online_providers("Ensembl")
     assert len(ops) == 1
-
-    ops = genomepy.functions._providers()
-    assert len(ops) == 4
     assert "genomepy.provider.EnsemblProvider" in str(ops[0])
 
 
