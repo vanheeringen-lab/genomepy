@@ -90,8 +90,9 @@ def test_search_url_for_annotations(p):
         "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_GCA.gff3",
         "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_GCF.gff3",
         "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_Xenbase.gff3",
+        "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_Xenbase_longest.gff3",
     ]
-    assert len(links) == 4
+    assert len(links) == 5
     assert links == expected
 
     url = (
