@@ -279,7 +279,7 @@ def test_sanitize(capsys):
         'chr1\tgenomepy\texon\t1\t100\t.\t+\t.\tgene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP";\n'
     ]
     metadata, _ = genomepy.utils.read_readme(a.readme_file)
-    assert metadata["sanitized annotation"] == "contigs filtered"
+    assert metadata["sanitized annotation"] == "contigs match and filtered"
 
     # conforming, filter off
     genomepy.utils.rm_rf(os.path.join(tmp_dir, genome))
@@ -306,7 +306,7 @@ def test_sanitize(capsys):
         "chr2\t0\t100\n",
     ]
     metadata, _ = genomepy.utils.read_readme(a.readme_file)
-    assert metadata["sanitized annotation"] == "not required and not filtered"
+    assert metadata["sanitized annotation"] == "contigs match but not filtered"
 
     # not conforming, no fix possible
     genomepy.utils.rm_rf(os.path.join(tmp_dir, genome))

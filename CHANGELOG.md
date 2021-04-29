@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- Annotation class, containg regex filter and sanitize functions
+- NCBI provider also indexes the NCBI `genbank_historical` summary
+- loading bars in various places
+- option to skip filtering and/or matching the annotation to the genome
+
+### Changed
+- automatic provider selection refactored
+    - genomepy.functions.online_provider() returns a generator
+- `genomepy install` uses a combined filter function to speed it up
+- `genomepy install` only zips annotation files if the genome is zipped (with the bgzip flag)
+- regex filtering is separated from `download_genome`
+- NCBI provider should parse the UCSC genomes faster
+
+### Fixed
+- the `Genome` class now passes arguments to the parent `Fasta` class
+- the `Genome` class now regenerates the sizes and gaps files similarly to the `Fasta` class and its index (when the genome is younger).
+
 ## [0.9.3] - 2021-02-03
 
 ### Changed

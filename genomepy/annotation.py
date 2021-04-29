@@ -280,29 +280,34 @@ class Annotation:
         os.replace(new_bed_file, self.annotation_bed_file)
         rm_rf(tmp_dir)
 
-    def sanitize(self, filter_contigs: Optional[bool] = True):
+    def sanitize(
+        self,
+        match_contigs: Optional[bool] = True,
+        filter_contigs: Optional[bool] = True,
+    ):
         """
         Compares the genome and gene annotations.
         If the contig names do not conform, attempt to fix this.
-        If the contig names do conform (after fixing), filter the annotation contigs for genome contigs.
+        If the contig names conform (after fixing), filter the annotation contigs for genome contigs.
         Log the results in the README.
 
+        match_contigs: attempt to fix contig names?
         filter_contigs: remove contigs from the annotations that are missing from the genome?
         """
         if self.genome_file is None:
             sys.stderr.write("A genome is required for sanitizing!")
             return
 
-        status = "not required"
+        status = "contigs match"
         extra_lines = []
         if self._is_conforming():
             if filter_contigs is False:
-                status = "not required and not filtered"
+                status = "contigs match but not filtered"
             else:
                 contigs_filtered_out = self.filter_genome_contigs()
                 if contigs_filtered_out:
                     self.bed_from_gtf()
-                    status = "contigs filtered"
+                    status = "contigs match and filtered"
                     extra_lines = [
                         "",
                         "The following contigs were filtered out of the gene annotation:",
@@ -311,6 +316,9 @@ class Annotation:
             update_readme(
                 self.readme_file, {"sanitized annotation": status}, extra_lines
             )
+            return
+
+        if match_contigs is False:
             return
 
         matching_contig_index = self._conforming_index()
@@ -331,7 +339,7 @@ class Annotation:
             )
         missing_contigs = self._conform_gtf(conversion_dict, filter_contigs)
         self.bed_from_gtf()
-        status = "sanitized"
+        status = "contigs fixed"
         if missing_contigs:
             extra_lines = [
                 "",
@@ -339,8 +347,9 @@ class Annotation:
                 f"{', '.join(missing_contigs)}",
             ]
             if filter_contigs:
-                status = "sanitized and filtered"
+                status = "contigs fixed and filtered"
             else:
+                status = "contigs fixed and but not filtered"
                 extra_lines[1] = (
                     "The following contigs could not be sanitized"
                     " in the gene annotation, and were kept as-is:"

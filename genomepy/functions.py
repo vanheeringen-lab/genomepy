@@ -276,7 +276,8 @@ def install_genome(
     bgzip: bool = None,  # None -> check config. False -> dont check.
     annotation: Optional[bool] = False,
     only_annotation: Optional[bool] = False,
-    skip_sanitizing: Optional[bool] = False,
+    skip_matching: Optional[bool] = False,
+    skip_filter: Optional[bool] = False,
     threads: Optional[int] = 1,
     force: Optional[bool] = False,
     **kwargs: Optional[dict],
@@ -329,9 +330,12 @@ def install_genome(
     only_annotation : bool , optional
         If set to True, only download the annotation files.
 
-    skip_sanitizing : bool , optional
-        If set to True, downloaded annotation files whose sequence names do not match
-        with the (first header fields of) the genome.fa will not be corrected.
+    skip_matching : bool , optional
+        If set to True, contigs in the annotation not matching
+        those in the genome will not be corrected.
+
+    skip_filter : bool , optional
+        If set to True, the gene annotations will not be filtered to match the genome contigs.
 
     kwargs : dict , optional
         Provider specific options.
@@ -364,7 +368,8 @@ def install_genome(
         [
             annotation,
             only_annotation,
-            skip_sanitizing,
+            skip_matching,
+            skip_filter,
             kwargs.get("to_annotation"),
             kwargs.get("ucsc_annotation_type"),
         ]
@@ -406,8 +411,8 @@ def install_genome(
 
     if annotation_downloaded:
         annotation = Annotation(localname, genomes_dir)
-        if genome_found and skip_sanitizing is False:
-            annotation.sanitize(filter_contigs=True)  # TODO: option to NOT filter?
+        if genome_found and (not skip_matching or not skip_filter):
+            annotation.sanitize(not skip_matching, not skip_filter)
 
     # Run active plugins (also if the genome was downloaded earlier)
     if genome_found:
