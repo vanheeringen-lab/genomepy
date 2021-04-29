@@ -68,23 +68,18 @@ def manage_config(cmd):
         raise ValueError(f"Invalid config command: {cmd}")
 
 
-def _online_providers():
-    """Return a list of online providers as objects"""
-    providers = []
-    for p in ProviderBase.list_providers():
+def online_providers(provider=None):
+    """
+    Check if the provider can be reached, or any provider if none is specified.
+    Return a list of online provider(s) as objects.
+    """
+    online = []
+    for provider in [provider] if provider else ProviderBase.list_providers():
         try:
-            providers.append(ProviderBase.create(p))
+            online.append(ProviderBase.create(provider))
         except ConnectionError as e:
             sys.stderr.write(str(e))
-    return providers
-
-
-def _providers(provider=None):
-    """
-    Return a list of provider objects:
-    either the specified provider, or all online providers
-    """
-    return [ProviderBase.create(provider)] if provider else _online_providers()
+    return online
 
 
 def list_available_genomes(provider=None):
@@ -101,8 +96,7 @@ def list_available_genomes(provider=None):
     -------
     list with genome names
     """
-    providers = _providers(provider)
-    for p in providers:
+    for p in online_providers(provider):
         for row in p.list_available_genomes():
             yield [p.name] + list(row)
 
@@ -187,7 +181,7 @@ def generate_env(fname: str = "exports.txt", genomes_dir: str = None):
 
 def _lazy_provider_selection(name, provider=None):
     """return the first PROVIDER which has genome NAME"""
-    providers = _providers(provider)
+    providers = online_providers(provider)
     for p in providers:
         if name in p.genomes or (
             p.name == "URL" and try_except_pass(ValueError, check_url, name)
@@ -496,7 +490,6 @@ def search(term, provider=None):
         genome information (name/identifier and description)
     """
     term = safe(str(term))
-    providers = _providers(provider)
-    for p in providers:
+    for p in online_providers(provider):
         for row in p.search(term):
             yield [x.encode("utf-8") for x in list(row[:1]) + [p.name] + list(row[1:])]
