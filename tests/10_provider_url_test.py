@@ -80,7 +80,6 @@ def test_search_url_for_annotations(p):
         "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/"
         + "GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz",
     ]
-    assert len(links) == 2
     assert links == expected
 
     # no annot file
