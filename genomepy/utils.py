@@ -239,13 +239,13 @@ def filter_fasta(infa, outfa, regex=".*", v=False, force=False):
 
 
 def mkdir_p(path):
-    """ 'mkdir -p' in Python """
+    """'mkdir -p' in Python"""
     path = os.path.expanduser(path)
     os.makedirs(path, exist_ok=True)
 
 
 def rm_rf(path):
-    """ 'rm -rf' in Python """
+    """'rm -rf' in Python"""
     path = os.path.expanduser(path)
     if os.path.isfile(path):
         try:

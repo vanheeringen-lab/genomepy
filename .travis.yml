@@ -10,7 +10,6 @@ env:
     - CC_TEST_REPORTER_ID=951f438ac8a0fa93801ff0bf69922df59fe03800bf7ea8ab77a3c26cda444979
   jobs:
     - PYTHON_VERSION=3.6
-    - PYTHON_VERSION=3.9
 
 before_install:
   # install miniconda
