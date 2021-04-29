@@ -68,12 +68,14 @@ def test_manage_config(capsys):
 
 def test_online_providers():
     ops = genomepy.functions.online_providers()
-    assert len(ops) == 4
-    assert "genomepy.provider.UrlProvider" in str(ops[-1])
+    providers = [p.name for p in ops]
+    assert len(providers) == 4
+    assert providers[-1] == "URL"
 
     ops = genomepy.functions.online_providers("Ensembl")
-    assert len(ops) == 1
-    assert "genomepy.provider.EnsemblProvider" in str(ops[0])
+    providers = [p.name for p in ops]
+    assert len(providers) == 1
+    assert providers[0] == "Ensembl"
 
 
 def test_list_available_genomes():

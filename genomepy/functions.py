@@ -71,15 +71,13 @@ def manage_config(cmd):
 def online_providers(provider=None):
     """
     Check if the provider can be reached, or any provider if none is specified.
-    Return a list of online provider(s) as objects.
+    Return online provider(s) as objects.
     """
-    online = []
     for provider in [provider] if provider else ProviderBase.list_providers():
         try:
-            online.append(ProviderBase.create(provider))
+            yield ProviderBase.create(provider)
         except ConnectionError as e:
             sys.stderr.write(str(e))
-    return online
 
 
 def list_available_genomes(provider=None):
@@ -181,16 +179,15 @@ def generate_env(fname: str = "exports.txt", genomes_dir: str = None):
 
 def _lazy_provider_selection(name, provider=None):
     """return the first PROVIDER which has genome NAME"""
-    providers = online_providers(provider)
-    for p in providers:
+    providers = []
+    for p in online_providers(provider):
+        providers.append(p.name)
         if name in p.genomes or (
             p.name == "URL" and try_except_pass(ValueError, check_url, name)
         ):
             return p
 
-    raise GenomeDownloadError(
-        f"{name} not found on {', '.join([p.name for p in providers])}."
-    )
+    raise GenomeDownloadError(f"{name} not found on {', '.join(providers)}.")
 
 
 def _provider_selection(name, localname, genomes_dir, provider=None):
@@ -201,8 +198,8 @@ def _provider_selection(name, localname, genomes_dir, provider=None):
     Second tries to return the provider from the README
     Third tries to return the first provider which has the genome (Ensembl>UCSC>NCBI)
     """
-    if provider is None:
-        readme = os.path.join(genomes_dir, localname, "README.txt")
+    readme = os.path.join(genomes_dir, localname, "README.txt")
+    if provider is None and os.path.exists(readme):
         m, _ = read_readme(readme)
         p = m["provider"].lower()
         if p in ["ensembl", "ucsc", "ncbi"]:
