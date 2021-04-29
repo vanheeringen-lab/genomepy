@@ -1,39 +1,13 @@
-import genomepy
-import gzip
 import os
-import pytest
+from platform import system
 import requests
 
-from platform import system
+import genomepy
+import genomepy.utils
+import pytest
 
-travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 linux = system() == "Linux"
-
-
-def validate_gzipped_gtf(fname):
-    assert os.path.exists(fname)
-    with gzip.open(fname, "r") as f:
-        for line in f:
-            line = line.decode()
-            if line.startswith("#"):
-                continue
-            vals = line.split("\t")
-            assert 9 == len(vals)
-            int(vals[3]), int(vals[4])
-            break
-
-
-def validate_gzipped_bed(fname):
-    assert os.path.exists(fname)
-    with gzip.open(fname, "r") as f:
-        for line in f:
-            line = line.decode()
-            if line.startswith("#"):
-                continue
-            vals = line.split("\t")
-            assert 12 == len(vals)
-            int(vals[1]), int(vals[2])
-            break
+travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 
 @pytest.fixture(scope="module")

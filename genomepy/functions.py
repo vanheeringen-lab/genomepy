@@ -1,10 +1,15 @@
 """Module-level functions."""
 import os
-import norns
+from typing import Optional
 import re
 import sys
+
 from appdirs import user_config_dir, user_cache_dir
+import norns
+from pyfaidx import FastaIndexingError, IndexNotFoundError, Fasta
+
 from genomepy.__about__ import __version__
+from genomepy.annotation import Annotation
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.genome import Genome
 from genomepy.plugin import get_active_plugins, init_plugins
@@ -12,18 +17,18 @@ from genomepy.provider import ProviderBase
 from genomepy.utils import (
     get_localname,
     get_genomes_dir,
-    generate_gap_bed,
-    generate_fa_sizes,
     glob_ext_files,
     mkdir_p,
     rm_rf,
     read_readme,
-    sanitize_annotation,
     safe,
     check_url,
     try_except_pass,
+    bgzip_and_name,
+    gzip_and_name,
+    update_readme,
+    _fa_to_file,
 )
-from pyfaidx import FastaIndexingError
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 
@@ -109,18 +114,18 @@ def _is_genome_dir(dirname):
     ------
     bool
     """
-    name = os.path.basename(os.path.abspath(os.path.expanduser(dirname)))
-    return any([f for f in glob_ext_files(dirname) if os.path.join(name, name) in f])
+    genome_file = os.path.join(dirname, f"{os.path.basename(dirname)}.fa")
+    return os.path.exists(genome_file) or os.path.exists(f"{genome_file}.gz")
 
 
-def list_installed_genomes(genomes_dir=None):
+def list_installed_genomes(genomes_dir: str = None):
     """
-    List all available genomes.
+    List all locally available genomes.
 
     Parameters
     ----------
     genomes_dir : str
-        Directory with installed genomes.
+        Directory with genomes installed by genomepy.
 
     Returns
     -------
@@ -136,20 +141,20 @@ def list_installed_genomes(genomes_dir=None):
     return []
 
 
-def generate_exports(genomes_dir=None):
+def generate_exports(genomes_dir: str = None):
     """Print export commands for setting environment variables."""
     env = []
     for name in list_installed_genomes(genomes_dir):
         try:
-            g = Genome(name)
+            g = Genome(name, genomes_dir, build_index=False)
             env_name = re.sub(r"[^\w]+", "_", name).upper()
             env.append(f"export {env_name}={g.filename}")
-        except (FastaIndexingError, FileNotFoundError):
+        except (FastaIndexingError, IndexNotFoundError, FileNotFoundError):
             pass
     return env
 
 
-def generate_env(fname="exports.txt", genomes_dir=None):
+def generate_env(fname: str = "exports.txt", genomes_dir: str = None):
     """
     Generate file with exports.
 
@@ -206,22 +211,78 @@ def _provider_selection(name, localname, genomes_dir, provider=None):
     return _lazy_provider_selection(name, provider)
 
 
+def _filter_genome(
+    genome_file: str,
+    regex: str = None,
+    invert_match: Optional[bool] = False,
+    keep_alt: Optional[bool] = False,
+):
+    """
+    Combine regex filters & document filtered contigs
+
+    keep_alt : bool , optional
+        Set to true to keep these alternative regions.
+
+    regex : str , optional
+        Regular expression to select specific chromosome / scaffold names.
+
+    invert_match : bool , optional
+        Set to True to select all chromosomes that don't match the regex.
+    """
+    fa = Fasta(genome_file)
+    contigs_in = fa.keys()
+    contigs_out = contigs_in
+    if regex:
+        contigs_out = [
+            c for c in contigs_out if bool(re.search(regex, c)) is not invert_match
+        ]
+    if keep_alt is False:
+        contigs_out = [c for c in contigs_out if bool(re.search("(alt)", c)) is False]
+    excluded_contigs = [c for c in contigs_in if c not in contigs_out]
+
+    _fa_to_file(fa, contigs_out, genome_file)
+    rm_rf(f"{genome_file}.fai")  # old index
+
+    regex_line = "regex: "
+    if keep_alt is False:
+        regex_line += "'alt' (inverted match)" + (" and " if regex else "")
+    if regex:
+        regex_line += f"'{regex}'" + (" (inverted match)" if invert_match else "")
+    lines = ["", regex_line, ""] + (
+        [
+            "The following contigs were filtered out of the genome:",
+            f"{', '.join(excluded_contigs)}",
+        ]
+        if excluded_contigs
+        else ["No contigs were removed."]
+    )
+
+    readme = os.path.join(os.path.dirname(genome_file), "README.txt")
+    update_readme(readme, extra_lines=lines)
+
+
+def _delete_extensions(directory: str, exts: list):
+    """remove (gzipped) files in a directory matching any given extension"""
+    for ext in exts:
+        [rm_rf(f) for f in glob_ext_files(directory, ext)]
+
+
 def install_genome(
-    name,
-    provider=None,
-    genomes_dir=None,
-    localname=None,
-    mask="soft",
-    keep_alt=False,
-    regex=None,
-    invert_match=False,
-    bgzip=None,
-    annotation=False,
-    only_annotation=False,
-    skip_sanitizing=False,
-    threads=1,
-    force=False,
-    **kwargs,
+    name: str,
+    provider: str = None,
+    genomes_dir: str = None,
+    localname: str = None,
+    mask: Optional[str] = "soft",
+    keep_alt: Optional[bool] = False,
+    regex: str = None,
+    invert_match: Optional[bool] = False,
+    bgzip: bool = None,  # None -> check config. False -> dont check.
+    annotation: Optional[bool] = False,
+    only_annotation: Optional[bool] = False,
+    skip_sanitizing: Optional[bool] = False,
+    threads: Optional[int] = 1,
+    force: Optional[bool] = False,
+    **kwargs: Optional[dict],
 ):
     """
     Install a genome.
@@ -255,7 +316,8 @@ def install_genome(
         Set to True to select all chromosomes that don't match the regex.
 
     bgzip : bool , optional
-        If set to True the genome FASTA file will be compressed using bgzip.
+        If set to True the genome FASTA file will be compressed using bgzip,
+        and gene annotation will be compressed with gzip.
         If not specified, the setting from the configuration file will be used.
 
     threads : int , optional
@@ -290,39 +352,18 @@ def install_genome(
     localname = get_localname(name, localname)
     genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
     out_dir = os.path.join(genomes_dir, localname)
+    genome_file = os.path.join(out_dir, f"{localname}.fa")
+    provider = _provider_selection(name, localname, genomes_dir, provider)
 
-    # Check if genome already exists, or if downloading is forced
+    # check which files need to be downloaded
     genome_found = _is_genome_dir(out_dir)
-    if (not genome_found or force) and not only_annotation:
-        # Download genome from provider
-        p = _provider_selection(name, localname, genomes_dir, provider)
-        p.download_genome(
-            name,
-            genomes_dir,
-            mask=mask,
-            keep_alt=keep_alt,
-            regex=regex,
-            invert_match=invert_match,
-            localname=localname,
-            bgzip=bgzip,
-            **kwargs,
-        )
-        genome_found = True
-
-        # Export installed genome(s)
-        generate_env(genomes_dir=genomes_dir)
-
-    # Generates a Fasta object, index, gaps and sizes file
-    g = None
-    if genome_found:
-        g = Genome(localname, genomes_dir=genomes_dir)
-        if force:
-            # overwrite previous versions
-            generate_fa_sizes(g.genome_file, g.sizes_file)
-            generate_gap_bed(g.genome_file, g.gaps_file)
-
-    # Check if any annotation flags are given, if annotation already exists, or if downloading is forced
-    if any(
+    download_genome = (
+        genome_found is False or force is True
+    ) and only_annotation is False
+    annotation_found = bool(glob_ext_files(out_dir, "annotation.gtf")) and bool(
+        glob_ext_files(out_dir, "annotation.bed")
+    )
+    download_annotation = (annotation_found is False or force is True) and any(
         [
             annotation,
             only_annotation,
@@ -330,23 +371,62 @@ def install_genome(
             kwargs.get("to_annotation"),
             kwargs.get("ucsc_annotation_type"),
         ]
-    ):
-        annotation = True
-    annotation_found = bool(glob_ext_files(out_dir, "gtf"))
-    if (not annotation_found or force) and annotation:
-        # Download annotation from provider
-        p = _provider_selection(name, localname, genomes_dir, provider)
-        p.download_annotation(name, genomes_dir, localname=localname, **kwargs)
+    )
 
-        # Sanitize annotation if needed (requires genome)
-        annotation_found = bool(glob_ext_files(out_dir, "gtf"))
-        if genome_found and annotation_found and not skip_sanitizing:
-            sanitize_annotation(g)
+    genome = None
+    genome_downloaded = False
+    if download_genome:
+        if force:
+            _delete_extensions(out_dir, ["fa", "fai"])
+        provider.download_genome(
+            name,
+            genomes_dir,
+            mask=mask,
+            localname=localname,
+            **kwargs,
+        )
+        genome_found = True
+        genome_downloaded = True
 
+        # Filter genome
+        if keep_alt is False or regex is not None:
+            _filter_genome(genome_file, regex, invert_match, keep_alt)
+
+        # Generates a Fasta object and the genome index, gaps and sizes files
+        genome = Genome(localname, genomes_dir=genomes_dir)
+
+        # Export installed genome(s)
+        generate_env(genomes_dir=genomes_dir)
+
+    annotation_downloaded = False
+    if download_annotation:
+        if force:
+            _delete_extensions(out_dir, ["annotation.gtf", "annotation.bed"])
+        provider.download_annotation(name, genomes_dir, localname=localname, **kwargs)
+        annotation_downloaded = bool(
+            glob_ext_files(out_dir, "annotation.gtf")
+        ) and bool(glob_ext_files(out_dir, "annotation.bed"))
+
+    if annotation_downloaded:
+        annotation = Annotation(localname, genomes_dir)
+        if genome_found and skip_sanitizing is False:
+            annotation.sanitize(filter_contigs=True)  # TODO: option to NOT filter?
+
+    # Run active plugins (also if the genome was downloaded earlier)
     if genome_found:
-        # Run all active plugins (requires genome)
+        genome = genome if genome else Genome(localname, genomes_dir=genomes_dir)
         for plugin in get_active_plugins():
-            plugin.after_genome_download(g, threads, force)
+            plugin.after_genome_download(genome, threads, force)
+
+    # zip files downloaded now
+    if bgzip is True or (bgzip is None and config.get("bgzip")):
+        if genome_downloaded:
+            bgzip_and_name(genome.filename)
+        if annotation_downloaded:
+            gzip_and_name(annotation.annotation_gtf_file)
+            gzip_and_name(annotation.annotation_bed_file)
+
+    return genome
 
 
 def manage_plugins(command, plugin_names=None):

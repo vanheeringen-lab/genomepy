@@ -1,36 +1,9 @@
-import genomepy
-import gzip
 import os
-import pytest
-
 from shutil import copyfile
 from tempfile import TemporaryDirectory
 
-
-def validate_gzipped_gtf(fname):
-    assert os.path.exists(fname)
-    with gzip.open(fname, "r") as f:
-        for line in f:
-            line = line.decode()
-            if line.startswith("#"):
-                continue
-            vals = line.split("\t")
-            assert 9 == len(vals)
-            int(vals[3]), int(vals[4])
-            break
-
-
-def validate_gzipped_bed(fname):
-    assert os.path.exists(fname)
-    with gzip.open(fname, "r") as f:
-        for line in f:
-            line = line.decode()
-            if line.startswith("#"):
-                continue
-            vals = line.split("\t")
-            assert 12 == len(vals)
-            int(vals[1]), int(vals[2])
-            break
+import genomepy
+import pytest
 
 
 @pytest.fixture(scope="module")

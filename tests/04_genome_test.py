@@ -1,4 +1,5 @@
 import genomepy
+import genomepy.utils
 import os
 import pytest
 

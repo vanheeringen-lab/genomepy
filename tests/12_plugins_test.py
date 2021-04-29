@@ -1,13 +1,12 @@
 import os
-import genomepy
-import pytest
 import re
 import subprocess as sp
-
 from shutil import copyfile
 from platform import system
 from time import sleep
 
+import genomepy
+import genomepy.utils
 from genomepy.plugin import init_plugins, activate, deactivate
 from genomepy.plugins.blacklist import BlacklistPlugin
 from genomepy.plugins.bowtie2 import Bowtie2Plugin
@@ -16,6 +15,7 @@ from genomepy.plugins.gmap import GmapPlugin
 from genomepy.plugins.hisat2 import Hisat2Plugin
 from genomepy.plugins.minimap2 import Minimap2Plugin
 from genomepy.plugins.star import StarPlugin
+import pytest
 
 linux = system() == "Linux"
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"

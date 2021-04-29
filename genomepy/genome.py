@@ -13,7 +13,6 @@ from genomepy.utils import (
     read_readme,
     write_readme,
     get_genomes_dir,
-    get_localname,
     glob_ext_files,
     generate_fa_sizes,
     generate_gap_bed,
@@ -40,11 +39,11 @@ class Genome(Fasta):
     pyfaidx.Fasta object
     """
 
-    def __init__(self, name, genomes_dir=None):
+    def __init__(self, name, genomes_dir=None, *args, **kwargs):
         self.genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
         self.name = self._parse_name(name)
         self.filename = self._parse_filename(name)
-        super(Genome, self).__init__(self.filename)
+        super(Genome, self).__init__(self.filename, *args, **kwargs)
 
         # file paths
         self.genome_file = self.filename
@@ -68,7 +67,9 @@ class Genome(Fasta):
     @sizes_file.setter
     def sizes_file(self, fname):
         """generate the sizes_file when the class is initiated"""
-        if not os.path.exists(fname):
+        if not os.path.exists(fname) or os.path.getmtime(fname) < os.path.getmtime(
+            self.genome_file
+        ):
             generate_fa_sizes(self.genome_file, fname)
         self.__sizes_file = fname
 
@@ -103,7 +104,9 @@ class Genome(Fasta):
     @gaps_file.setter
     def gaps_file(self, fname):
         """generate the gaps_file when the class is initiated"""
-        if not os.path.exists(fname):
+        if not os.path.exists(fname) or os.path.getmtime(fname) < os.path.getmtime(
+            self.genome_file
+        ):
             generate_gap_bed(self.genome_file, fname)
         self.__gaps_file = fname
 
@@ -150,11 +153,11 @@ class Genome(Fasta):
         return self.check_annotation_file("bed")
 
     @staticmethod
-    def _parse_name(name):
+    def _parse_name(name: str) -> str:
         """extract a safe name from file path, url or regular names"""
-        return os.path.basename(re.sub(".fa(.gz)?$", "", get_localname(name)))
+        return os.path.basename(re.sub(".fa(.gz)?$", "", safe(name)))
 
-    def _parse_filename(self, name):
+    def _parse_filename(self, name: str) -> str:
         """
         accepts path to a fasta file, path to a fasta folder, or
         the name of a genome (e.g. hg38).

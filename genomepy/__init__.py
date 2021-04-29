@@ -10,6 +10,7 @@ from genomepy.functions import (  # noqa: F401
     search,
 )
 from genomepy.genome import Genome  # noqa: F401
+from genomepy.annotation import Annotation  # noqa: F401
 from genomepy.provider import ProviderBase  # noqa: F401
 from genomepy.exceptions import GenomeDownloadError  # noqa: F401
 from genomepy.__about__ import __version__, __author__  # noqa: F401

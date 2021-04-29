@@ -8,19 +8,18 @@ import time
 import shutil
 import subprocess as sp
 
+from typing import Optional
 from tempfile import mkdtemp
 from urllib.request import urlopen, urlcleanup
 from bucketcache import Bucket
-from pyfaidx import Fasta
 from appdirs import user_cache_dir
 from tqdm.auto import tqdm
 
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.utils import (
     download_file,
-    read_readme,
     write_readme,
-    filter_fasta,
+    update_readme,
     get_localname,
     tar_to_bigfile,
     get_file_info,
@@ -32,6 +31,7 @@ from genomepy.utils import (
     mkdir_p,
     get_genomes_dir,
     rm_rf,
+    gunzip_and_name,
 )
 from genomepy.__about__ import __version__
 
@@ -185,14 +185,10 @@ class ProviderBase(object):
 
     def download_genome(
         self,
-        name,
-        genomes_dir=None,
-        localname=None,
-        mask="soft",
-        keep_alt=False,
-        regex=None,
-        invert_match=False,
-        bgzip=None,
+        name: str,
+        genomes_dir: str = None,
+        localname: str = None,
+        mask: Optional[str] = "soft",
         **kwargs,
     ):
         """
@@ -211,19 +207,6 @@ class ProviderBase(object):
 
         mask: str , optional
             Masking, soft, hard or none (all other strings)
-
-        keep_alt : bool , optional
-            Set to true to keep these alternative regions.
-
-        regex : str , optional
-            Regular expression to select specific chromosome / scaffold names.
-
-        invert_match : bool , optional
-            Set to True to select all chromosomes that don't match the regex.
-
-        bgzip : bool , optional
-            If set to True the genome FASTA file will be compressed using bgzip.
-            If not specified, the setting from the configuration file will be used.
         """
         name = safe(name)
         self.check_name(name)
@@ -233,8 +216,7 @@ class ProviderBase(object):
         localname = get_localname(name, localname)
         genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
         out_dir = os.path.join(genomes_dir, localname)
-        if not os.path.exists(out_dir):
-            mkdir_p(out_dir)
+        mkdir_p(out_dir)
 
         sys.stderr.write(
             f"Downloading genome from {self.name}.\nTarget URL: {link}...\n"
@@ -254,48 +236,13 @@ class ProviderBase(object):
             tar_to_bigfile(fname, fname)
         elif link.endswith(".gz"):
             os.rename(fname, fname + ".gz")
-            ret = sp.check_call(["gunzip", "-f", fname])
-            if ret != 0:
-                raise Exception(f"Error gunzipping genome {fname}")
-
-        def regex_filer(_fname, _regex, _v):
-            infa = _fname + "_to_regex"
-            os.rename(_fname, infa)
-            # filter the fasta and store the output's keys
-            keys_out = filter_fasta(
-                infa, outfa=_fname, regex=_regex, v=_v, force=True
-            ).keys()
-            keys_in = Fasta(infa).keys()
-            return [k for k in keys_in if k not in keys_out]
-
-        not_included = []
-        # remove alternative regions
-        if not keep_alt:
-            not_included.extend(regex_filer(fname, "alt", True))
-
-        # keep/remove user defined regions
-        if regex:
-            not_included.extend(regex_filer(fname, regex, invert_match))
+            gunzip_and_name(fname + ".gz")
 
         # process genome (e.g. masking)
         if hasattr(self, "_post_process_download"):
             self._post_process_download(
                 name=name, localname=localname, out_dir=tmp_dir, mask=mask
             )
-
-        # bgzip genome if requested
-        if bgzip or config.get("bgzip"):
-            # bgzip to stdout, track progress, and output to file
-            fsize = int(os.path.getsize(fname) * 10 ** -6)
-            cmd = (
-                f"bgzip -fc {fname} | "
-                f"tqdm --bytes --desc Bgzipping {fsize}MB fasta --log ERROR | "
-                f"cat > {fname}.gz"
-            )
-            ret = sp.check_call(cmd, shell=True)
-            if ret != 0:
-                raise Exception(f"Error bgzipping {name}. Is tabix installed?")
-            fname += ".gz"
 
         # transfer the genome from the tmpdir to the genome_dir
         src = fname
@@ -322,24 +269,7 @@ class ProviderBase(object):
             "annotation url": "na",
             "date": time.strftime("%Y-%m-%d %H:%M:%S"),
         }
-        lines = []
-        if not keep_alt or regex:
-            regex_line = "regex: "
-            if not keep_alt:
-                regex_line += "'alt' (inverted match)"
-
-            if not keep_alt and regex:
-                regex_line += " and "
-
-            if regex:
-                regex_line += f"'{regex}'"
-                if invert_match:
-                    regex_line += " (inverted match)"
-
-            lines += ["", regex_line, "sequences that were excluded:"]
-            for seq in not_included:
-                lines.append(f"\t{seq}")
-        write_readme(readme, metadata, lines)
+        write_readme(readme, metadata)
 
     def get_annotation_download_link(self, name, **kwargs):
         raise NotImplementedError()
@@ -350,8 +280,7 @@ class ProviderBase(object):
 
         # create output directory if missing
         out_dir = os.path.join(genomes_dir, localname)
-        if not os.path.exists(out_dir):
-            mkdir_p(out_dir)
+        mkdir_p(out_dir)
 
         # download to tmp dir. Move genome on completion.
         # tmp dir is in genome_dir to prevent moving the genome between disks
@@ -398,22 +327,17 @@ class ProviderBase(object):
         # generate gzipped gtf file (if required)
         gtf_file = annot_file.replace(ext, ".gtf")
         if "gtf" not in ext:
-            cmd = "genePredToGtf -source=genomepy file {0} {1} && gzip -f {1}"
+            cmd = "genePredToGtf -source=genomepy file {0} {1}"
             sp.check_call(cmd.format(pred_file, gtf_file), shell=True)
 
         # generate gzipped bed file (if required)
         bed_file = annot_file.replace(ext, ".bed")
         if "bed" not in ext:
-            cmd = "genePredToBed {0} {1} && gzip -f {1}"
+            cmd = "genePredToBed {0} {1}"
             sp.check_call(cmd.format(pred_file, bed_file), shell=True)
 
-        # if input file was gtf/bed, gzip it
-        if ext in [".gtf", ".bed"]:
-            cmd = "gzip -f {}"
-            sp.check_call(cmd.format(annot_file), shell=True)
-
         # transfer the files from the tmpdir to the genome_dir
-        for f in [gtf_file + ".gz", bed_file + ".gz"]:
+        for f in [gtf_file, bed_file]:
             src = f
             dst = os.path.join(out_dir, os.path.basename(f))
             shutil.move(src, dst)
@@ -422,7 +346,7 @@ class ProviderBase(object):
     def attempt_and_report(self, name, localname, link, genomes_dir):
         if not link:
             sys.stderr.write(
-                f"Could not download genome annotation for {name} from {self.name}.\n"
+                f"Could not download gene annotation for {name} from {self.name}.\n"
             )
             return
 
@@ -438,14 +362,11 @@ class ProviderBase(object):
                 "https://github.com/vanheeringen-lab/genomepy/issues\n"
             )
 
-        # TODO sanity check for genes
         sys.stderr.write("Annotation download successful\n")
 
         # Update readme annotation URL, or make a new
         readme = os.path.join(genomes_dir, localname, "README.txt")
-        metadata, lines = read_readme(readme)
-        metadata["annotation url"] = link
-        write_readme(readme, metadata, lines)
+        update_readme(readme, updated_metadata={"annotation url": link})
 
     def download_annotation(self, name, genomes_dir=None, localname=None, **kwargs):
         """

@@ -1,8 +1,9 @@
-import genomepy
-import pytest
 import os
-
 from tempfile import mkdtemp
+
+import genomepy
+import genomepy.utils
+import pytest
 
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 

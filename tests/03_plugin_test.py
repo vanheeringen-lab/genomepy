@@ -7,8 +7,8 @@ config = norns.config("genomepy", default="cfg/default.yaml")
 
 def test_find_plugins():
     genomepy.plugin.find_plugins()
-    function_loc = genomepy.plugins.bwa
-    assert str(function_loc).endswith("genomepy/genomepy/plugins/bwa.py'>")
+    plugin_dict = genomepy.plugin.plugins
+    assert "genomepy.plugins.bwa.BwaPlugin object at" in str(plugin_dict["bwa"])
 
 
 def test_convert(name="TestName", expected="test_name"):

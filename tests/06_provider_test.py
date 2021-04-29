@@ -1,5 +1,6 @@
 import genomepy
-import gzip
+import genomepy.utils
+from e02_install_options_test import validate_gtf, validate_bed
 import os
 import pytest
 
@@ -8,32 +9,6 @@ from platform import system
 
 linux = system() == "Linux"
 travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
-
-
-def validate_gzipped_gtf(fname):
-    assert os.path.exists(fname)
-    with gzip.open(fname, "r") as f:
-        for line in f:
-            line = line.decode()
-            if line.startswith("#"):
-                continue
-            vals = line.split("\t")
-            assert 9 == len(vals)
-            int(vals[3]), int(vals[4])
-            break
-
-
-def validate_gzipped_bed(fname):
-    assert os.path.exists(fname)
-    with gzip.open(fname, "r") as f:
-        for line in f:
-            line = line.decode()
-            if line.startswith("#"):
-                continue
-            vals = line.split("\t")
-            assert 12 == len(vals)
-            int(vals[1]), int(vals[2])
-            break
 
 
 @pytest.fixture(scope="module")
@@ -109,9 +84,6 @@ def test_download_genome(
     name="sacCer3",
     localname="my_genome",
     mask="soft",
-    regex="MT",
-    invert_match=True,
-    bgzip=True,
 ):
     p = p.create("UCSC")
     out_dir = os.getcwd()
@@ -122,12 +94,9 @@ def test_download_genome(
             genomes_dir=tmpdir,
             localname=localname,
             mask=mask,
-            regex=regex,
-            invert_match=invert_match,
-            bgzip=bgzip,
         )
 
-        genome = os.path.join(tmpdir, localname, localname + ".fa.gz")
+        genome = os.path.join(tmpdir, localname, localname + ".fa")
         assert os.path.exists(genome)
 
         readme = os.path.join(os.path.dirname(genome), "README.txt")
@@ -169,11 +138,11 @@ def test_download_and_generate_annotation(p):
             genomes_dir=tmpdir, annot_url=annot_url, localname=localname
         )
 
-        fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf.gz")
-        validate_gzipped_gtf(fname)
+        fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf")
+        validate_gtf(fname)
 
-        fname = os.path.join(tmpdir, localname, localname + ".annotation.bed.gz")
-        validate_gzipped_bed(fname)
+        fname = os.path.join(tmpdir, localname, localname + ".annotation.bed")
+        validate_bed(fname)
 
 
 def test_attempt_and_report(p, capsys):
@@ -183,7 +152,7 @@ def test_attempt_and_report(p, capsys):
 
     p.attempt_and_report(name, localname, None, None)
     captured = capsys.readouterr().err.strip()
-    assert captured.startswith(f"Could not download genome annotation for {name} from")
+    assert captured.startswith(f"Could not download gene annotation for {name} from")
 
     annot_url = "https://www.google.com"
     with pytest.raises(genomepy.exceptions.GenomeDownloadError), TemporaryDirectory(
@@ -213,11 +182,11 @@ def test_download_annotation(p):
         p.download_annotation(name=name, genomes_dir=tmpdir, localname=localname)
 
         # check download_and_generate_annotation output
-        fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf.gz")
-        validate_gzipped_gtf(fname)
+        fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf")
+        validate_gtf(fname)
 
-        fname = os.path.join(tmpdir, localname, localname + ".annotation.bed.gz")
-        validate_gzipped_bed(fname)
+        fname = os.path.join(tmpdir, localname, localname + ".annotation.bed")
+        validate_bed(fname)
 
         # check attempt_download_and_report_back output
         readme = os.path.join(tmpdir, localname, "README.txt")
