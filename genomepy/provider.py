@@ -346,7 +346,7 @@ class ProviderBase(object):
     def attempt_and_report(self, name, localname, link, genomes_dir):
         if not link:
             sys.stderr.write(
-                f"Could not download genome annotation for {name} from {self.name}.\n"
+                f"Could not download gene annotation for {name} from {self.name}.\n"
             )
             return
 

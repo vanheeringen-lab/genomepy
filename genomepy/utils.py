@@ -508,3 +508,25 @@ def get_file_info(fname):
         fname = fname[:-3]
     split = os.path.splitext(fname)
     return split[1], gz
+
+
+def _open(fname: str, mode: Optional[str] = "r"):
+    """
+    Return a function to open a (gzipped) file.
+
+    fname: (gzipped) file path
+    mode: (r)ead or (w)rite.
+    """
+    if mode not in ["r", "w"]:
+        raise ValueError("mode must be either 'r' or 'w'.")
+
+    if fname.endswith(".gz"):
+        return gzip.open(fname, mode + "t")
+    return open(fname, mode)
+
+
+def file_len(fname):
+    with _open(fname) as f:
+        for i, _ in enumerate(f):  # noqa: B007
+            pass
+    return i + 1

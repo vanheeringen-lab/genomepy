@@ -261,6 +261,12 @@ def _filter_genome(
     update_readme(readme, extra_lines=lines)
 
 
+def _delete_extensions(directory: str, exts: list):
+    """remove (gzipped) files in a directory matching any given extension"""
+    for ext in exts:
+        [rm_rf(f) for f in glob_ext_files(directory, ext)]
+
+
 def install_genome(
     name: str,
     provider: str = None,
@@ -349,7 +355,7 @@ def install_genome(
     genome_file = os.path.join(out_dir, f"{localname}.fa")
     provider = _provider_selection(name, localname, genomes_dir, provider)
 
-    # check which files do we need to download
+    # check which files need to be downloaded
     genome_found = _is_genome_dir(out_dir)
     download_genome = (
         genome_found is False or force is True
@@ -370,6 +376,8 @@ def install_genome(
     genome = None
     genome_downloaded = False
     if download_genome:
+        if force:
+            _delete_extensions(out_dir, ["fa", "fai"])
         provider.download_genome(
             name,
             genomes_dir,
@@ -390,17 +398,17 @@ def install_genome(
         # Export installed genome(s)
         generate_env(genomes_dir=genomes_dir)
 
-    annotation = None
+    annotation_downloaded = False
     if download_annotation:
         if force:
-            [
-                rm_rf(f)
-                for f in glob_ext_files(out_dir, "annotation.gtf")
-                + glob_ext_files(out_dir, "annotation.bed")
-            ]
+            _delete_extensions(out_dir, ["annotation.gtf", "annotation.bed"])
         provider.download_annotation(name, genomes_dir, localname=localname, **kwargs)
-        annotation = Annotation(localname, genomes_dir)
+        annotation_downloaded = bool(
+            glob_ext_files(out_dir, "annotation.gtf")
+        ) and bool(glob_ext_files(out_dir, "annotation.bed"))
 
+    if annotation_downloaded:
+        annotation = Annotation(localname, genomes_dir)
         if genome_found and skip_sanitizing is False:
             annotation.sanitize(filter_contigs=True)  # TODO: option to NOT filter?
 
@@ -414,7 +422,7 @@ def install_genome(
     if bgzip is True or (bgzip is None and config.get("bgzip")):
         if genome_downloaded:
             bgzip_and_name(genome.filename)
-        if annotation:
+        if annotation_downloaded:
             gzip_and_name(annotation.annotation_gtf_file)
             gzip_and_name(annotation.annotation_bed_file)
 

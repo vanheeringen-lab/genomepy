@@ -152,7 +152,7 @@ def test_attempt_and_report(p, capsys):
 
     p.attempt_and_report(name, localname, None, None)
     captured = capsys.readouterr().err.strip()
-    assert captured.startswith(f"Could not download genome annotation for {name} from")
+    assert captured.startswith(f"Could not download gene annotation for {name} from")
 
     annot_url = "https://www.google.com"
     with pytest.raises(genomepy.exceptions.GenomeDownloadError), TemporaryDirectory(

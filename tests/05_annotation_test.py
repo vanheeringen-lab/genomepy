@@ -7,36 +7,6 @@ import genomepy.utils
 import pytest
 
 
-def test__open():
-    # read/write regular file
-    a1 = "tests/data/data.annotation.gtf"
-    with genomepy.annotation._open(a1, "w") as gtf:
-        gtf.write("regular file")
-
-    with open(a1) as gtf:
-        lines1 = gtf.readlines()
-    assert lines1 == ["regular file"]
-
-    with genomepy.annotation._open(a1) as gtf:
-        lines2 = gtf.readlines()
-    assert lines2 == lines1
-    genomepy.utils.rm_rf(a1)
-
-    # read/write gzipped file
-    a2 = "tests/data/data.annotation.gtf.gz"
-    with genomepy.annotation._open(a2, "w") as gtf:
-        gtf.write("gzipped file")
-
-    with pytest.raises(UnicodeDecodeError):
-        with open(a2) as gtf:
-            gtf.read()
-
-    with genomepy.annotation._open(a2) as gtf:
-        lines = gtf.readlines()
-    assert lines == ["gzipped file"]
-    genomepy.utils.rm_rf(a1)
-
-
 def test_get_column():
     for sep in [",", "\t"]:
         sep_file = "tests/data/test.sep"

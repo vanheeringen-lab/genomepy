@@ -1,4 +1,3 @@
-import gzip
 import os
 import re
 import shutil
@@ -7,6 +6,8 @@ import sys
 from tempfile import mkdtemp
 from typing import Optional, Union
 
+from tqdm.auto import tqdm
+
 from genomepy.utils import (
     get_genomes_dir,
     gzip_and_name,
@@ -14,6 +15,8 @@ from genomepy.utils import (
     glob_ext_files,
     update_readme,
     rm_rf,
+    _open,
+    file_len,
 )
 
 
@@ -118,10 +121,11 @@ class Annotation:
         filtered_annotation_file = os.path.join(
             tmp_dir, os.path.basename(annotation_file)
         )
+        flen = file_len(annotation_file)
         with _open(annotation_file, "r") as old, _open(
             filtered_annotation_file, "w"
         ) as new:
-            for line in old:
+            for line in tqdm(old, total=flen, unit="lines", desc="Filtering"):
                 if bool(re.match(regex, line)) is not invert_match:
                     new.write(line)
                 else:
@@ -141,10 +145,11 @@ class Annotation:
         filtered_gtf_file = os.path.join(
             tmp_dir, os.path.basename(self.annotation_gtf_file)
         )
+        flen = file_len(self.annotation_gtf_file)
         with _open(self.annotation_gtf_file, "r") as old, _open(
             filtered_gtf_file, "w"
         ) as new:
-            for line in old:
+            for line in tqdm(old, total=flen, unit="lines", desc="Filtering"):
                 if not line.startswith("#"):
                     gtf_contig_name = line.split("\t")[0]
                     if gtf_contig_name in self.genome_contigs:
@@ -229,10 +234,11 @@ class Annotation:
         missing_contigs = []
         tmp_dir = mkdtemp(dir=self.genome_dir)
         new_gtf_file = os.path.join(tmp_dir, os.path.basename(self.annotation_gtf_file))
+        flen = file_len(self.annotation_gtf_file)
         with _open(self.annotation_gtf_file, "r") as old, _open(
             new_gtf_file, "w"
         ) as new:
-            for line in old:
+            for line in tqdm(old, total=flen, unit="lines", desc="Filtering"):
                 splitline = line.split("\t")
                 if splitline[0] in conversion_dict:
                     splitline[0] = conversion_dict[splitline[0]]
@@ -341,21 +347,6 @@ class Annotation:
                 )
             sys.stderr.write(" ".join(extra_lines))
         update_readme(self.readme_file, {"sanitized annotation": status}, extra_lines)
-
-
-def _open(fname: str, mode: Optional[str] = "r"):
-    """
-    Return a function to open a (gzipped) file.
-
-    fname: (gzipped) file path
-    mode: (r)ead or (w)rite.
-    """
-    if mode not in ["r", "w"]:
-        raise ValueError("mode must be either 'r' or 'w'.")
-
-    if fname.endswith(".gz"):
-        return gzip.open(fname, mode + "t")
-    return open(fname, mode)
 
 
 def get_column(
