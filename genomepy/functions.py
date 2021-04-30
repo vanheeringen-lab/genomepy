@@ -230,12 +230,14 @@ def _filter_genome(
     contigs_in = fa.keys()
     contigs_out = contigs_in
     if regex:
+        pattern = re.compile(regex)
         contigs_out = [
-            c for c in contigs_out if bool(re.search(regex, c)) is not invert_match
+            c for c in contigs_out if bool(pattern.search(c)) is not invert_match
         ]
     if keep_alt is False:
-        contigs_out = [c for c in contigs_out if bool(re.search("(alt)", c)) is False]
-    excluded_contigs = [c for c in contigs_in if c not in contigs_out]
+        pattern = re.compile("(alt)", re.I)  # case insensitive
+        contigs_out = [c for c in contigs_out if not bool(pattern.search(c))]
+    excluded_contigs = list(set(contigs_in) ^ set(contigs_out))
 
     _fa_to_file(fa, contigs_out, genome_file)
     rm_rf(f"{genome_file}.fai")  # old index

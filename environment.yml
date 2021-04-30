@@ -14,6 +14,7 @@ dependencies:
   - pyfaidx>=0.5.7
   - requests
   - tqdm>=4.51
+  - pandas
 
   # Bgzip
   - tabix

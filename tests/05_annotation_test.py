@@ -254,59 +254,52 @@ def test_sanitize(capsys):
     captured = capsys.readouterr().err.strip()
     assert captured == "A genome is required for sanitizing!"
 
-    # conforming, filter on
+    # conforming, filtering off
     with open(bed_file, "w") as f:
-        f.write("chr1\t0\t100\n")
+        f.write("chr1\t0\t100\n" "chr2\t0\t100\n")
     with open(gtf_file, "w") as f:
         f.write(
             "chr1\tgenomepy\texon\t1\t100\t.\t+\t.\t"
-            'gene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP";\n'
+            'gene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP1";\n'
+            "chr2\tgenomepy\texon\t1\t100\t.\t+\t.\t"
+            'gene_id "ENSGP1235"; transcript_id "GP_1235.1";  gene_name "GP2";\n'
         )
-        f.write("chr2\t0\t100\n")  # missing in genome
     with open(genome_file, "w") as f:
         f.write(">chr1\n")
         f.write("ATCGATCG\n")
     genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
     a = genomepy.annotation.Annotation(genome, tmp_dir)
-    a.sanitize()
+    a.sanitize(match_contigs=False, filter_contigs=False)
 
-    with open(bed_file) as f:
-        lines = f.readlines()
-    assert lines == ["chr1\t0\t100\tGP_1234.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n"]
+    # expect no changes
     with open(gtf_file) as f:
         lines = f.readlines()
     assert lines == [
-        'chr1\tgenomepy\texon\t1\t100\t.\t+\t.\tgene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP";\n'
+        'chr1\tgenomepy\texon\t1\t100\t.\t+\t.\tgene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP1";\n',
+        'chr2\tgenomepy\texon\t1\t100\t.\t+\t.\tgene_id "ENSGP1235"; transcript_id "GP_1235.1";  gene_name "GP2";\n',
+    ]
+    with open(bed_file) as f:
+        lines = f.readlines()
+    assert lines == ["chr1\t0\t100\n", "chr2\t0\t100\n"]
+    metadata, _ = genomepy.utils.read_readme(a.readme_file)
+    assert metadata["sanitized annotation"] == "contigs match but not filtered"
+
+    # conforming, filtering on
+    a.sanitize(match_contigs=False, filter_contigs=True)
+
+    # expect chr2 to have been removed
+    with open(gtf_file) as f:
+        lines = f.readlines()
+    assert lines == [
+        'chr1\tgenomepy\texon\t1\t100\t.\t+\t.\tgene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP1";\n',
+    ]
+    with open(bed_file) as f:
+        lines = f.readlines()
+    assert lines == [
+        "chr1\t0\t100\tGP_1234.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n",
     ]
     metadata, _ = genomepy.utils.read_readme(a.readme_file)
     assert metadata["sanitized annotation"] == "contigs match and filtered"
-
-    # conforming, filter off
-    genomepy.utils.rm_rf(os.path.join(tmp_dir, genome))
-    genomepy.utils.mkdir_p(os.path.join(tmp_dir, genome))
-    with open(bed_file, "w") as f:
-        f.write("chr1\t0\t100\n")
-    with open(gtf_file, "w") as f:
-        f.write(
-            "chr1\tgenomepy\texon\t1\t100\t.\t+\t.\t"
-            'gene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP";\n'
-        )
-        f.write("chr2\t0\t100\n")  # missing in genome
-    with open(genome_file, "w") as f:
-        f.write(">chr1\n")
-        f.write("ATCGATCG\n")
-    genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
-    a = genomepy.annotation.Annotation(genome, tmp_dir)
-    a.sanitize(filter_contigs=False)
-
-    with open(gtf_file) as f:
-        lines = f.readlines()
-    assert lines == [
-        'chr1\tgenomepy\texon\t1\t100\t.\t+\t.\tgene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP";\n',
-        "chr2\t0\t100\n",
-    ]
-    metadata, _ = genomepy.utils.read_readme(a.readme_file)
-    assert metadata["sanitized annotation"] == "contigs match but not filtered"
 
     # not conforming, no fix possible
     genomepy.utils.rm_rf(os.path.join(tmp_dir, genome))
@@ -324,17 +317,18 @@ def test_sanitize(capsys):
     metadata, _ = genomepy.utils.read_readme(a.readme_file)
     assert metadata["sanitized annotation"] == "not possible"
 
-    # not conforming, fix possible
+    # not conforming, filtering off
     genomepy.utils.rm_rf(os.path.join(tmp_dir, genome))
     genomepy.utils.mkdir_p(os.path.join(tmp_dir, genome))
     with open(bed_file, "w") as f:
-        f.write("chr1\t0\t100\n")
+        f.write("chr1\t0\t100\n" "chr2\t0\t100\n")
     with open(gtf_file, "w") as f:
         f.write(
             "chr1\tgenomepy\texon\t1\t100\t.\t+\t.\t"
-            'gene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP";\n'
+            'gene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP1";\n'
+            "chr2\tgenomepy\texon\t1\t100\t.\t+\t.\t"
+            'gene_id "ENSGP1235"; transcript_id "GP_1235.1";  gene_name "GP2";\n'
         )
-        f.write("chr2\t0\t100\n")  # missing in genome
     with open(genome_file, "w") as f:
         f.write(">this matches chr1\n")
         f.write("ATCGATCG\n")
@@ -342,28 +336,44 @@ def test_sanitize(capsys):
         f.write("ATCGATCG\n")
     genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
     a = genomepy.annotation.Annotation(genome, tmp_dir)
-    # assert a._is_conforming() is False
-    #
-    # i = a._conforming_index()
-    # assert i == 2
-    # assert a._is_conformable(i) is True
-    #
-    # conversion_dict, duplicate_contigs = a._contig_conversion_dict(i)
-    # assert conversion_dict == {'chr1': 'this2', 'chr3': 'that'}
-    # assert duplicate_contigs == ['chr1']
-    #
-    # missing_contigs = a._conform_gtf(conversion_dict, False)
-    # assert missing_contigs == ['chr2']
-    #
-    # with open(gtf_file, "w") as f:
-    #     f.write('chr1\tgenomepy\texon\t1\t100\t.\t+\t.\t'
-    #             'gene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP";\n')
-    #     f.write('chr2\t0\t100\n')  # missing in genome
-    a.sanitize()
+    a.sanitize(match_contigs=True, filter_contigs=False)
+    captured = capsys.readouterr().err.strip()
+    assert "The genome contains duplicate contig names" in captured
+    with open(bed_file) as f:
+        lines = f.readlines()
+    assert lines == [
+        "this2\t0\t100\tGP_1234.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n",
+        "chr2\t0\t100\tGP_1235.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n",
+    ]
+    metadata, _ = genomepy.utils.read_readme(a.readme_file)
+    assert metadata["sanitized annotation"] == "contigs fixed but not filtered"
+
+    # not conforming, filtering off
+    genomepy.utils.rm_rf(os.path.join(tmp_dir, genome))
+    genomepy.utils.mkdir_p(os.path.join(tmp_dir, genome))
+    with open(bed_file, "w") as f:
+        f.write("chr1\t0\t100\n" "chr2\t0\t100\n")
+    with open(gtf_file, "w") as f:
+        f.write(
+            "chr1\tgenomepy\texon\t1\t100\t.\t+\t.\t"
+            'gene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP1";\n'
+            "chr2\tgenomepy\texon\t1\t100\t.\t+\t.\t"
+            'gene_id "ENSGP1235"; transcript_id "GP_1235.1";  gene_name "GP2";\n'
+        )
+    with open(genome_file, "w") as f:
+        f.write(">this matches chr1\n")
+        f.write("ATCGATCG\n")
+        f.write(">this2 matches chr1\n")
+        f.write("ATCGATCG\n")
+    genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
+    a = genomepy.annotation.Annotation(genome, tmp_dir)
+    a.sanitize(match_contigs=True, filter_contigs=True)
     captured = capsys.readouterr().err.strip()
     assert "The genome contains duplicate contig names" in captured
     with open(bed_file) as f:
         lines = f.readlines()
     assert lines == ["this2\t0\t100\tGP_1234.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n"]
+    metadata, _ = genomepy.utils.read_readme(a.readme_file)
+    assert metadata["sanitized annotation"] == "contigs fixed and filtered"
 
     genomepy.utils.rm_rf(tmp_dir)
