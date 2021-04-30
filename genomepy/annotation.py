@@ -279,12 +279,11 @@ class Annotation:
             sys.stderr.write("A genome is required for sanitizing!")
             return
 
-        status = "contigs match"
         extra_lines = []
         if self._is_conforming():
-            if filter_contigs is False:
-                status = "contigs match but not filtered"
-            else:
+            status = "contigs match but not filtered"
+            if filter_contigs:
+                status = "contigs match"
                 contigs_filtered_out = self.filter_genome_contigs()
                 if contigs_filtered_out:
                     self.bed_from_gtf()
@@ -322,14 +321,13 @@ class Annotation:
         self.bed_from_gtf()
         status = "contigs fixed"
         if missing_contigs:
+            status = "contigs fixed and filtered"
             extra_lines = [
                 "",
                 "The following contigs were filtered out of the gene annotation:",
                 f"{', '.join(missing_contigs)}",
             ]
-            if filter_contigs:
-                status = "contigs fixed and filtered"
-            else:
+            if filter_contigs is False:
                 status = "contigs fixed but not filtered"
                 extra_lines[1] = (
                     "The following contigs could not be sanitized"

@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `genomepy install` only zips annotation files if the genome is zipped (with the bgzip flag)
 - regex filtering is separated from `download_genome`
 - NCBI provider should parse the UCSC genomes faster
+- new dependency: pandas
 
 ### Fixed
 - the `Genome` class now passes arguments to the parent `Fasta` class
