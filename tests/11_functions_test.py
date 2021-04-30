@@ -182,6 +182,7 @@ def test_install_genome():
         provider="UCSC",
         genomes_dir=None,
         localname=localname,
+        regex="R",
         annotation=True,
         force=True,
     )
@@ -197,6 +198,11 @@ def test_install_genome():
         genomes_dir, localname, localname + ".annotation.gtf"
     )
     assert os.path.exists(annotation_file)
+
+    # regex test:
+    sizes = genomepy.Genome(localname).sizes.keys()
+    assert "chr2R" in sizes
+    assert "chr2L" not in sizes
 
 
 @pytest.mark.skipif(not travis, reason="a genome must be installed")
