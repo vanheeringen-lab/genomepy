@@ -99,7 +99,8 @@ if not skip:
             genomes_dir=tmp,
             localname=localname,
             only_annotation=True,
-            skip_sanitizing=True,
+            skip_matching=True,
+            skip_filter=True,
             force=False,
         )
         sleep(1)
@@ -121,7 +122,8 @@ if not skip:
             genomes_dir=tmp,
             localname=localname,
             only_annotation=True,
-            skip_sanitizing=True,
+            skip_matching=True,
+            skip_filter=True,
             force=force,
         )
         sleep(1)

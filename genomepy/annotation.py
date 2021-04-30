@@ -1,12 +1,12 @@
+import csv
 import os
 import re
-import shutil
 import subprocess as sp
 import sys
 from tempfile import mkdtemp
 from typing import Optional, Union
 
-from tqdm.auto import tqdm
+import pandas as pd
 
 from genomepy.utils import (
     get_genomes_dir,
@@ -16,7 +16,6 @@ from genomepy.utils import (
     update_readme,
     rm_rf,
     _open,
-    file_len,
 )
 
 
@@ -101,8 +100,8 @@ class Annotation:
         if not self.__annotation_contigs:
             return list(set(get_column(self.annotation_bed_file)))
 
+    @staticmethod
     def filter_regex(
-        self,
         annotation_file: str,
         regex: Optional[str] = ".*",
         invert_match: Optional[bool] = False,
@@ -116,50 +115,35 @@ class Annotation:
 
         return a list of discarded contigs.
         """
-        missing_contigs = []
-        tmp_dir = mkdtemp(dir=self.genome_dir)
-        filtered_annotation_file = os.path.join(
-            tmp_dir, os.path.basename(annotation_file)
+        old = pd.read_csv(annotation_file, sep="\t", header=None, comment="#")
+        pattern = re.compile(regex)
+        filter_func = old[0].map(lambda x: bool(pattern.match(x)) is not invert_match)
+        new = old[filter_func]
+        new.to_csv(
+            annotation_file, sep="\t", header=None, index=None, quoting=csv.QUOTE_NONE
         )
-        flen = file_len(annotation_file)
-        with _open(annotation_file, "r") as old, _open(
-            filtered_annotation_file, "w"
-        ) as new:
-            for line in tqdm(old, total=flen, unit="lines", desc="Filtering"):
-                if bool(re.match(regex, line)) is not invert_match:
-                    new.write(line)
-                else:
-                    missing_contigs.append(line.split("\t")[0])
 
-        shutil.move(filtered_annotation_file, annotation_file)
-        rm_rf(tmp_dir)
-        return list(set(missing_contigs))
+        discarded_contigs = list(set(old[~filter_func][0]))
+        return discarded_contigs
 
     def filter_genome_contigs(self):
         """
         filter the gtf for contigs in the genome.
         return a list of discarded contigs.
         """
-        missing_contigs = []
-        tmp_dir = mkdtemp(dir=self.genome_dir)
-        filtered_gtf_file = os.path.join(
-            tmp_dir, os.path.basename(self.annotation_gtf_file)
+        old = pd.read_csv(self.annotation_gtf_file, sep="\t", header=None, comment="#")
+        filter_func = old[0].isin(self.genome_contigs)
+        new = old[filter_func]
+        new.to_csv(
+            self.annotation_gtf_file,
+            sep="\t",
+            header=None,
+            index=None,
+            quoting=csv.QUOTE_NONE,
         )
-        flen = file_len(self.annotation_gtf_file)
-        with _open(self.annotation_gtf_file, "r") as old, _open(
-            filtered_gtf_file, "w"
-        ) as new:
-            for line in tqdm(old, total=flen, unit="lines", desc="Filtering"):
-                if not line.startswith("#"):
-                    gtf_contig_name = line.split("\t")[0]
-                    if gtf_contig_name in self.genome_contigs:
-                        new.write(line)
-                    else:
-                        missing_contigs.append(gtf_contig_name)
 
-        shutil.move(filtered_gtf_file, self.annotation_gtf_file)
-        rm_rf(tmp_dir)
-        return list(set(missing_contigs))
+        discarded_contigs = list(set(old[~filter_func][0]))
+        return discarded_contigs
 
     def _is_conforming(self):
         """
@@ -231,27 +215,24 @@ class Annotation:
         Overwrites the existing gtf file.
         Returns a list of contigs not present in the genome
         """
-        missing_contigs = []
-        tmp_dir = mkdtemp(dir=self.genome_dir)
-        new_gtf_file = os.path.join(tmp_dir, os.path.basename(self.annotation_gtf_file))
-        flen = file_len(self.annotation_gtf_file)
-        with _open(self.annotation_gtf_file, "r") as old, _open(
-            new_gtf_file, "w"
-        ) as new:
-            for line in tqdm(old, total=flen, unit="lines", desc="Filtering"):
-                splitline = line.split("\t")
-                if splitline[0] in conversion_dict:
-                    splitline[0] = conversion_dict[splitline[0]]
-                    line = "\t".join(splitline)
-                    new.write(line)
-                else:
-                    missing_contigs.append(splitline[0])
-                    if not filter_contigs:
-                        new.write(line)
+        old = pd.read_csv(self.annotation_gtf_file, sep="\t", header=None, comment="#")
+        converted_contigs = old[0].map(conversion_dict)  # contigs missing become NaNs
+        nans = converted_contigs.isna()
 
-        os.replace(new_gtf_file, self.annotation_gtf_file)
-        rm_rf(tmp_dir)
-        return list(set(missing_contigs))
+        new = old.copy()
+        new[0] = converted_contigs.fillna(old[0])  # convert contigs (keeps missing)
+        if filter_contigs:
+            new = new[~nans]  # remove missing contigs
+        new.to_csv(
+            self.annotation_gtf_file,
+            sep="\t",
+            header=None,
+            index=None,
+            quoting=csv.QUOTE_NONE,
+        )
+
+        missing_contigs = list(set(old[nans][0]))
+        return missing_contigs
 
     def bed_from_gtf(self):
         """
@@ -280,29 +261,33 @@ class Annotation:
         os.replace(new_bed_file, self.annotation_bed_file)
         rm_rf(tmp_dir)
 
-    def sanitize(self, filter_contigs: Optional[bool] = True):
+    def sanitize(
+        self,
+        match_contigs: Optional[bool] = True,
+        filter_contigs: Optional[bool] = True,
+    ):
         """
         Compares the genome and gene annotations.
         If the contig names do not conform, attempt to fix this.
-        If the contig names do conform (after fixing), filter the annotation contigs for genome contigs.
+        If the contig names conform (after fixing), filter the annotation contigs for genome contigs.
         Log the results in the README.
 
+        match_contigs: attempt to fix contig names?
         filter_contigs: remove contigs from the annotations that are missing from the genome?
         """
         if self.genome_file is None:
             sys.stderr.write("A genome is required for sanitizing!")
             return
 
-        status = "not required"
         extra_lines = []
         if self._is_conforming():
-            if filter_contigs is False:
-                status = "not required and not filtered"
-            else:
+            status = "contigs match but not filtered"
+            if filter_contigs:
+                status = "contigs match"
                 contigs_filtered_out = self.filter_genome_contigs()
                 if contigs_filtered_out:
                     self.bed_from_gtf()
-                    status = "contigs filtered"
+                    status = "contigs match and filtered"
                     extra_lines = [
                         "",
                         "The following contigs were filtered out of the gene annotation:",
@@ -311,6 +296,9 @@ class Annotation:
             update_readme(
                 self.readme_file, {"sanitized annotation": status}, extra_lines
             )
+            return
+
+        if match_contigs is False:
             return
 
         matching_contig_index = self._conforming_index()
@@ -331,16 +319,16 @@ class Annotation:
             )
         missing_contigs = self._conform_gtf(conversion_dict, filter_contigs)
         self.bed_from_gtf()
-        status = "sanitized"
+        status = "contigs fixed"
         if missing_contigs:
+            status = "contigs fixed and filtered"
             extra_lines = [
                 "",
                 "The following contigs were filtered out of the gene annotation:",
                 f"{', '.join(missing_contigs)}",
             ]
-            if filter_contigs:
-                status = "sanitized and filtered"
-            else:
+            if filter_contigs is False:
+                status = "contigs fixed but not filtered"
                 extra_lines[1] = (
                     "The following contigs could not be sanitized"
                     " in the gene annotation, and were kept as-is:"

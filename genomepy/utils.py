@@ -234,7 +234,8 @@ def filter_fasta(
             pyfaidx Fasta instance of newly created file
     """
     fa = Fasta(infa)
-    seqs = [k for k in fa.keys() if bool(re.search(regex, k)) is not invert_match]
+    pattern = re.compile(regex)
+    seqs = [k for k in fa.keys() if bool(pattern.search(k)) is not invert_match]
     if len(seqs) == 0:
         raise Exception("No sequences left after filtering!")
 
