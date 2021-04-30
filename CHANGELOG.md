@@ -9,7 +9,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Added
 - Annotation class, containg regex filter and sanitize functions
 - NCBI provider also indexes the NCBI `genbank_historical` summary
-- loading bars in various places
 - option to skip filtering and/or matching the annotation to the genome
 
 ### Changed
@@ -18,7 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `genomepy install` uses a combined filter function to speed it up
 - `genomepy install` only zips annotation files if the genome is zipped (with the bgzip flag)
 - regex filtering is separated from `download_genome`
-- NCBI provider should parse the UCSC genomes faster
+- NCBI provider should be parsed faster
 - new dependency: pandas
 
 ### Fixed
