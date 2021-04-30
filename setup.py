@@ -26,6 +26,7 @@ requires = [
     "click",
     "colorama",
     "norns>=0.1.5",
+    "pandas",
     "pyfaidx>=0.5.7",
     "requests",
     "tqdm>=4.51",
