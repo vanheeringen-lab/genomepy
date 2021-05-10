@@ -1,4 +1,7 @@
 import os
+
+from loguru import logger
+
 from genomepy.plugin import Plugin
 from genomepy.utils import (
     mkdir_p,
@@ -41,7 +44,7 @@ class StarPlugin(Plugin):
             # update index command with annotation
             cmd += f" --sjdbGTFfile {gtf_file}"
         else:
-            print("\nCreating STAR index without annotation file.")
+            logger.info("\nCreating STAR index without annotation file.")
 
         # Create index
         run_index_cmd("star", cmd)

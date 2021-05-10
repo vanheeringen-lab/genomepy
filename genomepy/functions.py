@@ -2,7 +2,6 @@
 import os
 from typing import Optional
 import re
-import sys
 
 from appdirs import user_config_dir, user_cache_dir
 import norns
@@ -68,16 +67,7 @@ def manage_config(cmd):
         raise ValueError(f"Invalid config command: {cmd}")
 
 
-def online_providers(provider=None):
-    """
-    Check if the provider can be reached, or any provider if none is specified.
-    Return online provider(s) as objects.
-    """
-    for provider in [provider] if provider else ProviderBase.list_providers():
-        try:
-            yield ProviderBase.create(provider)
-        except ConnectionError as e:
-            sys.stderr.write(str(e))
+online_providers = ProviderBase.online_providers
 
 
 def list_available_genomes(provider=None):
@@ -480,28 +470,4 @@ def list_available_providers():
     return ProviderBase.list_providers()
 
 
-def search(term, provider=None):
-    """
-    Search for a genome.
-
-    If provider is specified, search only that specific provider, else
-    search all providers. Both the name and description are used for the
-    search. Search term is case-insensitive.
-
-    Parameters
-    ----------
-    term : str or int
-        Search term, case-insensitive.
-
-    provider : str , optional
-        Provider name
-
-    Yields
-    ------
-    tuple
-        genome information (name/identifier and description)
-    """
-    term = safe(str(term))
-    for p in online_providers(provider):
-        for row in p.search(term):
-            yield [x.encode("utf-8") for x in list(row[:1]) + [p.name] + list(row[1:])]
+search = ProviderBase.search_all

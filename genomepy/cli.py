@@ -4,6 +4,7 @@ import genomepy
 import sys
 import os
 
+from loguru import logger
 from collections import deque
 from colorama import init, Fore, Style
 
@@ -280,9 +281,9 @@ def search(term, provider=None):
     """
     data = [["name", "provider", "accession", "species", "tax_id", "other_info"]]
     for row in genomepy.search(term, provider):
-        data.append([x.decode("utf-8", "ignore") for x in row])
+        data.append(row)
     if len(data) == 1:
-        print("No genomes found!", file=sys.stderr)
+        logger.error("No genomes found!")
         return
 
     # In case we print to a terminal, the output is aligned.

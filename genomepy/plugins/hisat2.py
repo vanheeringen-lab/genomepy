@@ -1,5 +1,8 @@
 import os
 import subprocess as sp
+
+from loguru import logger
+
 from genomepy.plugin import Plugin
 from genomepy.utils import (
     mkdir_p,
@@ -59,7 +62,7 @@ class Hisat2Plugin(Plugin):
             # update index command with annotation
             cmd += f" --ss {splice_file} --exon {exon_file}"
         else:
-            print("\nCreating Hisat2 index without annotation file.")
+            logger.info("\nCreating Hisat2 index without annotation file.")
 
         # Create index
         run_index_cmd("hisat2", cmd)

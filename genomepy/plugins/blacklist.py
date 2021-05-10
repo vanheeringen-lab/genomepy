@@ -1,9 +1,9 @@
 import os.path
 import re
-import sys
 import zlib
-
 from urllib.request import urlopen
+
+from loguru import logger
 
 from genomepy.plugin import Plugin
 
@@ -31,10 +31,10 @@ class BlacklistPlugin(Plugin):
 
         link = self.http_dict.get(genome.name.split(".")[0])
         if link is None:
-            sys.stderr.write(f"No blacklist found for {genome.name}\n")
+            logger.warning(f"No blacklist found for {genome.name}\n")
             return
 
-        sys.stderr.write(f"Downloading blacklist {link}\n")
+        logger.info(f"Downloading blacklist {link}\n")
         try:
             response = urlopen(link)
             with open(fname, "wb") as bed:
@@ -42,8 +42,8 @@ class BlacklistPlugin(Plugin):
                 unzipped = zlib.decompress(response.read(), 16 + zlib.MAX_WBITS)
                 bed.write(unzipped)
         except Exception as e:
-            sys.stderr.write(str(e))
-            sys.stderr.write(f"Could not download blacklist file from {link}")
+            logger.error(str(e))
+            logger.error(f"Could not download blacklist file from {link}")
 
         # convert UCSC format to Ensembl/NCBI format
         if genome.name.split(".")[0] == "GRCh38":

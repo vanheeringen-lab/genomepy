@@ -8,17 +8,20 @@ import time
 import shutil
 import subprocess as sp
 
-from typing import Optional
-from tempfile import mkdtemp
-from urllib.request import urlopen, urlcleanup
-from bucketcache import Bucket
 from appdirs import user_cache_dir
+from bucketcache import Bucket
+from loguru import logger
+import pandas as pd
+from tempfile import mkdtemp
 from tqdm.auto import tqdm
+from typing import Optional, Iterator
+from urllib.request import urlopen, urlcleanup
 
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.utils import (
     download_file,
     write_readme,
+    read_readme,
     update_readme,
     get_localname,
     tar_to_bigfile,
@@ -32,8 +35,22 @@ from genomepy.utils import (
     get_genomes_dir,
     rm_rf,
     gunzip_and_name,
+    best_search_result,
 )
 from genomepy.__about__ import __version__
+
+ASM_FORMAT = [
+    "Sequence-Name",
+    "Sequence-Role",
+    "Assigned-Molecule",
+    "Assigned-Molecule-Location/Type",
+    "GenBank-Accn",
+    "Relationship",
+    "RefSeq-Accn",
+    "Assembly-Unit",
+    "Sequence-Length",
+    "UCSC-style-name",
+]
 
 # Store the output of slow commands (marked with @cache and @goldfish_cache) for fast reuse.
 # Bucketcache creates a new pickle for each function + set of unique variables,
@@ -71,7 +88,7 @@ class ProviderBase(object):
     description_fields = []
 
     @classmethod
-    def create(cls, name):
+    def create(cls, name, *args, **kwargs):
         """Create a provider based on the provider name.
 
         Parameters
@@ -85,7 +102,7 @@ class ProviderBase(object):
             Provider instance.
         """
         try:
-            return cls._providers[name.lower()]()
+            return cls._providers[name.lower()](*args, **kwargs)
         except KeyError:
             raise ValueError("Unknown provider")
 
@@ -119,6 +136,49 @@ class ProviderBase(object):
         """tuple with assembly metadata"""
         raise NotImplementedError()
 
+    @classmethod
+    def online_providers(cls, provider=None):
+        """
+        Check if the provider can be reached, or any provider if none is specified.
+        Return online provider(s) as objects.
+        """
+        for provider in [provider] if provider else cls.list_providers():
+            try:
+                yield cls.create(provider)
+            except ConnectionError as e:
+                logger.warning(str(e))
+
+    @classmethod
+    def search_all(cls, term, provider: str = None, encode: bool = False):
+        """
+        Search for a genome.
+
+        If provider is specified, search only that specific provider, else
+        search all providers. Both the name and description are used for the
+        search. Search term is case-insensitive.
+
+        Parameters
+        ----------
+        term : str
+            Search term, case-insensitive.
+        provider : str , optional
+            Provider name
+        encode : bool, optional
+            Encode return strings.
+
+        Yields
+        ------
+        tuple
+            genome information (name/identifier and description)
+        """
+        term = safe(str(term))
+        for p in cls.online_providers(provider):
+            for row in p.search(term):
+                ret = list(row[:1]) + [p.name] + list(row[1:])
+                if encode:
+                    ret = [x.encode("utf-8") for x in ret]
+                yield ret
+
     def list_available_genomes(self):
         """
         List all available genomes.
@@ -133,9 +193,6 @@ class ProviderBase(object):
 
     def check_name(self, name):
         """check if genome name can be found for provider"""
-        if self.name == "URL":
-            return
-
         if not safe(name) in self.genomes:
             raise GenomeDownloadError(
                 f"Could not download genome {name} from {self.name}.\n\n"
@@ -165,7 +222,7 @@ class ProviderBase(object):
         return 0
 
     def assembly_accession(self, genome):
-        """Return the assembly accession (GCA_*) for a genome.
+        """Return the assembly accession (GCA* or GCF*) for a genome.
 
         Parameters
         ----------
@@ -179,9 +236,120 @@ class ProviderBase(object):
         """
         for key in self.accession_fields:
             accession = str(genome.get(key))
-            if accession.startswith("GCA"):
+            if accession.startswith(("GCA", "GCF")):
                 return accession
         return "na"
+
+    @classmethod
+    def download_assembly_report(cls, asm_acc: str, fname: Optional[str] = None):
+        """
+        Retrieve the NCBI assembly report.
+
+        Returns the assembly_report as a pandas DataFrame if fname is not specified.
+
+        Parameters
+        ----------
+        asm_acc : str
+            Assembly accession (GCA or GCF)
+        fname : str, optional
+            Save assembly_report to this filename.
+
+        Returns
+        -------
+        pandas.DataFrame
+            NCBI assembly report.
+        """
+        ncbi_search = list(cls.search_all(asm_acc, provider="NCBI"))
+        search_result = best_search_result(asm_acc, ncbi_search)
+        if len(search_result) == 0:
+            logger.warning(f"Could not download an NCBI assembly report for {asm_acc}")
+            return
+        ncbi_acc = search_result[2]
+        ncbi_name = safe(search_result[0])
+
+        # NCBI FTP location of assembly report
+        assembly_report = (
+            f"https://ftp.ncbi.nlm.nih.gov/genomes/all/{ncbi_acc[0:3]}/"
+            + f"{ncbi_acc[4:7]}/{ncbi_acc[7:10]}/{ncbi_acc[10:13]}/"
+            + f"{ncbi_acc}_{ncbi_name}/{ncbi_acc}_{ncbi_name}_assembly_report.txt"
+        )
+        asm_report = pd.read_csv(
+            assembly_report, sep="\t", comment="#", names=ASM_FORMAT
+        )
+
+        if fname:
+            asm_report.to_csv(fname, sep="\t", index=False)
+        else:
+            return asm_report
+
+    @classmethod
+    def map_locations(
+        cls, frm: str, to: str, genomes_dir: Optional[str] = None
+    ) -> pd.DataFrame:
+        """
+        Load chromosome mapping from one version/assembly to another using the
+        NCBI assembly reports.
+
+        Parameters
+        ----------
+        frm: str
+            A local genomepy genome name
+        to: str
+            target provider (UCSC, Ensembl or NCBI)
+        genomes_dir: str, optional
+            The genomes directory to look for the genomes.
+            Will search the default genomes_dir if left blank.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Chromosome mapping.
+        """
+        to_provider = to.lower()
+        if to_provider not in ["ucsc", "ncbi", "ensembl"]:
+            logger.error(f"Genomepy can only map to NCBI, UCSC or Ensembl, not '{to}'.")
+            sys.exit()
+
+        genomes_dir = get_genomes_dir(genomes_dir)
+        frm_readme = os.path.join(genomes_dir, frm, "README.txt")
+        frm_asm_report = os.path.join(genomes_dir, frm, "assembly_report.txt")
+        if not os.path.exists(frm_readme):
+            logger.error(f"Cannot find {frm} in {genomes_dir}.")
+            sys.exit()
+
+        metadata, _ = read_readme(frm_readme)
+        frm_provider = metadata.get("provider").lower()
+        asm_acc = metadata.get("assembly_accession")
+        if not os.path.exists(frm_asm_report):
+            cls.download_assembly_report(asm_acc, frm_asm_report)
+        if not os.path.exists(frm_asm_report):
+            logger.error("Cannot map without an assembly report")
+            sys.exit()
+
+        asm_report = pd.read_csv(frm_asm_report, sep="\t", comment="#")
+        asm_report["ensembl-name"] = asm_report["Sequence-Name"]
+        asm_report["ncbi-name"] = asm_report["Sequence-Name"]
+        asm_report["ucsc-name"] = asm_report["UCSC-style-name"]
+
+        # TODO: what does this do Simon???
+        asm_report.loc[
+            asm_report["Sequence-Role"] != "assembled-molecule", "Assigned-Molecule"
+        ] = "na"
+        asm_report.loc[
+            asm_report["Sequence-Role"] != "assembled-molecule", "Ensembl-Name"
+        ] = asm_report.loc[
+            asm_report["Sequence-Role"] != "assembled-molecule", "GenBank-Accn"
+        ]
+
+        if "ucsc" in [frm_provider, to_provider] and list(
+            asm_report["ucsc-name"].unique()
+        ) == ["na"]:
+            logger.error("UCSC style names not available for this assembly")
+            sys.exit()
+
+        mapping = asm_report[[f"{frm_provider}-name", f"{to_provider}-name"]]
+        mapping = mapping.dropna().drop_duplicates().set_index(f"{frm_provider}-name")
+        return mapping
 
     def download_genome(
         self,
@@ -218,9 +386,7 @@ class ProviderBase(object):
         out_dir = os.path.join(genomes_dir, localname)
         mkdir_p(out_dir)
 
-        sys.stderr.write(
-            f"Downloading genome from {self.name}.\nTarget URL: {link}...\n"
-        )
+        logger.info(f"Downloading genome from {self.name}. Target URL: {link}...")
 
         # download to tmp dir. Move genome on completion.
         # tmp dir is in genome_dir to prevent moving the genome between disks
@@ -229,7 +395,7 @@ class ProviderBase(object):
 
         urlcleanup()
         download_file(link, fname)
-        sys.stderr.write("Genome download successful, starting post processing...\n")
+        logger.info("Genome download successful, starting post processing...")
 
         # unzip genome
         if link.endswith(".tar.gz"):
@@ -250,10 +416,14 @@ class ProviderBase(object):
         shutil.move(src, dst)
         rm_rf(tmp_dir)
 
-        sys.stderr.write("\n")
-        sys.stderr.write("name: {}\n".format(name))
-        sys.stderr.write("local name: {}\n".format(localname))
-        sys.stderr.write("fasta: {}\n".format(dst))
+        asm_report = os.path.join(out_dir, "assembly_report.txt")
+        asm_acc = self.assembly_accession(self.genomes.get(name))
+        if asm_acc != "na":
+            self.download_assembly_report(asm_acc, asm_report)
+
+        logger.info("name: {}".format(name))
+        logger.info("local name: {}".format(localname))
+        logger.info("fasta: {}".format(dst))
 
         # Create readme with information
         readme = os.path.join(genomes_dir, localname, "README.txt")
@@ -262,7 +432,7 @@ class ProviderBase(object):
             "provider": self.name,
             "original name": name,
             "original filename": os.path.split(link)[-1],
-            "assembly_accession": self.assembly_accession(self.genomes.get(name)),
+            "assembly_accession": asm_acc,
             "tax_id": self.genome_taxid(self.genomes.get(name)),
             "mask": mask,
             "genome url": link,
@@ -345,16 +515,17 @@ class ProviderBase(object):
 
     def attempt_and_report(self, name, localname, link, genomes_dir):
         if not link:
-            sys.stderr.write(
-                f"Could not download gene annotation for {name} from {self.name}.\n"
+            logger.error(
+                f"Could not download gene annotation for {name} from {self.name}."
             )
             return
 
-        sys.stderr.write(
-            f"Downloading annotation from {self.name}.\nTarget URL: {link}...\n"
-        )
         try:
+            logger.info(
+                f"Downloading annotation from {self.name}. Target URL: {link}..."
+            )
             self.download_and_generate_annotation(genomes_dir, link, localname)
+            logger.info("Annotation download successful")
         except Exception:
             raise GenomeDownloadError(
                 f"\nCould not download annotation for {name} from {self.name}\n"
@@ -362,9 +533,7 @@ class ProviderBase(object):
                 "https://github.com/vanheeringen-lab/genomepy/issues\n"
             )
 
-        sys.stderr.write("Annotation download successful\n")
-
-        # Update readme annotation URL, or make a new
+        # Add annotation URL to readme
         readme = os.path.join(genomes_dir, localname, "README.txt")
         update_readme(readme, updated_metadata={"annotation url": link})
 
@@ -403,28 +572,45 @@ class ProviderBase(object):
             if term in safe(genome[field].lower()):
                 return True
 
-    def _search_accessions(self, term):
+    def _search_accessions(self, term: str) -> Iterator[str]:
         """
-        Search for specific assembly accession.
+        Search for assembly accession.
 
         Parameters
         ----------
         term : str
-            Assembly accession, GCA_....
+            Assembly accession, GCA_/GCF_....
+
         Yields
         ------
-        tuples with name and metadata
+        genome names
         """
         # NCBI provides a consistent assembly accession. This can be used to
         # retrieve the species, and then search for that.
         p = ProviderBase.create("NCBI")
-        species = [row[2] for row in p.search(term)]
-        if len(species) == 0:
-            raise ValueError(f"No genome found with accession {term}")
-        species = species[0]
-        for row in self.search(species):
-            if row[1] == term:
-                yield row
+        ncbi_genomes = list(p._search_accessions(term))
+
+        # remove superstrings (keep GRCh38, not GRCh38.p1 to GRCh38.p13)
+        unique_ncbi_genomes = []
+        for i in ncbi_genomes:
+            if sum([j in i for j in ncbi_genomes]) == 1:
+                unique_ncbi_genomes.append(i)
+
+        # add NCBI organism names to search terms
+        organism_names = [
+            p.genomes[name]["organism_name"] for name in unique_ncbi_genomes
+        ]
+        terms = list(set(unique_ncbi_genomes + organism_names))
+
+        # search with NCBI results in the given provider
+        for name in self.genomes:
+            for term in terms:
+                term = safe(term).lower()
+                if term in safe(name).lower() or self._search_descriptions(
+                    self.genomes[name], term
+                ):
+                    yield name
+                    break
 
     def search(self, term):
         """
@@ -444,9 +630,9 @@ class ProviderBase(object):
         """
         genomes = self.genomes
         term = safe(str(term))
-        if term.startswith("GCA_") and self.name != "NCBI":
-            for row in self._search_accessions(term):
-                yield row
+        if term.startswith(("GCA_", "GCF_")):
+            for name in self._search_accessions(term):
+                yield self._genome_info_tuple(name)
 
         elif is_number(term):
             for name in genomes:
@@ -518,7 +704,7 @@ class EnsemblProvider(ProviderBase):
 
     @cache(ignore=["self"])
     def _get_genomes(self, rest_url):
-        sys.stderr.write("Downloading assembly summaries from Ensembl\n")
+        logger.info("Downloading assembly summaries from Ensembl")
 
         genomes = {}
         divisions = retry(self._request_json, 3, rest_url, "info/divisions?")
@@ -704,7 +890,7 @@ class UcscProvider(ProviderBase):
     @staticmethod
     @cache
     def _get_genomes(rest_url):
-        sys.stderr.write("Downloading assembly summaries from UCSC\n")
+        logger.info("Downloading assembly summaries from UCSC")
 
         r = requests.get(rest_url, headers={"Content-Type": "application/json"})
         if not r.ok:
@@ -837,7 +1023,7 @@ class UcscProvider(ProviderBase):
         if mask != "none":
             return
 
-        sys.stderr.write("\nUCSC genomes are softmasked by default. Unmasking...\n")
+        logger.info("UCSC genomes are softmasked by default. Unmasking...")
 
         fa = os.path.join(out_dir, f"{localname}.fa")
         old_fa = os.path.join(out_dir, f"old_{localname}.fa")
@@ -881,9 +1067,7 @@ class UcscProvider(ProviderBase):
             link = base_url + annot_files[file.lower()] + base_ext
             if check_url(link, 2):
                 return link
-            sys.stderr.write(
-                f"Specified annotation type ({file}) not found for {name}.\n"
-            )
+            logger.warning(f"Specified annotation type ({file}) not found for {name}.")
 
         else:
             # download first available annotation type found
@@ -923,8 +1107,8 @@ class NcbiProvider(ProviderBase):
     @cache
     def _get_genomes(assembly_url):
         """Parse genomes from assembly summary txt files."""
-        sys.stderr.write(
-            "Downloading assembly summaries from NCBI, this will take a while...\n"
+        logger.info(
+            "Downloading assembly summaries from NCBI, this will take a while..."
         )
 
         def load_summary(url):
@@ -956,6 +1140,28 @@ class NcbiProvider(ProviderBase):
                     name = safe(line[15])  # overwrites older asm_names
                     genomes[name] = dict(zip(header, line))
         return genomes
+
+    def _search_accessions(self, term: str) -> Iterator[str]:
+        """
+        Search for assembly accession.
+
+        Parameters
+        ----------
+        term : str
+            Assembly accession, GCA_/GCF_....
+
+        Yields
+        ------
+        genome names
+        """
+        # cut off prefix (GCA_/GCF_) and suffix (version numbers, e.g. '.3')
+        term = term[3:].split(".")[0]
+        for name in self.genomes:
+            accession_ids = [
+                self.genomes[name][field] for field in self.accession_fields
+            ]
+            if any([term in acc for acc in accession_ids]):
+                yield name
 
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
@@ -1042,15 +1248,13 @@ class NcbiProvider(ProviderBase):
                 return txt
 
         elif mask == "hard":
-            sys.stderr.write(
-                "\nNCBI genomes are softmasked by default. Hard masking...\n"
-            )
+            logger.info("NCBI genomes are softmasked by default. Hard masking...")
 
             def mask_cmd(txt):
                 return re.sub("[actg]", "N", txt)
 
         else:
-            sys.stderr.write("\nNCBI genomes are softmasked by default. Unmasking...\n")
+            logger.info("NCBI genomes are softmasked by default. Unmasking...")
 
             def mask_cmd(txt):
                 return txt.upper()
@@ -1128,6 +1332,10 @@ class UrlProvider(ProviderBase):
     def _genome_info_tuple(self, name):
         return tuple()
 
+    def check_name(self, name):
+        """check if genome name can be found for provider"""
+        return
+
     def get_genome_download_link(self, url, mask=None, **kwargs):
         return url
 
@@ -1149,10 +1357,10 @@ class UrlProvider(ProviderBase):
     def search_url_for_annotations(url, name):
         """Attempts to find gtf or gff3 files in the same location as the genome url"""
         urldir = os.path.dirname(url)
-        sys.stderr.write(
-            "You have requested the gene annotation to be downloaded.\n"
-            "Genomepy will check the remote directory:\n"
-            f"{urldir} for annotation files...\n"
+        logger.info(
+            "You have requested the gene annotation to be downloaded. "
+            "Genomepy will check the remote directory: "
+            f"{urldir} for annotation files..."
         )
 
         def fuzzy_annotation_search(search_name, search_list):
@@ -1216,9 +1424,9 @@ class UrlProvider(ProviderBase):
                 break
             except GenomeDownloadError as e:
                 if not link == links[-1]:
-                    sys.stdout.write(
-                        "\nOne of the potential annotations was incompatible with genomepy."
-                        + "\nAttempting another...\n\n"
+                    logger.info(
+                        "One of the potential annotations was incompatible with genomepy. "
+                        "Attempting another..."
                     )
                     continue
                 return e
