@@ -31,10 +31,10 @@ class BlacklistPlugin(Plugin):
 
         link = self.http_dict.get(genome.name.split(".")[0])
         if link is None:
-            logger.warning(f"No blacklist found for {genome.name}\n")
+            logger.warning(f"No blacklist found for {genome.name}")
             return
 
-        logger.info(f"Downloading blacklist {link}\n")
+        logger.info(f"Downloading blacklist {link}")
         try:
             response = urlopen(link)
             with open(fname, "wb") as bed:

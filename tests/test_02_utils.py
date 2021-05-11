@@ -1,17 +1,16 @@
 import filecmp
-import genomepy
-import genomepy.utils
-import pytest
 import os
+from tempfile import NamedTemporaryFile
 import shutil
+import subprocess as sp
 import urllib.request
 import urllib.error
-import subprocess as sp
 
-from tempfile import NamedTemporaryFile
-from platform import system
+import pytest
 
-linux = system() == "Linux"
+import genomepy
+import genomepy.utils
+from tests import linux
 
 
 def test_read_readme():
@@ -160,17 +159,17 @@ def test_cmd_ok():
     assert not genomepy.utils.cmd_ok("missing_cmd")
 
 
-def test_run_index_cmd(capsys, name="tests", good_cmd="ls", bad_cmd="bad_cmd"):
+def test_run_index_cmd(caplog, name="tests", good_cmd="ls", bad_cmd="bad_cmd"):
     genomepy.utils.run_index_cmd(name=name, cmd=good_cmd)
 
     # bad_command not found error
     genomepy.utils.run_index_cmd(name=name, cmd=bad_cmd)
-    captured = capsys.readouterr().err.strip()
+    # captured = capsys.readouterr().err.strip()
     if linux:
-        assert captured.endswith(f"{bad_cmd}: not found")
+        assert f"{bad_cmd}: not found" in caplog.text
     else:
         # thanks for being different mac. That took me 30 minutes of my life...
-        assert captured.endswith(f"{bad_cmd}: command not found")
+        assert f"{bad_cmd}: command not found" in caplog.text
 
 
 def test_glob_ext_files(file="tests/data/small_genome.fa"):
@@ -330,3 +329,140 @@ def test__open():
         lines = gtf.readlines()
     assert lines == ["gzipped file"]
     genomepy.utils.rm_rf(a1)
+
+
+def test_best_search_result():
+    # result of list(genomepy.ProviderBase.search_all("GCA_000001405", provider="NCBI"))
+    ncbi_human = [
+        [
+            "GRCh38",
+            "NCBI",
+            "GCF_000001405.26",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh38.p1",
+            "NCBI",
+            "GCF_000001405.27",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh38.p2",
+            "NCBI",
+            "GCF_000001405.28",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh38.p3",
+            "NCBI",
+            "GCF_000001405.29",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh38.p4",
+            "NCBI",
+            "GCF_000001405.30",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh38.p5",
+            "NCBI",
+            "GCF_000001405.31",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh38.p6",
+            "NCBI",
+            "GCF_000001405.32",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh38.p7",
+            "NCBI",
+            "GCF_000001405.33",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh38.p8",
+            "NCBI",
+            "GCF_000001405.34",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh38.p9",
+            "NCBI",
+            "GCF_000001405.35",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh38.p10",
+            "NCBI",
+            "GCF_000001405.36",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh38.p11",
+            "NCBI",
+            "GCF_000001405.37",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh38.p12",
+            "NCBI",
+            "GCF_000001405.38",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh37.p13",
+            "NCBI",
+            "GCF_000001405.25",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+        [
+            "GRCh38.p13",
+            "NCBI",
+            "GCF_000001405.39",
+            "Homo sapiens",
+            "9606",
+            "Genome Reference Consortium",
+        ],
+    ]
+
+    # list of search results
+    best_result = genomepy.utils.best_search_result("GCA_000001405.39", ncbi_human)
+    assert best_result[2] == "GCF_000001405.39"
+
+    # zero search results
+    assert len(genomepy.utils.best_search_result("GCA_000001405.39", [])) == 0
+
+    # one search results
+    best_result = genomepy.utils.best_search_result("GCA_000001405.26", [ncbi_human[0]])
+    assert best_result[2] == ncbi_human[0][2]

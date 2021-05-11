@@ -1,11 +1,7 @@
 import genomepy
 import pytest
-import os
 
-from platform import system
-
-travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
-linux = system() == "Linux"
+from tests import linux, travis
 
 skip = False
 if not skip:

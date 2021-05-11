@@ -1,16 +1,14 @@
-import genomepy
-import genomepy.utils
-import genomepy.argparse_support
-import pytest
 import os
 import argparse
 from tempfile import TemporaryDirectory
 
 from appdirs import user_config_dir
-from platform import system
+import pytest
 
-linux = system() == "Linux"
-travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+import genomepy
+import genomepy.utils
+import genomepy.argparse_support
+from tests import linux, travis
 
 
 def test_clean():
@@ -64,18 +62,6 @@ def test_manage_config(capsys):
     genomepy.functions.manage_config("show")
     captured = capsys.readouterr().out.strip()
     assert captured.startswith("bgzip: false")
-
-
-def test_online_providers():
-    ops = genomepy.functions.online_providers()
-    providers = [p.name for p in ops]
-    assert len(providers) == 4
-    assert providers[-1] == "URL"
-
-    ops = genomepy.functions.online_providers("Ensembl")
-    providers = [p.name for p in ops]
-    assert len(providers) == 1
-    assert providers[0] == "Ensembl"
 
 
 def test_list_available_genomes():
@@ -288,31 +274,13 @@ def test_list_available_providers():
     assert len(genomepy.functions.list_available_providers()) == 4
 
 
-def test_search():
-    # unrecognized provider/genome will cause an exception or stopiteration respectively
-    # case insensitive description search
-    search = genomepy.functions.search("xEnOpUs TrOpIcAlIs", "ensembl")
-    metadata = next(search)
-
-    # case insensitive assembly name search
-    search = genomepy.functions.search("XeNoPuS_tRoPiCaLiS_v9.1", "ensembl")
-    metadata2 = next(search)
-
-    assert metadata == metadata2
-    assert isinstance(metadata, list)
-    assert "Xenopus_tropicalis_v9.1" in str(metadata[0])
-    assert "Ensembl" in str(metadata[1])
-    assert "GCA_000004195" in str(metadata[2])
-    assert "8364" in str(metadata[4])
-
-
 def test_accession_search():
     search = [row for row in genomepy.functions.search("GCA_000004195.3")]
-    assert 3 == len(search)
+    assert 9 == len(search)
     providers = [row[1] for row in search]
-    assert b"Ensembl" in providers
-    assert b"NCBI" in providers
-    assert b"UCSC" in providers
+    assert "Ensembl" in providers
+    assert "NCBI" in providers
+    assert "UCSC" in providers
 
 
 def test_argparse_plugin():

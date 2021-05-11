@@ -1,14 +1,13 @@
-import genomepy
-import genomepy.utils
-from e02_install_options_test import validate_gtf, validate_bed
 import os
+from tempfile import TemporaryDirectory
+
+import pandas as pd
 import pytest
 
-from tempfile import TemporaryDirectory
-from platform import system
-
-linux = system() == "Linux"
-travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+import genomepy
+import genomepy.utils
+from tests import linux, travis
+from tests.conftest import validate_annot
 
 
 @pytest.fixture(scope="module")
@@ -31,7 +30,7 @@ def test_providerbase__init__(p):
 
 
 def test_create(p):
-    p.create("ncbi")
+    p.create("url")
 
     with pytest.raises(ValueError):
         p.create("error")
@@ -52,6 +51,37 @@ def test__genome_info_tuple(p):
 
 def test_list_available_genomes(p):
     p.list_available_genomes()
+
+
+def test_online_providers(p):
+    # provider given
+    providers = list(p.online_providers("url"))
+    assert len(providers) == 1
+    assert providers[0].name == "URL"
+
+    # not given
+    providers = list(p.online_providers())
+    assert (
+        len(providers) == 4
+    ), "Looks like a provider is offline. Not your fault (this time)!"
+
+
+def test_search_all(p):
+    # unrecognized provider/genome will cause an exception or stopiteration respectively
+    # case insensitive description search
+    search = list(p.search_all("xEnOpUs TrOpIcAlIs", "ensembl"))
+    metadata = search[0]
+
+    # case insensitive assembly name search
+    search = list(p.search_all("XeNoPuS_tRoPiCaLiS_v9.1", "ensembl"))
+    metadata2 = search[0]
+
+    assert metadata == metadata2
+    assert isinstance(metadata, list)
+    assert "Xenopus_tropicalis_v9.1" in str(metadata[0])
+    assert "Ensembl" in str(metadata[1])
+    assert "GCA_000004195" in str(metadata[2])
+    assert "8364" in str(metadata[4])
 
 
 def test_check_name(p):
@@ -75,7 +105,13 @@ def test_genome_taxid(p):
 def test_assembly_accession(p):
     p = p.create("ucsc")
     accession = p.assembly_accession(p.genomes["ailMel1"])
-    assert accession.startswith("GCA_000004335")
+    assert "000004335" in accession
+
+
+def test_download_assembly_report(p):
+    report = p.download_assembly_report("GCA_000004335")
+    assert isinstance(report, pd.DataFrame)
+    assert list(report.columns) == genomepy.provider.ASM_FORMAT
 
 
 @pytest.mark.skipif(not travis, reason="slow")
@@ -110,14 +146,28 @@ def test_download_genome(
         assert metadata["mask"] == mask
 
 
+def test_map_location(p):
+    readme = "tests/data/ailMel1/README.txt"
+    metadata = {
+        "name": "ailMel1",
+        "provider": "UCSC",
+        "assembly_accession": "GCA_000004335.1",
+    }
+    genomepy.utils.mkdir_p("tests/data/ailMel1")
+    genomepy.utils.update_readme(readme, metadata)
+    genomes_dir = "tests/data"
+    mapping = p.map_locations(frm="ailMel1", to="ensembl", genomes_dir=genomes_dir)
+    assert isinstance(mapping, pd.DataFrame)
+    genomepy.utils.rm_rf("tests/data/ailMel1")
+
+
 def test_get_annotation_download_link(p):
     with pytest.raises(NotImplementedError):
         p.get_annotation_download_link(None)
 
 
-@pytest.mark.skipif(
-    not travis or (travis and linux), reason="FTP does not work on Travis-Linux"
-)
+@pytest.mark.skipif(not travis, reason="slow")
+@pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_download_and_generate_annotation(p):
     out_dir = os.getcwd()
     localname = "my_annot"
@@ -139,20 +189,19 @@ def test_download_and_generate_annotation(p):
         )
 
         fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf")
-        validate_gtf(fname)
+        validate_annot(fname, "gtf")
 
         fname = os.path.join(tmpdir, localname, localname + ".annotation.bed")
-        validate_bed(fname)
+        validate_annot(fname, "bed")
 
 
-def test_attempt_and_report(p, capsys):
+def test_attempt_and_report(p, caplog):
     out_dir = os.getcwd()
     localname = "my_annot"
     name = "test"
 
     p.attempt_and_report(name, localname, None, None)
-    captured = capsys.readouterr().err.strip()
-    assert captured.startswith(f"Could not download gene annotation for {name} from")
+    assert f"Could not download gene annotation for {name} from" in caplog.text
 
     annot_url = "https://www.google.com"
     with pytest.raises(genomepy.exceptions.GenomeDownloadError), TemporaryDirectory(
@@ -160,10 +209,7 @@ def test_attempt_and_report(p, capsys):
     ) as tmpdir:
         p.attempt_and_report(name, localname, annot_url, tmpdir)
 
-    captured = capsys.readouterr().err.strip()
-    assert captured.startswith(
-        f"Downloading annotation from None.\nTarget URL: {annot_url}"
-    )
+    assert f"Downloading annotation from None. Target URL: {annot_url}" in caplog.text
 
 
 @pytest.mark.skipif(not travis, reason="slow")
@@ -183,10 +229,10 @@ def test_download_annotation(p):
 
         # check download_and_generate_annotation output
         fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf")
-        validate_gtf(fname)
+        validate_annot(fname, "gtf")
 
         fname = os.path.join(tmpdir, localname, localname + ".annotation.bed")
-        validate_bed(fname)
+        validate_annot(fname, "bed")
 
         # check attempt_download_and_report_back output
         readme = os.path.join(tmpdir, localname, "README.txt")

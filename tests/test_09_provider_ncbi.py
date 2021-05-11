@@ -2,8 +2,9 @@ import os
 from shutil import copyfile
 from tempfile import TemporaryDirectory
 
-import genomepy
 import pytest
+
+import genomepy
 
 
 @pytest.fixture(scope="module")

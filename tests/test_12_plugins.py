@@ -2,8 +2,9 @@ import os
 import re
 import subprocess as sp
 from shutil import copyfile
-from platform import system
 from time import sleep
+
+import pytest
 
 import genomepy
 import genomepy.utils
@@ -15,10 +16,7 @@ from genomepy.plugins.gmap import GmapPlugin
 from genomepy.plugins.hisat2 import Hisat2Plugin
 from genomepy.plugins.minimap2 import Minimap2Plugin
 from genomepy.plugins.star import StarPlugin
-import pytest
-
-linux = system() == "Linux"
-travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+from tests import linux, travis
 
 
 def test_plugins():
@@ -34,7 +32,7 @@ def test_plugins():
 def dont_overwrite(p, genome, fname):
     t0 = os.path.getmtime(fname)
     # OSX rounds down getmtime to the second
-    if system() != "Linux":
+    if not linux:
         sleep(1)
     p.after_genome_download(genome, force=False)
     t1 = os.path.getmtime(fname)
@@ -67,7 +65,7 @@ def genome(request):
     return genomepy.Genome(name, genomes_dir=genomes_dir)
 
 
-def test_blacklist(capsys, genome):
+def test_blacklist(caplog, genome):
     """Create blacklist."""
     # independent of bgzipping
     # no need to check for both .fa and .fa.gz.
@@ -80,21 +78,18 @@ def test_blacklist(capsys, genome):
     # no blacklist found
     genome.name = "ce01"
     p.after_genome_download(genome, force=True)
-    captured = capsys.readouterr().err.strip()
-    assert captured.endswith(f"No blacklist found for {genome.name}")
+    assert f"No blacklist found for {genome.name}" in caplog.text
 
     # error downloading blacklist
     genome.name = "this was a triumph"
     p.after_genome_download(genome, force=True)
-    captured = capsys.readouterr().err.strip()
     link = "I'm making a note here: 'Huge success'"
-    assert captured.endswith(f"Could not download blacklist file from {link}")
+    assert f"Could not download blacklist file from {link}" in caplog.text
 
     # download UCSC blacklist
     genome.name = "ce10"
     p.after_genome_download(genome, force=True)
-    captured = capsys.readouterr().err.strip()
-    assert captured.endswith("ce10-C.elegans/ce10-blacklist.bed.gz")
+    assert "ce10-C.elegans/ce10-blacklist.bed.gz" in caplog.text
     assert os.path.exists(fname)
     with open(fname) as blacklist:
         for line in blacklist:
@@ -105,8 +100,7 @@ def test_blacklist(capsys, genome):
     # download Ensembl/NCBI blacklist
     genome.name = "GRCh38"
     p.after_genome_download(genome, force=True)
-    captured = capsys.readouterr().err.strip()
-    assert captured.endswith("ENCFF356LFX/@@download/ENCFF356LFX.bed.gz")
+    assert "ENCFF356LFX/@@download/ENCFF356LFX.bed.gz" in caplog.text
     with open(fname) as blacklist:
         for line in blacklist:
             assert not line.startswith("chr")
@@ -166,7 +160,7 @@ def test_gmap(genome, threads=2):
     assert os.path.exists(fname)
 
 
-def test_hisat2(capsys, genome, threads=2):
+def test_hisat2(caplog, genome, threads=2):
     """Create hisat2 index."""
     p = Hisat2Plugin()
     p.after_genome_download(genome, threads=threads, force=True)
@@ -177,7 +171,6 @@ def test_hisat2(capsys, genome, threads=2):
     assert os.path.exists(index_dir)
     assert os.path.exists(fname)
 
-    captured = capsys.readouterr().out.strip()
     if genome.annotation_gtf_file:
         # check if splice-aware index is generated
         assert os.path.exists(os.path.join(genome.genome_dir, "splice_sites.txt"))
@@ -186,7 +179,7 @@ def test_hisat2(capsys, genome, threads=2):
         assert os.path.exists(genome.annotation_gtf_file)
         assert genome.annotation_gtf_file.endswith(".gtf.gz")
     else:
-        assert captured.startswith("Creating Hisat2 index without annotation file.")
+        assert "Creating Hisat2 index without annotation file." in caplog.text
 
 
 def test_minimap2(genome, threads=2):
@@ -207,7 +200,7 @@ def test_minimap2(genome, threads=2):
 
 
 @pytest.mark.skipif(not travis, reason="slow")
-def test_star(capsys, genome, threads=2):
+def test_star(caplog, genome, threads=2):
     """Create star index."""
     p = StarPlugin()
     p.after_genome_download(genome, threads=threads, force=True)
@@ -218,15 +211,14 @@ def test_star(capsys, genome, threads=2):
     assert os.path.exists(index_dir)
     assert os.path.exists(fname)
 
-    captured = capsys.readouterr().out.strip()
     if genome.annotation_gtf_file:
         # check if splice-aware index is generated
-        assert captured.startswith("Creating star index...")
+        assert "Creating star index..." in caplog.text
         # check if annotation file is still the same
         assert os.path.exists(genome.annotation_gtf_file)
         assert genome.annotation_gtf_file.endswith(".gtf.gz")
     else:
-        assert captured.startswith("Creating STAR index without annotation file.")
+        assert "Creating STAR index without annotation file." in caplog.text
 
 
 def test_plugin_cleanup():

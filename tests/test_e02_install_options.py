@@ -1,36 +1,16 @@
-import genomepy
-import genomepy.utils
 import os
-import pytest
-
 from tempfile import mkdtemp
 from time import sleep
-from platform import system
+
+import pytest
+
+import genomepy
+import genomepy.utils
+from tests import linux
+from tests.conftest import validate_annot
 
 skip = False
 if not skip:
-
-    def validate_gtf(fname):
-        assert os.path.exists(fname)
-        with open(fname, "r") as f:
-            for line in f:
-                if line.startswith("#"):
-                    continue
-                vals = line.split("\t")
-                assert 9 == len(vals)
-                int(vals[3]), int(vals[4])
-                break
-
-    def validate_bed(fname):
-        assert os.path.exists(fname)
-        with open(fname, "r") as f:
-            for line in f:
-                if line.startswith("#"):
-                    continue
-                vals = line.split("\t")
-                assert 12 == len(vals)
-                int(vals[1]), int(vals[2])
-                break
 
     @pytest.fixture(scope="module", params=["no-overwrite", "overwrite"])
     def force(request):
@@ -63,7 +43,7 @@ if not skip:
 
         t0 = os.path.getmtime(path)
         # OSX rounds down getmtime to the second
-        if system() != "Linux":
+        if not linux:
             sleep(1)
         genomepy.install_genome(
             genome,
@@ -106,15 +86,15 @@ if not skip:
         sleep(1)
 
         gtf = os.path.join(tmp, name, name + ".annotation.gtf")
-        validate_gtf(gtf)
+        validate_annot(gtf, "gtf")
 
         bed = os.path.join(tmp, name, name + ".annotation.bed")
-        validate_bed(bed)
+        validate_annot(bed, "bed")
 
         # force test
         t0 = os.path.getmtime(gtf)
         # OSX rounds down getmtime to the second
-        if system() != "Linux":
+        if not linux:
             sleep(1)
         genomepy.install_genome(
             genome,

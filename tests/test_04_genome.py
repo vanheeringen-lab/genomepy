@@ -1,17 +1,18 @@
-import genomepy
-import genomepy.utils
 import os
+from stat import S_IREAD, S_IRGRP, S_IROTH
+
 import pytest
 
-from stat import S_IREAD, S_IRGRP, S_IROTH
+import genomepy
 from genomepy.provider import ProviderBase
+import genomepy.utils
 
 
 # to ignore file changes
 # git update-index --assume-unchanged tests/data/small_genome.fa.gz
 # to recheck file changes
 # git update-index --no-assume-unchanged tests/data/small_genome.fa.gz
-def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
+def test_genome__init__(small_genome):
     # no fasta file
     with pytest.raises(FileNotFoundError):
         genomepy.Genome("empty", "tests/data/genome")
@@ -24,85 +25,80 @@ def test_genome__init__(genome="tests/data/small_genome.fa.gz"):
     if os.path.exists(readme):
         os.unlink(readme)
 
-    g = genomepy.Genome(genome)
-    assert g.genomes_dir == genomepy.utils.get_genomes_dir(None, False)
-    assert g.name == "small_genome"
-    assert g.filename == os.path.abspath(genome)
-    assert g.genome_dir == os.path.dirname(g.filename)
-    assert os.path.exists(g.index_file)
-    assert os.path.exists(g.sizes_file)
-    assert os.path.exists(g.gaps_file)
-    assert isinstance(g.sizes, dict)
-    assert isinstance(g.gaps, dict)
-    assert g.annotation_gtf_file is None
-    assert g.annotation_bed_file is None
-    assert g.tax_id == g.assembly_accession == "na"
-    assert isinstance(g.plugin, dict)
+    assert small_genome.genomes_dir == genomepy.utils.get_genomes_dir(None, False)
+    assert small_genome.name == "small_genome"
+    assert small_genome.filename == os.path.abspath("tests/data/small_genome.fa.gz")
+    assert small_genome.genome_dir == os.path.dirname(small_genome.filename)
+    assert os.path.exists(small_genome.index_file)
+    assert os.path.exists(small_genome.sizes_file)
+    assert os.path.exists(small_genome.gaps_file)
+    assert isinstance(small_genome.sizes, dict)
+    assert isinstance(small_genome.gaps, dict)
+    assert small_genome.annotation_gtf_file is None
+    assert small_genome.annotation_bed_file is None
+    assert small_genome.tax_id == small_genome.assembly_accession == "na"
+    assert isinstance(small_genome.plugin, dict)
 
 
-def test__parse_name(genome="tests/data/small_genome.fa.gz"):
-    g = genomepy.Genome(genome)  # unimportant
-
+def test__parse_name(small_genome):
     # name
-    name = g._parse_name("test")
+    name = small_genome._parse_name("test")
     assert name == "test"
 
     # file
-    name = g._parse_name("/home/genomepy/genomes/test2.fa")
+    name = small_genome._parse_name("/home/genomepy/genomes/test2.fa")
     assert name == "test2"
 
     # url
-    name = g._parse_name("http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XT9_1.fa.gz")
+    name = small_genome._parse_name(
+        "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XT9_1.fa.gz"
+    )
     assert name == "XT9_1"
 
 
-def test__parse_filename(genome="tests/data/small_genome.fa.gz"):
-    g = genomepy.Genome(genome)  # unimportant
+def test__parse_filename(small_genome):
+    gpath = "tests/data/small_genome.fa.gz"
 
     # file path
-    filename = g._parse_filename(genome)
-    assert filename == os.path.abspath(genome)
+    filename = small_genome._parse_filename(gpath)
+    assert filename == os.path.abspath(gpath)
 
     # folder path
-    filename = g._parse_filename(os.path.dirname(genome))
-    assert filename == os.path.abspath(genome)
+    filename = small_genome._parse_filename(os.path.dirname(gpath))
+    assert filename == os.path.abspath(gpath)
 
     # name of genome in genomes_dir
     os.mkdir("tests/data/small_genome")
     with open("tests/data/small_genome/small_genome.fa.gz", "w") as fa:
         fa.write("test")
-    g.genomes_dir = "tests/data/"
-    filename = g._parse_filename(os.path.basename(genome))
+    small_genome.genomes_dir = "tests/data/"
+    filename = small_genome._parse_filename(os.path.basename(gpath))
     assert filename == "tests/data/small_genome/small_genome.fa.gz"
     genomepy.utils.rm_rf("tests/data/small_genome")
 
     # genome not found
     with pytest.raises(FileNotFoundError):
-        g._parse_filename("does not exist")
+        small_genome._parse_filename("does not exist")
 
 
-def test_check_annotation_file(genome="tests/data/small_genome.fa.gz"):
-    g = genomepy.Genome(genome)
-
+def test__check_annotation_file(small_genome):
     # does not exist
-    gtf = g.check_annotation_file("gtf")
+    gtf = small_genome._check_annotation_file("gtf")
     assert gtf is None
 
     # does exist
     path = "tests/data/small_genome.annotation.test.gz"
     with open(path, "w") as fa:
         fa.write("test")
-    test = g.check_annotation_file("test")
+    test = small_genome._check_annotation_file("test")
     assert test == os.path.abspath(path)
     os.unlink(path)
 
 
-def test__update_provider(genome="tests/data/small_genome.fa.gz"):
-    g = genomepy.Genome(genome)
-
+def test__update_provider(small_genome):
     # can't parse url
     metadata = {}
-    g._update_provider(metadata)
+    small_genome._update_provider(metadata)
     assert metadata.get("provider") == "Unknown"
 
     # can parse url
@@ -110,16 +106,14 @@ def test__update_provider(genome="tests/data/small_genome.fa.gz"):
         "genome url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/146/465/"
         "GCF_000146465.1_ASM14646v1/GCF_000146465.1_ASM14646v1_genomic.fna.gz"
     }
-    g._update_provider(metadata)
+    small_genome._update_provider(metadata)
     assert metadata.get("provider") == "NCBI"
 
 
-def test__update_tax_id(genome="tests/data/small_genome.fa.gz"):
-    g = genomepy.Genome(genome)
-
+def test__update_tax_id(small_genome):
     # genome not found
     metadata = {}
-    g._update_tax_id(metadata)
+    small_genome._update_tax_id(metadata)
     assert metadata["tax_id"] == "na"
 
     # genome found
@@ -127,16 +121,14 @@ def test__update_tax_id(genome="tests/data/small_genome.fa.gz"):
     provider = ProviderBase.create("NCBI")
     genome = provider.genomes.get("ASM14646v1")
 
-    g._update_tax_id(metadata, provider, genome)
+    small_genome._update_tax_id(metadata, provider, genome)
     assert metadata["tax_id"] == "58839"
 
 
-def test__update_assembly_accession(genome="tests/data/small_genome.fa.gz"):
-    g = genomepy.Genome(genome)
-
+def test__update_assembly_accession(small_genome):
     # genome not found
     metadata = {}
-    g._update_assembly_accession(metadata)
+    small_genome._update_assembly_accession(metadata)
     assert metadata["assembly_accession"] == "na"
 
     # genome found
@@ -144,27 +136,23 @@ def test__update_assembly_accession(genome="tests/data/small_genome.fa.gz"):
     provider = ProviderBase.create("NCBI")
     genome = provider.genomes.get("ASM14646v1")
 
-    g._update_assembly_accession(metadata, provider, genome)
-    assert metadata["assembly_accession"] == "GCA_000146465.1"
+    small_genome._update_assembly_accession(metadata, provider, genome)
+    assert metadata["assembly_accession"] == "GCF_000146465.1"
 
 
-def test__update_metadata(genome="tests/data/small_genome.fa.gz"):
-    g = genomepy.Genome(genome)
-
+def test__update_metadata(small_genome):
     metadata = {"provider": "NCBI", "original name": "ASM14646v1"}
-    g._update_metadata(metadata)
+    small_genome._update_metadata(metadata)
     assert metadata["tax_id"] == "58839"
-    assert metadata["assembly_accession"] == "GCA_000146465.1"
+    assert metadata["assembly_accession"] == "GCF_000146465.1"
 
 
-def test__read_metadata(genome="tests/data/small_genome.fa.gz"):
-    g = genomepy.Genome(genome)
-
+def test__read_metadata(small_genome):
     # no readme found
-    readme = g.readme_file
+    readme = small_genome.readme_file
     if os.path.exists(readme):
         os.unlink(readme)
-    metadata = g._read_metadata()
+    metadata = small_genome._read_metadata()
     assert metadata["provider"] == "na"
 
     # no overwrites to metadata
@@ -172,7 +160,7 @@ def test__read_metadata(genome="tests/data/small_genome.fa.gz"):
         f.writelines("provider: not_really_NCBI\n")
         f.writelines("tax_id: not_really_58839\n")
         f.writelines("assembly_accession: not_really_GCA_000146465.1\n")
-    metadata = g._read_metadata()
+    metadata = small_genome._read_metadata()
     assert metadata["provider"] == "not_really_NCBI"
 
     # updates to metadata dict and file
@@ -184,7 +172,7 @@ def test__read_metadata(genome="tests/data/small_genome.fa.gz"):
         )
         f.writelines("tax_id: not_really_58839\n")
         f.writelines("assembly_accession: not_really_GCA_000146465.1\n")
-    metadata1 = g._read_metadata()
+    metadata1 = small_genome._read_metadata()
     assert metadata1["provider"] == "NCBI"
     metadata2, _ = genomepy.utils.read_readme(readme)
     assert metadata2["provider"] == "NCBI"
@@ -197,63 +185,59 @@ def test__read_metadata(genome="tests/data/small_genome.fa.gz"):
             "GCF_000146465.1_ASM14646v1_genomic.fna.gz\n"
         )
     os.chmod(readme, S_IREAD | S_IRGRP | S_IROTH)
-    metadata1 = g._read_metadata()
+    metadata1 = small_genome._read_metadata()
     assert metadata1["provider"] == "na"
     os.unlink(readme)
 
 
-def test__bed_to_seqs(
-    genome="tests/data/small_genome.fa.gz", track="tests/data/regions.bed"
-):
-    g = genomepy.Genome(genome)
-
+def test__bed_to_seqs(small_genome, track="tests/data/regions.bed"):
     # extract sequences marked in regions.bed from small_genome.fa.gz
-    seqs = g._bed_to_seqs(track=track, stranded=False, extend_up=0, extend_down=0)
+    seqs = small_genome._bed_to_seqs(
+        track=track, stranded=False, extend_up=0, extend_down=0
+    )
     for i, seq in enumerate(seqs):
         assert seq.name == ["chrI:10-20 gene_a", "chrII:20-30 gene_b"][i]
         assert seq.seq == ["CCCACACACC", "TCCTCCAAGC"][i]
 
     # second sequence is on the negative strand
-    seqs = g._bed_to_seqs(track=track, stranded=True, extend_up=0, extend_down=0)
+    seqs = small_genome._bed_to_seqs(
+        track=track, stranded=True, extend_up=0, extend_down=0
+    )
     for i, seq in enumerate(seqs):
         assert seq.name == ["chrI:10-20 gene_a", "chrII:20-30 gene_b"][i]
         # original:        "CCCACACACC", "TCCTCCAAGC"
         assert seq.seq == ["CCCACACACC", "GCTTGGAGGA"][i]
 
     # extend by varying amounts
-    seqs = g._bed_to_seqs(track=track, stranded=True, extend_up=1, extend_down=2)
+    seqs = small_genome._bed_to_seqs(
+        track=track, stranded=True, extend_up=1, extend_down=2
+    )
     for i, seq in enumerate(seqs):
         assert seq.name == ["chrI:10-20 gene_a", "chrII:20-30 gene_b"][i]
         # original:         "CCCACACACC",    "GCTTGGAGGA"
         assert seq.seq == ["ACCCACACACCCA", "GGCTTGGAGGAGA"][i]
 
 
-def test__region_to_seq(genome="tests/data/small_genome.fa.gz", region="chrI:10-20"):
-    g = genomepy.Genome(genome)
-
+def test__region_to_seq(small_genome, region="chrI:10-20"):
     # extract sequences marked in track from small_genome.fa.gz
-    seq = g._region_to_seq(region=region, extend_up=0, extend_down=0)
+    seq = small_genome._region_to_seq(region=region, extend_up=0, extend_down=0)
     assert seq == "CCCACACACC"
 
     # extend by varying amounts
-    seq = g._region_to_seq(region=region, extend_up=1, extend_down=2)
+    seq = small_genome._region_to_seq(region=region, extend_up=1, extend_down=2)
     # original:    "CCCACACACC"
     assert seq == "ACCCACACACCCA"
 
 
-def test__regions_to_seqs(
-    genome="tests/data/small_genome.fa.gz", track="tests/data/regions.txt"
-):
-    g = genomepy.Genome(genome)
-
+def test__regions_to_seqs(small_genome, track="tests/data/regions.txt"):
     # extract sequences marked in regions.bed from small_genome.fa.gz
-    seqs = g._regions_to_seqs(track=track, extend_up=0, extend_down=0)
+    seqs = small_genome._regions_to_seqs(track=track, extend_up=0, extend_down=0)
     for i, seq in enumerate(seqs):
         assert seq.name == ["chrI:10-20", "chrII:20-30"][i]
         assert seq.seq == ["CCCACACACC", "TCCTCCAAGC"][i]
 
     # extend by varying amounts
-    seqs = g._regions_to_seqs(track=track, extend_up=1, extend_down=2)
+    seqs = small_genome._regions_to_seqs(track=track, extend_up=1, extend_down=2)
     for i, seq in enumerate(seqs):
         assert seq.name == ["chrI:10-20", "chrII:20-30"][i]
         # original:         "CCCACACACC",    "TCCTCCAAGC"
@@ -268,28 +252,24 @@ def test_get_track_type():
         ("tests/data/regions.bed", "bed"),
         ("tests/data/regions2.bed", "bed"),
     ]
-
     for track, track_type in tracks:
         result = genomepy.Genome.get_track_type(track)
         assert result == track_type
 
 
-def test_track2fasta(genome="tests/data/small_genome.fa.gz"):
+def test_track2fasta(small_genome):
     tracks = [
         ("tests/data/regions.txt", "interval"),
         ("tests/data/regions.bed", "bed"),
     ]
-    g = genomepy.Genome(genome)
-
     for i, track in enumerate(tracks):
-        seq = g.track2fasta(
+        seq = small_genome.track2fasta(
             track=track[0],
             fastafile=None,
             stranded=False,
             extend_up=i,
             extend_down=i + 1,
         )
-
         # default sequence:       CCCACACACC
         if i == 0:  # extend up +0, down -1
             assert seq[0].seq == "CCCACACACCC"
@@ -299,32 +279,32 @@ def test_track2fasta(genome="tests/data/small_genome.fa.gz"):
             assert seq[1].seq == "CTCCTCCAAGCCC"
 
 
-def test_sizes(genome="tests/data/gap.fa"):
-    g = genomepy.Genome(genome)
-    assert list(g.sizes.keys()) == ["chr1", "chr2", "chr3"]
-    assert all(isinstance(g.sizes[chrom], int) for chrom in g.sizes.keys())
-    assert g.sizes["chr1"] == 28
+def test_sizes(gap_genome):
+    assert list(gap_genome.sizes.keys()) == ["chr1", "chr2", "chr3"]
+    assert all(
+        isinstance(gap_genome.sizes[chrom], int) for chrom in gap_genome.sizes.keys()
+    )
+    assert gap_genome.sizes["chr1"] == 28
 
     # does not overwrite user-set sizes
-    g.sizes = {"asd": 1}
-    assert g.sizes == {"asd": 1}
+    gap_genome.sizes = {"asd": 1}
+    assert gap_genome.sizes == {"asd": 1}
 
     # repopulates empty dicts
-    g.sizes = {}
-    assert list(g.sizes.keys()) == ["chr1", "chr2", "chr3"]
+    gap_genome.sizes = {}
+    assert list(gap_genome.sizes.keys()) == ["chr1", "chr2", "chr3"]
 
 
-def test_gaps(genome="tests/data/gap.fa"):
-    g = genomepy.Genome(genome)
-    assert list(g.gaps.keys()) == ["chr1", "chr3"]
+def test_gaps(gap_genome):
+    assert list(gap_genome.gaps.keys()) == ["chr1", "chr3"]
 
     # does not overwrite user-set gaps
-    g.gaps = {"asd": 1}
-    assert g.gaps == {"asd": 1}
+    gap_genome.gaps = {"asd": 1}
+    assert gap_genome.gaps == {"asd": 1}
 
     # repopulates empty dicts
-    g.gaps = {}
-    assert list(g.gaps.keys()) == ["chr1", "chr3"]
+    gap_genome.gaps = {}
+    assert list(gap_genome.gaps.keys()) == ["chr1", "chr3"]
 
 
 def test__weighted_selection(n=2):
@@ -336,13 +316,14 @@ def test__weighted_selection(n=2):
     assert tuples[0][1] in ws or tuples[1][1] in ws or tuples[2][1] in ws
 
 
-def test_get_random_sequences(genome="tests/data/small_genome.fa.gz"):
-    g = genomepy.Genome(genome)
+def test_get_random_sequences(small_genome):
     n = 2
     length = 200  # default
     chroms = ["chrI", "chrII"]
     max_n = 0.1  # default
-    rs = g.get_random_sequences(n=n, length=length, chroms=chroms, max_n=max_n)
+    rs = small_genome.get_random_sequences(
+        n=n, length=length, chroms=chroms, max_n=max_n
+    )
 
     # check that the output has the right length, content, types, and sequence length
     assert len(rs) == n
@@ -356,16 +337,18 @@ def test_get_random_sequences(genome="tests/data/small_genome.fa.gz"):
         assert rs[i][2] - rs[i][1] == length
 
     # check that the max Ns are lower than the expected cutoff
-    rs = g.get_random_sequences(n=1, chroms=chroms, outtype="string")
-    assert str(g.track2fasta(rs[0])[0].seq).upper().count("N") <= length * max_n
+    rs = small_genome.get_random_sequences(n=1, chroms=chroms, outtype="string")
+    assert (
+        str(small_genome.track2fasta(rs[0])[0].seq).upper().count("N") <= length * max_n
+    )
 
 
-def test_delete_test_files():
-    for genome in [
-        "tests/data/small_genome.",
-        "tests/data/gap.",
-    ]:
-        for ext in ["fa.fai", "fa.sizes", "gaps.bed", "fa.gz.fai", "fa.gz.sizes"]:
-            file = genome + ext
-            if os.path.exists(file):
-                os.unlink(file)
+# def test_delete_test_files():
+#     for genome in [
+#         "tests/data/small_genome.",
+#         "tests/data/gap.",
+#     ]:
+#         for ext in ["fa.fai", "fa.sizes", "gaps.bed", "fa.gz.fai", "fa.gz.sizes"]:
+#             file = genome + ext
+#             if os.path.exists(file):
+#                 os.unlink(file)

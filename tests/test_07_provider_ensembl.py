@@ -1,13 +1,11 @@
-import os
-from platform import system
 import requests
+
+import pytest
 
 import genomepy
 import genomepy.utils
-import pytest
 
-linux = system() == "Linux"
-travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+from tests import linux, travis
 
 
 @pytest.fixture(scope="module")

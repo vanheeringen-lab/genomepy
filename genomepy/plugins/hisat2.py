@@ -62,7 +62,7 @@ class Hisat2Plugin(Plugin):
             # update index command with annotation
             cmd += f" --ss {splice_file} --exon {exon_file}"
         else:
-            logger.info("\nCreating Hisat2 index without annotation file.")
+            logger.info("Creating Hisat2 index without annotation file.")
 
         # Create index
         run_index_cmd("hisat2", cmd)

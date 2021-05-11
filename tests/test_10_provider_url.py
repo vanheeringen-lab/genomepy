@@ -1,14 +1,12 @@
 import os
 from tempfile import TemporaryDirectory
-from platform import system
+
+import pytest
 
 import genomepy
 import genomepy.utils
-from e02_install_options_test import validate_gtf, validate_bed
-import pytest
-
-linux = system() == "Linux"
-travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+from tests import travis
+from tests.conftest import validate_annot
 
 
 @pytest.fixture(scope="module")
@@ -109,10 +107,10 @@ def test_download_annotation(p):
 
         # check download_and_generate_annotation output
         fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf")
-        validate_gtf(fname)
+        validate_annot(fname, "gtf")
 
         fname = os.path.join(tmpdir, localname, localname + ".annotation.bed")
-        validate_bed(fname)
+        validate_annot(fname, "bed")
 
         # check attempt_download_and_report_back output
         readme = os.path.join(tmpdir, localname, "README.txt")

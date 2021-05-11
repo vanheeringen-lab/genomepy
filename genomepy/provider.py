@@ -1,5 +1,4 @@
 """Genome providers."""
-import sys
 import requests
 import re
 import os
@@ -285,7 +284,7 @@ class ProviderBase(object):
     @classmethod
     def map_locations(
         cls, frm: str, to: str, genomes_dir: Optional[str] = None
-    ) -> pd.DataFrame:
+    ) -> Optional[pd.DataFrame]:
         """
         Load chromosome mapping from one version/assembly to another using the
         NCBI assembly reports.
@@ -307,15 +306,15 @@ class ProviderBase(object):
         """
         to_provider = to.lower()
         if to_provider not in ["ucsc", "ncbi", "ensembl"]:
-            logger.error(f"Genomepy can only map to NCBI, UCSC or Ensembl, not '{to}'.")
-            sys.exit()
+            raise ValueError(
+                f"Genomepy can only map to NCBI, UCSC or Ensembl, not '{to}'."
+            )
 
         genomes_dir = get_genomes_dir(genomes_dir)
         frm_readme = os.path.join(genomes_dir, frm, "README.txt")
         frm_asm_report = os.path.join(genomes_dir, frm, "assembly_report.txt")
         if not os.path.exists(frm_readme):
-            logger.error(f"Cannot find {frm} in {genomes_dir}.")
-            sys.exit()
+            raise FileNotFoundError(f"Cannot find {frm} in {genomes_dir}.")
 
         metadata, _ = read_readme(frm_readme)
         frm_provider = metadata.get("provider").lower()
@@ -324,19 +323,16 @@ class ProviderBase(object):
             cls.download_assembly_report(asm_acc, frm_asm_report)
         if not os.path.exists(frm_asm_report):
             logger.error("Cannot map without an assembly report")
-            sys.exit()
+            return
 
         asm_report = pd.read_csv(frm_asm_report, sep="\t", comment="#")
         asm_report["ensembl-name"] = asm_report["Sequence-Name"]
         asm_report["ncbi-name"] = asm_report["Sequence-Name"]
         asm_report["ucsc-name"] = asm_report["UCSC-style-name"]
 
-        # TODO: what does this do Simon???
+        # for Ensembl, use GenBank names for the scaffolds
         asm_report.loc[
-            asm_report["Sequence-Role"] != "assembled-molecule", "Assigned-Molecule"
-        ] = "na"
-        asm_report.loc[
-            asm_report["Sequence-Role"] != "assembled-molecule", "Ensembl-Name"
+            asm_report["Sequence-Role"] != "assembled-molecule", "ensembl-name"
         ] = asm_report.loc[
             asm_report["Sequence-Role"] != "assembled-molecule", "GenBank-Accn"
         ]
@@ -345,7 +341,7 @@ class ProviderBase(object):
             asm_report["ucsc-name"].unique()
         ) == ["na"]:
             logger.error("UCSC style names not available for this assembly")
-            sys.exit()
+            return
 
         mapping = asm_report[[f"{frm_provider}-name", f"{to_provider}-name"]]
         mapping = mapping.dropna().drop_duplicates().set_index(f"{frm_provider}-name")

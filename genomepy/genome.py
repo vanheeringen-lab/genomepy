@@ -511,6 +511,7 @@ class Genome(Fasta):
         mapping = mapping.to_dict()[f"{to.lower()}-name"]
         keys = self.keys()
 
+        # TODO: Create a new genome folder, copy readme and return the remapped Genome() object?
         remap = dict()
         for key in keys:
             if key in mapping:

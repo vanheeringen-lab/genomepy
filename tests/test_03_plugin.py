@@ -1,8 +1,6 @@
-import genomepy.plugin
 import pytest
-import norns
 
-config = norns.config("genomepy", default="cfg/default.yaml")
+import genomepy.plugin
 
 
 def test_find_plugins():
