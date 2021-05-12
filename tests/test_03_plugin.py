@@ -3,6 +3,19 @@ import pytest
 import genomepy.plugin
 
 
+@pytest.fixture
+def deactivate_plugins():
+    # save originally active plugins
+    original_plugins = [p.name() for p in genomepy.plugin.get_active_plugins()]
+    # deactivate all plugins
+    [genomepy.plugin.deactivate(p) for p in original_plugins]
+
+    yield
+
+    # reactivate original plugins
+    [genomepy.plugin.activate(p) for p in original_plugins]
+
+
 def test_find_plugins():
     genomepy.plugin.find_plugins()
     plugin_dict = genomepy.plugin.plugins
@@ -23,33 +36,31 @@ def test_init_plugins():
     assert result == expected
 
 
-def test_get_active_plugins():
+def test_get_active_plugins(deactivate_plugins):
+    _ = deactivate_plugins
+
     # returns list of all active plugins
-    plugins = genomepy.plugin.get_active_plugins()
-    current_plugins = genomepy.plugin.init_plugins()
-    assert isinstance(plugins, list)
-    for plugin in plugins:
-        assert plugin not in current_plugins
+    genomepy.plugin.activate("bwa")
+    active_plugins = genomepy.plugin.get_active_plugins()
+    assert isinstance(active_plugins, list)
+    assert ["bwa"] == [p.name() for p in active_plugins]
 
 
-def test_activate():
-    # test assumes BWA is currently inactive
-    plugins = genomepy.plugin.get_active_plugins()
-    assert len([plugin for plugin in plugins if "bwa" in str(plugin)]) == 0
+def test_activate(deactivate_plugins):
+    _ = deactivate_plugins
+
+    assert len(genomepy.plugin.get_active_plugins()) == 0
+    genomepy.plugin.activate("bwa")
+    assert len(genomepy.plugin.get_active_plugins()) == 1
+
+
+def test_deactivate(deactivate_plugins):
+    _ = deactivate_plugins
 
     genomepy.plugin.activate("bwa")
-    plugins = genomepy.plugin.get_active_plugins()
-    assert len([plugin for plugin in plugins if "bwa" in str(plugin)]) == 1
-
-
-def test_deactivate():
-    # test assumes BWA is currently active
-    plugins = genomepy.plugin.get_active_plugins()
-    assert len([plugin for plugin in plugins if "bwa" in str(plugin)]) == 1
-
+    assert len(genomepy.plugin.get_active_plugins()) == 1
     genomepy.plugin.deactivate("bwa")
-    plugins = genomepy.plugin.get_active_plugins()
-    assert len([plugin for plugin in plugins if "bwa" in str(plugin)]) == 0
+    assert len(genomepy.plugin.get_active_plugins()) == 0
 
 
 def test_plugin():

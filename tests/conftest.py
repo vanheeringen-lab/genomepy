@@ -2,6 +2,7 @@
 Global fixtures and functions for pytest
 pytest can only share fixtures between modules if they are declared here.
 """
+# from multiprocessing.pool import Pool
 import os
 import logging
 
@@ -93,3 +94,63 @@ def validate_annot(fname, ftype):
             assert columns == len(vals)
             int(vals[start]), int(vals[end])
             break
+
+
+@pytest.fixture(scope="package")
+def provider():
+    return genomepy.provider.ProviderBase()
+
+
+@pytest.fixture(scope="package")
+def ensembl(provider):
+    return provider.create("ensembl")
+
+
+@pytest.fixture(scope="package")
+def ucsc(provider):
+    return provider.create("ucsc")
+
+
+@pytest.fixture(scope="package")
+def ncbi(provider):
+    return provider.create("ncbi")
+
+
+@pytest.fixture(scope="package")
+def url(provider):
+    return provider.create("url")
+
+
+# # start downloading provider genomes in the background
+# pool = Pool(processes=1)
+# async_ncbi = pool.apply_async(func=genomepy.ProviderBase.create, kwds={"name": "ncbi"})
+# async_ucsc = pool.apply_async(func=genomepy.ProviderBase.create, kwds={"name": "ucsc"})
+# async_ens = pool.apply_async(
+#     func=genomepy.ProviderBase.create, kwds={"name": "ensembl"}
+# )
+# pool.close()
+#
+#
+# @pytest.fixture(scope="package")
+# def provider():
+#     return genomepy.provider.ProviderBase()
+#
+#
+# @pytest.fixture(scope="package")
+# def ensembl():
+#     return async_ens.get()
+#
+#
+# @pytest.fixture(scope="package")
+# def ucsc():
+#     return async_ucsc.get()
+#
+#
+# @pytest.fixture(scope="package")
+# def ncbi():
+#     return async_ncbi.get()
+#
+#
+# @pytest.fixture(scope="package")
+# def url(provider):
+#     return provider.create("url")

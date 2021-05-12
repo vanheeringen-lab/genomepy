@@ -4,7 +4,6 @@ from stat import S_IREAD, S_IRGRP, S_IROTH
 import pytest
 
 import genomepy
-from genomepy.provider import ProviderBase
 import genomepy.utils
 
 
@@ -110,7 +109,7 @@ def test__update_provider(small_genome):
     assert metadata.get("provider") == "NCBI"
 
 
-def test__update_tax_id(small_genome):
+def test__update_tax_id(small_genome, ncbi):
     # genome not found
     metadata = {}
     small_genome._update_tax_id(metadata)
@@ -118,14 +117,13 @@ def test__update_tax_id(small_genome):
 
     # genome found
     metadata = {}
-    provider = ProviderBase.create("NCBI")
-    genome = provider.genomes.get("ASM14646v1")
+    genome = ncbi.genomes.get("ASM14646v1")
 
-    small_genome._update_tax_id(metadata, provider, genome)
+    small_genome._update_tax_id(metadata, ncbi, genome)
     assert metadata["tax_id"] == "58839"
 
 
-def test__update_assembly_accession(small_genome):
+def test__update_assembly_accession(small_genome, ncbi):
     # genome not found
     metadata = {}
     small_genome._update_assembly_accession(metadata)
@@ -133,10 +131,9 @@ def test__update_assembly_accession(small_genome):
 
     # genome found
     metadata = {}
-    provider = ProviderBase.create("NCBI")
-    genome = provider.genomes.get("ASM14646v1")
+    genome = ncbi.genomes.get("ASM14646v1")
 
-    small_genome._update_assembly_accession(metadata, provider, genome)
+    small_genome._update_assembly_accession(metadata, ncbi, genome)
     assert metadata["assembly_accession"] == "GCF_000146465.1"
 
 
@@ -341,14 +338,3 @@ def test_get_random_sequences(small_genome):
     assert (
         str(small_genome.track2fasta(rs[0])[0].seq).upper().count("N") <= length * max_n
     )
-
-
-# def test_delete_test_files():
-#     for genome in [
-#         "tests/data/small_genome.",
-#         "tests/data/gap.",
-#     ]:
-#         for ext in ["fa.fai", "fa.sizes", "gaps.bed", "fa.gz.fai", "fa.gz.sizes"]:
-#             file = genome + ext
-#             if os.path.exists(file):
-#                 os.unlink(file)

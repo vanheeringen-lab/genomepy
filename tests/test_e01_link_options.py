@@ -1,4 +1,3 @@
-import genomepy
 import pytest
 
 from tests import linux, travis
@@ -19,46 +18,42 @@ if not skip:
         return request.param
 
     @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
-    def test_ensembl_genome_download_links(assembly, masking, release_version):
+    def test_ensembl_genome_download_links(assembly, masking, release_version, ensembl):
         """Test Ensembl links with various options
 
         These genomes are hosted on ftp.ensembl.org
 
         Vertebrates are downloaded from HTTP.
         """
-        p = genomepy.provider.ProviderBase.create("Ensembl")
         mask = masking if masking != "unmasked" else "none"
         toplevel = False if assembly == "primary_assembly" else True
         version = release_version
-        assert p.get_genome_download_link(
+        assert ensembl.get_genome_download_link(
             "GRCh38.p13", mask=mask, toplevel=toplevel, version=version
         )
 
     @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
-    def test_ensemblgenomes_genome_download_links(masking):
+    def test_ensemblgenomes_genome_download_links(masking, ensembl):
         """Test Ensembl FTP links for various genomes
 
         These genomes are hosted on ftp.ensemblgenomes.org.
         """
-        p = genomepy.provider.ProviderBase.create("Ensembl")
         mask = masking if masking != "unmasked" else "none"
         for genome in ["Amel_HAv3.1", "WBcel235"]:
-            assert p.get_genome_download_link(genome, mask=mask)
+            assert ensembl.get_genome_download_link(genome, mask=mask)
 
-    def test_ucsc_genome_download_links(masking):
+    def test_ucsc_genome_download_links(masking, ucsc):
         """Test UCSC HTTP links for various genomes
 
         Also test masking (unmasked should be ignored)."""
-        p = genomepy.provider.ProviderBase.create("UCSC")
         for genome in ["sacCer3", "hg38"]:
-            assert p.get_genome_download_link(genome, mask=masking)
+            assert ucsc.get_genome_download_link(genome, mask=masking)
 
-    def test_ncbi_genome_download_links(masking):
+    def test_ncbi_genome_download_links(masking, ncbi):
         """Test NCBI HTTPS links for various genomes
 
         Also test masking (should be ignored).
 
         These genomes are hosted on ftp://ftp.ncbi.nlm.nih.gov."""
-        p = genomepy.provider.ProviderBase.create("NCBI")
         for genome in ["Charlie1.0", "GRCh38.p13"]:
-            assert p.get_genome_download_link(genome, mask=masking)
+            assert ncbi.get_genome_download_link(genome, mask=masking)

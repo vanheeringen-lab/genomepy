@@ -2,41 +2,31 @@ import os
 from shutil import copyfile
 from tempfile import TemporaryDirectory
 
-import pytest
 
-import genomepy
-
-
-@pytest.fixture(scope="module")
-def p():
-    return genomepy.provider.NcbiProvider()
+def test_ncbiprovider__init__(ncbi):
+    assert ncbi.name == "NCBI"
+    assert ncbi.taxid_fields == ["species_taxid", "taxid"]
 
 
-def test_ncbiprovider__init__(p):
-    p2 = genomepy.provider.ProviderBase().create("NCBI")
-    assert p2.name == p.name == "NCBI"
-    assert p.taxid_fields == ["species_taxid", "taxid"]
-
-
-def test__get_genomes(p):
-    assert isinstance(p.genomes, dict)
-    assert "ASM2732v1" in p.genomes
-    genome = p.genomes["ASM2732v1"]
+def test__get_genomes(ncbi):
+    assert isinstance(ncbi.genomes, dict)
+    assert "ASM2732v1" in ncbi.genomes
+    genome = ncbi.genomes["ASM2732v1"]
     assert isinstance(genome, dict)
-    for field in p.accession_fields + p.taxid_fields + p.description_fields:
+    for field in ncbi.accession_fields + ncbi.taxid_fields + ncbi.description_fields:
         assert field in genome
     assert genome["species_taxid"] == "2097"
     assert genome["taxid"] == "243273"
 
 
-def test_genome_info_tuple(p):
-    t = p._genome_info_tuple("ASM2732v1")
+def test_genome_info_tuple(ncbi):
+    t = ncbi._genome_info_tuple("ASM2732v1")
     assert isinstance(t, tuple)
     assert t[2:4] == ("Mycoplasma genitalium G37", "2097")
 
 
-def test_get_genome_download_link(p):
-    link = p.get_genome_download_link("ASM2732v1")
+def test_get_genome_download_link(ncbi):
+    link = ncbi.get_genome_download_link("ASM2732v1")
     assert (
         link
         == "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/"
@@ -44,7 +34,7 @@ def test_get_genome_download_link(p):
     )
 
 
-def test__post_process_download(p):
+def test__post_process_download(ncbi):
     name = "ASM2732v1"
     localname = "tmp"
     out_dir = os.getcwd()
@@ -53,7 +43,7 @@ def test__post_process_download(p):
         g = os.path.join(tmpdir, localname + ".fa")
         copyfile("tests/data/gap.fa", g)
 
-        p._post_process_download(
+        ncbi._post_process_download(
             name=name, localname=localname, out_dir=tmpdir, mask="hard"
         )
         assert os.path.exists(g)
@@ -70,8 +60,8 @@ def test__post_process_download(p):
                 ln += 1
 
 
-def test_get_annotation_download_link(p):
-    link = p.get_annotation_download_link("ASM2732v1")
+def test_get_annotation_download_link(ncbi):
+    link = ncbi.get_annotation_download_link("ASM2732v1")
     assert (
         link
         == "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/"
