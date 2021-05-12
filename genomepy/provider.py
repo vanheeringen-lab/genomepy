@@ -14,7 +14,7 @@ import pandas as pd
 from tempfile import mkdtemp
 from tqdm.auto import tqdm
 from typing import Optional, Iterator
-from urllib.request import urlopen, urlcleanup
+from urllib.request import urlopen
 
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.utils import (
@@ -389,7 +389,6 @@ class ProviderBase(object):
         tmp_dir = mkdtemp(dir=out_dir)
         fname = os.path.join(tmp_dir, f"{localname}.fa")
 
-        urlcleanup()
         download_file(link, fname)
         logger.info("Genome download successful, starting post processing...")
 
@@ -1123,8 +1122,6 @@ class NcbiProvider(ProviderBase):
             "assembly_summary_refseq.txt",
         ]
         for fname in names:
-            urlcleanup()
-
             lines = load_summary(f"{assembly_url}/{fname}")
             _ = next(lines)  # line 0 = comment
             header = (
@@ -1229,7 +1226,6 @@ class NcbiProvider(ProviderBase):
         )
 
         tr = {}
-        urlcleanup()
         with urlopen(url) as response:
             for line in response.read().decode("utf-8").splitlines():
                 if line.startswith("#"):

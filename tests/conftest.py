@@ -7,21 +7,20 @@ import logging
 
 from loguru import logger
 import pytest
-from _pytest.logging import caplog as _caplog  # noqa: F401
 
 import genomepy
 
 
-@pytest.fixture  # (scope="function")
-def caplog(_caplog):  # noqa: F811
-    """capture loguru with pytest's "caplog". source: loguru docs"""
+@pytest.fixture(scope="function")
+def caplog(caplog):
+    """Fixture is necessary to be able to check loguru log messages"""
 
     class PropogateHandler(logging.Handler):
         def emit(self, record):
             logging.getLogger(record.name).handle(record)
 
     handler_id = logger.add(PropogateHandler(), format="{message} {extra}")
-    yield _caplog
+    yield caplog
     logger.remove(handler_id)
 
 

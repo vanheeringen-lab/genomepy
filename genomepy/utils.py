@@ -280,22 +280,23 @@ def cmd_ok(cmd):
 
 def run_index_cmd(name, cmd):
     """Run command, show errors if the returncode is non-zero."""
+    logger.info(f"Creating {name} index...")
     p = sp.Popen(cmd, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
 
     # show a spinner while the command is running
     spinner = itertools.cycle(["-", "\\", "|", "/"])
     while p.poll() is None:
-        sys.stdout.write(f"\rCreating {name} index... {next(spinner)}")
+        sys.stdout.write("\r" + next(spinner))
         time.sleep(0.15)
         sys.stdout.flush()
-    sys.stdout.write("\n")
+    sys.stdout.write("\b")  # clear the spinner
 
     stdout, stderr = p.communicate()
     if p.returncode != 0:
         logger.error(
-            f"Index for {name} failed\n"
-            f"{stdout.decode('utf8')}"
-            f"{stderr.decode('utf8')}"
+            f"Indexing failed\n"
+            f"stdout: {stdout.decode('utf8')}\n"
+            f"stderr: {stderr.decode('utf8')}"
         )
 
 

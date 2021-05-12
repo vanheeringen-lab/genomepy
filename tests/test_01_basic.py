@@ -37,7 +37,7 @@ def test_import():
     # __init__.py
     assert str(genomepy.Genome) == "<class 'genomepy.genome.Genome'>"
     assert str(genomepy.ProviderBase) == "<class 'genomepy.provider.ProviderBase'>"
-    assert genomepy.__author__ == "Simon van Heeringen"
+    assert "Simon van Heeringen" in genomepy.__author__
 
 
 def test_exceptions():
