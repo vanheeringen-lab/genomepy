@@ -12,7 +12,7 @@ import gzip
 import shutil
 import socket
 import time
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Union
 from ftplib import FTP, all_errors
 from glob import glob
 from tempfile import mkdtemp
@@ -272,7 +272,7 @@ def cmd_ok(cmd):
     except sp.CalledProcessError:
         # bwa gives return code of 1 with no argument
         pass
-    except Exception:
+    except FileNotFoundError:
         logger.error(f"{cmd} not found, skipping\n")
         return False
     return True
@@ -335,9 +335,14 @@ def get_genomes_dir(genomes_dir: str = None, check_exist: Optional[bool] = True)
     return genomes_dir
 
 
-def safe(name):
+def safe(name: Union[str, int]) -> str:
     """Replace spaces with undescores."""
-    return name.strip().replace(" ", "_")
+    return str(name).strip().replace(" ", "_")
+
+
+def lower(string: Union[str, int]) -> str:
+    """for case-insensitive text comparisons"""
+    return safe(string).lower()
 
 
 def get_localname(name, localname=None):

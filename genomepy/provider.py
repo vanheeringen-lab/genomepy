@@ -13,7 +13,7 @@ from loguru import logger
 import pandas as pd
 from tempfile import mkdtemp
 from tqdm.auto import tqdm
-from typing import Optional, Iterator
+from typing import Optional, Iterator, Union
 from urllib.request import urlopen
 
 from genomepy.exceptions import GenomeDownloadError
@@ -27,6 +27,7 @@ from genomepy.utils import (
     get_file_info,
     read_url,
     safe,
+    lower,
     check_url,
     retry,
     is_number,
@@ -264,7 +265,7 @@ class ProviderBase(object):
             logger.warning(f"Could not download an NCBI assembly report for {asm_acc}")
             return
         ncbi_acc = search_result[2]
-        ncbi_name = safe(search_result[0])
+        ncbi_name = search_result[0]
 
         # NCBI FTP location of assembly report
         assembly_report = (
@@ -555,59 +556,29 @@ class ProviderBase(object):
         genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
         self.attempt_and_report(name, localname, link, genomes_dir)
 
-    def _search_taxids(self, genome, term):
-        """check if search term corresponds to the provider's taxonomy field(s)"""
-        for field in self.taxid_fields:
-            if term == str(genome[field]):
-                return True
+    def _search_text(self, term: str) -> Iterator[str]:
+        """check if search term is found in the provider's genome name or description field(s)"""
+        for name, metadata in self.genomes.items():
+            if term in lower(name) or any(
+                [term in lower(metadata[f]) for f in self.description_fields]
+            ):
+                yield name
 
-    def _search_descriptions(self, genome, term):
-        """check if search term corresponds to the provider's description field(s)"""
-        for field in self.description_fields:
-            if term in safe(genome[field].lower()):
-                return True
+    def _search_accession(self, term: str) -> Iterator[str]:
+        """check if search term is found in the provider's accession field(s)"""
+        # cut off prefix (GCA_/GCF_) and suffix (version numbers, e.g. '.3')
+        term = term[4:].split(".")[0]
+        for name, metadata in self.genomes.items():
+            if any([term in str(metadata[f]) for f in self.accession_fields]):
+                yield name
 
-    def _search_accessions(self, term: str) -> Iterator[str]:
-        """
-        Search for assembly accession.
+    def _search_taxonomy(self, term: str) -> Iterator[str]:
+        """check if search term matches to any of the provider's taxonomy field(s)"""
+        for name, metadata in self.genomes.items():
+            if any([term == lower(metadata[f]) for f in self.taxid_fields]):
+                yield name
 
-        Parameters
-        ----------
-        term : str
-            Assembly accession, GCA_/GCF_....
-
-        Yields
-        ------
-        genome names
-        """
-        # NCBI provides a consistent assembly accession. This can be used to
-        # retrieve the species, and then search for that.
-        p = ProviderBase.create("NCBI")
-        ncbi_genomes = list(p._search_accessions(term))
-
-        # remove superstrings (keep GRCh38, not GRCh38.p1 to GRCh38.p13)
-        unique_ncbi_genomes = []
-        for i in ncbi_genomes:
-            if sum([j in i for j in ncbi_genomes]) == 1:
-                unique_ncbi_genomes.append(i)
-
-        # add NCBI organism names to search terms
-        organism_names = [
-            p.genomes[name]["organism_name"] for name in unique_ncbi_genomes
-        ]
-        terms = list(set(unique_ncbi_genomes + organism_names))
-
-        # search with NCBI results in the given provider
-        for name in self.genomes:
-            for term in terms:
-                term = safe(term).lower()
-                if term in safe(name).lower() or self._search_descriptions(
-                    self.genomes[name], term
-                ):
-                    yield name
-                    break
-
-    def search(self, term):
+    def search(self, term: Union[str, int]):
         """
         Search for term in genome names, descriptions and taxonomy ID.
 
@@ -615,32 +586,27 @@ class ProviderBase(object):
 
         Parameters
         ----------
-        term : str
-            Search term, case-insensitive. Can be assembly name (e.g. hg38),
-            (part of a) scientific name (Danio rerio) or taxonomy id (722).
+        term : str, int
+            Search term, case-insensitive.
+            Can be (part of) an assembly name (e.g. hg38),
+            scientific name (Danio rerio) or assembly
+            accession (GCA_000146045/GCF_...),
+            or an exact taxonomy id (7227).
 
         Yields
         ------
         tuples with name and metadata
         """
-        genomes = self.genomes
-        term = safe(str(term))
-        if term.startswith(("GCA_", "GCF_")):
-            for name in self._search_accessions(term):
-                yield self._genome_info_tuple(name)
+        term = lower(term)
 
-        elif is_number(term):
-            for name in genomes:
-                if self._search_taxids(genomes[name], term):
-                    yield self._genome_info_tuple(name)
+        search_function = self._search_text
+        if term.startswith(("gca_", "gcf_")):
+            search_function = self._search_accession
+        if term.isdigit():
+            search_function = self._search_taxonomy
 
-        else:
-            term = term.lower()
-            for name in genomes:
-                if term in safe(name).lower() or self._search_descriptions(
-                    genomes[name], term
-                ):
-                    yield self._genome_info_tuple(name)
+        for genome in search_function(term):
+            yield self._genome_info_tuple(genome)
 
 
 register_provider = ProviderBase.register_provider
@@ -894,16 +860,56 @@ class UcscProvider(ProviderBase):
         genomes = ucsc_json["ucscGenomes"]
         return genomes
 
+    def _search_accession(self, term: str) -> Iterator[str]:
+        """
+        UCSC does not store assembly accessions.
+        This function searches NCBI (most genomes + stable accession IDs),
+        then uses the NCBI accession search results for a UCSC text search.
+
+        Parameters
+        ----------
+        term : str
+            Assembly accession, GCA_/GCF_....
+
+        Yields
+        ------
+        genome names
+        """
+        # NCBI provides a consistent assembly accession. This can be used to
+        # retrieve the species, and then search for that.
+        p = ProviderBase.create("NCBI")
+        ncbi_genomes = list(p._search_accession(term))  # noqa
+
+        # remove superstrings (keep GRCh38, not GRCh38.p1 to GRCh38.p13)
+        unique_ncbi_genomes = []
+        for i in ncbi_genomes:
+            if sum([j in i for j in ncbi_genomes]) == 1:
+                unique_ncbi_genomes.append(i)
+
+        # add NCBI organism names to search terms
+        organism_names = [
+            p.genomes[name]["organism_name"] for name in unique_ncbi_genomes
+        ]
+        terms = list(set(unique_ncbi_genomes + organism_names))
+
+        # search with NCBI results in the given provider
+        for name, metadata in self.genomes.items():
+            for term in terms:
+                term = lower(term)
+                if term in lower(name) or any(
+                    [term in lower(metadata[f]) for f in self.description_fields]
+                ):
+                    yield name
+                    break  # max one hit per genome
+
     @staticmethod
     @cache
     def assembly_accession(genome):
-        """Return the assembly accession (GCA_*) for a genome.
+        """Return the assembly accession (GCA_/GCF_....) for a genome.
 
         UCSC does not serve the assembly accession through the REST API.
-        Therefore, the readme.html is scanned for a GCA assembly id. If it is
-        not found, the linked NCBI assembly page will be checked. Especially
-        for older genome builds, the GCA will not be present, in which case
-        "na" will be returned.
+        Therefore, the readme.html is scanned for an assembly accession. If it is
+        not found, the linked NCBI assembly page will be checked.
 
         Parameters
         ----------
@@ -915,36 +921,34 @@ class UcscProvider(ProviderBase):
         str
             Assembly accession.
         """
-        ucsc_url = "https://hgdownload.soe.ucsc.edu/" + genome["htmlPath"]
-
-        p = re.compile(r"GCA_\d+\.\d+")
-        p_ncbi = re.compile(r"https?://www.ncbi.nlm.nih.gov/assembly/\d+")
         try:
+            ucsc_url = "https://hgdownload.soe.ucsc.edu/" + genome["htmlPath"]
             text = read_url(ucsc_url)
         except UnicodeDecodeError:
-            return "UnicodeDecodeError"
-        m = p.search(text)
-        # Default, if not found. This matches NCBI, which will also return na.
-        gca = "na"
-        if m:
-            # Get the GCA from the html
-            gca = m.group(0)
-        else:
-            # Search for an assembly link at NCBI
-            m = p_ncbi.search(text)
-            if m:
-                ncbi_url = m.group(0)
-                text = read_url(ncbi_url)
-                # We need to select the line that contains the assembly accession.
-                # The page will potentially contain many more links to newer assemblies
-                lines = text.split("\n")
-                text = "\n".join(
-                    [line for line in lines if "RefSeq assembly accession:" in line]
-                )
-                m = p.search(text)
-                if m:
-                    gca = m.group(0)
-        return gca
+            return "na"
+
+        # example accessions: GCA_000004335.1 (ailMel1)
+        # regex: GC[AF]_ = GCA_ or GCF_, \d = digit, \. = period
+        accession_regex = re.compile(r"GC[AF]_\d{9}\.\d+")
+        match = accession_regex.search(text)
+        if match:
+            return match.group(0)
+
+        # Search for an assembly link at NCBI
+        match = re.search(r"https?://www.ncbi.nlm.nih.gov/assembly/\d+", text)
+        if match:
+            ncbi_url = match.group(0)
+            text = read_url(ncbi_url)
+
+            # retrieve valid assembly accessions.
+            # contains additional info, such as '(latest)' or '(suppressed)'. Unused for now.
+            valid_accessions = re.findall(r"assembly accession:.*?GC[AF]_.*?<", text)
+            text = " ".join(valid_accessions)
+            match = accession_regex.search(text)
+            if match:
+                return match.group(0)
+
+        return "na"
 
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
@@ -996,7 +1000,7 @@ class UcscProvider(ProviderBase):
         )
 
     @staticmethod
-    def _post_process_download(name, localname, out_dir, mask="soft"):
+    def _post_process_download(name, localname, out_dir, mask="soft"):  # noqa
         """
         Unmask a softmasked genome if required
 
@@ -1014,7 +1018,6 @@ class UcscProvider(ProviderBase):
         mask : str , optional
             masking level: soft/hard/none, default=soft
         """
-        del name
         if mask != "none":
             return
 
@@ -1133,28 +1136,6 @@ class NcbiProvider(ProviderBase):
                     name = safe(line[15])  # overwrites older asm_names
                     genomes[name] = dict(zip(header, line))
         return genomes
-
-    def _search_accessions(self, term: str) -> Iterator[str]:
-        """
-        Search for assembly accession.
-
-        Parameters
-        ----------
-        term : str
-            Assembly accession, GCA_/GCF_....
-
-        Yields
-        ------
-        genome names
-        """
-        # cut off prefix (GCA_/GCF_) and suffix (version numbers, e.g. '.3')
-        term = term[3:].split(".")[0]
-        for name in self.genomes:
-            accession_ids = [
-                self.genomes[name][field] for field in self.accession_fields
-            ]
-            if any([term in acc for acc in accession_ids]):
-                yield name
 
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
