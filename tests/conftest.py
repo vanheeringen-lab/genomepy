@@ -97,7 +97,7 @@ def validate_annot(fname, ftype):
 
 @pytest.fixture(scope="package")
 def provider():
-    return genomepy.provider.ProviderBase()
+    return genomepy.ProviderBase()
 
 
 @pytest.fixture(scope="package")

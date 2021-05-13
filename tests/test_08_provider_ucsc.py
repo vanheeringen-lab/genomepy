@@ -18,6 +18,11 @@ def test__get_genomes(ucsc):
     assert genome["taxId"] == 9646
 
 
+def test__search_accession(ucsc):
+    assert list(ucsc._search_accession("not_an_id")) == []
+    assert list(ucsc._search_accession("GCA_000004335.1")) == ["ailMel1"]
+
+
 def test_assembly_accession(ucsc):
     genome = ucsc.genomes["sacCer3"]
     accession = ucsc.assembly_accession(genome)

@@ -232,17 +232,20 @@ def test_download_annotation(ucsc):
         assert metadata["annotation url"] in annot_urls
 
 
-def test__search_taxids(ucsc):
-    assert not ucsc._search_taxids(ucsc.genomes["ailMel1"], "not_an_id")
-    assert ucsc._search_taxids(ucsc.genomes["ailMel1"], "9646")
+def test__search_text(ucsc):
+    term = genomepy.utils.lower("Ailuropoda melanoleuca")
+    assert list(ucsc._search_text("not_in_description")) == []
+    assert list(ucsc._search_text(term)) == ["ailMel1"]
 
 
-def test__search_descriptions(ucsc):
-    assert "scientificName" in ucsc.description_fields
-    assert ucsc.genomes["ailMel1"]["scientificName"] == "Ailuropoda melanoleuca"
-    desc = genomepy.utils.safe("Ailuropoda melanoleuca").lower()
-    assert ucsc._search_descriptions(ucsc.genomes["ailMel1"], desc)
-    assert not ucsc._search_descriptions(ucsc.genomes["ailMel1"], "not_in_description")
+def test__search_accession(ncbi):
+    assert list(ncbi._search_accession("not_an_id")) == []
+    assert list(ncbi._search_accession("GCA_000004335.1")) == ["AilMel_1.0"]
+
+
+def test__search_taxonomy(ucsc):
+    assert list(ucsc._search_taxonomy("not_an_id")) == []
+    assert list(ucsc._search_taxonomy("9646")) == ["ailMel1"]
 
 
 def test_search(ucsc):
