@@ -1,9 +1,10 @@
 import os.path
 import re
-import sys
 
 from bisect import bisect
 from glob import glob
+from loguru import logger
+import pandas as pd
 from pyfaidx import Fasta, Sequence
 from random import random
 
@@ -146,11 +147,11 @@ class Genome(Fasta):
 
     @property
     def annotation_gtf_file(self):
-        return self.check_annotation_file("gtf")
+        return self._check_annotation_file("gtf")
 
     @property
     def annotation_bed_file(self):
-        return self.check_annotation_file("bed")
+        return self._check_annotation_file("bed")
 
     @staticmethod
     def _parse_name(name: str) -> str:
@@ -177,7 +178,7 @@ class Genome(Fasta):
             f"could not find {self.name}.fa(.gz) in genome_dir {default_genome_dir}"
         )
 
-    def check_annotation_file(self, ext):
+    def _check_annotation_file(self, ext):
         """returns (gzipped) annotation file"""
         pattern = os.path.join(self.genome_dir, self.name + ".annotation.")
         file = glob(pattern + ext + "*")
@@ -212,7 +213,7 @@ class Genome(Fasta):
 
     def _update_metadata(self, metadata):
         """check if there is missing info that can be updated"""
-        print("Updating metadata in README.txt", file=sys.stderr)
+        logger.info("Updating metadata in README.txt")
         if metadata.get("provider", "na") == "na":
             self._update_provider(metadata)
 
@@ -471,3 +472,49 @@ class Genome(Fasta):
                 coords[i] = [f"{region[0]}:{region[1]}-{region[2]}"]
 
         return coords
+
+    def _map_locations(self, to: str) -> pd.DataFrame:
+        """
+        Load chromosome mapping from one version/assembly to another using the
+        NCBI assembly reports.
+
+        Parameters
+        ----------
+        to: str
+            target provider (UCSC, Ensembl or NCBI)
+
+        Returns
+        -------
+        pandas.DataFrame
+            Chromosome mapping.
+        """
+        mapping = ProviderBase.map_locations(self.name, to, self.genomes_dir)
+        return mapping
+
+    def map_locations(self, to: str) -> dict:
+        """
+        Map chromosome mapping from one version/assembly to another using the
+        NCBI assembly reports.
+
+        Drops missing contigs.
+
+        Parameters
+        ----------
+        to: str
+            target provider (UCSC, Ensembl or NCBI)
+
+        Returns
+        -------
+        dict(contig: sequence)
+        """
+        mapping = self._map_locations(to)
+        mapping = mapping.to_dict()[f"{to.lower()}-name"]
+        keys = self.keys()
+
+        # TODO: Create a new genome folder, copy readme and return the remapped Genome() object?
+        remap = dict()
+        for key in keys:
+            if key in mapping:
+                rec = next(self.records[key].__iter__())
+                remap[mapping[key]] = rec
+        return remap

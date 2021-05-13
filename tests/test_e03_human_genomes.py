@@ -1,11 +1,11 @@
-import os
 from tempfile import mkdtemp
+
+import pytest
 
 import genomepy
 import genomepy.utils
-import pytest
+from tests import travis
 
-travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
 
 skip = True
 if not skip:

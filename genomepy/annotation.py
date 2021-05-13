@@ -2,21 +2,55 @@ import csv
 import os
 import re
 import subprocess as sp
-import sys
 from tempfile import mkdtemp
-from typing import Optional, Union
+from typing import Iterable, Optional, Tuple, Union
 
+from loguru import logger
+import mygene
+import numpy as np
 import pandas as pd
 
+from genomepy.provider import ProviderBase
 from genomepy.utils import (
     get_genomes_dir,
     gzip_and_name,
     gunzip_and_name,
     glob_ext_files,
+    read_readme,
     update_readme,
+    mkdir_p,
     rm_rf,
     _open,
+    best_search_result,
+    safe,
 )
+
+GTF_FORMAT = [
+    "seqname",
+    "source",
+    "feature",
+    "start",
+    "end",
+    "score",
+    "strand",
+    "frame",
+    "attribute",
+]
+
+BED12_FORMAT = [
+    "chrom",
+    "start",
+    "end",
+    "name",
+    "score",
+    "strand",
+    "thickStart",
+    "thickEnd",
+    "itemRrgb",
+    "blockCount",
+    "blockSizes",
+    "blockStarts",
+]
 
 
 class Annotation:
@@ -48,9 +82,12 @@ class Annotation:
         self.index_file = self.genome_file + ".fai" if self.genome_file else None
         self.sizes_file = self.genome_file + ".sizes" if self.genome_file else None
 
-        # variables to store if called
+        # variables loaded on request
         self.genome_contigs = []
         self.annotation_contigs = []
+        self.gtf = None
+        self.bed = None
+        self.genes = []
 
     def _get_genome_file(self, ext: str, check_exists: Optional[bool] = True):
         """
@@ -72,7 +109,7 @@ class Annotation:
             raise FileNotFoundError(
                 f"could not find '{self.name}.{ext}(.gz)' in directory {self.genome_dir}"
             )
-        return None
+        return
 
     @property
     def genome_contigs(self):
@@ -85,7 +122,8 @@ class Annotation:
     @genome_contigs.getter
     def genome_contigs(self):
         if not self.__genome_contigs:
-            return get_column(self.sizes_file)
+            self.__genome_contigs = get_column(self.sizes_file)
+        return self.__genome_contigs
 
     @property
     def annotation_contigs(self):
@@ -98,7 +136,87 @@ class Annotation:
     @annotation_contigs.getter
     def annotation_contigs(self):
         if not self.__annotation_contigs:
-            return list(set(get_column(self.annotation_bed_file)))
+            self.__annotation_contigs = list(set(get_column(self.annotation_bed_file)))
+        return self.__annotation_contigs
+
+    @property
+    def gtf(self):
+        return self.__gtf
+
+    @gtf.setter
+    def gtf(self, gtf):
+        self.__gtf = gtf
+
+    @gtf.getter
+    def gtf(self):
+        if not isinstance(self.__gtf, pd.DataFrame):
+            self.__gtf = pd.read_csv(
+                self.annotation_gtf_file,
+                sep="\t",
+                names=GTF_FORMAT,
+                dtype={"seqname": str, "start": np.uint32, "end": np.uint32},
+                comment="#",
+            )
+        return self.__gtf
+
+    @property
+    def bed(self):
+        return self.__bed
+
+    @bed.setter
+    def bed(self, bed):
+        self.__bed = bed
+
+    @bed.getter
+    def bed(self):
+        if not isinstance(self.__bed, pd.DataFrame):
+            self.__bed = pd.read_csv(
+                self.annotation_bed_file,
+                sep="\t",
+                names=BED12_FORMAT,
+                dtype={"chrom": str, "start": np.uint32, "end": np.uint32},
+                comment="#",
+            )
+        return self.__bed
+
+    @property
+    def genes(self):
+        return self.__genes
+
+    @genes.setter
+    def genes(self, genes):
+        self.__genes = genes
+
+    @genes.getter
+    def genes(self):
+        if not self.__genes:
+            self.__genes = list(set(self.bed.name))
+        return list(set(self.bed.name))
+
+    def gene_coords(self, genes: Iterable[str]) -> pd.DataFrame:
+        """
+        Retrieve gene locations.
+
+        Parameters
+        ----------
+        genes : Iterable
+            List of gene names as found in the BED file "name" column.
+
+        Returns
+        -------
+        pandas.DataFrame with gene annotation.
+        """
+        gene_list = list(genes)
+        gene_info = self.bed[["chrom", "start", "end", "name", "strand"]].set_index(
+            "name"
+        )
+
+        gene_info = gene_info.loc[gene_list]
+        if gene_info.shape[0] < 0.9 * len(gene_list):
+            logger.warning(
+                "Not all genes were found. All gene names can be found in `Annotation.genes`"
+            )
+        return gene_info.reset_index()[["chrom", "start", "end", "name", "strand"]]
 
     @staticmethod
     def filter_regex(
@@ -126,7 +244,7 @@ class Annotation:
         discarded_contigs = list(set(old[~filter_func][0]))
         return discarded_contigs
 
-    def filter_genome_contigs(self):
+    def _filter_genome_contigs(self):
         """
         filter the gtf for contigs in the genome.
         return a list of discarded contigs.
@@ -234,6 +352,33 @@ class Annotation:
         missing_contigs = list(set(old[nans][0]))
         return missing_contigs
 
+    def gtf_from_bed(self):
+        """
+        Create an annotation gtf file from an annotation bed file.
+        Overwrites the existing gtf file.
+        """
+        tmp_dir = mkdtemp(dir=self.genome_dir)
+
+        # unzip if needed
+        self.annotation_bed_file, is_unzipped = gunzip_and_name(
+            self.annotation_bed_file
+        )
+        new_gtf_file = os.path.join(
+            tmp_dir, os.path.basename(re.sub(r"\.gz$", "", self.annotation_gtf_file))
+        )
+
+        cmd = "bedToGenePred {0} /dev/stdout | genePredToGtf file /dev/stdin {1}"
+        sp.check_call(cmd.format(self.annotation_bed_file, new_gtf_file), shell=True)
+
+        # gzip if needed
+        self.annotation_bed_file = gzip_and_name(self.annotation_bed_file, is_unzipped)
+        new_gtf_file = gzip_and_name(
+            new_gtf_file, self.annotation_gtf_file.endswith(".gz")
+        )
+
+        os.replace(new_gtf_file, self.annotation_gtf_file)
+        rm_rf(tmp_dir)
+
     def bed_from_gtf(self):
         """
         Create an annotation bed file from an annotation gtf file.
@@ -276,7 +421,7 @@ class Annotation:
         filter_contigs: remove contigs from the annotations that are missing from the genome?
         """
         if self.genome_file is None:
-            sys.stderr.write("A genome is required for sanitizing!")
+            logger.error("A genome is required for sanitizing!")
             return
 
         extra_lines = []
@@ -284,7 +429,7 @@ class Annotation:
             status = "contigs match but not filtered"
             if filter_contigs:
                 status = "contigs match"
-                contigs_filtered_out = self.filter_genome_contigs()
+                contigs_filtered_out = self._filter_genome_contigs()
                 if contigs_filtered_out:
                     self.bed_from_gtf()
                     status = "contigs match and filtered"
@@ -311,7 +456,7 @@ class Annotation:
             matching_contig_index
         )
         if duplicate_contigs:
-            sys.stderr.write(
+            logger.warning(
                 "\nThe genome contains duplicate contig names, this should really not happen!\n"
                 "You may wish to consider filtering these out, or look for another genome assembly..."
                 "The following duplicate contigs were found: "
@@ -333,8 +478,240 @@ class Annotation:
                     "The following contigs could not be sanitized"
                     " in the gene annotation, and were kept as-is:"
                 )
-            sys.stderr.write(" ".join(extra_lines))
+            logger.info(" ".join(extra_lines))
         update_readme(self.readme_file, {"sanitized annotation": status}, extra_lines)
+
+    def ensembl_genome_info(self) -> Optional[Tuple[str, str, str]]:
+        """
+        Return Ensembl genome information for this genome.
+        Requires accession numbers to match (excluding patch numbers)
+
+        Returns
+        -------
+        (str, str, str)
+            Ensembl name, accession, taxonomy_id
+        """
+        metadata, _ = read_readme(self.readme_file)
+        if metadata["provider"] == "Ensembl":
+            return metadata["name"], metadata["assembly_accession"], metadata["tax_id"]
+
+        if metadata["assembly_accession"] == "na":
+            logger.warning(
+                "Cannot find a matching genome without an assembly accession."
+            )
+            return
+
+        asm_acc = metadata["assembly_accession"]
+        ensembl_search = list(ProviderBase.search_all(asm_acc, provider="Ensembl"))
+        search_result = best_search_result(asm_acc, ensembl_search)
+        if len(search_result) == 0:
+            logger.warning(
+                f"No assembly accession found on Ensembl similar to {asm_acc}"
+            )
+            return
+
+        return safe(search_result[0]), search_result[2], search_result[4]
+
+    def _query_mygene(
+        self, query: Iterable[str], fields: str = "genomic_pos"
+    ) -> pd.DataFrame:
+        # mygene.info only queries the most recent version of the Ensembl database
+        # We can only safely continue if the local genome matched the Ensembl genome.
+        # Even if the local genome was installed via Ensembl, we still need to check
+        # if it is the same version
+        ensembl_info = self.ensembl_genome_info()
+        if ensembl_info is None:
+            return pd.DataFrame()
+        _, _, tax_id = ensembl_info
+
+        # Run the actual query
+        logger.info("Querying mygene.info...")
+        mg = mygene.MyGeneInfo()
+        result = mg.querymany(
+            query,
+            scopes="symbol,name,ensembl.gene,entrezgene,ensembl.transcript,ensembl",
+            fields=fields,
+            species=tax_id,
+            as_dataframe=True,
+            verbose=False,
+        )
+        if "notfound" in result and result.shape[1] == 1:
+            logger.warning("No matching genes found")
+            return pd.DataFrame()
+
+        return result
+
+    @staticmethod
+    def _filter_query(query: pd.DataFrame) -> pd.DataFrame:
+        """per queried gene, keep the best matching, non-NaN, mapping"""
+        if "notfound" in query:
+            query = query[~query.notfound == np.NaN]  # drop unmatched genes
+            query = query.drop(columns="notfound")
+        query = query.dropna()
+        if "query" in query:
+            query = query.groupby("query").first()  # already sorted by mapping score
+            query = query.drop(columns=["_id", "_score"])
+        return query
+
+    def query_mygene(self, query: Iterable[str], fields: str = "genomic_pos"):
+        """
+        Use mygene.info to map gene identifiers to another type.
+
+        If the identifier can't be mapped, it will be dropped from the resulting
+        annotation. If multiple identifiers match, the best match is used.
+
+        Parameters
+        ----------
+        query: iterable
+            a list or list-like of gene identifiers
+        fields : str, optional
+            Target identifier to map the query genes to. Valid fields
+            are: ensembl.gene, entrezgene, symbol, name, refseq, entrezgene. Note that
+            refseq will return the protein refseq_id by default, use `product="rna"` to
+            return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
+            not supported.
+
+        Returns
+        -------
+        pandas.DataFrame with mapped gene annotation.
+        """
+        # load mapping
+        gene_hash = hash(tuple(set(query)))  # hash unique names
+        mygene_mapping = os.path.join(
+            self.genome_dir, "mygene", f"{fields}_genehash_{gene_hash}.tsv"
+        )
+        if os.path.exists(mygene_mapping):
+            return pd.read_csv(mygene_mapping, sep="\t", index_col=0)
+
+        # request mapping
+        ret = self._query_mygene(query, fields)
+        ret = self._filter_query(ret)
+
+        # save mapping
+        mkdir_p(os.path.join(self.genome_dir, "mygene"))
+        ret.to_csv(mygene_mapping, sep="\t", index=True, header=True)
+        return ret
+
+    def _map_genes(
+        self, df: pd.DataFrame, to: str, product: str = "protein"
+    ) -> pd.DataFrame:
+        cols = df.columns  # starting columns
+        # remove version numbers from gene IDs
+        df["split_id"] = df["name"].str.split(r"\.", expand=True)[0]
+        genes = set(df["split_id"])
+        result = self.query_mygene(genes, fields=to)
+        if len(result) == 0:
+            logger.error("Could not map using mygene.info")
+            return pd.DataFrame()
+        df = df.join(result, on="split_id")
+
+        # Only in case of RefSeq annotation the product needs to be specified.
+        if to == "refseq":
+            to = f"{to}.translation.{product}"
+
+        # Get rid of extra columns from query
+        df["name"] = df[to]
+        df = df[cols].dropna()
+        return df
+
+    def map_genes(
+        self, gene_field: str, product: str = "protein", df: pd.DataFrame = None
+    ) -> Optional[pd.DataFrame]:
+        """
+        Uses mygene.info to map gene identifiers on the fly by specifying
+        `gene_field`. If the identifier can't be mapped, it will be dropped
+        from the resulting annotation.
+
+        Returns the dataframe (BED12 by default) with remapped "name" column.
+
+        Parameters
+        ----------
+        gene_field : str, optional
+            Identifier for gene annotation. Uses mygene.info to map ids. Valid fields
+            are: ensembl.gene, entrezgene, symbol, name, refseq, entrezgene. Note that
+            refseq will return the protein refseq_id by default, use `product="rna"` to
+            return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
+            not supported.
+        product : str, optional
+            Either "protein" or "rna". Only used when `gene_field="refseq"`
+        df : pandas.Dataframe, optional
+            dataframe with "name" column to remap, will use the annotation's BED file if unspecified.
+
+        Returns
+        -------
+        pandas.DataFrame with gene annotation.
+        """
+        if df is None:
+            df = self.bed.copy()
+
+        product = product.lower()
+        if product not in ["rna", "protein"]:
+            raise ValueError("Argument product should be either 'rna' or 'protein'")
+
+        gene_field = gene_field.lower()
+        if gene_field not in [
+            "ensembl.gene",
+            "entrezgene",
+            "symbol",
+            "name",
+            "refseq",
+            "entrezgene",
+        ]:
+            raise ValueError(
+                "Argument product should be either 'ensembl.gene', "
+                "'entrezgene,' 'symbol', 'name', 'refseq' or 'entrezgene'"
+            )
+
+        df = self._map_genes(df, gene_field, product)
+        return df
+
+    def _map_locations(self, to: str) -> pd.DataFrame:
+        """
+        Load chromosome mapping from one version/assembly to another using the
+        NCBI assembly reports.
+
+        Parameters
+        ----------
+        to: str
+            target provider (UCSC, Ensembl or NCBI)
+
+        Returns
+        -------
+        pandas.DataFrame
+            Chromosome mapping.
+        """
+        genomes_dir = os.path.dirname(self.genome_dir)
+        mapping = ProviderBase.map_locations(self.name, to, genomes_dir)
+        return mapping
+
+    def map_locations(self, annot: Union[str, pd.DataFrame], to: str) -> pd.DataFrame:
+        """
+        Map chromosome mapping from one version/assembly to another using the
+        NCBI assembly reports.
+
+        Drops missing contigs.
+
+        Parameters
+        ----------
+        annot: pd.Dataframe
+            annotation to map (a pandas dataframe, "bed" or "gtf")
+        to: str
+            target provider (UCSC, Ensembl or NCBI)
+
+        Returns
+        -------
+        pandas.DataFrame
+            Chromosome mapping.
+        """
+        mapping = self._map_locations(to)
+        if isinstance(annot, str):
+            df = self.bed if annot == "bed" else self.gtf
+        else:
+            df = annot
+        df = df.set_index(df.columns[0])
+        df = df.join(mapping, how="inner")
+        df = df.reset_index()
+        return df
 
 
 def get_column(

@@ -1,15 +1,14 @@
-import genomepy
-import norns
-import os
-import pytest
-import subprocess as sp
-
-from shutil import rmtree
-from bucketcache import Bucket
 from appdirs import user_cache_dir
-from genomepy.__about__ import __version__
+from bucketcache import Bucket
+import os
+import subprocess as sp
+from shutil import rmtree
 
-travis = "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+import norns
+import pytest
+
+import genomepy
+from . import travis
 
 
 @pytest.mark.skipif(travis, reason="format before committing!")
@@ -28,9 +27,7 @@ def test_clean():
     # test moved from 10 to prevent errors in parallel tests
     genomepy.clean()
 
-    my_cache_dir = os.path.join(
-        user_cache_dir("genomepy"), genomepy.__about__.__version__
-    )
+    my_cache_dir = os.path.join(user_cache_dir("genomepy"), genomepy.__version__)
     assert os.path.exists(my_cache_dir)  # dir exists
     assert not os.listdir(my_cache_dir)  # contains 0 pickles
     genomepy.clean()  # no errors when cache dir is empty
@@ -38,10 +35,9 @@ def test_clean():
 
 def test_import():
     # __init__.py
-    assert str(genomepy.search).startswith("<function search at")
     assert str(genomepy.Genome) == "<class 'genomepy.genome.Genome'>"
     assert str(genomepy.ProviderBase) == "<class 'genomepy.provider.ProviderBase'>"
-    assert genomepy.__author__ == "Simon van Heeringen"
+    assert "Simon van Heeringen" in genomepy.__author__
 
 
 def test_exceptions():
@@ -56,7 +52,7 @@ def test_config():
 
 @pytest.mark.skipif(not travis, reason="it works locally all right")
 def test_cache(capsys):
-    my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
+    my_cache_dir = os.path.join(user_cache_dir("genomepy"), genomepy.__version__)
     if os.path.exists(my_cache_dir):
         rmtree(my_cache_dir)
     os.makedirs(my_cache_dir)

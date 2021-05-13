@@ -1,3 +1,9 @@
+# run travis on these branches (and all PRs)
+branches:
+  only:
+  - master
+  - develop
+
 # use the minimal travis environment since we test in conda
 language: minimal
 

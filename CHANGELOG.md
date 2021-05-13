@@ -7,13 +7,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-- Annotation class, containg regex filter and sanitize functions
+- Annotation class, containing
+  - regex filter (`genomepy.Annotation.filter_regex()`)
+  - sanitize functions (`genomepy.Annotation.sanitize()`)
+  - gene name remapping to various formats (`genomepy.Annotation.map_genes()`)
+    - using MyGene.info (`genomepy.Annotation.query_mygene()`)
+  - contig name remapping to other provider formats (`genomepy.Annotation.map_locations()`)
+  - `bed_from_gtf` and `gtf_from_bed` conversion functions
+- genomepy install now attempts to install the NCBI assembly report
 - NCBI provider also indexes the NCBI `genbank_historical` summary
 - option to skip filtering and/or matching the annotation to the genome
 
 ### Changed
+- now using loguru to pretty logging
+- accession search improved
+  - now finds GCA and GCF accessions
+  - now ignores patch levels
 - automatic provider selection refactored
-    - genomepy.functions.online_provider() returns a generator
+    - genomepy.ProviderBase.online_providers() returns a generator
 - `genomepy install` uses a combined filter function to speed it up
 - `genomepy install` only zips annotation files if the genome is zipped (with the bgzip flag)
 - regex filtering is separated from `download_genome`
@@ -23,6 +34,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - the `Genome` class now passes arguments to the parent `Fasta` class
 - the `Genome` class now regenerates the sizes and gaps files similarly to the `Fasta` class and its index (when the genome is younger).
+- somewhat more pythonic tests
 
 ## [0.9.3] - 2021-02-03
 

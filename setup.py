@@ -25,6 +25,8 @@ requires = [
     "bucketcache",
     "click",
     "colorama",
+    "loguru",
+    "mygene",
     "norns>=0.1.5",
     "pandas",
     "pyfaidx>=0.5.7",

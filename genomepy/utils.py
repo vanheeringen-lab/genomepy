@@ -1,7 +1,6 @@
 """Utility functions."""
 import os
 import itertools
-import norns
 import re
 import sys
 import urllib.error
@@ -13,13 +12,16 @@ import gzip
 import shutil
 import socket
 import time
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from ftplib import FTP, all_errors
 from glob import glob
+from tempfile import mkdtemp
+
+from loguru import logger
+import norns
 from norns import exceptions
 from pyfaidx import Fasta
 from tqdm.auto import tqdm
-from tempfile import mkdtemp
 
 from genomepy.exceptions import GenomeDownloadError
 
@@ -271,28 +273,31 @@ def cmd_ok(cmd):
         # bwa gives return code of 1 with no argument
         pass
     except Exception:
-        sys.stderr.write(f"{cmd} not found, skipping\n")
+        logger.error(f"{cmd} not found, skipping\n")
         return False
     return True
 
 
 def run_index_cmd(name, cmd):
     """Run command, show errors if the returncode is non-zero."""
+    logger.info(f"Creating {name} index...")
     p = sp.Popen(cmd, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
 
     # show a spinner while the command is running
     spinner = itertools.cycle(["-", "\\", "|", "/"])
     while p.poll() is None:
-        sys.stdout.write(f"\rCreating {name} index... {next(spinner)}")
+        sys.stdout.write("\r" + next(spinner))
         time.sleep(0.15)
         sys.stdout.flush()
-    sys.stdout.write("\n")
+    sys.stdout.write("\b")  # clear the spinner
 
     stdout, stderr = p.communicate()
     if p.returncode != 0:
-        sys.stderr.write(f"Index for {name} failed\n")
-        sys.stderr.write(stdout.decode("utf8"))
-        sys.stderr.write(stderr.decode("utf8"))
+        logger.error(
+            f"Indexing failed\n"
+            f"stdout: {stdout.decode('utf8')}\n"
+            f"stderr: {stderr.decode('utf8')}"
+        )
 
 
 def glob_ext_files(dirname, ext="fa"):
@@ -531,3 +536,47 @@ def file_len(fname):
         for i, _ in enumerate(f):  # noqa: B007
             pass
     return i + 1
+
+
+def best_accession(reference: str, targets: list):
+    """Return the nearest accession ID from a list of IDs"""
+    if len(targets) == 1:
+        return targets[0]
+
+    # GCA/GCF
+    matching_prefix = [t for t in targets if t.startswith(reference[0:3])]
+    if len(matching_prefix) > 0:
+        targets = matching_prefix
+
+    # patch levels
+    # e.g. GCA_000002035.4 & GCA_000002035.3
+    ref_patch = int(reference.split(".")[1]) if "." in reference else 0
+    nearest = [999, []]
+    for target in targets:
+        tgt_patch = int(target.split(".")[1]) if "." in target else 0
+        distance = abs(ref_patch - tgt_patch)
+        if distance == nearest[0]:
+            nearest[1].append(target)
+        if distance < nearest[0]:
+            nearest = [distance, [target]]
+    targets = nearest[1]
+
+    if len(targets) > 1:
+        logger.warning(
+            f"Multiple matching accession numbers found. Returning the closest ({targets[0]})."
+        )
+    return targets[0]
+
+
+def best_search_result(asm_acc: str, results: List[list]) -> list:
+    """Return the best result from ProviderBase.search_all based on accession IDs"""
+    if len(results) == 0:
+        logger.warning(f"No assembly found similar to {asm_acc}")
+        return []
+
+    if len(results) > 1:
+        accessions = [res[2] for res in results]
+        bes_acc = best_accession(asm_acc, accessions)
+        results = [r for r in results if r[2] == bes_acc]
+
+    return results[0]

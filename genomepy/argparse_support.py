@@ -1,5 +1,8 @@
 import sys
 import argparse
+
+from loguru import logger
+
 from genomepy.functions import Genome, install_genome
 
 
@@ -20,13 +23,13 @@ def parse_genome(auto_install=False, genomes_dir=None):
             try:
                 genome = Genome(name, genomes_dir=genomes_dir)
             except FileNotFoundError:
-                print(f"Genome {name} not found!")
+                logger.warning(f"Genome {name} not found!")
                 if auto_install:
-                    print("Trying to install it automatically using genomepy...")
+                    logger.info("Trying to install it automatically using genomepy...")
                     install_genome(name, annotation=True, genomes_dir=genomes_dir)
                     genome = Genome(name, genomes_dir=genomes_dir)
                 else:
-                    print("You can install it using `genomepy install`.")
+                    logger.info("You can install it using `genomepy install`.")
                     sys.exit(1)
             setattr(args, self.dest, genome)
 

@@ -1,10 +1,11 @@
 import os
 from tempfile import mkdtemp
 
+import pandas as pd
+import pytest
+
 import genomepy
 import genomepy.utils
-
-import pytest
 
 
 def test_get_column():
@@ -22,34 +23,16 @@ def test_get_column():
     genomepy.utils.rm_rf(sep_file)
 
 
-def test_annotation_init():
-    # works exactly as planned
-    genome_file = "tests/data/regexp/regexp.fa"
-    sizes_file = "tests/data/regexp/regexp.fa.sizes"
-    genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
+def test_annotation_init(annot):
+    assert annot.genome_file.endswith("data/regexp/regexp.fa")
+    assert annot.annotation_gtf_file.endswith("data/regexp/regexp.annotation.gtf")
+    assert annot.annotation_bed_file.endswith("data/regexp/regexp.annotation.bed")
 
-    gtf_file = "tests/data/regexp/regexp.annotation.gtf"
-    with open(gtf_file, "w") as f:
-        f.write("# skip this line\n")
-        f.write("""chr2\tvanHeeringen-lab""")
-
-    bed_file = "tests/data/regexp/regexp.annotation.bed"
-    with open(bed_file, "w") as f:
-        f.write(
-            """chrM\t15307\t16448\tNP_059343.1\t0\t+\t15307\t16448\t0\t1\t1141,\t0,"""
-        )
-
-    a = genomepy.Annotation(name="regexp", genomes_dir="tests/data")
-    assert a.genome_file.endswith("data/regexp/regexp.fa")
-    assert a.annotation_gtf_file.endswith("data/regexp/regexp.annotation.gtf")
-    assert a.annotation_bed_file.endswith("data/regexp/regexp.annotation.bed")
-
-    assert a.annotation_contigs == ["chrM"]  # from BED
-    assert len(a.genome_contigs) == 17  # from sizes
-
-    genomepy.utils.rm_rf(sizes_file)
-    genomepy.utils.rm_rf(gtf_file)
-    genomepy.utils.rm_rf(bed_file)
+    assert annot.annotation_contigs == ["chrM"]  # from BED
+    assert len(annot.genome_contigs) == 17  # from sizes
+    assert isinstance(annot.bed, pd.DataFrame)
+    assert isinstance(annot.gtf, pd.DataFrame)
+    assert annot.genes == ["NP_059343.1"]
 
     # too many GTF files: cant choose
     g1 = "tests/data/data.annotation.gtf"
@@ -66,6 +49,12 @@ def test_annotation_init():
     # not enough GTF files
     with pytest.raises(FileNotFoundError):
         genomepy.Annotation(name="never_existed", genomes_dir="tests/data")
+
+
+def test_gene_coords(annot):
+    genes = ["NP_059343.1"]
+    coords = annot.gene_coords(genes)
+    assert coords.shape[0] == 1  # 1 row per gene
 
 
 def test_filter_regex():
@@ -108,7 +97,7 @@ def test_filter_genome_contigs():
         f.write("chromosome3\tboring_gene\n")
     a = genomepy.annotation.Annotation("regexp", "tests/data")
     genomepy.utils.generate_fa_sizes(a.genome_file, a.genome_file + ".sizes")
-    missing_contigs = a.filter_genome_contigs()
+    missing_contigs = a._filter_genome_contigs()
     assert missing_contigs == ["chromosome3"]
 
     genomepy.utils.rm_rf(gtf_file)
@@ -234,7 +223,7 @@ def test_bed_from_gtf():
     genomepy.utils.rm_rf(bed_file)
 
 
-def test_sanitize(capsys):
+def test_sanitize(caplog):
     tmp_dir = mkdtemp(dir="tests")
     genome = "testgenome"
     genomepy.utils.mkdir_p(os.path.join(tmp_dir, genome))
@@ -251,8 +240,7 @@ def test_sanitize(capsys):
         f.write("\n")
     a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize()
-    captured = capsys.readouterr().err.strip()
-    assert captured == "A genome is required for sanitizing!"
+    assert "A genome is required for sanitizing!" in caplog.text
 
     # conforming, filtering off
     with open(bed_file, "w") as f:
@@ -337,8 +325,7 @@ def test_sanitize(capsys):
     genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
     a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize(match_contigs=True, filter_contigs=False)
-    captured = capsys.readouterr().err.strip()
-    assert "The genome contains duplicate contig names" in captured
+    assert "The genome contains duplicate contig names" in caplog.text
     with open(bed_file) as f:
         lines = f.readlines()
     assert lines == [
@@ -368,8 +355,7 @@ def test_sanitize(capsys):
     genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
     a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize(match_contigs=True, filter_contigs=True)
-    captured = capsys.readouterr().err.strip()
-    assert "The genome contains duplicate contig names" in captured
+    assert "The genome contains duplicate contig names" in caplog.text
     with open(bed_file) as f:
         lines = f.readlines()
     assert lines == ["this2\t0\t100\tGP_1234.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n"]
