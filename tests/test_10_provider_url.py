@@ -75,12 +75,12 @@ def test_search_url_for_annotations(url):
     assert links == expected
 
     # no annot file
-    with pytest.raises(FileNotFoundError):
-        target = (
-            "http://ftp.ensembl.org/pub/release-100/fasta/marmota_marmota_marmota/"
-            "dna/Marmota_marmota_marmota.marMar2.1.dna.toplevel.fa.gz"
-        )
-        url.search_url_for_annotations(target, "Marmota_marmota_marmota.marMar2.1")
+    target = (
+        "http://ftp.ensembl.org/pub/release-100/fasta/marmota_marmota_marmota/"
+        "dna/Marmota_marmota_marmota.marMar2.1.dna.toplevel.fa.gz"
+    )
+    links = url.search_url_for_annotations(target, "Marmota_marmota_marmota.marMar2.1")
+    assert links == []
 
 
 @pytest.mark.skipif(not travis, reason="slow")

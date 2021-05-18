@@ -30,7 +30,6 @@ from genomepy.utils import (
     lower,
     check_url,
     retry,
-    is_number,
     mkdir_p,
     get_genomes_dir,
     rm_rf,
@@ -216,8 +215,8 @@ class ProviderBase(object):
         Taxonomy id : int
         """
         for field in self.taxid_fields:
-            tid = genome.get(field)
-            if is_number(tid):
+            tid = str(genome.get(field, ""))
+            if tid.isdigit():
                 return int(tid)
         return 0
 
@@ -1329,7 +1328,7 @@ class UrlProvider(ProviderBase):
     @staticmethod
     def search_url_for_annotations(url, name):
         """Attempts to find gtf or gff3 files in the same location as the genome url"""
-        urldir = os.path.dirname(url)
+        urldir = url[: url.rfind("/")]
         logger.info(
             "You have requested the gene annotation to be downloaded. "
             "Genomepy will check the remote directory: "
@@ -1349,13 +1348,14 @@ class UrlProvider(ProviderBase):
             return hits
 
         # try to find a GTF or GFF3 file
-        dirty_list = [str(line) for line in urlopen(urldir).readlines()]
+        dirty_list = read_url(urldir).split("\n")
         fnames = fuzzy_annotation_search(name, dirty_list)
         if not fnames:
-            raise FileNotFoundError(
+            logger.warning(
                 "Could not parse the remote directory. "
                 "Please supply a URL using --url-to-annotation.\n"
             )
+            return []
 
         links = [urldir + "/" + fname for fname in fnames]
         return links

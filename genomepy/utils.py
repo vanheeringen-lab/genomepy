@@ -4,7 +4,7 @@ import itertools
 import re
 import sys
 import urllib.error
-import urllib.request
+from urllib.request import urlopen
 import requests
 import subprocess as sp
 import tarfile
@@ -87,6 +87,14 @@ def connect_ftp_link(link, timeout=None):
 
     ftp.login()
     return ftp, target
+
+
+def read_url(url):
+    """Read a text-based URL."""
+    response = urlopen(url)
+    data = response.read()
+    text = data.decode("utf-8")
+    return text
 
 
 def read_readme(readme: str) -> Tuple[dict, list]:
@@ -354,7 +362,7 @@ def get_localname(name, localname=None):
     if localname:
         return safe(localname)
     try:
-        urllib.request.urlopen(name)
+        urlopen(name)
     except (IOError, ValueError):
         return safe(name)
     else:
@@ -445,32 +453,26 @@ def bgzip_and_name(fname, bgzip=True):
     return fname
 
 
-def is_number(term):
-    """check if term is a number. Returns bool"""
-    if isinstance(term, int) or term.isdigit():
-        return True
-
-
-def try_except_pass(errors, func, *args):
+def try_except_pass(errors, func, *args, **kwargs):
     """try to return FUNC with ARGS, pass on ERRORS"""
     try:
-        return func(*args)
+        return func(*args, **kwargs)
     except errors:
         pass
 
 
-def retry(func, tries, *args):
+def retry(func, tries, *args, **kwargs):
     """
     Retry functions with potential connection errors.
 
-    *args are passed as variables to func.
+    *args and **kwargs are passed to func.
     """
     _try = 1
     while _try <= tries:
         try:
-            answer = func(*args)
+            answer = func(*args, **kwargs)
             return answer
-        except (urllib.error.URLError, socket.timeout):
+        except all_errors + (urllib.error.URLError, socket.timeout):
             time.sleep(1)
             _try += 1
 
@@ -481,28 +483,17 @@ def check_url(url, max_tries=1, timeout=15):
     def _check_url(_url, _timeout):
         if _url.startswith("ftp"):
             ftp, target = connect_ftp_link(_url, timeout=_timeout)
-            try:
-                listing = ftp.nlst(target)
-            except all_errors:
-                listing = []
+            listing = ftp.nlst(target)
             ftp.quit()  # logout
             if listing:
                 return True
         else:
-            ret = urllib.request.urlopen(_url, timeout=_timeout)
+            ret = urlopen(_url, timeout=_timeout)
             if ret.getcode() == 200:
                 return True
         return False
 
     return retry(_check_url, max_tries, url, timeout)
-
-
-def read_url(url):
-    """Read a text-based URL."""
-    response = urllib.request.urlopen(url)
-    data = response.read()
-    text = data.decode("utf-8")
-    return text
 
 
 def get_file_info(fname):

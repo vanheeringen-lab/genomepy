@@ -260,12 +260,6 @@ def test_bgzip_and_name(fname="tests/data/small_genome.fa"):
         genomepy.utils.bgzip_and_name("tests/data/nofile.fa")
 
 
-def test_is_number():
-    assert genomepy.utils.is_number("1234")
-    assert genomepy.utils.is_number(1234)
-    assert not genomepy.utils.is_number("abcd")
-
-
 def test_retry(capsys):
     # runs passed function
     txt = "hello world"
