@@ -17,21 +17,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - genomepy install now attempts to install the NCBI assembly report
 - NCBI provider also indexes the NCBI `genbank_historical` summary
 - option to skip filtering and/or matching the annotation to the genome
+- genomepy search now shows if the genome has an annotation
+    - this slows down the results a bit
+    - to compensate, results are now shown as soon as they are found
 
 ### Changed
+- provider module split per provider
+- ProviderBase overhauled, now called Provider
+- regex filtering separated from `Provider.download_genome`
+- utils module split into utils, files and online
 - now using loguru to pretty logging
-- accession search improved
+- accession `search` improved
   - now finds GCA and GCF accessions
   - now ignores patch levels
-- automatic provider selection refactored
-    - genomepy.ProviderBase.online_providers() returns a generator
+- `genomepy install` automatic provider selection refactored
+    - `Provider.online_providers` returns a generator
 - `genomepy install` uses a combined filter function to speed it up
 - `genomepy install` only zips annotation files if the genome is zipped (with the bgzip flag)
-- regex filtering is separated from `download_genome`
 - NCBI provider should be parsed faster
 - new dependency: pandas
 
 ### Fixed
+- broken URLs should keep genomepy occupied for less long (check_url will immediately return on "Not Found" errors 404/450)
 - the `Genome` class now passes arguments to the parent `Fasta` class
 - the `Genome` class now regenerates the sizes and gaps files similarly to the `Fasta` class and its index (when the genome is younger).
 - somewhat more pythonic tests

@@ -4,21 +4,19 @@ import re
 from bisect import bisect
 from glob import glob
 from loguru import logger
-import pandas as pd
 from pyfaidx import Fasta, Sequence
 from random import random
 
-from genomepy.plugin import get_active_plugins
-from genomepy.provider import ProviderBase
-from genomepy.utils import (
-    read_readme,
-    write_readme,
-    get_genomes_dir,
-    glob_ext_files,
+from genomepy.files import (
     generate_fa_sizes,
     generate_gap_bed,
-    safe,
+    glob_ext_files,
+    read_readme,
+    write_readme,
 )
+from genomepy.plugin import get_active_plugins
+from genomepy.provider import Provider
+from genomepy.utils import get_genomes_dir, safe
 
 
 class Genome(Fasta):
@@ -195,20 +193,20 @@ class Genome(Fasta):
                 break
 
     @staticmethod
-    def _update_tax_id(metadata, provider=None, genome=None):
+    def _update_tax_id(metadata, provider=None, name=None):
         """check if tax_id is missing and try to update"""
         taxid = "na"
-        if genome:
-            taxid = provider.genome_taxid(genome)
+        if name:
+            taxid = provider.genome_taxid(name)
             taxid = str(taxid) if taxid != 0 else "na"
         metadata["tax_id"] = taxid
 
     @staticmethod
-    def _update_assembly_accession(metadata, provider=None, genome=None):
+    def _update_assembly_accession(metadata, provider=None, name=None):
         """check if assembly_accession is missing and try to update"""
         accession = "na"
-        if genome:
-            accession = provider.assembly_accession(genome)
+        if name:
+            accession = provider.assembly_accession(name)
         metadata["assembly_accession"] = accession
 
     def _update_metadata(self, metadata):
@@ -222,15 +220,14 @@ class Genome(Fasta):
         missing_info = any(
             key not in metadata for key in ["tax_id", "assembly_accession"]
         )
-        p = genome = None
+        p = None
         if known_provider and name and missing_info:
-            p = ProviderBase.create(metadata["provider"])
-            genome = p.genomes.get(name)
+            p = Provider.create(metadata["provider"])
 
         if "tax_id" not in metadata:
-            self._update_tax_id(metadata, p, genome)
+            self._update_tax_id(metadata, p, name)
         if "assembly_accession" not in metadata:
-            self._update_assembly_accession(metadata, p, genome)
+            self._update_assembly_accession(metadata, p, name)
 
     def _read_metadata(self):
         """
@@ -472,49 +469,3 @@ class Genome(Fasta):
                 coords[i] = [f"{region[0]}:{region[1]}-{region[2]}"]
 
         return coords
-
-    def _map_locations(self, to: str) -> pd.DataFrame:
-        """
-        Load chromosome mapping from one version/assembly to another using the
-        NCBI assembly reports.
-
-        Parameters
-        ----------
-        to: str
-            target provider (UCSC, Ensembl or NCBI)
-
-        Returns
-        -------
-        pandas.DataFrame
-            Chromosome mapping.
-        """
-        mapping = ProviderBase.map_locations(self.name, to, self.genomes_dir)
-        return mapping
-
-    def map_locations(self, to: str) -> dict:
-        """
-        Map chromosome mapping from one version/assembly to another using the
-        NCBI assembly reports.
-
-        Drops missing contigs.
-
-        Parameters
-        ----------
-        to: str
-            target provider (UCSC, Ensembl or NCBI)
-
-        Returns
-        -------
-        dict(contig: sequence)
-        """
-        mapping = self._map_locations(to)
-        mapping = mapping.to_dict()[f"{to.lower()}-name"]
-        keys = self.keys()
-
-        # TODO: Create a new genome folder, copy readme and return the remapped Genome() object?
-        remap = dict()
-        for key in keys:
-            if key in mapping:
-                rec = next(self.records[key].__iter__())
-                remap[mapping[key]] = rec
-        return remap

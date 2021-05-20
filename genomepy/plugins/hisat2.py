@@ -3,16 +3,9 @@ import subprocess as sp
 
 from loguru import logger
 
+from genomepy.files import bgzip_and_name, gunzip_and_name, gzip_and_name
 from genomepy.plugin import Plugin
-from genomepy.utils import (
-    mkdir_p,
-    rm_rf,
-    cmd_ok,
-    run_index_cmd,
-    bgzip_and_name,
-    gunzip_and_name,
-    gzip_and_name,
-)
+from genomepy.utils import mkdir_p, rm_rf, cmd_ok, run_index_cmd
 
 
 class Hisat2Plugin(Plugin):

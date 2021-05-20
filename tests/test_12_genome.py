@@ -3,7 +3,7 @@ from stat import S_IREAD, S_IRGRP, S_IROTH
 
 import pytest
 
-import genomepy
+import genomepy.files
 import genomepy.utils
 
 
@@ -117,9 +117,8 @@ def test__update_tax_id(small_genome, ncbi):
 
     # genome found
     metadata = {}
-    genome = ncbi.genomes.get("ASM14646v1")
 
-    small_genome._update_tax_id(metadata, ncbi, genome)
+    small_genome._update_tax_id(metadata, ncbi, "ASM14646v1")
     assert metadata["tax_id"] == "58839"
 
 
@@ -131,9 +130,7 @@ def test__update_assembly_accession(small_genome, ncbi):
 
     # genome found
     metadata = {}
-    genome = ncbi.genomes.get("ASM14646v1")
-
-    small_genome._update_assembly_accession(metadata, ncbi, genome)
+    small_genome._update_assembly_accession(metadata, ncbi, "ASM14646v1")
     assert metadata["assembly_accession"] == "GCF_000146465.1"
 
 
@@ -171,7 +168,7 @@ def test__read_metadata(small_genome):
         f.writelines("assembly_accession: not_really_GCA_000146465.1\n")
     metadata1 = small_genome._read_metadata()
     assert metadata1["provider"] == "NCBI"
-    metadata2, _ = genomepy.utils.read_readme(readme)
+    metadata2, _ = genomepy.files.read_readme(readme)
     assert metadata2["provider"] == "NCBI"
 
     # no writing permission to file

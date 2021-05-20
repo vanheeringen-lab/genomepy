@@ -1,8 +1,10 @@
 import os.path
 from shutil import move
 from tempfile import mkdtemp
+
+from genomepy.files import gunzip_and_name, bgzip_and_name
 from genomepy.plugin import Plugin
-from genomepy.utils import cmd_ok, rm_rf, run_index_cmd, gunzip_and_name, bgzip_and_name
+from genomepy.utils import cmd_ok, rm_rf, run_index_cmd
 
 
 class GmapPlugin(Plugin):

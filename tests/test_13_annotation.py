@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 import genomepy
+import genomepy.files
 import genomepy.utils
 
 
@@ -96,7 +97,7 @@ def test_filter_genome_contigs():
         f.write("chr2\tcool_gene\n")
         f.write("chromosome3\tboring_gene\n")
     a = genomepy.annotation.Annotation("regexp", "tests/data")
-    genomepy.utils.generate_fa_sizes(a.genome_file, a.genome_file + ".sizes")
+    genomepy.files.generate_fa_sizes(a.genome_file, a.genome_file + ".sizes")
     missing_contigs = a._filter_genome_contigs()
     assert missing_contigs == ["chromosome3"]
 
@@ -255,7 +256,7 @@ def test_sanitize(caplog):
     with open(genome_file, "w") as f:
         f.write(">chr1\n")
         f.write("ATCGATCG\n")
-    genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
+    genomepy.files.generate_fa_sizes(genome_file, sizes_file)
     a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize(match_contigs=False, filter_contigs=False)
 
@@ -269,7 +270,7 @@ def test_sanitize(caplog):
     with open(bed_file) as f:
         lines = f.readlines()
     assert lines == ["chr1\t0\t100\n", "chr2\t0\t100\n"]
-    metadata, _ = genomepy.utils.read_readme(a.readme_file)
+    metadata, _ = genomepy.files.read_readme(a.readme_file)
     assert metadata["sanitized annotation"] == "contigs match but not filtered"
 
     # conforming, filtering on
@@ -286,7 +287,7 @@ def test_sanitize(caplog):
     assert lines == [
         "chr1\t0\t100\tGP_1234.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n",
     ]
-    metadata, _ = genomepy.utils.read_readme(a.readme_file)
+    metadata, _ = genomepy.files.read_readme(a.readme_file)
     assert metadata["sanitized annotation"] == "contigs match and filtered"
 
     # not conforming, no fix possible
@@ -299,10 +300,10 @@ def test_sanitize(caplog):
     with open(genome_file, "w") as f:
         f.write(">not_chr1\n")
         f.write("ATCGATCG\n")
-    genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
+    genomepy.files.generate_fa_sizes(genome_file, sizes_file)
     a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize()
-    metadata, _ = genomepy.utils.read_readme(a.readme_file)
+    metadata, _ = genomepy.files.read_readme(a.readme_file)
     assert metadata["sanitized annotation"] == "not possible"
 
     # not conforming, filtering off
@@ -322,7 +323,7 @@ def test_sanitize(caplog):
         f.write("ATCGATCG\n")
         f.write(">this2 matches chr1\n")
         f.write("ATCGATCG\n")
-    genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
+    genomepy.files.generate_fa_sizes(genome_file, sizes_file)
     a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize(match_contigs=True, filter_contigs=False)
     assert "The genome contains duplicate contig names" in caplog.text
@@ -332,7 +333,7 @@ def test_sanitize(caplog):
         "this2\t0\t100\tGP_1234.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n",
         "chr2\t0\t100\tGP_1235.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n",
     ]
-    metadata, _ = genomepy.utils.read_readme(a.readme_file)
+    metadata, _ = genomepy.files.read_readme(a.readme_file)
     assert metadata["sanitized annotation"] == "contigs fixed but not filtered"
 
     # not conforming, filtering off
@@ -352,14 +353,14 @@ def test_sanitize(caplog):
         f.write("ATCGATCG\n")
         f.write(">this2 matches chr1\n")
         f.write("ATCGATCG\n")
-    genomepy.utils.generate_fa_sizes(genome_file, sizes_file)
+    genomepy.files.generate_fa_sizes(genome_file, sizes_file)
     a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize(match_contigs=True, filter_contigs=True)
     assert "The genome contains duplicate contig names" in caplog.text
     with open(bed_file) as f:
         lines = f.readlines()
     assert lines == ["this2\t0\t100\tGP_1234.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n"]
-    metadata, _ = genomepy.utils.read_readme(a.readme_file)
+    metadata, _ = genomepy.files.read_readme(a.readme_file)
     assert metadata["sanitized annotation"] == "contigs fixed and filtered"
 
     genomepy.utils.rm_rf(tmp_dir)

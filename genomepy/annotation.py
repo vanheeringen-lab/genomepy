@@ -10,17 +10,19 @@ import mygene
 import numpy as np
 import pandas as pd
 
-from genomepy.provider import ProviderBase
-from genomepy.utils import (
-    get_genomes_dir,
+from genomepy.files import (
     gzip_and_name,
     gunzip_and_name,
     glob_ext_files,
     read_readme,
     update_readme,
+    _open,
+)
+from genomepy.provider import Provider
+from genomepy.utils import (
+    get_genomes_dir,
     mkdir_p,
     rm_rf,
-    _open,
     best_search_result,
     safe,
 )
@@ -502,7 +504,7 @@ class Annotation:
             return
 
         asm_acc = metadata["assembly_accession"]
-        ensembl_search = list(ProviderBase.search_all(asm_acc, provider="Ensembl"))
+        ensembl_search = list(Provider.search_all(asm_acc, provider="Ensembl"))
         search_result = best_search_result(asm_acc, ensembl_search)
         if len(search_result) == 0:
             logger.warning(
@@ -681,7 +683,7 @@ class Annotation:
             Chromosome mapping.
         """
         genomes_dir = os.path.dirname(self.genome_dir)
-        mapping = ProviderBase.map_locations(self.name, to, genomes_dir)
+        mapping = Provider.map_locations(self.name, to, genomes_dir)
         return mapping
 
     def map_locations(self, annot: Union[str, pd.DataFrame], to: str) -> pd.DataFrame:

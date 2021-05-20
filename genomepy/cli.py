@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import click
-import genomepy
 import sys
 import os
 
@@ -8,13 +7,15 @@ from loguru import logger
 from collections import deque
 from colorama import init, Fore, Style
 
+import genomepy
+
 init(autoreset=True)
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
-@click.version_option(genomepy.__about__.__version__)
+@click.version_option(genomepy.__version__)
 def cli():
     """ Genomes for Python (and others)!
 
@@ -51,12 +52,13 @@ def config(command):
 @click.option("-p", "--provider", help="provider")
 def genomes(provider=None):
     """List all available genomes."""
+    print(Style.BRIGHT + SEARCH_STRING.format(*SEARCH_FORMAT))
     for row in genomepy.list_available_genomes(provider):
-        print("\t".join(row))
+        print(terminal_formatting(row))
 
 
 # extended options for genomepy install
-general_install_options = {
+INSTALL_OPTIONS = {
     "provider": {
         "short": "p",
         "long": "provider",
@@ -160,11 +162,11 @@ def get_install_options():
     """combine general and provider specific options
 
     add provider in front of the provider specific options to prevent overlap"""
-    install_options = general_install_options
+    install_options = INSTALL_OPTIONS
 
     # extend install options with provider specific options
     if "install" in click.get_os_args():
-        for provider in genomepy.ProviderBase.list_providers():
+        for provider in genomepy.Provider.list_providers():
             p_dict = eval(
                 "genomepy.provider."
                 + provider.capitalize()
@@ -269,39 +271,74 @@ def providers():
         print(p)
 
 
+# names and sizes for the search output columns (when connected to a terminal)
+SEARCH_FORMAT = {
+    "name": 20,
+    "provider": 8,  # fixed width
+    "accession": 16,  # fixed width
+    "tax_id": 7,  # fixed width
+    "annotation": 10,  # fixed width
+    "species": 40,
+    "other_info": 40,
+}
+SEARCH_STRING = "    ".join([f"{{: <{size}}}" for size in SEARCH_FORMAT.values()])
+if sys.stdout.isatty():
+
+    def bool_to_unicode(boolean: bool) -> str:
+        """converts True to a checkmark and False to a cross-mark"""
+        return "\u2713" if boolean else "\u2717"
+
+    def terminal_formatting(row: list) -> str:
+        """
+        In case we print to a terminal, the output is aligned.
+        Otherwise (file, pipe) we use tab-separated columns.
+        """
+        if isinstance(row[4], list):
+            row[4] = " ".join([bool_to_unicode(b) for b in row[4]])
+        else:
+            row[4] = bool_to_unicode(row[4])
+        for n, ele in enumerate(row):
+            if ele is None:
+                row[n] = "na"
+        return SEARCH_STRING.format(*row)
+
+
+else:
+
+    def terminal_formatting(row: list) -> str:
+        """
+        In case we print to a terminal, the output is aligned.
+        Otherwise (file, pipe) we use tab-separated columns.
+        """
+        if isinstance(row[4], list):
+            row[4] = " ".join([str(b) for b in row[4]])
+        return "\t".join([str(element) for element in row])
+
+
 @click.command("search", short_help="search for genomes")
 @click.argument("term")
 @click.option("-p", "--provider", help="provider")
 def search(term, provider=None):
     """
-    Search for genomes that contain TERM in their name or description.
+    Search for genomes that contain TERM in their name, description,
+    accession (must start with GCA_ or GCF_) or taxonomy (exact matches only).
 
     Function is case-insensitive. Spaces in TERM can be replaced with underscores
     (_) or TERM can be "quoted", e.g., "homo sapiens".
     """
-    data = [["name", "provider", "accession", "species", "tax_id", "other_info"]]
+    no_genomes = True
     for row in genomepy.search(term, provider):
-        data.append(row)
-    if len(data) == 1:
-        logger.error("No genomes found!")
-        return
+        if no_genomes:
+            no_genomes = False
+            print(Style.BRIGHT + SEARCH_STRING.format(*SEARCH_FORMAT))
+        print(terminal_formatting(row))
 
-    # In case we print to a terminal, the output is aligned.
-    # Otherwise (file, pipe) we use tab-separated columns.
     if sys.stdout.isatty():
-        sizes = [max(len(row[i]) + 4 for row in data) for i in range(len(data[0]))]
-        fstring = "".join([f"{{: <{size}}}" for size in sizes])
-    else:
-        fstring = "\t".join(["{}" for _ in range(len(data[0]))])
-
-    for i, row in enumerate(data):
-        if i == 0:
-            print(Style.BRIGHT + fstring.format(*row))
+        if no_genomes:
+            logger.error("No genomes found!")
         else:
-            print(fstring.format(*row))
-    if sys.stdout.isatty():
-        print(Fore.GREEN + " ^")
-        print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")
+            print(Fore.GREEN + " ^")
+            print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")
 
 
 cli.add_command(clean)

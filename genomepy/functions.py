@@ -10,23 +10,27 @@ from pyfaidx import FastaIndexingError, IndexNotFoundError, Fasta
 from genomepy.__about__ import __version__
 from genomepy.annotation import Annotation
 from genomepy.exceptions import GenomeDownloadError
+from genomepy.files import (
+    is_genome_dir,
+    delete_extensions,
+    gzip_and_name,
+    bgzip_and_name,
+    glob_ext_files,
+    read_readme,
+    update_readme,
+    _fa_to_file,
+)
 from genomepy.genome import Genome
+from genomepy.online import check_url
 from genomepy.plugin import get_active_plugins, init_plugins
-from genomepy.provider import ProviderBase
+from genomepy.provider import Provider
 from genomepy.utils import (
     get_localname,
     get_genomes_dir,
-    glob_ext_files,
     mkdir_p,
     rm_rf,
-    read_readme,
     safe,
-    check_url,
     try_except_pass,
-    bgzip_and_name,
-    gzip_and_name,
-    update_readme,
-    _fa_to_file,
 )
 
 config = norns.config("genomepy", default="cfg/default.yaml")
@@ -67,9 +71,6 @@ def manage_config(cmd):
         raise ValueError(f"Invalid config command: {cmd}")
 
 
-online_providers = ProviderBase.online_providers
-
-
 def list_available_genomes(provider=None):
     """
     List all available genomes.
@@ -84,26 +85,9 @@ def list_available_genomes(provider=None):
     -------
     list with genome names
     """
-    for p in online_providers(provider):
+    for p in Provider.online_providers(provider):
         for row in p.list_available_genomes():
-            yield [p.name] + list(row)
-
-
-def _is_genome_dir(dirname):
-    """
-    Check if a directory contains a fasta file of the same name
-
-    Parameters
-    ----------
-    dirname : str
-        Directory name
-
-    Returns
-    ------
-    bool
-    """
-    genome_file = os.path.join(dirname, f"{os.path.basename(dirname)}.fa")
-    return os.path.exists(genome_file) or os.path.exists(f"{genome_file}.gz")
+            yield list(row[:1]) + [p.name] + list(row[1:])
 
 
 def list_installed_genomes(genomes_dir: str = None):
@@ -124,7 +108,7 @@ def list_installed_genomes(genomes_dir: str = None):
         return [
             subdir
             for subdir in os.listdir(genomes_dir)
-            if _is_genome_dir(os.path.join(genomes_dir, subdir))
+            if is_genome_dir(os.path.join(genomes_dir, subdir))
         ]
     return []
 
@@ -170,7 +154,7 @@ def generate_env(fname: str = "exports.txt", genomes_dir: str = None):
 def _lazy_provider_selection(name, provider=None):
     """return the first PROVIDER which has genome NAME"""
     providers = []
-    for p in online_providers(provider):
+    for p in Provider.online_providers(provider):
         providers.append(p.name)
         if name in p.genomes or (
             p.name == "URL" and try_except_pass(ValueError, check_url, name)
@@ -248,12 +232,6 @@ def _filter_genome(
 
     readme = os.path.join(os.path.dirname(genome_file), "README.txt")
     update_readme(readme, extra_lines=lines)
-
-
-def _delete_extensions(directory: str, exts: list):
-    """remove (gzipped) files in a directory matching any given extension"""
-    for ext in exts:
-        [rm_rf(f) for f in glob_ext_files(directory, ext)]
 
 
 def install_genome(
@@ -349,7 +327,7 @@ def install_genome(
     provider = _provider_selection(name, localname, genomes_dir, provider)
 
     # check which files need to be downloaded
-    genome_found = _is_genome_dir(out_dir)
+    genome_found = is_genome_dir(out_dir)
     download_genome = (
         genome_found is False or force is True
     ) and only_annotation is False
@@ -371,7 +349,7 @@ def install_genome(
     genome_downloaded = False
     if download_genome:
         if force:
-            _delete_extensions(out_dir, ["fa", "fai"])
+            delete_extensions(out_dir, ["fa", "fai"])
         provider.download_genome(
             name,
             genomes_dir,
@@ -395,7 +373,7 @@ def install_genome(
     annotation_downloaded = False
     if download_annotation:
         if force:
-            _delete_extensions(out_dir, ["annotation.gtf", "annotation.bed"])
+            delete_extensions(out_dir, ["annotation.gtf", "annotation.bed"])
         provider.download_annotation(name, genomes_dir, localname=localname, **kwargs)
         annotation_downloaded = bool(
             glob_ext_files(out_dir, "annotation.gtf")
@@ -457,17 +435,3 @@ def manage_plugins(command, plugin_names=None):
     config["plugin"] = active_plugins
     config.save()
     print("Enabled plugins: {}".format(", ".join(sorted(active_plugins))))
-
-
-def list_available_providers():
-    """
-    List all available providers.
-
-    Returns
-    -------
-    list with provider names
-    """
-    return ProviderBase.list_providers()
-
-
-search = ProviderBase.search_all
