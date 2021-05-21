@@ -99,157 +99,142 @@ def test_get_localname(name="XENTR_9.1", localname="my genome"):
     assert result == "GCF_000027325.1_ASM2732v1"
 
 
-def test__open():
-    # read/write regular file
-    a1 = "tests/data/data.annotation.gtf"
-    with genomepy.annotation._open(a1, "w") as gtf:
-        gtf.write("regular file")
-
-    with open(a1) as gtf:
-        lines1 = gtf.readlines()
-    assert lines1 == ["regular file"]
-
-    with genomepy.annotation._open(a1) as gtf:
-        lines2 = gtf.readlines()
-    assert lines2 == lines1
-    genomepy.utils.rm_rf(a1)
-
-    # read/write gzipped file
-    a2 = "tests/data/data.annotation.gtf.gz"
-    with genomepy.annotation._open(a2, "w") as gtf:
-        gtf.write("gzipped file")
-
-    with pytest.raises(UnicodeDecodeError):
-        with open(a2) as gtf:
-            gtf.read()
-
-    with genomepy.annotation._open(a2) as gtf:
-        lines = gtf.readlines()
-    assert lines == ["gzipped file"]
-    genomepy.utils.rm_rf(a1)
-
-
 def test_best_search_result():
-    # result of list(genomepy.ProviderBase.search_all("GCA_000001405", provider="NCBI"))
+    # ncbi_human = list(genomepy.search("GCA_000001405", provider="NCBI"))
     ncbi_human = [
         [
             "GRCh38",
             "NCBI",
             "GCF_000001405.26",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh38.p1",
             "NCBI",
             "GCF_000001405.27",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh38.p2",
             "NCBI",
             "GCF_000001405.28",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh38.p3",
             "NCBI",
             "GCF_000001405.29",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh38.p4",
             "NCBI",
             "GCF_000001405.30",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh38.p5",
             "NCBI",
             "GCF_000001405.31",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh38.p6",
             "NCBI",
             "GCF_000001405.32",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh38.p7",
             "NCBI",
             "GCF_000001405.33",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh38.p8",
             "NCBI",
             "GCF_000001405.34",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh38.p9",
             "NCBI",
             "GCF_000001405.35",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh38.p10",
             "NCBI",
             "GCF_000001405.36",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh38.p11",
             "NCBI",
             "GCF_000001405.37",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh38.p12",
             "NCBI",
             "GCF_000001405.38",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh37.p13",
             "NCBI",
             "GCF_000001405.25",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
         [
             "GRCh38.p13",
             "NCBI",
             "GCF_000001405.39",
+            9606,
+            True,
             "Homo sapiens",
-            "9606",
             "Genome Reference Consortium",
         ],
     ]

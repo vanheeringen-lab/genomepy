@@ -65,67 +65,6 @@ def test_list_installed_genomes():
     assert empty_list == []
 
 
-@pytest.mark.skipif(not travis, reason="a genome must be installed")
-def test_generate_exports():
-    # already used, but we had to install a genome first to test it
-    exports = genomepy.functions.generate_exports()
-    assert isinstance(exports, list)
-    # check if my_genome was installed in the last test
-    assert any([x for x in exports if x.startswith("export MY_GENOME")])
-
-    # add genome that throws an IndexNotFoundError
-    gd = genomepy.utils.get_genomes_dir(None, True)
-    name = "testgenome"
-    os.makedirs(os.path.join(gd, name), exist_ok=True)
-    path = os.path.join(gd, name, f"{name}.fa")
-    with open(path, "w") as fa:
-        fa.write("genome without index")
-    exports = genomepy.functions.generate_exports()
-    assert f"export TESTGENOME={path}" not in exports
-
-    # add genome that works
-    with open(path, "w") as fa:
-        fa.write(">chr1\nallowed characters")
-    genomepy.Genome(name, gd)  # create index
-    exports = genomepy.functions.generate_exports()
-    assert f"export TESTGENOME={path}" in exports
-
-    genomepy.utils.rm_rf(os.path.join(gd, "testgenome"))
-
-
-@pytest.mark.skipif(not travis, reason="a genome must be installed")
-def test_generate_env():
-    # already used, but we had to install a genome first to test it
-    config_dir = str(user_config_dir("genomepy"))
-    path = os.path.join(config_dir, "exports.txt")
-
-    # give file path
-    my_path = "~/exports.txt"
-    genomepy.functions.generate_env(my_path)
-    assert os.path.exists(os.path.expanduser(my_path))
-    os.unlink(os.path.expanduser(my_path))
-
-    # give file name
-    my_file = os.path.join(config_dir, "my_exports.txt")
-    genomepy.functions.generate_env("my_exports.txt")
-    assert os.path.exists(my_file)
-    os.unlink(os.path.expanduser(my_file))
-
-    # give nothing
-    if os.path.exists(path):
-        os.unlink(path)
-    genomepy.functions.generate_env()
-    assert os.path.exists(path)
-
-    with open(path) as f:
-        exports = []
-        for line in f.readlines():
-            vals = line.strip()
-            exports.append(vals)
-    assert any([x for x in exports if x.startswith("export MY_GENOME")])
-    os.unlink(path)
-
-
 def test__lazy_provider_selection():
     # Xenopus_tropicalis_v9.1 can be found on both Ensembl and NCBI.
     # Ensembl is first in lazy selection.
@@ -204,6 +143,67 @@ def test_install_genome():
     sizes = genomepy.Genome(localname).sizes.keys()
     assert "chr2R" in sizes
     assert "chr2L" not in sizes
+
+
+# already used, but we had to install a genome first to test it
+@pytest.mark.skipif(not travis, reason="a genome must be installed")
+def test_generate_exports():
+    exports = genomepy.functions.generate_exports()
+    assert isinstance(exports, list)
+    # check if my_genome was installed in the last test
+    assert any([x for x in exports if x.startswith("export MY_GENOME")])
+
+    # add genome that throws an IndexNotFoundError
+    gd = genomepy.utils.get_genomes_dir(None, True)
+    name = "testgenome"
+    os.makedirs(os.path.join(gd, name), exist_ok=True)
+    path = os.path.join(gd, name, f"{name}.fa")
+    with open(path, "w") as fa:
+        fa.write("genome without index")
+    exports = genomepy.functions.generate_exports()
+    assert f"export TESTGENOME={path}" not in exports
+
+    # add genome that works
+    with open(path, "w") as fa:
+        fa.write(">chr1\nallowed characters")
+    genomepy.Genome(name, gd)  # create index
+    exports = genomepy.functions.generate_exports()
+    assert f"export TESTGENOME={path}" in exports
+
+    genomepy.utils.rm_rf(os.path.join(gd, "testgenome"))
+
+
+# already used, but we had to install a genome first to test it
+@pytest.mark.skipif(not travis, reason="a genome must be installed")
+def test_generate_env():
+    config_dir = str(user_config_dir("genomepy"))
+    path = os.path.join(config_dir, "exports.txt")
+
+    # give file path
+    my_path = "~/exports.txt"
+    genomepy.functions.generate_env(my_path)
+    assert os.path.exists(os.path.expanduser(my_path))
+    os.unlink(os.path.expanduser(my_path))
+
+    # give file name
+    my_file = os.path.join(config_dir, "my_exports.txt")
+    genomepy.functions.generate_env("my_exports.txt")
+    assert os.path.exists(my_file)
+    os.unlink(os.path.expanduser(my_file))
+
+    # give nothing
+    if os.path.exists(path):
+        os.unlink(path)
+    genomepy.functions.generate_env()
+    assert os.path.exists(path)
+
+    with open(path) as f:
+        exports = []
+        for line in f.readlines():
+            vals = line.strip()
+            exports.append(vals)
+    assert any([x for x in exports if x.startswith("export MY_GENOME")])
+    os.unlink(path)
 
 
 def test_manage_plugins(capsys):

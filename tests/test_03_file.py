@@ -129,15 +129,51 @@ def test_bgzip_and_name(fname="tests/data/small_genome.fa"):
 
 
 def test_delete_extensions():
-    pass  # TODO
+    fpath1 = "tests/data/weird_ext1.test123"
+    fpath2 = "tests/data/weird_ext2.test123"
+    for fpath in [fpath1, fpath2]:
+        with open(fpath, "w") as f:
+            f.write("asd\n")
+
+    assert os.path.exists(fpath1)
+    assert os.path.exists(fpath2)
+    genomepy.files.delete_extensions("tests/data", ["test123"])
+    assert not os.path.exists(fpath1)
+    assert not os.path.exists(fpath2)
 
 
 def test__open():
-    pass  # TODO
+    # read/write regular file
+    a1 = "tests/data/data.annotation.gtf"
+    with genomepy.files._open(a1, "w") as gtf:
+        gtf.write("regular file")
+
+    with open(a1) as gtf:
+        lines1 = gtf.readlines()
+    assert lines1 == ["regular file"]
+
+    with genomepy.annotation._open(a1) as gtf:
+        lines2 = gtf.readlines()
+    assert lines2 == lines1
+    genomepy.files.rm_rf(a1)
+
+    # read/write gzipped file
+    a2 = "tests/data/data.annotation.gtf.gz"
+    with genomepy.files._open(a2, "w") as gtf:
+        gtf.write("gzipped file")
+
+    with pytest.raises(UnicodeDecodeError):
+        with open(a2) as gtf:
+            gtf.read()
+
+    with genomepy.annotation._open(a2) as gtf:
+        lines = gtf.readlines()
+    assert lines == ["gzipped file"]
+    genomepy.files.rm_rf(a1)
 
 
 def test_file_len():
-    pass  # TODO
+    assert genomepy.files.file_len("tests/data/gap.fa") == 13
 
 
 def test_get_file_info(fname="tests/data/small_genome.fa.gz"):

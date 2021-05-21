@@ -51,7 +51,21 @@ def test_get_annotation_download_links(url):
 
 
 def test_fuzzy_annotation_search():
-    pass  # TODO
+    search_name = "mygenome"
+    search_list = [
+        "nothing.gtf",
+        "mygenome.genes.gff3",
+        "asdasdasdmygenomeasdasdasd.gtf",
+        "mygenome.zipped.gtf.gz",
+    ]
+    expected = [
+        "mygenomeasdasdasd.gtf",
+        "mygenome.zipped.gtf.gz",
+        "mygenome.genes.gff3",
+    ]
+    # f"{search_name}.*?\.{ext}3?(\.gz)?"
+    hits = genomepy.providers.url.fuzzy_annotation_search(search_name, search_list)
+    assert hits == expected
 
 
 def test_search_url_for_annotations():

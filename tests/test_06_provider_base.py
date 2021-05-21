@@ -158,11 +158,6 @@ def test_download_annotation(ucsc):
         assert metadata["annotation url"] in annot_urls
 
 
-def test_download_assembly_report(base):
-    with pytest.raises(NotImplementedError):
-        base.download_assembly_report(None)
-
-
 def test__search_text(ucsc):
     term = genomepy.utils.lower("Ailuropoda melanoleuca")
     assert list(ucsc._search_text("not_in_description")) == []
