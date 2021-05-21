@@ -38,7 +38,7 @@ def test__get_genomes(ensembl):
 def test_genome_info_tuple(ensembl):
     t = ensembl._genome_info_tuple("KH")
     assert isinstance(t, tuple)
-    assert t[0:4] == ("KH", "GCA_000224145.1", 7719, True)
+    assert t[0:3] == ("KH", "GCA_000224145.1", 7719)
 
 
 def test_get_version(ensembl):
