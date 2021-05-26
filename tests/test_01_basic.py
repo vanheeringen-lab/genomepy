@@ -100,7 +100,7 @@ def test_config():
     assert len(config.keys()) == 3
 
 
-# @pytest.mark.skipif(not travis, reason="it works locally all right")
+@pytest.mark.skipif(not travis, reason="it works locally all right")
 def test_cache(capsys):
     my_cache_dir = os.path.join(user_cache_dir("genomepy"), genomepy.__version__)
     if os.path.exists(my_cache_dir):
