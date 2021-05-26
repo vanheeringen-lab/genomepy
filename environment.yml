@@ -40,9 +40,11 @@ dependencies:
   - setuptools
 
   # Testing
+  - autoflake
   - black
   - flake8
   - flake8-bugbear
+  - isort
   - pytest
   - pytest-rerunfailures
   - pytest-cov
