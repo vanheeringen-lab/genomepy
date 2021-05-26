@@ -36,6 +36,7 @@ def test_isort_formatting():
         sp.check_output(
             "isort "
             f'{"--check " if travis else "--overwrite-in-place "}'
+            "--profile black "
             "--conda-env environment.yml "
             "setup.py genomepy/ tests/",
             stderr=sp.STDOUT,
