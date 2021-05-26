@@ -50,11 +50,9 @@ def test_isort_formatting():
 def test_black_formatting():
     try:
         sp.check_output(
-            "black "
-            f'{"--check " if travis else ""}'
-            "setup.py genomepy/ tests/",
+            f"black {'--check ' if travis else ''} setup.py genomepy/ tests/",
             stderr=sp.STDOUT,
-            shell=True
+            shell=True,
         )
     except sp.CalledProcessError as e:
         msg = e.output.decode("utf-8")
