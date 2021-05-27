@@ -17,9 +17,11 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 @click.version_option(genomepy.__version__)
 def cli():
     """ Genomes for Python (and others)!
+
     Version: {}""".format(
         genomepy.__version__
     )
+    pass  # noqa
 
 
 @click.command("clean", short_help="remove provider data")
