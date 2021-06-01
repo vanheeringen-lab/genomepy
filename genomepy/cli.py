@@ -316,6 +316,7 @@ if sys.stdout.isatty():
     def terminal_header():
         print(Style.BRIGHT + SEARCH_STRING.format(*SEARCH_FORMAT))
 
+
 else:
 
     def terminal_formatting(row: list):
