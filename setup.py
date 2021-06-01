@@ -25,6 +25,7 @@ requires = [
     "bucketcache",
     "click",
     "colorama",
+    "joblib",
     "loguru",
     "mygene",
     "norns>=0.1.5",

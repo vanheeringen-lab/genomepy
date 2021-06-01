@@ -9,6 +9,9 @@ from loguru import logger
 import mygene
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
+from joblib import Memory
+from appdirs import user_cache_dir
 
 from genomepy.provider import ProviderBase
 from genomepy.utils import (
@@ -24,6 +27,7 @@ from genomepy.utils import (
     best_search_result,
     safe,
 )
+from genomepy.__about__ import __version__
 
 GTF_FORMAT = [
     "seqname",
@@ -51,6 +55,9 @@ BED12_FORMAT = [
     "blockSizes",
     "blockStarts",
 ]
+
+cachedir = os.path.join(user_cache_dir("genomepy"), __version__)
+memory = Memory(cachedir, verbose=0)
 
 
 class Annotation:
@@ -513,7 +520,10 @@ class Annotation:
         return safe(search_result[0]), search_result[2], search_result[4]
 
     def _query_mygene(
-        self, query: Iterable[str], fields: str = "genomic_pos"
+        self,
+        query: Iterable[str],
+        fields: str = "genomic_pos",
+        batch_size: int = 5000,
     ) -> pd.DataFrame:
         # mygene.info only queries the most recent version of the Ensembl database
         # We can only safely continue if the local genome matched the Ensembl genome.
@@ -524,22 +534,7 @@ class Annotation:
             return pd.DataFrame()
         _, _, tax_id = ensembl_info
 
-        # Run the actual query
-        logger.info("Querying mygene.info...")
-        mg = mygene.MyGeneInfo()
-        result = mg.querymany(
-            query,
-            scopes="symbol,name,ensembl.gene,entrezgene,ensembl.transcript,ensembl",
-            fields=fields,
-            species=tax_id,
-            as_dataframe=True,
-            verbose=False,
-        )
-        if "notfound" in result and result.shape[1] == 1:
-            logger.warning("No matching genes found")
-            return pd.DataFrame()
-
-        return result
+        return query_mygene(query, tax_id, fields, batch_size)
 
     @staticmethod
     def _filter_query(query: pd.DataFrame) -> pd.DataFrame:
@@ -553,7 +548,7 @@ class Annotation:
             query = query.drop(columns=["_id", "_score"])
         return query
 
-    def query_mygene(self, query: Iterable[str], fields: str = "genomic_pos"):
+    def map_with_mygene(self, query: Iterable[str], fields: str = "genomic_pos"):
         """
         Use mygene.info to map gene identifiers to another type.
 
@@ -599,7 +594,7 @@ class Annotation:
         # remove version numbers from gene IDs
         df["split_id"] = df["name"].str.split(r"\.", expand=True)[0]
         genes = set(df["split_id"])
-        result = self.query_mygene(genes, fields=to)
+        result = self.map_with_mygene(genes, fields=to)
         if len(result) == 0:
             logger.error("Could not map using mygene.info")
             return pd.DataFrame()
@@ -712,6 +707,60 @@ class Annotation:
         df = df.join(mapping, how="inner")
         df = df.reset_index()
         return df
+
+
+@memory.cache
+def query_mygene(
+    query: Iterable[str],
+    tax_id: str,
+    fields: str = "genomic_pos",
+    batch_size: int = 10000,
+) -> pd.DataFrame:
+    """
+    Use mygene.info to map gene identifiers to another type.
+
+    Parameters
+    ----------
+    query: iterable
+        a list or list-like of gene identifiers
+    fields : str, optional
+        Target identifier to map the query genes to. Valid fields
+        are: ensembl.gene, entrezgene, symbol, name, refseq, entrezgene. Note that
+        refseq will return the protein refseq_id by default, use `product="rna"` to
+        return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
+        not supported.
+    batch_size: int, optional
+        Controls batch size for REST API.
+
+    Returns
+    -------
+    pandas.DataFrame with mapped gene annotation.
+    """
+    logger.info("Querying mygene.info...")
+    query = [_ for _ in query]
+    query_len = len(query)
+    it = range(0, query_len, batch_size)
+    if query_len > batch_size:
+        logger.info("Large query, running in batches...")
+        it = tqdm(it)
+
+    result = pd.DataFrame()
+    for i in it:
+        mg = mygene.MyGeneInfo()
+        _result = mg.querymany(
+            query[i : i + batch_size],
+            scopes="symbol,name,ensembl.gene,entrezgene,ensembl.transcript,ensembl,accession.protein,accession.rna",
+            fields=fields,
+            species=tax_id,
+            as_dataframe=True,
+            verbose=False,
+        )
+        result = pd.concat((result, _result))
+
+    if "notfound" in result and result.shape[1] == 1:
+        logger.warning("No matching genes found")
+
+    return result
 
 
 def get_column(
