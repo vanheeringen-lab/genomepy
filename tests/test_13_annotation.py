@@ -7,6 +7,7 @@ import pytest
 import genomepy
 import genomepy.files
 import genomepy.utils
+from genomepy.annotation import query_mygene
 
 
 def test_get_column():
@@ -364,3 +365,8 @@ def test_sanitize(caplog):
     assert metadata["sanitized annotation"] == "contigs fixed and filtered"
 
     genomepy.utils.rm_rf(tmp_dir)
+
+
+def test_query_mygene():
+    result = query_mygene(["ENST00000449992"], 9606, "symbol")
+    assert result.loc["ENST00000449992", "symbol"] == "TP63"
