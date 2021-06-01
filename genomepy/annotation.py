@@ -714,7 +714,7 @@ class Annotation:
 @memory.cache
 def query_mygene(
     query: Iterable[str],
-    tax_id: str,
+    tax_id: Union[str, int],
     fields: str = "genomic_pos",
     batch_size: int = 10000,
 ) -> pd.DataFrame:
@@ -725,6 +725,8 @@ def query_mygene(
     ----------
     query: iterable
         a list or list-like of gene identifiers
+    tax_id: str or int
+        Target genome taxonomy id
     fields : str, optional
         Target identifier to map the query genes to. Valid fields
         are: ensembl.gene, entrezgene, symbol, name, refseq, entrezgene. Note that
@@ -732,7 +734,7 @@ def query_mygene(
         return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
         not supported.
     batch_size: int, optional
-        Controls batch size for REST API.
+        Controls batch size for the REST API.
 
     Returns
     -------
@@ -750,7 +752,7 @@ def query_mygene(
     for i in it:
         mg = mygene.MyGeneInfo()
         _result = mg.querymany(
-            query[i : i + batch_size],
+            query[i : i + batch_size],  # noqa
             scopes="symbol,name,ensembl.gene,entrezgene,ensembl.transcript,ensembl,accession.protein,accession.rna",
             fields=fields,
             species=tax_id,
