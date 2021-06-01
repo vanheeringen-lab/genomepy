@@ -57,9 +57,9 @@ def genomes(provider=None):
     Returns the metadata of each found genome, including the availability of a gene annotation.
     For UCSC, up to 4 gene annotation styles may be available: UCSC, Ensembl, NCBI_refseq and UCSC_refseq.
     """
-    print(Style.BRIGHT + SEARCH_STRING.format(*SEARCH_FORMAT))
+    terminal_header()
     for row in genomepy.list_available_genomes(provider):
-        print(terminal_formatting(row))
+        terminal_formatting(row)
 
 
 # extended options for genomepy install
@@ -298,7 +298,7 @@ if sys.stdout.isatty():
         sting = sting.replace("\u2717", Fore.RED + "\u2717" + Fore.RESET)
         return sting
 
-    def terminal_formatting(row: list) -> str:
+    def terminal_formatting(row: list):
         """
         In case we print to a terminal, the output is aligned.
         Otherwise (file, pipe) we use tab-separated columns.
@@ -311,19 +311,24 @@ if sys.stdout.isatty():
             if ele is None:
                 row[n] = "na"
         row = SEARCH_STRING.format(*row)
-        return color_unicode(row)
+        print(color_unicode(row))
 
+    def terminal_header():
+        print(Style.BRIGHT + SEARCH_STRING.format(*SEARCH_FORMAT))
 
 else:
 
-    def terminal_formatting(row: list) -> str:
+    def terminal_formatting(row: list):
         """
         In case we print to a terminal, the output is aligned.
         Otherwise (file, pipe) we use tab-separated columns.
         """
         if isinstance(row[4], list):
-            row[4] = " ".join([str(b) for b in row[4]])
-        return "\t".join([str(element) for element in row])
+            row[4] = str(row[4])
+        print("\t".join([str(element) for element in row]))
+
+    def terminal_header():
+        print("\t".join(SEARCH_FORMAT))
 
 
 @click.command("search", short_help="search for genomes")
@@ -344,8 +349,8 @@ def search(term, provider=None):
     for row in genomepy.search(term, provider):
         if no_genomes:
             no_genomes = False
-            print(Style.BRIGHT + SEARCH_STRING.format(*SEARCH_FORMAT))
-        print(terminal_formatting(row))
+            terminal_header()
+        terminal_formatting(row)
 
     if sys.stdout.isatty():
         if no_genomes:
