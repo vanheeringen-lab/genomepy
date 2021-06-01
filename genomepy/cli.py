@@ -51,7 +51,12 @@ def config(command):
 @click.command("genomes", short_help="list available genomes")
 @click.option("-p", "--provider", help="provider")
 def genomes(provider=None):
-    """List all available genomes."""
+    """
+    List all available genomes.
+
+    Returns the metadata of each found genome, including the availability of a gene annotation.
+    For UCSC, up to 4 gene annotation styles may be available: UCSC, Ensembl, NCBI_refseq and UCSC_refseq.
+    """
     print(Style.BRIGHT + SEARCH_STRING.format(*SEARCH_FORMAT))
     for row in genomepy.list_available_genomes(provider):
         print(terminal_formatting(row))
@@ -288,6 +293,11 @@ if sys.stdout.isatty():
         """converts True to a checkmark and False to a cross-mark"""
         return "\u2713" if boolean else "\u2717"
 
+    def color_unicode(string):
+        sting = string.replace("\u2713", Fore.GREEN + "\u2713" + Fore.RESET)
+        sting = sting.replace("\u2717", Fore.RED + "\u2717" + Fore.RESET)
+        return sting
+
     def terminal_formatting(row: list) -> str:
         """
         In case we print to a terminal, the output is aligned.
@@ -300,7 +310,8 @@ if sys.stdout.isatty():
         for n, ele in enumerate(row):
             if ele is None:
                 row[n] = "na"
-        return SEARCH_STRING.format(*row)
+        row = SEARCH_STRING.format(*row)
+        return color_unicode(row)
 
 
 else:
@@ -325,6 +336,9 @@ def search(term, provider=None):
 
     Function is case-insensitive. Spaces in TERM can be replaced with underscores
     (_) or TERM can be "quoted", e.g., "homo sapiens".
+
+    Returns the metadata of each found genome, including the availability of a gene annotation.
+    For UCSC, up to 4 gene annotation styles may be available: UCSC, Ensembl, NCBI_refseq and UCSC_refseq.
     """
     no_genomes = True
     for row in genomepy.search(term, provider):
