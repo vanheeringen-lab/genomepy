@@ -3,7 +3,7 @@ from shutil import copyfile
 from tempfile import TemporaryDirectory
 
 
-def test_ncbiprovider__init__(ncbi):
+def test_ncbiprovider(ncbi):
     assert ncbi.name == "NCBI"
     assert ncbi.taxid_fields == ["species_taxid", "taxid"]
 
@@ -22,7 +22,7 @@ def test__get_genomes(ncbi):
 def test_genome_info_tuple(ncbi):
     t = ncbi._genome_info_tuple("ASM2732v1")
     assert isinstance(t, tuple)
-    assert t[2:4] == ("Mycoplasma genitalium G37", "2097")
+    assert t[0:4] == ("ASM2732v1", "GCF_000027325.1", 2097, True)
 
 
 def test_get_genome_download_link(ncbi):
@@ -61,10 +61,5 @@ def test__post_process_download(ncbi):
 
 
 def test_get_annotation_download_link(ncbi):
-    link = ncbi.get_annotation_download_link("ASM2732v1")
-    assert (
-        link
-        == "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/"
-        + "000/027/325/GCF_000027325.1_ASM2732v1/"
-        + "GCF_000027325.1_ASM2732v1_genomic.gff.gz"
-    )
+    links = ncbi.get_annotation_download_links("ASM2732v1")
+    assert links[0].endswith("GCF_000027325.1_ASM2732v1_genomic.gff.gz")

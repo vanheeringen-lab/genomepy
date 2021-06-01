@@ -6,7 +6,6 @@ from time import sleep
 
 import pytest
 
-import genomepy
 import genomepy.utils
 from genomepy.plugin import init_plugins, activate, deactivate, get_active_plugins
 from genomepy.plugins.blacklist import BlacklistPlugin

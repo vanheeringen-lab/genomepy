@@ -8,7 +8,12 @@ import logging
 from loguru import logger
 import pytest
 
-import genomepy
+import genomepy.provider
+from genomepy.providers.base import BaseProvider
+from genomepy.providers.ensembl import EnsemblProvider
+from genomepy.providers.ucsc import UcscProvider
+from genomepy.providers.ncbi import NcbiProvider
+from genomepy.providers.url import UrlProvider
 
 
 @pytest.fixture(scope="function")
@@ -96,64 +101,30 @@ def validate_annot(fname, ftype):
 
 
 @pytest.fixture(scope="package")
+def base():
+    return BaseProvider()
+
+
+@pytest.fixture(scope="package")
+def ensembl():
+    return EnsemblProvider()
+
+
+@pytest.fixture(scope="package")
+def ucsc():
+    return UcscProvider()
+
+
+@pytest.fixture(scope="package")
+def ncbi():
+    return NcbiProvider()
+
+
+@pytest.fixture(scope="package")
+def url():
+    return UrlProvider()
+
+
+@pytest.fixture(scope="package")
 def provider():
-    return genomepy.ProviderBase()
-
-
-@pytest.fixture(scope="package")
-def ensembl(provider):
-    return provider.create("ensembl")
-
-
-@pytest.fixture(scope="package")
-def ucsc(provider):
-    return provider.create("ucsc")
-
-
-@pytest.fixture(scope="package")
-def ncbi(provider):
-    return provider.create("ncbi")
-
-
-@pytest.fixture(scope="package")
-def url(provider):
-    return provider.create("url")
-
-
-# # turns out to be slower than linear processing...
-#
-# from multiprocessing.pool import Pool
-#
-# # start downloading provider genomes in the background
-# pool = Pool(processes=1)
-# async_ncbi = pool.apply_async(func=genomepy.ProviderBase.create, kwds={"name": "ncbi"})
-# async_ucsc = pool.apply_async(func=genomepy.ProviderBase.create, kwds={"name": "ucsc"})
-# async_ens = pool.apply_async(
-#     func=genomepy.ProviderBase.create, kwds={"name": "ensembl"}
-# )
-# pool.close()
-#
-#
-# @pytest.fixture(scope="package")
-# def provider():
-#     return genomepy.provider.ProviderBase()
-#
-#
-# @pytest.fixture(scope="package")
-# def ensembl():
-#     return async_ens.get()
-#
-#
-# @pytest.fixture(scope="package")
-# def ucsc():
-#     return async_ucsc.get()
-#
-#
-# @pytest.fixture(scope="package")
-# def ncbi():
-#     return async_ncbi.get()
-#
-#
-# @pytest.fixture(scope="package")
-# def url(provider):
-#     return provider.create("url")
+    return genomepy.Provider()
