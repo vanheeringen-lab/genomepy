@@ -1,33 +1,34 @@
-import os
-from tempfile import TemporaryDirectory
-
 import pytest
 
-import genomepy
 import genomepy.utils
-from tests import travis
-from tests.conftest import validate_annot
+import genomepy.providers.url
 
 
-def test_ncbiprovider__init__(url):
+def test_ncbiprovider(url):
     assert url.name == "URL"
     assert url.genomes == {}
 
 
 def test_genome_taxid(url):
-    assert url.genome_taxid({}) == "na"
+    assert url.genome_taxid(None) is None
 
 
 def test_assembly_accession(url):
-    assert url.assembly_accession({}) == "na"
+    assert url.assembly_accession(None) is None
 
 
-def test_search(url, ucsc):
+def test_search(url):
     result = url.search("???")
-    expected = ucsc.search("???")
-    assert isinstance(result, type(expected))
     with pytest.raises(StopIteration):
         assert next(result)
+
+
+def test__genome_info_tuple(url):
+    assert url._genome_info_tuple(None) is tuple()
+
+
+def test_check_name(url):
+    assert url.check_name(None) is None
 
 
 def test_get_genome_download_link(url):
@@ -35,23 +36,41 @@ def test_get_genome_download_link(url):
     assert link == "url"
 
 
-def test_get_annotation_download_link(url):
+def test_get_annotation_download_links(url):
     target = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_Xenbase.gtf"
-    link = url.get_annotation_download_link(None, **{"to_annotation": target})
-    assert link == target
+    links = url.get_annotation_download_links(None, **{"to_annotation": target})
+    assert links[0] == target
 
     with pytest.raises(TypeError):
         bad_url = "bad_url"
-        url.get_annotation_download_link(None, **{"to_annotation": bad_url})
+        url.get_annotation_download_links(None, **{"to_annotation": bad_url})
 
     with pytest.raises(TypeError):
         bad_url = "http://good_url.bad_ext"
-        url.get_annotation_download_link(None, **{"to_annotation": bad_url})
+        url.get_annotation_download_links(None, **{"to_annotation": bad_url})
 
 
-def test_search_url_for_annotations(url):
+def test_fuzzy_annotation_search():
+    search_name = "mygenome"
+    search_list = [
+        "nothing.gtf",
+        "mygenome.genes.gff3",
+        "asdasdasdmygenomeasdasdasd.gtf",
+        "mygenome.zipped.gtf.gz",
+    ]
+    expected = [
+        "mygenomeasdasdasd.gtf",
+        "mygenome.zipped.gtf.gz",
+        "mygenome.genes.gff3",
+    ]
+    # f"{search_name}.*?\.{ext}3?(\.gz)?"
+    hits = genomepy.providers.url.fuzzy_annotation_search(search_name, search_list)
+    assert hits == expected
+
+
+def test_search_url_for_annotations():
     target = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_genome.fa.gz"
-    links = url.search_url_for_annotations(target, "XENTR_9.1")
+    links = genomepy.providers.url.search_url_for_annotations(target)
     expected = [
         "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_Xenbase.gtf",
         "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_GCA.gff3",
@@ -65,7 +84,7 @@ def test_search_url_for_annotations(url):
         "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/"
         "GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.fna.gz"
     )
-    links = url.search_url_for_annotations(target, "GCF_000027325.1_ASM2732v1")
+    links = genomepy.providers.url.search_url_for_annotations(target)
     expected = [
         "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/"
         + "GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gtf.gz",
@@ -75,38 +94,9 @@ def test_search_url_for_annotations(url):
     assert links == expected
 
     # no annot file
-    with pytest.raises(FileNotFoundError):
-        target = (
-            "http://ftp.ensembl.org/pub/release-100/fasta/marmota_marmota_marmota/"
-            "dna/Marmota_marmota_marmota.marMar2.1.dna.toplevel.fa.gz"
-        )
-        url.search_url_for_annotations(target, "Marmota_marmota_marmota.marMar2.1")
-
-
-@pytest.mark.skipif(not travis, reason="slow")
-def test_download_annotation(url):
-    out_dir = os.getcwd()
     target = (
-        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/"
-        "GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz"
+        "http://ftp.ensembl.org/pub/release-100/fasta/marmota_marmota_marmota/"
+        "dna/Marmota_marmota_marmota.marMar2.1.dna.toplevel.fa.gz"
     )
-    localname = "my_annot"
-    with TemporaryDirectory(dir=out_dir) as tmpdir:
-        url.download_annotation(
-            url="string",
-            genomes_dir=tmpdir,
-            localname=localname,
-            **{"to_annotation": target},
-        )
-
-        # check download_and_generate_annotation output
-        fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf")
-        validate_annot(fname, "gtf")
-
-        fname = os.path.join(tmpdir, localname, localname + ".annotation.bed")
-        validate_annot(fname, "bed")
-
-        # check attempt_download_and_report_back output
-        readme = os.path.join(tmpdir, localname, "README.txt")
-        metadata, lines = genomepy.utils.read_readme(readme)
-        assert metadata["annotation url"] == target
+    links = genomepy.providers.url.search_url_for_annotations(target)
+    assert links is None

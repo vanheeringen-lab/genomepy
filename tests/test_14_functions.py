@@ -1,33 +1,16 @@
 import os
-import argparse
-from tempfile import TemporaryDirectory
 
 from appdirs import user_config_dir
 import pytest
 
 import genomepy
 import genomepy.utils
-import genomepy.argparse_support
 from tests import linux, travis
 
 
 def test_clean():
     # test moved to 01_tests to prevent errors in parallel tests
     pass
-
-    # my_cache_dir = os.path.join(
-    #     user_cache_dir("genomepy"), genomepy.__about__.__version__
-    # )
-    #
-    # genomepy.provider.ProviderBase.create("UCSC")  # pickles UCSC genomes
-    # assert os.path.exists(my_cache_dir)  # dir exists
-    # assert os.listdir(my_cache_dir)  # contains >=1 pickle(s)
-    #
-    # genomepy.clean()
-    # assert os.path.exists(my_cache_dir)  # dir exists
-    # assert not os.listdir(my_cache_dir)  # contains 0 pickles
-    #
-    # genomepy.clean()  # no errors when cache dir is empty
 
 
 def test_manage_config(capsys):
@@ -68,40 +51,7 @@ def test_list_available_genomes():
     g = genomepy.functions.list_available_genomes("Ensembl")
     metadata = next(g)
     assert isinstance(metadata, list)
-    assert metadata[0] == "Ensembl"
-
-    # use a loop in case more genomes are added
-    for genome in g:
-        if genome[1] == "JCVI-ESG2-1.0":
-            assert genome == [
-                "Ensembl",
-                "JCVI-ESG2-1.0",
-                "GCA_000208925.2",
-                "Entamoeba histolytica",
-                "294381",
-                "AmoebaDB_1.6",
-            ]
-            break
-
-    g = genomepy.functions.list_available_genomes()
-    for genome in g:
-        if genome[1] == "ENA_1":
-            assert genome == [
-                "Ensembl",
-                "ENA_1",
-                "na",
-                "Albugo laibachii",
-                "890382",
-                "2011-08-ENA",
-            ]
-            break
-
-
-def test__is_genome_dir():
-    # dir contains a fasta
-    assert genomepy.functions._is_genome_dir("tests/data/regexp")
-    # dir does not contain a fasta
-    assert not genomepy.functions._is_genome_dir("tests/genome")
+    assert metadata[0:2] == ["athCun1", "Ensembl"]
 
 
 def test_list_installed_genomes():
@@ -123,12 +73,12 @@ def test__lazy_provider_selection():
     name = "Xenopus_tropicalis_v9.1"
     provider = "NCBI"
     p = genomepy.functions._lazy_provider_selection(name, provider)
-    assert "NcbiProvider" in str(p)
+    assert "ncbi" in str(p)
 
     # find the first provider (Ensembl)
     provider = None
     p = genomepy.functions._lazy_provider_selection(name, provider)
-    assert "EnsemblProvider" in str(p)
+    assert "ensembl" in str(p)
 
     # cant find genome anywhere
     name = "not_a_genome"
@@ -143,7 +93,7 @@ def test__provider_selection():
     genomes_dir = os.getcwd()
     provider = "NCBI"
     p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
-    assert "NcbiProvider" in str(p)
+    assert "ncbi" in str(p)
 
     # provider from readme
     readme = os.path.join(genomes_dir, localname, "README.txt")
@@ -152,12 +102,16 @@ def test__provider_selection():
         r.write("provider: NCBI")
     provider = None
     p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
-    assert "NcbiProvider" in str(p)
+    assert "ncbi" in str(p)
     genomepy.utils.rm_rf(os.path.dirname(readme))
 
     # lazy provider
     p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
-    assert "EnsemblProvider" in str(p)
+    assert "ensembl" in str(p)
+
+
+def test__filter_genome():
+    pass  # TODO
 
 
 @pytest.mark.skipif(not travis, reason="slow")
@@ -191,9 +145,9 @@ def test_install_genome():
     assert "chr2L" not in sizes
 
 
+# already used, but we had to install a genome first to test it
 @pytest.mark.skipif(not travis, reason="a genome must be installed")
 def test_generate_exports():
-    # already used, but we had to install a genome first to test it
     exports = genomepy.functions.generate_exports()
     assert isinstance(exports, list)
     # check if my_genome was installed in the last test
@@ -219,9 +173,9 @@ def test_generate_exports():
     genomepy.utils.rm_rf(os.path.join(gd, "testgenome"))
 
 
+# already used, but we had to install a genome first to test it
 @pytest.mark.skipif(not travis, reason="a genome must be installed")
 def test_generate_env():
-    # already used, but we had to install a genome first to test it
     config_dir = str(user_config_dir("genomepy"))
     path = os.path.join(config_dir, "exports.txt")
 
@@ -267,38 +221,3 @@ def test_manage_plugins(capsys):
 
     with pytest.raises(ValueError):
         genomepy.functions.manage_plugins("blurp")
-
-
-def test_list_available_providers():
-    # NCBI, Ensembl, UCSC and direct URL (4 providers total)
-    assert len(genomepy.functions.list_available_providers()) == 4
-
-
-def test_accession_search():
-    search = [row for row in genomepy.functions.search("GCA_000004195.3")]
-    assert 9 == len(search)
-    providers = [row[1] for row in search]
-    assert "Ensembl" in providers
-    assert "NCBI" in providers
-    assert "UCSC" in providers
-
-
-def test_argparse_plugin():
-    action = genomepy.argparse_support.parse_genome
-
-    with TemporaryDirectory() as tmpdir:
-        parser = argparse.ArgumentParser()
-        parser.add_argument(
-            "-g", dest="genome", action=action(auto_install=True, genomes_dir=tmpdir)
-        )
-        args = parser.parse_args(
-            ["-g", "ASM2732v1"],
-        )
-        assert isinstance(args.genome, genomepy.Genome)
-
-    with pytest.raises(SystemExit) as pytest_wrapped_e:
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-g", dest="genome", action=action())
-        _ = parser.parse_args(["-g", "non_existing"])
-    assert pytest_wrapped_e.type == SystemExit
-    assert pytest_wrapped_e.value.code == 1

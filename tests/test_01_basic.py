@@ -86,7 +86,7 @@ def test_clean():
 def test_import():
     # __init__.py
     assert str(genomepy.Genome) == "<class 'genomepy.genome.Genome'>"
-    assert str(genomepy.ProviderBase) == "<class 'genomepy.provider.ProviderBase'>"
+    assert str(genomepy.Provider) == "<class 'genomepy.provider.Provider'>"
     assert "Simon van Heeringen" in genomepy.__author__
 
 

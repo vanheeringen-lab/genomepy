@@ -13,17 +13,19 @@ from tqdm import tqdm
 from joblib import Memory
 from appdirs import user_cache_dir
 
-from genomepy.provider import ProviderBase
-from genomepy.utils import (
-    get_genomes_dir,
+from genomepy.files import (
     gzip_and_name,
     gunzip_and_name,
     glob_ext_files,
     read_readme,
     update_readme,
+    _open,
+)
+from genomepy.provider import Provider
+from genomepy.utils import (
+    get_genomes_dir,
     mkdir_p,
     rm_rf,
-    _open,
     best_search_result,
     safe,
 )
@@ -509,7 +511,7 @@ class Annotation:
             return
 
         asm_acc = metadata["assembly_accession"]
-        ensembl_search = list(ProviderBase.search_all(asm_acc, provider="Ensembl"))
+        ensembl_search = list(Provider.search_all(asm_acc, provider="Ensembl"))
         search_result = best_search_result(asm_acc, ensembl_search)
         if len(search_result) == 0:
             logger.warning(
@@ -676,7 +678,7 @@ class Annotation:
             Chromosome mapping.
         """
         genomes_dir = os.path.dirname(self.genome_dir)
-        mapping = ProviderBase.map_locations(self.name, to, genomes_dir)
+        mapping = Provider.map_locations(self.name, to, genomes_dir)
         return mapping
 
     def map_locations(self, annot: Union[str, pd.DataFrame], to: str) -> pd.DataFrame:
@@ -712,7 +714,7 @@ class Annotation:
 @memory.cache
 def query_mygene(
     query: Iterable[str],
-    tax_id: str,
+    tax_id: Union[str, int],
     fields: str = "genomic_pos",
     batch_size: int = 10000,
 ) -> pd.DataFrame:
@@ -723,6 +725,8 @@ def query_mygene(
     ----------
     query: iterable
         a list or list-like of gene identifiers
+    tax_id: str or int
+        Target genome taxonomy id
     fields : str, optional
         Target identifier to map the query genes to. Valid fields
         are: ensembl.gene, entrezgene, symbol, name, refseq, entrezgene. Note that
@@ -730,7 +734,7 @@ def query_mygene(
         return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
         not supported.
     batch_size: int, optional
-        Controls batch size for REST API.
+        Controls batch size for the REST API.
 
     Returns
     -------
@@ -748,7 +752,7 @@ def query_mygene(
     for i in it:
         mg = mygene.MyGeneInfo()
         _result = mg.querymany(
-            query[i : i + batch_size],
+            query[i : i + batch_size],  # noqa
             scopes="symbol,name,ensembl.gene,entrezgene,ensembl.transcript,ensembl,accession.protein,accession.rna",
             fields=fields,
             species=tax_id,
