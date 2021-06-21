@@ -1,4 +1,5 @@
 import os
+import subprocess as sp
 from shutil import rmtree
 
 import norns
@@ -9,6 +10,25 @@ from bucketcache import Bucket
 import genomepy
 
 from . import travis
+
+
+def test_linting():
+    try:
+        out = sp.check_output(
+            "bash tests/format.sh lint",
+            stderr=sp.STDOUT,
+            shell=True,
+        ).decode("utf-8")
+        if out.strip() != "Done":
+            pytest.fail(
+                f"Linting failed. Messages: \n\n{out}\nRun `bash tests/format.sh` to format the repo.",
+                False,
+            )
+    except sp.CalledProcessError as e:
+        msg = e.output.decode("utf-8")
+        msg = msg if isinstance(msg, list) else [msg]
+        msg = "\n".join(["Linting failed. Messages: \n"] + msg)
+        pytest.fail(msg, False)
 
 
 @pytest.mark.skipif(not travis, reason="it works locally all right")

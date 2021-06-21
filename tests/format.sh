@@ -1,42 +1,73 @@
 #!/usr/bin/env bash
 
 : '
-Command line script run formatters and linters.
-Run from root directory with `  bash tests/format.sh  `
+Format or lint the repo.
 
-Formatters:
-- isort
-- autoflake
-- black
+Run from root directory to format:
+  bash tests/format.sh
+Run from root directory to lint:
+  bash tests/format.sh lint
 
-Linters:
-- flake8 + flake8-bugbear
+Tool versions must match the pre-commit hook to prevent later issues.
+This is automatically fixes if installed with `conda env create -f environment.yml`
 '
 
+# files & directories to format/lint
 targets=("setup.py genomepy/ tests/")
 
+# check current directory
+if [[ $(pwd) != *genomepy ]] || [[ $(ls) != *genomepy* ]]; then
+  echo "Script must be run from the base of the genomepy repo!"
+  exit 1
+fi
+
+# parse arg
+lint=false
+if [ "$1" = "lint" ]; then
+  lint=true
+fi
+
+# store diff before formatting
+before=$(git diff)
+
+
 autoflake \
+  $( $lint && echo '--check' ) \
   --recursive \
   --remove-all-unused-imports \
   --remove-duplicate-keys \
   --remove-unused-variables \
   --ignore-init-module-imports \
-  $targets
+  $targets \
+  | grep -v 'No issues detected!'
 
 isort \
+  $( $lint && echo '--check' ) \
   --overwrite-in-place \
   --profile black \
   --conda-env environment.yml \
   $targets
 
-
 black \
+  $( $lint && echo '--check' ) \
   --quiet \
   $targets
 
+if $lint; then
+  flake8 \
+    $targets
 
-flake8 \
-  $targets
+  echo ""
+  echo "Done"
+  exit 0
+fi
 
 
-git status
+# show formatted files
+after=$(git diff)
+if [ "$before" = "$after" ]; then
+  echo "No changes made!"
+else
+  echo ""
+  git status
+fi
