@@ -6,7 +6,6 @@ import genomepy
 import genomepy.utils
 from tests import travis
 
-
 skip = True
 if not skip:
 

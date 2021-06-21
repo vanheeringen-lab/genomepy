@@ -1,7 +1,7 @@
 import re
 
-from loguru import logger
 import requests
+from loguru import logger
 
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, retry

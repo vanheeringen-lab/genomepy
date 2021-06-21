@@ -1,32 +1,32 @@
 """Module-level functions."""
 import os
-from typing import Optional
 import re
+from typing import Optional
 
-from appdirs import user_config_dir, user_cache_dir
 import norns
-from pyfaidx import FastaIndexingError, IndexNotFoundError, Fasta
+from appdirs import user_cache_dir, user_config_dir
+from pyfaidx import Fasta, FastaIndexingError, IndexNotFoundError
 
 from genomepy.__about__ import __version__
 from genomepy.annotation import Annotation
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import (
-    is_genome_dir,
-    delete_extensions,
-    gzip_and_name,
+    _fa_to_file,
     bgzip_and_name,
+    delete_extensions,
     glob_ext_files,
+    gzip_and_name,
+    is_genome_dir,
     read_readme,
     update_readme,
-    _fa_to_file,
 )
 from genomepy.genome import Genome
 from genomepy.online import check_url
 from genomepy.plugin import get_active_plugins, init_plugins
 from genomepy.provider import Provider
 from genomepy.utils import (
-    get_localname,
     get_genomes_dir,
+    get_localname,
     mkdir_p,
     rm_rf,
     safe,

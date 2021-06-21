@@ -1,7 +1,7 @@
 import pytest
 
-import genomepy.utils
 import genomepy.providers.url
+import genomepy.utils
 
 
 def test_ncbiprovider(url):

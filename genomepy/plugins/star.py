@@ -4,7 +4,7 @@ from loguru import logger
 
 from genomepy.files import bgzip_and_name, gunzip_and_name, gzip_and_name
 from genomepy.plugin import Plugin
-from genomepy.utils import mkdir_p, rm_rf, cmd_ok, run_index_cmd
+from genomepy.utils import cmd_ok, mkdir_p, rm_rf, run_index_cmd
 
 
 class StarPlugin(Plugin):

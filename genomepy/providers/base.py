@@ -1,33 +1,25 @@
 import os
-import time
 import shutil
 import subprocess as sp
+import time
+from tempfile import mkdtemp
+from typing import Iterator, Union
 
 from appdirs import user_cache_dir
 from bucketcache import Bucket
 from loguru import logger
-from tempfile import mkdtemp
-from typing import Iterator, Union
 
 from genomepy.__about__ import __version__
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import (
-    write_readme,
-    update_readme,
+    get_file_info,
     gunzip_and_name,
     tar_to_bigfile,
-    get_file_info,
+    update_readme,
+    write_readme,
 )
-from genomepy.online import download_file, check_url
-from genomepy.utils import (
-    get_localname,
-    safe,
-    lower,
-    mkdir_p,
-    get_genomes_dir,
-    rm_rf,
-)
-
+from genomepy.online import check_url, download_file
+from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf, safe
 
 # Store the output of slow commands (marked with @cache and @goldfish_cache) for fast reuse.
 # Bucketcache creates a new pickle for each function + set of unique variables,

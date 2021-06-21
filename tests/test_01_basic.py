@@ -1,75 +1,14 @@
-from appdirs import user_cache_dir
-from bucketcache import Bucket
 import os
-import subprocess as sp
 from shutil import rmtree
 
 import norns
 import pytest
+from appdirs import user_cache_dir
+from bucketcache import Bucket
 
 import genomepy
+
 from . import travis
-
-
-def test_flake_formatting():
-    """remove unused stuff (ignores lines marked with '# noqa')"""
-    try:
-        sp.check_output(
-            "autoflake -r "
-            f'{"--check " if travis else "--in-place "}'
-            "--remove-all-unused-imports "
-            "--remove-duplicate-keys "
-            "--remove-unused-variables "
-            "setup.py genomepy/ tests/",
-            stderr=sp.STDOUT,
-            shell=True,
-        )
-    except sp.CalledProcessError as e:
-        msg = e.output.decode("utf-8")
-        msg = msg.replace("No issues detected!", "")
-        pytest.fail(msg, False)
-
-
-def test_isort_formatting():
-    """sort imports"""
-    try:
-        sp.check_output(
-            "isort "
-            f'{"--check " if travis else "--overwrite-in-place "}'
-            "--profile black "
-            "--conda-env environment.yml "
-            "setup.py genomepy/ tests/",
-            stderr=sp.STDOUT,
-            shell=True,
-        )
-    except sp.CalledProcessError as e:
-        msg = e.output.decode("utf-8")
-        pytest.fail(msg, False)
-
-
-def test_black_formatting():
-    try:
-        sp.check_output(
-            f"black {'--check ' if travis else ''} setup.py genomepy/ tests/",
-            stderr=sp.STDOUT,
-            shell=True,
-        )
-    except sp.CalledProcessError as e:
-        msg = e.output.decode("utf-8")
-        msg = msg.split("\n")[:-3]
-        msg = "\n".join(["Black output:"] + msg)
-        pytest.fail(msg, False)
-
-
-def test_flake8_linting():
-    try:
-        sp.check_output(
-            "flake8 setup.py genomepy/ tests/", stderr=sp.STDOUT, shell=True
-        )
-    except sp.CalledProcessError as e:
-        msg = e.output.decode("utf-8")
-        msg = "Flake8 output:\n" + msg
-        pytest.fail(msg, False)
 
 
 @pytest.mark.skipif(not travis, reason="it works locally all right")

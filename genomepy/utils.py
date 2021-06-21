@@ -1,16 +1,16 @@
 """Utility functions."""
-import os
 import itertools
+import os
 import re
-import sys
-import subprocess as sp
 import shutil
+import subprocess as sp
+import sys
 import time
-from typing import Optional, List
+from typing import List, Optional
 from urllib.request import urlopen
 
-from loguru import logger
 import norns
+from loguru import logger
 from norns import exceptions
 
 config = norns.config("genomepy", default="cfg/default.yaml")

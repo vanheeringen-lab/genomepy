@@ -1,5 +1,4 @@
 [flake8]
-exclude = .git,build
-max-line-length = 88
+exclude = __init__.py
 extend-ignore = E203,E402,E501
 select = C,E,F,W,B,B950

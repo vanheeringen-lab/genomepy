@@ -41,11 +41,12 @@ dependencies:
   - setuptools
 
   # Testing
-  - autoflake
-  - black
-  - flake8
-  - flake8-bugbear
-  - isort
+  - autoflake=1.4  # versions match .pre-commit-config.yaml
+  - black=21.6b0
+  - flake8=3.9.2
+  - flake8-bugbear=21.4.3
+  - isort=5.9.1
+  - pre-commit
   - pytest
   - pytest-rerunfailures
   - pytest-cov

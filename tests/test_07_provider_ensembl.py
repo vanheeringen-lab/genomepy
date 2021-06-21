@@ -1,6 +1,5 @@
-import requests
-
 import pytest
+import requests
 
 import genomepy.providers.ensembl
 from tests import linux, travis
