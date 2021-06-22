@@ -27,7 +27,7 @@ repos:
           - tests/
 
   - repo: https://github.com/ambv/black
-    rev: 21.6b0
+    rev: 21.5b2
     hooks:
     - id: black
       args:
