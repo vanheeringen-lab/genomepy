@@ -19,9 +19,9 @@ env:
 
 cache:
   directories:
-    - $HOME/miniconda
+    - $HOME/miniconda3
 before_cache:
-  - conda clean --all # needed here?
+  - conda clean --all
 
 before_install:
   # install miniconda
