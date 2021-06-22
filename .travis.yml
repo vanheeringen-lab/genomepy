@@ -23,29 +23,25 @@ cache:
 
 before_install:
   # install miniconda or use the cache
+  - if test -e $HOME/miniconda/bin; then
+      echo "Miniconda already installed";
+
+      export PATH=$HOME/miniconda/bin:$PATH;
+      conda config --set always_yes yes;
+      mamba update -n genomepy -f environment.yml;
+    fi
   - if ! test -e $HOME/miniconda/bin; then
       echo "Installing miniconda";
 
       CONDA_OS=$([ "$TRAVIS_OS_NAME" = "linux" ] && echo "Linux" || echo "MacOSX");
       wget https://repo.continuum.io/miniconda/Miniconda3-latest-${CONDA_OS}-x86_64.sh -O miniconda.sh;
-
       chmod +x miniconda.sh;
       ./miniconda.sh -b -p $HOME/miniconda -f;
 
       export PATH=$HOME/miniconda/bin:$PATH;
       conda config --set always_yes yes;
       conda install conda-forge::mamba;
-
-      echo "Installing genomepy dependencies";
-      mamba env create -n genomepy python=$PYTHON_VERSION -f environment.yml
-    else
-      echo "Miniconda already installed";
-
-      export PATH=$HOME/miniconda/bin:$PATH;
-      conda config --set always_yes yes;
-
-      echo "Updating genomepy dependencies";
-      mamba update -n genomepy -f environment.yml
+      mamba env create -n genomepy python=$PYTHON_VERSION -f environment.yml;
     fi
 
 install:
