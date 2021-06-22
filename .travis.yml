@@ -19,19 +19,23 @@ env:
 
 cache:
   directories:
-    - $HOME/miniconda3
+    - $HOME/miniconda
 
 before_install:
   # install miniconda or use the cache
-  - if [ ! -f $HOME/miniconda3/bin/mamba ]; then
+  - if test -e $HOME/miniconda/bin; then
+      echo "Installing miniconda";
       CONDA_OS=$([ "$TRAVIS_OS_NAME" = "linux" ] && echo "Linux" || echo "MacOSX");
       wget https://repo.continuum.io/miniconda/Miniconda3-latest-${CONDA_OS}-x86_64.sh -O miniconda.sh;
+
       chmod +x miniconda.sh;
       ./miniconda.sh -b -p $HOME/miniconda -f;
+
       export PATH=$HOME/miniconda/bin:$PATH;
       conda config --set always_yes yes;
       conda install conda-forge::mamba;
     else
+      echo "Miniconda already installed";
       export PATH=$HOME/miniconda/bin:$PATH;
       conda config --set always_yes yes;
     fi
