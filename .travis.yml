@@ -17,6 +17,12 @@ env:
   jobs:
     - PYTHON_VERSION=3.6
 
+cache:
+  directories:
+    - $HOME/miniconda
+before_cache:
+  - conda clean --all
+
 before_install:
   # install miniconda
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
@@ -50,9 +56,7 @@ before_script:
     fi
 
 script:
-  - black --check setup.py genomepy/ tests/
-  - flake8 setup.py genomepy/ tests/
-  - pytest -vv --disable-pytest-warnings tests/*
+  - pytest -vv --disable-pytest-warnings tests/test_01_basic.py
     --reruns 1 --reruns-delay 10
     --cov=genomepy --cov-config=tests/.coveragerc --cov-report=xml
 
