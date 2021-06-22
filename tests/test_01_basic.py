@@ -13,22 +13,20 @@ from . import travis
 
 
 def test_linting():
-    try:
-        out = sp.check_output(
-            "bash tests/format.sh lint",
-            stderr=sp.STDOUT,
-            shell=True,
-        ).decode("utf-8")
-        if out.strip() != "Done":
-            pytest.fail(
-                f"Linting failed. Messages: \n\n{out}\nRun `bash tests/format.sh` to format the repo.",
-                False,
-            )
-    except sp.CalledProcessError as e:
-        msg = e.output.decode("utf-8")
-        msg = msg if isinstance(msg, list) else [msg]
-        msg = "\n".join(["Linting failed. Messages: \n"] + msg)
-        pytest.fail(msg, False)
+    print(os.listdir(os.path.abspath("tests")))
+    print(os.path.exists("tests/format.sh"))
+    out = sp.check_output(
+        "chmod +x tests/format.sh; tests/format.sh lint",
+        stderr=sp.STDOUT,  # send errors to out
+        shell=True,
+    )
+    out = out.decode("utf-8").replace("\x1b[0m", "").replace("\nDone\n", "")
+    if out != "":
+        pytest.fail(
+            f"Linting failed. Messages: \n\n{out}\n"
+            "Run `tests/format.sh` to format the repo.",
+            False,
+        )
 
 
 @pytest.mark.skipif(not travis, reason="it works locally all right")

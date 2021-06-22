@@ -50,8 +50,9 @@ isort \
 
 black \
   $( $lint && echo '--check' ) \
-  --quiet \
-  $targets
+  $targets \
+  2>&1 \
+  | grep 'would reformat'
 
 if $lint; then
   flake8 \
