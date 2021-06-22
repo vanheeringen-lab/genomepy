@@ -25,6 +25,7 @@ before_install:
   # install miniconda or use the cache
   - if ! test -e $HOME/miniconda/bin; then
       echo "Installing miniconda";
+
       CONDA_OS=$([ "$TRAVIS_OS_NAME" = "linux" ] && echo "Linux" || echo "MacOSX");
       wget https://repo.continuum.io/miniconda/Miniconda3-latest-${CONDA_OS}-x86_64.sh -O miniconda.sh;
 
@@ -39,6 +40,7 @@ before_install:
       mamba env create -n genomepy python=$PYTHON_VERSION -f environment.yml
     else
       echo "Miniconda already installed";
+
       export PATH=$HOME/miniconda/bin:$PATH;
       conda config --set always_yes yes;
 
