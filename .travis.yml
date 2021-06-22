@@ -20,23 +20,30 @@ env:
 cache:
   directories:
     - $HOME/miniconda3
-before_cache:
-  - conda clean --all
+    - $HOME/.conda
+    - $HOME/.condarc
 
 before_install:
-  # install miniconda
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+  - if [ ! -f $HOME/miniconda3/bin/mamba ]; then
+      # install miniconda
+      if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+      else
+        wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+      fi
+      chmod +x miniconda.sh
+      ./miniconda.sh -b -p $HOME/miniconda -f
+      export PATH=$HOME/miniconda/bin:$PATH
+      conda config --set always_yes yes
+      conda install conda-forge::mamba
     else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+      # use cached miniconda
+      export PATH=$HOME/miniconda/bin:$PATH
+      conda config --set always_yes yes
     fi
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b -p $HOME/miniconda -f
-  - export PATH=$HOME/miniconda/bin:$PATH
-  - conda config --set always_yes yes
-  - conda install conda-forge::mamba
 
 install:
+  # install genomepy
   - mamba env create -n genomepy python=$PYTHON_VERSION -f environment.yml
   - source activate genomepy
   - python setup.py develop
@@ -44,11 +51,6 @@ install:
 
 before_script:
   # install codeclimate test coverage
-#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-#      wget -O cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64;
-#      chmod +x ./cc-test-reporter;
-#      ./cc-test-reporter before-build;
-#    fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       wget -O cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-darwin-amd64;
       chmod +x ./cc-test-reporter;
@@ -59,6 +61,9 @@ script:
   - pytest -vv --disable-pytest-warnings tests/test_01_basic.py
     --reruns 1 --reruns-delay 10
     --cov=genomepy --cov-config=tests/.coveragerc --cov-report=xml
+
+before_cache:
+  - conda clean --all
 
 after_script:
   # send the coverage data to Code Climate
