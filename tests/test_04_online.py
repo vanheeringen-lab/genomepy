@@ -1,7 +1,7 @@
 import os
-from tempfile import NamedTemporaryFile
-import urllib.request
 import urllib.error
+import urllib.request
+from tempfile import NamedTemporaryFile
 
 import pytest
 

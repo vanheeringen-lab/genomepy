@@ -1,21 +1,15 @@
 import os
-
-from loguru import logger
-import pandas as pd
 from typing import Optional
 
-from genomepy.files import (
-    read_readme,
-)
-from genomepy.utils import (
-    safe,
-    get_genomes_dir,
-    best_search_result,
-)
+import pandas as pd
+from loguru import logger
+
+from genomepy.files import read_readme
 from genomepy.providers.ensembl import EnsemblProvider
-from genomepy.providers.ucsc import UcscProvider
 from genomepy.providers.ncbi import NcbiProvider
+from genomepy.providers.ucsc import UcscProvider
 from genomepy.providers.url import UrlProvider
+from genomepy.utils import best_search_result, get_genomes_dir, safe
 
 ASM_FORMAT = [
     "Sequence-Name",

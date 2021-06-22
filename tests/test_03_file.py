@@ -1,7 +1,7 @@
 import filecmp
 import os
-from tempfile import NamedTemporaryFile
 import subprocess as sp
+from tempfile import NamedTemporaryFile
 
 import pytest
 

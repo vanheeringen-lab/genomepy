@@ -2,17 +2,17 @@
 Global fixtures and functions for pytest
 pytest can only share fixtures between modules if they are declared here.
 """
-import os
 import logging
+import os
 
-from loguru import logger
 import pytest
+from loguru import logger
 
 import genomepy.provider
 from genomepy.providers.base import BaseProvider
 from genomepy.providers.ensembl import EnsemblProvider
-from genomepy.providers.ucsc import UcscProvider
 from genomepy.providers.ncbi import NcbiProvider
+from genomepy.providers.ucsc import UcscProvider
 from genomepy.providers.url import UrlProvider
 
 

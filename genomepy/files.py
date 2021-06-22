@@ -1,12 +1,12 @@
-from glob import glob
 import gzip
 import os
 import re
 import shutil
 import subprocess as sp
 import tarfile
-from tempfile import mkdtemp
 import time
+from glob import glob
+from tempfile import mkdtemp
 from typing import Optional, Tuple
 
 from pyfaidx import Fasta

@@ -1,10 +1,10 @@
-from ftplib import FTP, all_errors, error_temp
-from time import sleep
-import requests
 import socket
 import urllib.error
+from ftplib import FTP, all_errors, error_temp
+from time import sleep
 from urllib.request import urlopen
 
+import requests
 from tqdm.auto import tqdm
 
 from genomepy.exceptions import GenomeDownloadError

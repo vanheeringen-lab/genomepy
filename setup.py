@@ -1,5 +1,6 @@
 import os
 import sys
+
 from setuptools import setup
 
 # https://packaging.python.org/single_source_version/

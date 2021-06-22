@@ -1,7 +1,7 @@
 import os
 
-from appdirs import user_config_dir
 import pytest
+from appdirs import user_config_dir
 
 import genomepy
 import genomepy.utils

@@ -3,7 +3,10 @@ import sys
 
 from loguru import logger
 
-from genomepy.functions import (  # noqa: F401
+from genomepy.__about__ import __author__, __version__
+from genomepy.annotation import Annotation
+from genomepy.exceptions import GenomeDownloadError
+from genomepy.functions import (
     clean,
     install_genome,
     list_available_genomes,
@@ -11,14 +14,11 @@ from genomepy.functions import (  # noqa: F401
     manage_config,
     manage_plugins,
 )
-from genomepy.annotation import Annotation  # noqa: F401
-from genomepy.genome import Genome  # noqa: F401
-from genomepy.provider import Provider  # noqa: F401
-from genomepy.exceptions import GenomeDownloadError  # noqa: F401
-from genomepy.__about__ import __version__, __author__  # noqa: F401
+from genomepy.genome import Genome
+from genomepy.provider import Provider
 
-list_available_providers = Provider.list_providers  # noqa: F401
-search = Provider.search_all  # noqa: F401
+list_available_providers = Provider.list_providers
+search = Provider.search_all
 
 # logger is a singleton, configuration here will be used module-wide
 logger.remove()

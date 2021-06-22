@@ -1,6 +1,7 @@
-import norns
 import os
 import re
+
+import norns
 
 config = norns.config("genomepy", default="cfg/default.yaml")
 

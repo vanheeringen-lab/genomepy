@@ -1,11 +1,11 @@
 import os.path
 import re
-
 from bisect import bisect
 from glob import glob
+from random import random
+
 from loguru import logger
 from pyfaidx import Fasta, Sequence
-from random import random
 
 from genomepy.files import (
     generate_fa_sizes,

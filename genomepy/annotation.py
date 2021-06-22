@@ -5,31 +5,25 @@ import subprocess as sp
 from tempfile import mkdtemp
 from typing import Iterable, Optional, Tuple, Union
 
-from loguru import logger
 import mygene
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from joblib import Memory
 from appdirs import user_cache_dir
+from joblib import Memory
+from loguru import logger
+from tqdm import tqdm
 
+from genomepy.__about__ import __version__
 from genomepy.files import (
-    gzip_and_name,
-    gunzip_and_name,
+    _open,
     glob_ext_files,
+    gunzip_and_name,
+    gzip_and_name,
     read_readme,
     update_readme,
-    _open,
 )
 from genomepy.provider import Provider
-from genomepy.utils import (
-    get_genomes_dir,
-    mkdir_p,
-    rm_rf,
-    best_search_result,
-    safe,
-)
-from genomepy.__about__ import __version__
+from genomepy.utils import best_search_result, get_genomes_dir, mkdir_p, rm_rf, safe
 
 GTF_FORMAT = [
     "seqname",

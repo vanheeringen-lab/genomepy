@@ -58,9 +58,7 @@ before_script:
     fi
 
 script:
-  - black --check setup.py genomepy/ tests/
-  - flake8 setup.py genomepy/ tests/
-  - pytest -vv --disable-pytest-warnings tests/*
+  - pytest -vv --disable-pytest-warnings
     --reruns 1 --reruns-delay 10
     --cov=genomepy --cov-config=tests/.coveragerc --cov-report=xml
 

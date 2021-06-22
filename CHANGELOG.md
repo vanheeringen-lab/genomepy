@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - genomepy search now shows if the genome has an annotation
     - this slows down the results a bit
     - to compensate, results are now shown as soon as they are found
+- for developers:
+  - pre-commit-hooks for linting
+  - formatting/linting script `tests/format.sh` (optional argument `lint`)
+  - isort & autoflake formatters
 
 ### Changed
 - provider module split per provider
@@ -36,6 +40,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `genomepy install` only zips annotation files if the genome is zipped (with the bgzip flag)
 - NCBI provider should be parsed faster
 - new dependency: pandas
+- tests no longer format code
 
 ### Fixed
 - broken URLs should keep genomepy occupied for less long (check_url will immediately return on "Not Found" errors 404/450)

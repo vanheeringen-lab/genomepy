@@ -7,7 +7,7 @@ from time import sleep
 import pytest
 
 import genomepy.utils
-from genomepy.plugin import init_plugins, activate, deactivate, get_active_plugins
+from genomepy.plugin import activate, deactivate, get_active_plugins, init_plugins
 from genomepy.plugins.blacklist import BlacklistPlugin
 from genomepy.plugins.bowtie2 import Bowtie2Plugin
 from genomepy.plugins.bwa import BwaPlugin

@@ -1,25 +1,30 @@
-from appdirs import user_cache_dir
-from bucketcache import Bucket
 import os
 import subprocess as sp
 from shutil import rmtree
 
 import norns
 import pytest
+from appdirs import user_cache_dir
+from bucketcache import Bucket
 
 import genomepy
+
 from . import travis
 
 
-@pytest.mark.skipif(travis, reason="format before committing!")
-def test_black_formatting():
-    sp.check_call("black setup.py genomepy/ tests/", shell=True)
-
-
-@pytest.mark.skipif(travis, reason="format before committing!")
-def test_flake8_formatting():
-    ret = sp.check_call("flake8 setup.py genomepy/ tests/", shell=True)
-    assert ret == 0
+def test_linting():
+    out = sp.check_output(
+        "chmod +x tests/format.sh; tests/format.sh lint",
+        stderr=sp.STDOUT,  # send errors to out
+        shell=True,
+    )
+    out = out.decode("utf-8").replace("\x1b[0m", "").replace("\nDone\n", "")
+    if out != "":
+        pytest.fail(
+            f"Linting failed. Messages: \n\n{out}\n"
+            "Run `tests/format.sh` to format the repo.",
+            False,
+        )
 
 
 @pytest.mark.skipif(not travis, reason="it works locally all right")
@@ -63,7 +68,7 @@ def test_cache(capsys):
         print("Method called.")
 
     @expensive_method.callback
-    def expensive_method(callinfo):
+    def expensive_method(_):
         print("Cache used.")
 
     expensive_method()

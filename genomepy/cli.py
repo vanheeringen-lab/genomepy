@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-import click
-import sys
 import os
-
-from loguru import logger
+import sys
 from collections import deque
-from colorama import init, Fore, Style
+
+import click
+from colorama import Fore, Style, init
+from loguru import logger
 
 import genomepy
 
@@ -22,7 +22,7 @@ def cli():
     Version: {}""".format(
         genomepy.__version__
     )
-    pass
+    pass  # noqa
 
 
 @click.command("clean", short_help="remove provider data")
