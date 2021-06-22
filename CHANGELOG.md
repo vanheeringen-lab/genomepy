@@ -36,6 +36,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `genomepy install` only zips annotation files if the genome is zipped (with the bgzip flag)
 - NCBI provider should be parsed faster
 - new dependency: pandas
+- travis caches conda for faster testing
 
 ### Fixed
 - broken URLs should keep genomepy occupied for less long (check_url will immediately return on "Not Found" errors 404/450)
