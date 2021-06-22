@@ -14,7 +14,6 @@ os:
 env:
   global:
     - CC_TEST_REPORTER_ID=951f438ac8a0fa93801ff0bf69922df59fe03800bf7ea8ab77a3c26cda444979
-    - CONDA_URL=https://repo.continuum.io/miniconda/Miniconda3-latest-$([ "$TRAVIS_OS_NAME" = "linux" ] && echo "Linux" || echo "MacOSX")-x86_64.sh
   jobs:
     - PYTHON_VERSION=3.6
 
@@ -25,7 +24,8 @@ cache:
 before_install:
   # install miniconda or use the cache
   - if [ ! -f $HOME/miniconda3/bin/mamba ]; then
-      wget $CONDA_URL -O miniconda.sh;
+      CONDA_OS=$([ "$TRAVIS_OS_NAME" = "linux" ] && echo "Linux" || echo "MacOSX");
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-${CONDA_OS}-x86_64.sh -O miniconda.sh;
       chmod +x miniconda.sh;
       ./miniconda.sh -b -p $HOME/miniconda -f;
       export PATH=$HOME/miniconda/bin:$PATH;
