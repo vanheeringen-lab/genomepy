@@ -38,7 +38,7 @@ before_install:
 
 install:
   # install genomepy
-  - mamba env create -n genomepy python=$PYTHON_VERSION -f environment.yml  # [ ! $(cat ~/.conda/environments.txt | grep envs/genomepy) ] && mamba env create -n genomepy python=$PYTHON_VERSION -f environment.yml || mamba update -n genomepy -f environment.yml
+  - mamba env create -n genomepy python=$PYTHON_VERSION -f environment.yml  # [ ! $(cat ~/.conda/environments.txt | grep envs/genomepy) ] && mamba env create -n genomepy python=$PYTHON_VERSION -f environment.yml || mamba update -n genomepy -f environment.yml #
   - source activate genomepy
   - python setup.py develop
   - python setup.py build
