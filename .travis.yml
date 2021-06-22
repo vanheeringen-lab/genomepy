@@ -21,7 +21,7 @@ cache:
   directories:
     - $HOME/miniconda
 before_cache:
-  - conda clean --all
+  - conda clean --all # needed here?
 
 before_install:
   # install miniconda
