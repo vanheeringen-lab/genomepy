@@ -50,7 +50,7 @@ before_script:
     fi
 
 script:
-  - pytest -vv --disable-pytest-warnings tests/*
+  - pytest -vv --disable-pytest-warnings
     --reruns 1 --reruns-delay 10
     --cov=genomepy --cov-config=tests/.coveragerc --cov-report=xml
 

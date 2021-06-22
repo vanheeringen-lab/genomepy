@@ -1,4 +1,5 @@
 import os
+import subprocess as sp
 from shutil import rmtree
 
 import norns
@@ -10,22 +11,22 @@ import genomepy
 
 from . import travis
 
-# import subprocess as sp
-# def test_linting():
-#     print(os.listdir(os.path.abspath("tests")))
-#     print(os.path.exists("tests/format.sh"))
-#     out = sp.check_output(
-#         "chmod +x tests/format.sh; tests/format.sh lint",
-#         stderr=sp.STDOUT,  # send errors to out
-#         shell=True,
-#     )
-#     out = out.decode("utf-8").replace("\x1b[0m", "").replace("\nDone\n", "")
-#     if out != "":
-#         pytest.fail(
-#             f"Linting failed. Messages: \n\n{out}\n"
-#             "Run `tests/format.sh` to format the repo.",
-#             False,
-#         )
+
+def test_linting():
+    print(os.listdir(os.path.abspath("tests")))
+    print(os.path.exists("tests/format.sh"))
+    out = sp.check_output(
+        "chmod +x tests/format.sh; tests/format.sh lint",
+        stderr=sp.STDOUT,  # send errors to out
+        shell=True,
+    )
+    out = out.decode("utf-8").replace("\x1b[0m", "").replace("\nDone\n", "")
+    if out != "":
+        pytest.fail(
+            f"Linting failed. Messages: \n\n{out}\n"
+            "Run `tests/format.sh` to format the repo.",
+            False,
+        )
 
 
 @pytest.mark.skipif(not travis, reason="it works locally all right")
