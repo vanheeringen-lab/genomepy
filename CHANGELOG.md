@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
   - pre-commit-hooks for linting
   - formatting/linting script `tests/format.sh` (optional argument `lint`)
   - isort & autoflake formatters
+  - switch to travis.com
 
 ### Changed
 - provider module split per provider
