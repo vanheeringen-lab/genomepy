@@ -13,8 +13,6 @@ from . import travis
 
 
 def test_linting():
-    print(os.listdir(os.path.abspath("tests")))
-    print(os.path.exists("tests/format.sh"))
     out = sp.check_output(
         "chmod +x tests/format.sh; tests/format.sh lint",
         stderr=sp.STDOUT,  # send errors to out
