@@ -17,32 +17,40 @@ env:
   jobs:
     - PYTHON_VERSION=3.6
 
+cache:
+  directories:
+    - $HOME/miniconda
+
 before_install:
-  # install miniconda
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+  # install miniconda or use the cache
+  - if test -e $HOME/miniconda/bin; then
+      echo "Miniconda already installed";
+
+      export PATH=$HOME/miniconda/bin:$PATH;
+      conda config --set always_yes yes;
+      mamba update -n genomepy -f environment.yml;
     fi
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b -p $HOME/miniconda -f
-  - export PATH=$HOME/miniconda/bin:$PATH
-  - conda config --set always_yes yes
-  - conda install conda-forge::mamba
+  - if ! test -e $HOME/miniconda/bin; then
+      echo "Installing miniconda";
+
+      CONDA_OS=$([ "$TRAVIS_OS_NAME" = "linux" ] && echo "Linux" || echo "MacOSX");
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-${CONDA_OS}-x86_64.sh -O miniconda.sh;
+      chmod +x miniconda.sh;
+      ./miniconda.sh -b -p $HOME/miniconda -f;
+
+      export PATH=$HOME/miniconda/bin:$PATH;
+      conda config --set always_yes yes;
+      conda install conda-forge::mamba;
+      mamba env create -n genomepy python=$PYTHON_VERSION -f environment.yml;
+    fi
 
 install:
-  - mamba env create -n genomepy python=$PYTHON_VERSION -f environment.yml
   - source activate genomepy
   - python setup.py develop
   - python setup.py build
 
 before_script:
   # install codeclimate test coverage
-#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-#      wget -O cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64;
-#      chmod +x ./cc-test-reporter;
-#      ./cc-test-reporter before-build;
-#    fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       wget -O cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-darwin-amd64;
       chmod +x ./cc-test-reporter;
@@ -55,6 +63,9 @@ script:
   - pytest -vv --disable-pytest-warnings tests/*
     --reruns 1 --reruns-delay 10
     --cov=genomepy --cov-config=tests/.coveragerc --cov-report=xml
+
+before_cache:
+  - conda clean --all
 
 after_script:
   # send the coverage data to Code Climate
