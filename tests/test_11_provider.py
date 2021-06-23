@@ -18,7 +18,7 @@ def test_create(provider):
 
 
 def test_list_providers(provider):
-    assert provider.list_providers() == genomepy.provider.PROVIDERS.keys()
+    assert provider.list_providers() == list(genomepy.provider.PROVIDERS.keys())
 
 
 def test_online_providers(provider):

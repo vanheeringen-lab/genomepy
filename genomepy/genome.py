@@ -12,6 +12,7 @@ from genomepy.files import (
     glob_ext_files,
     read_readme,
 )
+from genomepy.plugin import get_active_plugins
 from genomepy.utils import get_genomes_dir, safe
 
 
@@ -106,6 +107,14 @@ class Genome(Fasta):
                     start, end = int(start), int(end)
                     self.__gaps[chrom] = self.__gaps.get(chrom, 0) + end - start
         return self.__gaps
+
+    @property
+    def plugin(self):
+        """dict of all active plugins and their properties"""
+        p = dict()
+        for plugin in get_active_plugins():
+            p[plugin.name()] = plugin.get_properties(self)
+        return p
 
     @staticmethod
     def _parse_name(name: str) -> str:
