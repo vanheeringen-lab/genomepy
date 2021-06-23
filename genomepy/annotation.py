@@ -90,7 +90,6 @@ class Annotation:
         self.annotation_contigs = []
         self.gtf = None
         self.bed = None
-        self.genes = []
 
     def _get_genome_file(self, ext: str, check_exists: Optional[bool] = True):
         """
@@ -182,19 +181,34 @@ class Annotation:
             )
         return self.__bed
 
-    @property
-    def genes(self):
-        return self.__genes
+    # TODO: cache by self.name and annot
+    def genes(self, annot: str = "bed") -> list:
+        """
+        Retrieve gene names from the specified annotation.
 
-    @genes.setter
-    def genes(self, genes):
-        self.__genes = genes
+        For BED files, the output names vary, but is always available.
 
-    @genes.getter
-    def genes(self):
-        if not self.__genes:
-            self.__genes = list(set(self.bed.name))
-        return list(set(self.bed.name))
+        For GTF files, the output is always HGNC names, if available.
+
+        Parameters
+        ----------
+        annot : str, optional
+            Annotation file type: 'bed' or 'gtf'
+
+        Returns
+        -------
+        list with gene names
+        """
+        if annot.lower() == "bed":
+            return list(set(self.bed.name))
+
+        col = self.gtf.attribute
+        attributes = col[col.str.contains("gene_name")].to_list()
+        names = []
+        for row in attributes:
+            name = row.split('gene_name "')[1].split('";')[0]
+            names.append(name)
+        return list(set(names))
 
     def gene_coords(self, genes: Iterable[str]) -> pd.DataFrame:
         """
@@ -217,7 +231,7 @@ class Annotation:
         gene_info = gene_info.loc[gene_list]
         if gene_info.shape[0] < 0.9 * len(gene_list):
             logger.warning(
-                "Not all genes were found. All gene names can be found in `Annotation.genes`"
+                "Not all genes were found. All gene names can be found in `Annotation.genes()`"
             )
         return gene_info.reset_index()[["chrom", "start", "end", "name", "strand"]]
 
