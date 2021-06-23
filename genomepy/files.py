@@ -4,7 +4,6 @@ import re
 import shutil
 import subprocess as sp
 import tarfile
-import time
 from glob import glob
 from tempfile import mkdtemp
 from typing import Optional, Tuple
@@ -39,8 +38,9 @@ def read_readme(readme: str) -> Tuple[dict, list]:
         "mask": "na",
         "genome url": "na",
         "annotation url": "na",
-        "sanitized annotation": "no",
-        "date": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "sanitized annotation": "na",
+        "genomepy version": "na",
+        "date": "na",
     }
     lines = []
 
