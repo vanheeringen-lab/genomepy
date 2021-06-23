@@ -79,7 +79,7 @@ class Provider:
     @classmethod
     def list_providers(cls):
         """List available providers."""
-        return PROVIDERS.keys()
+        return list(PROVIDERS.keys())
 
     @classmethod
     def online_providers(cls, provider: str = None):
