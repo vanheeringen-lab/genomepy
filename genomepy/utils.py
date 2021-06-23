@@ -179,8 +179,8 @@ def best_search_result(asm_acc: str, results: List[list]) -> list:
         return []
 
     if len(results) > 1:
-        accessions = [res[2] for res in results]
+        accessions = [res[1] for res in results]
         bes_acc = best_accession(asm_acc, accessions)
-        results = [r for r in results if r[2] == bes_acc]
+        results = [res for res in results if res[1] == bes_acc]
 
     return results[0]

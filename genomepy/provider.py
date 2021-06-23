@@ -171,7 +171,7 @@ class Provider:
         cls, frm: str, to: str, genomes_dir: Optional[str] = None
     ) -> Optional[pd.DataFrame]:
         """
-        Load chromosome mapping from one version/assembly to another using the
+        Load chromosome mapping from one assembly to another using the
         NCBI assembly reports.
 
         Parameters
@@ -203,6 +203,10 @@ class Provider:
 
         metadata, _ = read_readme(frm_readme)
         frm_provider = metadata.get("provider").lower()
+        if frm_provider == to_provider:
+            logger.warning(f"You are attempting to map {frm} from {to} to {to}.")
+            return
+
         asm_acc = metadata.get("assembly_accession")
         if not os.path.exists(frm_asm_report):
             cls.download_assembly_report(asm_acc, frm_asm_report)
@@ -211,23 +215,23 @@ class Provider:
             return
 
         asm_report = pd.read_csv(frm_asm_report, sep="\t", comment="#")
-        asm_report["ensembl-name"] = asm_report["Sequence-Name"]
-        asm_report["ncbi-name"] = asm_report["Sequence-Name"]
-        asm_report["ucsc-name"] = asm_report["UCSC-style-name"]
+        asm_report["ensembl_name"] = asm_report["Sequence-Name"]
+        asm_report["ncbi_name"] = asm_report["Sequence-Name"]
+        asm_report["ucsc_name"] = asm_report["UCSC-style-name"]
 
         # for Ensembl, use GenBank names for the scaffolds
         asm_report.loc[
-            asm_report["Sequence-Role"] != "assembled-molecule", "ensembl-name"
+            asm_report["Sequence-Role"] != "assembled-molecule", "ensembl_name"
         ] = asm_report.loc[
             asm_report["Sequence-Role"] != "assembled-molecule", "GenBank-Accn"
         ]
 
         if "ucsc" in [frm_provider, to_provider] and list(
-            asm_report["ucsc-name"].unique()
+            asm_report["ucsc_name"].unique()
         ) == ["na"]:
             logger.error("UCSC style names not available for this assembly")
             return
 
-        mapping = asm_report[[f"{frm_provider}-name", f"{to_provider}-name"]]
-        mapping = mapping.dropna().drop_duplicates().set_index(f"{frm_provider}-name")
+        mapping = asm_report[[f"{frm_provider}_name", f"{to_provider}_name"]]
+        mapping = mapping.dropna().drop_duplicates().set_index(f"{frm_provider}_name")
         return mapping

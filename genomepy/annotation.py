@@ -656,28 +656,11 @@ class Annotation:
         df = self._map_genes(df, gene_field, product)
         return df
 
-    def _map_locations(self, to: str) -> pd.DataFrame:
+    def map_locations(
+        self, annot: Union[str, pd.DataFrame], to: str, drop=True
+    ) -> Union[None, pd.DataFrame]:
         """
-        Load chromosome mapping from one version/assembly to another using the
-        NCBI assembly reports.
-
-        Parameters
-        ----------
-        to: str
-            target provider (UCSC, Ensembl or NCBI)
-
-        Returns
-        -------
-        pandas.DataFrame
-            Chromosome mapping.
-        """
-        genomes_dir = os.path.dirname(self.genome_dir)
-        mapping = Provider.map_locations(self.name, to, genomes_dir)
-        return mapping
-
-    def map_locations(self, annot: Union[str, pd.DataFrame], to: str) -> pd.DataFrame:
-        """
-        Map chromosome mapping from one version/assembly to another using the
+        Map chromosome mapping from one assembly to another using the
         NCBI assembly reports.
 
         Drops missing contigs.
@@ -688,20 +671,49 @@ class Annotation:
             annotation to map (a pandas dataframe, "bed" or "gtf")
         to: str
             target provider (UCSC, Ensembl or NCBI)
+        drop: bool, optional
+            if True, replace the chromosome column.
+            if False, add a 2nd chromosome column
 
         Returns
         -------
         pandas.DataFrame
             Chromosome mapping.
         """
-        mapping = self._map_locations(to)
-        if isinstance(annot, str):
-            df = self.bed if annot == "bed" else self.gtf
-        else:
+        genomes_dir = os.path.dirname(self.genome_dir)
+        mapping = Provider.map_locations(self.name, to, genomes_dir)
+        if mapping is None:
+            return
+
+        if isinstance(annot, pd.DataFrame):
             df = annot
-        df = df.set_index(df.columns[0])
-        df = df.join(mapping, how="inner")
-        df = df.reset_index()
+        elif isinstance(annot, str) and annot == "bed":
+            df = self.bed
+        elif isinstance(annot, str) and annot == "gtf":
+            df = self.gtf
+        else:
+            logger.error("Argument 'annot' must be 'gtf', 'bed' or a pandas dataframe.")
+            return
+
+        index_name = df.index.name
+        if not set([index_name] + df.columns.to_list()) & {"chrom", "seqname"}:
+            logger.error(
+                "Location mapping requires a column named 'chrom' or 'seqname'."
+            )
+            return
+
+        # join mapping on chromosome column and return with original index
+        is_indexed = df.index.to_list() != list(range(df.shape[0]))
+        if is_indexed:
+            df = df.reset_index(level=index_name)
+        index_col = "chrom" if "chrom" in df.columns else "seqname"
+        df = df.set_index(index_col)
+        df = mapping.join(df, how="inner")
+        df = df.reset_index(drop=drop)
+        df.columns = [index_col] + df.columns.to_list()[1:]
+        if is_indexed:
+            df = df.set_index(index_name if index_name else "index")
+
         return df
 
 
