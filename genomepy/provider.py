@@ -144,7 +144,7 @@ class Provider:
             NCBI assembly report.
         """
         ncbi_search = list(NcbiProvider().search(asm_acc))
-        search_result = best_search_result(asm_acc, ncbi_search)
+        search_result = best_search_result(asm_acc, ncbi_search, acc_idx=1)
         if len(search_result) == 0:
             logger.warning(f"Could not download an NCBI assembly report for {asm_acc}")
             return

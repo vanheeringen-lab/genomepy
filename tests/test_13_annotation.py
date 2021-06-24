@@ -2,7 +2,6 @@ import os
 from tempfile import mkdtemp
 
 import pandas as pd
-import pytest
 
 import genomepy
 import genomepy.files
@@ -25,7 +24,7 @@ def test_get_column():
     genomepy.utils.rm_rf(sep_file)
 
 
-def test_annotation_init(annot):
+def test_annotation_init(caplog, annot):
     assert annot.genome_file.endswith("data/regexp/regexp.fa")
     assert annot.annotation_gtf_file.endswith("data/regexp/regexp.annotation.gtf")
     assert annot.annotation_bed_file.endswith("data/regexp/regexp.annotation.bed")
@@ -34,23 +33,24 @@ def test_annotation_init(annot):
     assert len(annot.genome_contigs) == 17  # from sizes
     assert isinstance(annot.bed, pd.DataFrame)
     assert isinstance(annot.gtf, pd.DataFrame)
-    assert annot.genes == ["NP_059343.1"]
+    assert annot.genes() == ["NP_059343.1"]
 
-    # too many GTF files: cant choose
+    # >1 GTF files: take unzipped
     g1 = "tests/data/data.annotation.gtf"
     with genomepy.annotation._open(g1, "w") as fa:
         fa.write("1")
     g2 = "tests/data/data.annotation.gtf.gz"
     with genomepy.annotation._open(g2, "w") as fa:
         fa.write("2")
-    with pytest.raises(IndexError):
-        genomepy.Annotation(name="data", genomes_dir="tests")
+    a = genomepy.Annotation(name="data", genomes_dir="tests")
+    assert a.annotation_gtf_file.endswith(g1)
     genomepy.utils.rm_rf(g1)
     genomepy.utils.rm_rf(g2)
 
     # not enough GTF files
-    with pytest.raises(FileNotFoundError):
-        genomepy.Annotation(name="never_existed", genomes_dir="tests/data")
+    genomepy.Annotation(name="never_existed", genomes_dir="tests/data")
+    assert "Could not find 'never_existed.annotation.bed" in caplog.text
+    assert "Could not find 'never_existed.annotation.gtf" in caplog.text
 
 
 def test_gene_coords(annot):
@@ -60,38 +60,27 @@ def test_gene_coords(annot):
 
 
 def test_filter_regex():
-    bed_file = "tests/data/regexp/regexp.annotation.bed"
-    with open(bed_file, "w") as f:
-        f.write("\n")
-
     # match
     gtf_file = "tests/data/regexp/regexp.annotation.gtf"
     with open(gtf_file, "w") as f:
         f.write("chr2\tcool_gene\n")
         f.write("chromosome3\tboring_gene\n")
     a = genomepy.annotation.Annotation("regexp", "tests/data")
-    missing_contigs = a.filter_regex(a.annotation_gtf_file, regex=".*2")
-    assert missing_contigs == ["chromosome3"]
+    gtf_df = pd.read_csv(gtf_file, sep="\t", header=None)
+
+    df = a.filter_regex(gtf_df, regex=".*2")
+    assert isinstance(df, pd.DataFrame)
+    assert df[0].to_list() == ["chr2"]
 
     # invert match
-    gtf_file = "tests/data/regexp/regexp.annotation.gtf"
-    with open(gtf_file, "w") as f:
-        f.write("chr2\tcool_gene\n")
-        f.write("chromosome3\tboring_gene\n")
-    missing_contigs = a.filter_regex(
-        a.annotation_gtf_file, regex=".*3", invert_match=True
-    )
-    assert missing_contigs == ["chromosome3"]
+    df = a.filter_regex(gtf_df, regex=".*2", invert_match=True)
+    assert isinstance(df, pd.DataFrame)
+    assert df[0].to_list() == ["chromosome3"]
 
     genomepy.utils.rm_rf(gtf_file)
-    genomepy.utils.rm_rf(bed_file)
 
 
 def test_filter_genome_contigs():
-    bed_file = "tests/data/regexp/regexp.annotation.bed"
-    with open(bed_file, "w") as f:
-        f.write("\n")
-
     # chr2 found, chromosome3 missing from genome
     gtf_file = "tests/data/regexp/regexp.annotation.gtf"
     with open(gtf_file, "w") as f:
@@ -99,23 +88,22 @@ def test_filter_genome_contigs():
         f.write("chromosome3\tboring_gene\n")
     a = genomepy.annotation.Annotation("regexp", "tests/data")
     genomepy.files.generate_fa_sizes(a.genome_file, a.genome_file + ".sizes")
+    a.sizes_file = a.genome_file + ".sizes"
+
     missing_contigs = a._filter_genome_contigs()
     assert missing_contigs == ["chromosome3"]
 
     genomepy.utils.rm_rf(gtf_file)
-    genomepy.utils.rm_rf(bed_file)
     genomepy.utils.rm_rf(a.genome_file + ".sizes")
 
 
 def test__conforming_index():
     # genome header found in annotation
-    gtf_file = "tests/data/regexp/regexp.annotation.gtf"
-    with open(gtf_file, "w") as f:
-        f.write("\n")
-
     bed_file = "tests/data/regexp/regexp.annotation.bed"
     with open(bed_file, "w") as f:
-        f.write("chr1\tcool_gene\n")
+        f.write(
+            """chr1\t15307\t16448\tNP_059343.1\t42\t+\t15307\t16448\t0\t1\t1141,\t0,"""
+        )
 
     a = genomepy.annotation.Annotation("regexp", "tests/data")
     i = a._conforming_index()
@@ -124,13 +112,14 @@ def test__conforming_index():
     # genome header not found in annotation
     bed_file = "tests/data/regexp/regexp.annotation.bed"
     with open(bed_file, "w") as f:
-        f.write("chr2\tcool_gene\n")
+        f.write(
+            """chrM\t15307\t16448\tNP_059343.1\t42\t+\t15307\t16448\t0\t1\t1141,\t0,"""
+        )
 
     a = genomepy.annotation.Annotation("regexp", "tests/data")
     i = a._conforming_index()
     assert i == -1
 
-    genomepy.utils.rm_rf(gtf_file)
     genomepy.utils.rm_rf(bed_file)
 
 
@@ -234,12 +223,9 @@ def test_sanitize(caplog):
     gtf_file = os.path.join(tmp_dir, genome, genome + ".annotation.gtf")
     genome_file = os.path.join(tmp_dir, genome, genome + ".fa")
     sizes_file = os.path.join(tmp_dir, genome, genome + ".fa.sizes")
+    readme_file = os.path.join(tmp_dir, genome, "README.txt")
 
     # no genome
-    with open(bed_file, "w") as f:
-        f.write("\n")
-    with open(gtf_file, "w") as f:
-        f.write("\n")
     a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize()
     assert "A genome is required for sanitizing!" in caplog.text
@@ -257,6 +243,8 @@ def test_sanitize(caplog):
     with open(genome_file, "w") as f:
         f.write(">chr1\n")
         f.write("ATCGATCG\n")
+    with open(readme_file, "w") as f:
+        f.write("\n")
     genomepy.files.generate_fa_sizes(genome_file, sizes_file)
     a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize(match_contigs=False, filter_contigs=False)
@@ -301,6 +289,8 @@ def test_sanitize(caplog):
     with open(genome_file, "w") as f:
         f.write(">not_chr1\n")
         f.write("ATCGATCG\n")
+    with open(readme_file, "w") as f:
+        f.write("\n")
     genomepy.files.generate_fa_sizes(genome_file, sizes_file)
     a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize()
@@ -324,6 +314,8 @@ def test_sanitize(caplog):
         f.write("ATCGATCG\n")
         f.write(">this2 matches chr1\n")
         f.write("ATCGATCG\n")
+    with open(readme_file, "w") as f:
+        f.write("\n")
     genomepy.files.generate_fa_sizes(genome_file, sizes_file)
     a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize(match_contigs=True, filter_contigs=False)
@@ -354,6 +346,8 @@ def test_sanitize(caplog):
         f.write("ATCGATCG\n")
         f.write(">this2 matches chr1\n")
         f.write("ATCGATCG\n")
+    with open(readme_file, "w") as f:
+        f.write("\n")
     genomepy.files.generate_fa_sizes(genome_file, sizes_file)
     a = genomepy.annotation.Annotation(genome, tmp_dir)
     a.sanitize(match_contigs=True, filter_contigs=True)

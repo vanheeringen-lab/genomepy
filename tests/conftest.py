@@ -82,7 +82,7 @@ def annot():
         )
     yield genomepy.Annotation(name="regexp", genomes_dir="tests/data")
 
-    teardown("tests/data/regexp/regexp.", skip=["fa.fai"])
+    teardown("tests/data/regexp/regexp.")
 
 
 def validate_annot(fname, ftype):

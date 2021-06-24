@@ -120,6 +120,51 @@ def generate_fa_sizes(fname, outname):
             sizes.write(f"{seqname}\t{len(seq)}\n")
 
 
+def generate_annot(template, target, overwrite=False):
+    """
+    Create an annotation file type from the other file type.
+
+    Parameters
+    ----------
+    template: str
+        a GTF or BED filepath.
+
+    target: str
+        filepath to save the new annotation to.
+
+    overwrite: bool, optional
+        overwrite existing target file?
+    """
+    exts = os.path.basename(template.lower()).split(".")
+    exts = [e for e in exts if e in ["gtf", "bed"]]
+    if len(exts) == 0:
+        raise ValueError("Template file must be in GTF or BED format.")
+    template_ext = exts[-1]
+
+    if not overwrite and os.path.exists(target):
+        raise FileExistsError(f"{target} already exists! Set overwrite=True to ignore.")
+
+    target_dir = os.path.dirname(target)
+    tmp_dir = mkdtemp(dir=target_dir)
+    tmp_target = os.path.join(tmp_dir, "new_annot")
+
+    if template_ext == "bed":
+        cmd = "bedToGenePred {0} /dev/stdout | genePredToGtf -source=genomepy file /dev/stdin {1}"
+    else:
+        cmd = "gtfToGenePred -ignoreGroupsWithoutExons {0} /dev/stdout | genePredToBed /dev/stdin {1}"
+
+    # unzip template if needed
+    template, is_unzipped = gunzip_and_name(template)
+    # create new file
+    sp.check_call(cmd.format(template, tmp_target), shell=True)
+    # gzip if needed
+    tmp_target = gzip_and_name(tmp_target, target.endswith(".gz"))
+    _ = gzip_and_name(template, is_unzipped)
+
+    os.replace(tmp_target, target)
+    rm_rf(tmp_dir)
+
+
 def tar_to_bigfile(fname, outfile):
     """Convert tar of multiple FASTAs to one file."""
     fnames = []

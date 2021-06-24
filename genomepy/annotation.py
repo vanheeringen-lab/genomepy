@@ -1,8 +1,6 @@
 import csv
 import os
 import re
-import subprocess as sp
-from tempfile import mkdtemp
 from typing import Iterable, Optional, Tuple, Union
 
 import mygene
@@ -14,16 +12,9 @@ from loguru import logger
 from tqdm import tqdm
 
 from genomepy.__about__ import __version__
-from genomepy.files import (
-    _open,
-    glob_ext_files,
-    gunzip_and_name,
-    gzip_and_name,
-    read_readme,
-    update_readme,
-)
+from genomepy.files import _open, generate_annot, read_readme, update_readme
 from genomepy.provider import Provider
-from genomepy.utils import best_search_result, get_genomes_dir, mkdir_p, rm_rf, safe
+from genomepy.utils import best_search_result, get_genomes_dir, mkdir_p, safe
 
 GTF_FORMAT = [
     "seqname",
@@ -76,42 +67,42 @@ class Annotation:
     def __init__(self, name: str, genomes_dir: str = None):
         self.name = name
         self.genome_dir = os.path.join(get_genomes_dir(genomes_dir), name)
-        self.readme_file = os.path.join(self.genome_dir, "README.txt")
-        self.annotation_gtf_file = self._get_genome_file("annotation.gtf")
-        self.annotation_bed_file = self._get_genome_file("annotation.bed")
+        self.readme_file = self._get_file("README.txt", warn_missing=False)
+        self.annotation_gtf_file = self._get_file(f"{self.name}.annotation.gtf")
+        self.annotation_bed_file = self._get_file(f"{self.name}.annotation.bed")
 
-        # variables that may be None
-        self.genome_file = self._get_genome_file("fa", check_exists=False)
-        self.index_file = self.genome_file + ".fai" if self.genome_file else None
-        self.sizes_file = self.genome_file + ".sizes" if self.genome_file else None
+        # genome files
+        self.genome_file = self._get_file(f"{self.name}.fa", warn_missing=False)
+        self.index_file = self._get_file(f"{self.name}.fa.fai", warn_missing=False)
+        self.sizes_file = self._get_file(f"{self.name}.fa.sizes", warn_missing=False)
 
         # variables loaded on request
         self.genome_contigs = []
         self.annotation_contigs = []
         self.gtf = None
+        self.named_gtf = None  # HGNC names on index
         self.bed = None
 
-    def _get_genome_file(self, ext: str, check_exists: Optional[bool] = True):
+    def _get_file(self, fname: str, warn_missing: Optional[bool] = True):
         """
         Returns the filepath to a single (gzipped) file in the genome_dir with matching ext.
         """
-        ext_files = glob_ext_files(self.genome_dir, ext)
-        fname = [f for f in ext_files if f"{self.name}.{ext}" in f]
-        if len(fname) == 1:
-            filepath = os.path.join(self.genome_dir, fname[0])
-            return filepath
-
-        # error handling
-        if len(fname) > 1:
-            raise IndexError(
-                f"Too many ({len(fname)}) files match '{self.name}.{ext}(.gz)' "
-                f"in directory {self.genome_dir}"
-            )
-        if check_exists:
-            raise FileNotFoundError(
-                f"could not find '{self.name}.{ext}(.gz)' in directory {self.genome_dir}"
+        fpath = os.path.join(self.genome_dir, fname)
+        if os.path.exists(fpath):
+            return fpath
+        if os.path.exists(f"{fpath}.gz"):
+            return f"{fpath}.gz"
+        if warn_missing:
+            logger.warning(
+                f"Could not find '{fname}(.gz)' in directory {self.genome_dir}. "
+                "Methods using this file won't work!"
             )
         return
+
+    @staticmethod
+    def _check_required(prop, fname):
+        if prop is None:
+            raise FileNotFoundError(f"'{fname}' required.")
 
     @property
     def genome_contigs(self):
@@ -124,6 +115,7 @@ class Annotation:
     @genome_contigs.getter
     def genome_contigs(self):
         if not self.__genome_contigs:
+            self._check_required(self.sizes_file, f"{self.name}.fa.sizes")
             self.__genome_contigs = get_column(self.sizes_file)
         return self.__genome_contigs
 
@@ -138,7 +130,7 @@ class Annotation:
     @annotation_contigs.getter
     def annotation_contigs(self):
         if not self.__annotation_contigs:
-            self.__annotation_contigs = list(set(get_column(self.annotation_bed_file)))
+            self.__annotation_contigs = list(set(self.bed["chrom"]))
         return self.__annotation_contigs
 
     @property
@@ -152,6 +144,9 @@ class Annotation:
     @gtf.getter
     def gtf(self):
         if not isinstance(self.__gtf, pd.DataFrame):
+            self._check_required(
+                self.annotation_gtf_file, f"{self.name}.annotation.gtf"
+            )
             self.__gtf = pd.read_csv(
                 self.annotation_gtf_file,
                 sep="\t",
@@ -160,6 +155,31 @@ class Annotation:
                 comment="#",
             )
         return self.__gtf
+
+    @property
+    def named_gtf(self):
+        return self.__named_gtf
+
+    @named_gtf.setter
+    def named_gtf(self, gtf):
+        self.__named_gtf = gtf
+
+    @named_gtf.getter
+    def named_gtf(self):
+        """
+        GTF dataframe with attribute "gene_name" as index.
+
+        Drops rows without gene_name in the attribute field.
+        """
+        if not isinstance(self.__named_gtf, pd.DataFrame):
+            df = self.gtf[self.gtf.attribute.str.contains("gene_name")]
+            names = []
+            for row in df.attribute:
+                name = str(row).split("gene_name")[1].split(";")[0]
+                names.append(name.replace('"', "").replace(" ", ""))
+            df["gene_name"] = names
+            self.__named_gtf = df.set_index("gene_name")
+        return self.__named_gtf
 
     @property
     def bed(self):
@@ -172,6 +192,9 @@ class Annotation:
     @bed.getter
     def bed(self):
         if not isinstance(self.__bed, pd.DataFrame):
+            self._check_required(
+                self.annotation_bed_file, f"{self.name}.annotation.bed"
+            )
             self.__bed = pd.read_csv(
                 self.annotation_bed_file,
                 sep="\t",
@@ -180,21 +203,6 @@ class Annotation:
                 comment="#",
             )
         return self.__bed
-
-    # TODO: cache by self.name
-    def named_gtf(self):
-        """
-        Return the gtf as a dataframe with attribute "gene_name" as index.
-
-        Drops rows without gene_name in the attribute field.
-        """
-        df = self.gtf[self.gtf.attribute.str.contains("gene_name")]
-        names = []
-        for row in df.attribute:
-            name = str(row).split("gene_name")[1].split(";")[0]
-            names.append(name.replace('"', "").replace(" ", ""))
-        df["gene_name"] = names
-        return df.set_index("gene_name")
 
     def genes(self, annot: str = "bed") -> list:
         """
@@ -215,9 +223,7 @@ class Annotation:
         """
         if annot.lower() == "bed":
             return list(set(self.bed.name))
-
-        df = self.named_gtf()
-        return list(set(df.index))
+        return list(set(self.named_gtf.index))
 
     def gene_coords(self, genes: Iterable[str], annot: str = "bed") -> pd.DataFrame:
         """
@@ -240,7 +246,7 @@ class Annotation:
             df = self.bed.set_index("name")
             gene_info = df[["chrom", "start", "end", "strand"]]
         else:
-            df = self.named_gtf()
+            df = self.named_gtf
             # 1 row per gene
             df = (
                 df.groupby(["gene_name", "seqname", "strand"])
@@ -264,31 +270,64 @@ class Annotation:
                 ["seqname", "start", "end", "gene_name", "strand"]
             ]
 
-    @staticmethod
+    def _parse_annot(self, annot):
+        if isinstance(annot, pd.DataFrame):
+            df = annot
+        elif isinstance(annot, str) and annot == "bed":
+            df = self.bed
+        elif isinstance(annot, str) and annot == "gtf":
+            df = self.gtf
+        else:
+            df = None
+        return df
+
     def filter_regex(
-        annotation_file: str,
+        self,
+        annot: Union[str, pd.DataFrame],
         regex: Optional[str] = ".*",
         invert_match: Optional[bool] = False,
-    ):
+        column: Union[str, int] = 0,
+    ) -> Union[pd.DataFrame, None]:
         """
-        Filter annotation file (works with both gtf and bed) by contig name.
+        Filter a pandas dataframe by a column (default: 1st, contig name).
 
-        annotation_file: path to annotation file.
-        regex: regex string to keep.
-        invert_match: keep contigs NOT matching the regex string.
+        Parameters
+        ----------
+        annot: str or pd.Dataframe
+            annotation to map (a pandas dataframe, "bed" or "gtf")
 
-        return a list of discarded contigs.
+        regex : str
+            regex string to keep
+
+        invert_match : bool, optional
+            keep contigs NOT matching the regex string
+
+        column: str or int, optional
+            column name or number to filter (default: 1st, contig name)
+
+        Returns
+        -------
+        filtered pandas.DataFrame
         """
-        old = pd.read_csv(annotation_file, sep="\t", header=None, comment="#")
+        df = self._parse_annot(annot)
+        if df is None:
+            logger.error("Argument 'annot' must be 'gtf', 'bed' or a pandas dataframe.")
+            return
+
+        if column not in df.columns:
+            if isinstance(column, int):
+                column = df.columns[column]
+            else:
+                logger.error(
+                    f"Column '{column}' not found in annotation columns {list(df.columns)}"
+                )
+                return
+
         pattern = re.compile(regex)
-        filter_func = old[0].map(lambda x: bool(pattern.match(x)) is not invert_match)
-        new = old[filter_func]
-        new.to_csv(
-            annotation_file, sep="\t", header=None, index=None, quoting=csv.QUOTE_NONE
+        filter_func = df[column].map(
+            lambda x: bool(pattern.match(x)) is not invert_match
         )
-
-        discarded_contigs = list(set(old[~filter_func][0]))
-        return discarded_contigs
+        return df[filter_func]
 
     def _filter_genome_contigs(self):
         """
@@ -398,59 +437,23 @@ class Annotation:
         missing_contigs = list(set(old[nans][0]))
         return missing_contigs
 
-    def gtf_from_bed(self):
-        """
-        Create an annotation gtf file from an annotation bed file.
-        Overwrites the existing gtf file.
-        """
-        tmp_dir = mkdtemp(dir=self.genome_dir)
-
-        # unzip if needed
-        self.annotation_bed_file, is_unzipped = gunzip_and_name(
-            self.annotation_bed_file
-        )
-        new_gtf_file = os.path.join(
-            tmp_dir, os.path.basename(re.sub(r"\.gz$", "", self.annotation_gtf_file))
-        )
-
-        cmd = "bedToGenePred {0} /dev/stdout | genePredToGtf file /dev/stdin {1}"
-        sp.check_call(cmd.format(self.annotation_bed_file, new_gtf_file), shell=True)
-
-        # gzip if needed
-        self.annotation_bed_file = gzip_and_name(self.annotation_bed_file, is_unzipped)
-        new_gtf_file = gzip_and_name(
-            new_gtf_file, self.annotation_gtf_file.endswith(".gz")
-        )
-
-        os.replace(new_gtf_file, self.annotation_gtf_file)
-        rm_rf(tmp_dir)
-
     def bed_from_gtf(self):
         """
         Create an annotation bed file from an annotation gtf file.
         Overwrites the existing bed file.
         """
-        tmp_dir = mkdtemp(dir=self.genome_dir)
-
-        # unzip if needed
-        self.annotation_gtf_file, is_unzipped = gunzip_and_name(
-            self.annotation_gtf_file
-        )
-        new_bed_file = os.path.join(
-            tmp_dir, os.path.basename(re.sub(r"\.gz$", "", self.annotation_bed_file))
+        generate_annot(
+            self.annotation_gtf_file, self.annotation_bed_file, overwrite=True
         )
 
-        cmd = "gtfToGenePred {0} /dev/stdout | genePredToBed /dev/stdin {1}"
-        sp.check_call(cmd.format(self.annotation_gtf_file, new_bed_file), shell=True)
-
-        # gzip if needed
-        self.annotation_gtf_file = gzip_and_name(self.annotation_gtf_file, is_unzipped)
-        new_bed_file = gzip_and_name(
-            new_bed_file, self.annotation_bed_file.endswith(".gz")
+    def gtf_from_bed(self):
+        """
+        Create an annotation gtf file from an annotation bed file.
+        Overwrites the existing gtf file.
+        """
+        generate_annot(
+            self.annotation_bed_file, self.annotation_gtf_file, overwrite=True
         )
-
-        os.replace(new_bed_file, self.annotation_bed_file)
-        rm_rf(tmp_dir)
 
     def sanitize(
         self,
@@ -463,12 +466,18 @@ class Annotation:
         If the contig names conform (after fixing), filter the annotation contigs for genome contigs.
         Log the results in the README.
 
-        match_contigs: attempt to fix contig names?
-        filter_contigs: remove contigs from the annotations that are missing from the genome?
+        Parameters
+        ----------
+        match_contigs: bool, optional
+            attempt to fix contig names?
+
+        filter_contigs: bool, optional
+            remove contigs from the annotations that are missing from the genome?
         """
         if self.genome_file is None:
             logger.error("A genome is required for sanitizing!")
             return
+        self._check_required(self.readme_file, "README.txt")
 
         extra_lines = []
         if self._is_conforming():
@@ -537,11 +546,13 @@ class Annotation:
         (str, str, str)
             Ensembl name, accession, taxonomy_id
         """
+        self._check_required(self.readme_file, "README.txt")
+
         metadata, _ = read_readme(self.readme_file)
-        if metadata["provider"] == "Ensembl":
+        if metadata.get("provider") == "Ensembl":
             return metadata["name"], metadata["assembly_accession"], metadata["tax_id"]
 
-        if metadata["assembly_accession"] == "na":
+        if metadata.get("assembly_accession", "na") == "na":
             logger.warning(
                 "Cannot find a matching genome without an assembly accession."
             )
@@ -710,7 +721,7 @@ class Annotation:
 
         Parameters
         ----------
-        annot: pd.Dataframe
+        annot: str or pd.Dataframe
             annotation to map (a pandas dataframe, "bed" or "gtf")
         to: str
             target provider (UCSC, Ensembl or NCBI)
@@ -728,13 +739,8 @@ class Annotation:
         if mapping is None:
             return
 
-        if isinstance(annot, pd.DataFrame):
-            df = annot
-        elif isinstance(annot, str) and annot == "bed":
-            df = self.bed
-        elif isinstance(annot, str) and annot == "gtf":
-            df = self.gtf
-        else:
+        df = self._parse_annot(annot)
+        if df is None:
             logger.error("Argument 'annot' must be 'gtf', 'bed' or a pandas dataframe.")
             return
 
