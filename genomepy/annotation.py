@@ -181,7 +181,21 @@ class Annotation:
             )
         return self.__bed
 
-    # TODO: cache by self.name and annot
+    # TODO: cache by self.name
+    def named_gtf(self):
+        """
+        Return the gtf as a dataframe with attribute "gene_name" as index.
+
+        Drops rows without gene_name in the attribute field.
+        """
+        df = self.gtf[self.gtf.attribute.str.contains("gene_name")]
+        names = []
+        for row in df.attribute:
+            name = str(row).split("gene_name")[1].split(";")[0]
+            names.append(name.replace('"', "").replace(" ", ""))
+        df["gene_name"] = names
+        return df.set_index("gene_name")
+
     def genes(self, annot: str = "bed") -> list:
         """
         Retrieve gene names from the specified annotation.
@@ -202,15 +216,10 @@ class Annotation:
         if annot.lower() == "bed":
             return list(set(self.bed.name))
 
-        col = self.gtf.attribute
-        attributes = col[col.str.contains("gene_name")].to_list()
-        names = []
-        for row in attributes:
-            name = row.split('gene_name "')[1].split('";')[0]
-            names.append(name)
-        return list(set(names))
+        df = self.named_gtf()
+        return list(set(df.index))
 
-    def gene_coords(self, genes: Iterable[str]) -> pd.DataFrame:
+    def gene_coords(self, genes: Iterable[str], annot: str = "bed") -> pd.DataFrame:
         """
         Retrieve gene locations.
 
@@ -219,21 +228,41 @@ class Annotation:
         genes : Iterable
             List of gene names as found in the BED file "name" column.
 
+        annot : str, optional
+            Annotation file type: 'bed' or 'gtf'
+
         Returns
         -------
         pandas.DataFrame with gene annotation.
         """
         gene_list = list(genes)
-        gene_info = self.bed[["chrom", "start", "end", "name", "strand"]].set_index(
-            "name"
-        )
-
-        gene_info = gene_info.loc[gene_list]
-        if gene_info.shape[0] < 0.9 * len(gene_list):
-            logger.warning(
-                "Not all genes were found. All gene names can be found in `Annotation.genes()`"
+        if annot.lower() == "bed":
+            df = self.bed.set_index("name")
+            gene_info = df[["chrom", "start", "end", "strand"]]
+        else:
+            df = self.named_gtf()
+            # 1 row per gene
+            df = (
+                df.groupby(["gene_name", "seqname", "strand"])
+                .agg({"start": np.min, "end": np.max})
+                .reset_index(level=["seqname", "strand"])
             )
-        return gene_info.reset_index()[["chrom", "start", "end", "name", "strand"]]
+            gene_info = df[["seqname", "start", "end", "strand"]]
+
+        gene_info = gene_info.reindex(gene_list).dropna()
+        pct = int(100 * len(set(gene_info.index)) / len(gene_list))
+        if pct < 90:
+            logger.warning(
+                (f"Only {pct}% of genes was found. " if pct else "No genes found. ")
+                + "A list of all gene names can be found with `Annotation.genes()`"
+            )
+
+        if annot.lower() == "bed":
+            return gene_info.reset_index()[["chrom", "start", "end", "name", "strand"]]
+        else:
+            return gene_info.reset_index()[
+                ["seqname", "start", "end", "gene_name", "strand"]
+            ]
 
     @staticmethod
     def filter_regex(

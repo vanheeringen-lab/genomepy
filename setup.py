@@ -30,6 +30,7 @@ requires = [
     "loguru",
     "mygene",
     "norns>=0.1.5",
+    "numpy",
     "pandas",
     "pyfaidx>=0.5.7",
     "requests",
