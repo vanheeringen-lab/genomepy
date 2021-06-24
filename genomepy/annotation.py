@@ -567,7 +567,7 @@ class Annotation:
             )
             return
 
-        return safe(search_result[0]), search_result[2], search_result[4]
+        return safe(search_result[0]), search_result[2], search_result[3]
 
     def _query_mygene(
         self,
@@ -583,6 +583,8 @@ class Annotation:
         if ensembl_info is None:
             return pd.DataFrame()
         _, _, tax_id = ensembl_info
+        if not isinstance(tax_id, int):
+            raise ValueError("No taxomoy ID found")
 
         return query_mygene(query, tax_id, fields, batch_size)
 
@@ -590,7 +592,7 @@ class Annotation:
     def _filter_query(query: pd.DataFrame) -> pd.DataFrame:
         """per queried gene, keep the best matching, non-NaN, mapping"""
         if "notfound" in query:
-            query = query[~query.notfound == np.NaN]  # drop unmatched genes
+            query = query[query.notfound.astype(str) != "nan"]  # drop unmatched genes
             query = query.drop(columns="notfound")
         query = query.dropna()
         if "query" in query:

@@ -59,7 +59,7 @@ def test_list_installed_genomes():
 
     gdir = os.path.join(os.getcwd(), "tests", "data")
     genomes = genomepy.functions.list_installed_genomes(gdir)
-    assert genomes == ["regexp"]
+    assert genomes == ["regexp", "sacCer3"]
 
     empty_list = genomepy.functions.list_installed_genomes("./thisdirdoesnotexist")
     assert empty_list == []

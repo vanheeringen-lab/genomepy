@@ -401,7 +401,7 @@ def test_ensembl_genome_info():
     # Works
     a = genomepy.Annotation("sacCer3", "tests/data")
     egi = a.ensembl_genome_info()
-    assert egi == ("R64-1-1", "GCA_000146045.2", True)
+    assert egi == ("R64-1-1", "GCA_000146045.2", 4932)
     # genomepy.utils.rm_rf(os.path.join(a.genome_dir, "assembly_report.txt"))
 
     # No readme
@@ -441,6 +441,12 @@ def test_map_genes():
     # a = genomepy.Annotation("sacCer3", "tests/data")
     # bed = a.bed.head()
     # res = a.map_genes(gene_field="name", df=bed)
+
+    # gtf = a.named_gtf.reset_index()
+    # gtf = gtf.rename(columns={"gene_name": "name"})
+    # res = a.map_genes(gene_field="refseq", df=gtf)
+
+    # assert False
     pass  # TODO: sacCer3 cannot be mapped by mygene
 
 
