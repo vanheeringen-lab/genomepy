@@ -642,8 +642,9 @@ class Annotation:
     ) -> pd.DataFrame:
         cols = df.columns  # starting columns
         # remove version numbers from gene IDs
-        df["split_id"] = df["name"].str.split(r"\.", expand=True)[0]
-        genes = set(df["split_id"])
+        split_id = df["name"].str.split(r"\.", expand=True)[0]
+        df = df.assign(split_id=split_id.values)
+        genes = set(split_id)
         result = self.map_with_mygene(genes, fields=to)
         if len(result) == 0:
             logger.error("Could not map using mygene.info")
