@@ -71,7 +71,7 @@ def test_gene_coords(caplog):
     _ = a.gene_coords(["what?"], "bed")
     assert "No genes found." in caplog.text
 
-    _ = a.gene_coords(["YER159C-A", "what?"], "bed")
+    _ = a.gene_coords(["YDL200C_mRNA", "what?"], "bed")
     assert "Only 50% of genes was found." in caplog.text
 
 
