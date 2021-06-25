@@ -177,7 +177,7 @@ class Annotation:
             for row in df.attribute:
                 name = str(row).split("gene_name")[1].split(";")[0]
                 names.append(name.replace('"', "").replace(" ", ""))
-            df["gene_name"] = names
+            df = df.assign(gene_name=names)
             self.__named_gtf = df.set_index("gene_name")
         return self.__named_gtf
 
@@ -583,7 +583,7 @@ class Annotation:
         if ensembl_info is None:
             return pd.DataFrame()
         _, _, tax_id = ensembl_info
-        if not isinstance(tax_id, int):
+        if not str(tax_id).isdigit():
             raise ValueError("No taxomoy ID found")
 
         return query_mygene(query, tax_id, fields, batch_size)

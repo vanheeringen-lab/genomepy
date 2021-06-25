@@ -438,16 +438,30 @@ def test_map_locations():
 
 
 def test_map_genes():
-    # a = genomepy.Annotation("sacCer3", "tests/data")
-    # bed = a.bed.head()
-    # res = a.map_genes(gene_field="name", df=bed)
+    a = genomepy.Annotation("GRCz11", "tests/data")
 
-    # gtf = a.named_gtf.reset_index()
-    # gtf = gtf.rename(columns={"gene_name": "name"})
-    # res = a.map_genes(gene_field="refseq", df=gtf)
+    bed = a.bed.head()
+    transcript_ids = bed.name.to_list()
+    assert transcript_ids[0] == "ENSDART00000159919"
 
-    # assert False
-    pass  # TODO: sacCer3 cannot be mapped by mygene
+    # transcript to gene
+    res = a.map_genes(gene_field="ensembl.gene", df=bed)
+    genes = res.name.to_list()
+    assert genes[0] == "ENSDARG00000103202"
+
+    # # transcript to symbol
+    # res = a.map_genes(gene_field="symbol", df=bed)
+    # symbol = res.name.to_list()
+    # assert symbol[0] == "CR383668.1"
+
+    # refseq hits & subtypes
+    protein = a.map_genes(gene_field="refseq", product="protein", df=bed)
+    assert protein.name.to_list()[0].startswith("NP_")
+    # rna = a.map_genes(gene_field="refseq", product="rna", df=bed)
+    # assert rna.name.to_list()[0].startswith("NM_")
+    # assert rna.shape == protein.shape
+
+    genomepy.utils.rm_rf("tests/data/GRCz11/mygene")
 
 
 def test_query_mygene():
