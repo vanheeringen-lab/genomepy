@@ -53,13 +53,11 @@ def manage_config(cmd):
             print(f.read())
     elif cmd == "generate":
         config_dir = user_config_dir("genomepy")
-        if not os.path.exists(config_dir):
-            mkdir_p(config_dir)
+        mkdir_p(config_dir)
 
         new_config = os.path.join(config_dir, "genomepy.yaml")
         # existing config must be removed before norns picks up the default again
-        if os.path.exists(new_config):
-            os.unlink(new_config)
+        rm_rf(new_config)
         default_config = norns.config(
             "genomepy", default="cfg/default.yaml"
         ).config_file

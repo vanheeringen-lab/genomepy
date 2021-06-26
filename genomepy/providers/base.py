@@ -11,13 +11,7 @@ from loguru import logger
 
 from genomepy.__about__ import __version__
 from genomepy.exceptions import GenomeDownloadError
-from genomepy.files import (
-    get_file_info,
-    gunzip_and_name,
-    tar_to_bigfile,
-    update_readme,
-    write_readme,
-)
+from genomepy.files import get_file_info, gunzip_and_name, tar_to_bigfile, update_readme
 from genomepy.online import check_url, download_file
 from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf, safe
 
@@ -222,10 +216,10 @@ class BaseProvider:
             "tax_id": self.genome_taxid(name) if self.genome_taxid(name) else "na",
             "mask": mask,
             "genome url": link,
-            "annotation url": "na",
+            "genomepy version": __version__,
             "date": time.strftime("%Y-%m-%d %H:%M:%S"),
         }
-        write_readme(readme, metadata)
+        update_readme(readme, metadata)
 
     def get_annotation_download_links(self, name, **kwargs):
         raise NotImplementedError()

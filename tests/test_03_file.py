@@ -11,7 +11,6 @@ import genomepy.files
 def test_read_readme():
     metadata, lines = genomepy.files.read_readme("tests/data/not_an_existsing_file")
     assert metadata["name"] == "na"
-    assert metadata["sanitized annotation"] == "no"
     assert lines == []
 
     wd = os.getcwd()

@@ -18,7 +18,7 @@ def test_create(provider):
 
 
 def test_list_providers(provider):
-    assert provider.list_providers() == genomepy.provider.PROVIDERS.keys()
+    assert provider.list_providers() == list(genomepy.provider.PROVIDERS.keys())
 
 
 def test_online_providers(provider):
@@ -51,23 +51,18 @@ def test_search_all(provider):
 
 
 def test_download_assembly_report(provider):
-    report = provider.download_assembly_report("GCA_000004335")
+    assembly_report = "tests/data/sacCer3/assembly_report.txt"
+    provider.download_assembly_report("GCA_000146045", assembly_report)
+    report = pd.read_csv(assembly_report, sep="\t", comment="#")
+
     assert isinstance(report, pd.DataFrame)
     assert list(report.columns) == genomepy.provider.ASM_FORMAT
 
 
 def test_map_location(provider):
-    readme = "tests/data/ailMel1/README.txt"
-    metadata = {
-        "name": "ailMel1",
-        "provider": "UCSC",
-        "assembly_accession": "GCA_000004335.1",
-    }
-    genomepy.utils.mkdir_p("tests/data/ailMel1")
-    genomepy.files.update_readme(readme, metadata)
-    genomes_dir = "tests/data"
     mapping = provider.map_locations(
-        frm="ailMel1", to="ensembl", genomes_dir=genomes_dir
+        frm="sacCer3", to="ensembl", genomes_dir="tests/data"
     )
     assert isinstance(mapping, pd.DataFrame)
-    genomepy.utils.rm_rf("tests/data/ailMel1")
+    assert mapping.index.name == "ucsc_name"
+    assert mapping.columns.to_list() == ["ensembl_name"]

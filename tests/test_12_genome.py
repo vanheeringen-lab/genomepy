@@ -1,5 +1,4 @@
 import os
-from stat import S_IREAD, S_IRGRP, S_IROTH
 
 import pytest
 
@@ -92,96 +91,6 @@ def test__check_annotation_file(small_genome):
     test = small_genome._check_annotation_file("test")
     assert test == os.path.abspath(path)
     os.unlink(path)
-
-
-def test__update_provider(small_genome):
-    # can't parse url
-    metadata = {}
-    small_genome._update_provider(metadata)
-    assert metadata.get("provider") == "Unknown"
-
-    # can parse url
-    metadata = {
-        "genome url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/146/465/"
-        "GCF_000146465.1_ASM14646v1/GCF_000146465.1_ASM14646v1_genomic.fna.gz"
-    }
-    small_genome._update_provider(metadata)
-    assert metadata.get("provider") == "NCBI"
-
-
-def test__update_tax_id(small_genome, ncbi):
-    # genome not found
-    metadata = {}
-    small_genome._update_tax_id(metadata)
-    assert metadata["tax_id"] == "na"
-
-    # genome found
-    metadata = {}
-
-    small_genome._update_tax_id(metadata, ncbi, "ASM14646v1")
-    assert metadata["tax_id"] == "58839"
-
-
-def test__update_assembly_accession(small_genome, ncbi):
-    # genome not found
-    metadata = {}
-    small_genome._update_assembly_accession(metadata)
-    assert metadata["assembly_accession"] == "na"
-
-    # genome found
-    metadata = {}
-    small_genome._update_assembly_accession(metadata, ncbi, "ASM14646v1")
-    assert metadata["assembly_accession"] == "GCF_000146465.1"
-
-
-def test__update_metadata(small_genome):
-    metadata = {"provider": "NCBI", "original name": "ASM14646v1"}
-    small_genome._update_metadata(metadata)
-    assert metadata["tax_id"] == "58839"
-    assert metadata["assembly_accession"] == "GCF_000146465.1"
-
-
-def test__read_metadata(small_genome):
-    # no readme found
-    readme = small_genome.readme_file
-    if os.path.exists(readme):
-        os.unlink(readme)
-    metadata = small_genome._read_metadata()
-    assert metadata["provider"] == "na"
-
-    # no overwrites to metadata
-    with open(readme, "w") as f:
-        f.writelines("provider: not_really_NCBI\n")
-        f.writelines("tax_id: not_really_58839\n")
-        f.writelines("assembly_accession: not_really_GCA_000146465.1\n")
-    metadata = small_genome._read_metadata()
-    assert metadata["provider"] == "not_really_NCBI"
-
-    # updates to metadata dict and file
-    with open(readme, "w") as f:
-        f.writelines(
-            "genome url: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/"
-            "146/465/GCF_000146465.1_ASM14646v1/"
-            "GCF_000146465.1_ASM14646v1_genomic.fna.gz\n"
-        )
-        f.writelines("tax_id: not_really_58839\n")
-        f.writelines("assembly_accession: not_really_GCA_000146465.1\n")
-    metadata1 = small_genome._read_metadata()
-    assert metadata1["provider"] == "NCBI"
-    metadata2, _ = genomepy.files.read_readme(readme)
-    assert metadata2["provider"] == "NCBI"
-
-    # no writing permission to file
-    with open(readme, "w") as f:
-        f.writelines(
-            "genome url: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/"
-            "146/465/GCF_000146465.1_ASM14646v1/"
-            "GCF_000146465.1_ASM14646v1_genomic.fna.gz\n"
-        )
-    os.chmod(readme, S_IREAD | S_IRGRP | S_IROTH)
-    metadata1 = small_genome._read_metadata()
-    assert metadata1["provider"] == "na"
-    os.unlink(readme)
 
 
 def test__bed_to_seqs(small_genome, track="tests/data/regions.bed"):

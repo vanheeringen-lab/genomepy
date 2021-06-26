@@ -4,7 +4,6 @@ from bisect import bisect
 from glob import glob
 from random import random
 
-from loguru import logger
 from pyfaidx import Fasta, Sequence
 
 from genomepy.files import (
@@ -12,10 +11,8 @@ from genomepy.files import (
     generate_gap_bed,
     glob_ext_files,
     read_readme,
-    write_readme,
 )
 from genomepy.plugin import get_active_plugins
-from genomepy.provider import Provider
 from genomepy.utils import get_genomes_dir, safe
 
 
@@ -48,29 +45,18 @@ class Genome(Fasta):
         self.genome_file = self.filename
         self.genome_dir = os.path.dirname(self.filename)
         self.index_file = self.genome_file + ".fai"
-        self.sizes_file = self.genome_file + ".sizes"
-        self.gaps_file = os.path.join(self.genome_dir, self.name + ".gaps.bed")
+        self.sizes_file = self._check_support_file("sizes")
+        self.gaps_file = self._check_support_file("gaps")
+        self.annotation_gtf_file = self._check_annotation_file("gtf")
+        self.annotation_bed_file = self._check_annotation_file("bed")
         self.readme_file = os.path.join(self.genome_dir, "README.txt")
 
         # genome attributes
         self.sizes = {}
         self.gaps = {}
-        metadata = self._read_metadata()
-        self.tax_id = metadata.get("tax_id")
-        self.assembly_accession = metadata.get("assembly_accession")
-
-    @property
-    def sizes_file(self):
-        return self.__sizes_file
-
-    @sizes_file.setter
-    def sizes_file(self, fname):
-        """generate the sizes_file when the class is initiated"""
-        if not os.path.exists(fname) or os.path.getmtime(fname) < os.path.getmtime(
-            self.genome_file
-        ):
-            generate_fa_sizes(self.genome_file, fname)
-        self.__sizes_file = fname
+        metadata, _ = read_readme(self.readme_file)
+        self.tax_id = metadata["tax_id"]
+        self.assembly_accession = metadata["assembly_accession"]
 
     @property
     def sizes(self):
@@ -95,19 +81,6 @@ class Genome(Fasta):
                     contig, length = line.strip().split("\t")
                     self.__sizes[contig] = int(length)
         return self.__sizes
-
-    @property
-    def gaps_file(self):
-        return self.__gaps_file
-
-    @gaps_file.setter
-    def gaps_file(self, fname):
-        """generate the gaps_file when the class is initiated"""
-        if not os.path.exists(fname) or os.path.getmtime(fname) < os.path.getmtime(
-            self.genome_file
-        ):
-            generate_gap_bed(self.genome_file, fname)
-        self.__gaps_file = fname
 
     @property
     def gaps(self):
@@ -143,14 +116,6 @@ class Genome(Fasta):
             p[plugin.name()] = plugin.get_properties(self)
         return p
 
-    @property
-    def annotation_gtf_file(self):
-        return self._check_annotation_file("gtf")
-
-    @property
-    def annotation_bed_file(self):
-        return self._check_annotation_file("bed")
-
     @staticmethod
     def _parse_name(name: str) -> str:
         """extract a safe name from file path, url or regular names"""
@@ -176,74 +141,23 @@ class Genome(Fasta):
             f"could not find {self.name}.fa(.gz) in genome_dir {default_genome_dir}"
         )
 
+    def _check_support_file(self, ftype):
+        """generate support file if missing/outdated"""
+        ext = ".fa.sizes" if ftype == "sizes" else ".gaps.bed"
+        func = generate_fa_sizes if ftype == "sizes" else generate_gap_bed
+
+        fname = os.path.join(self.genome_dir, self.name + ext)
+        if not os.path.exists(fname) or os.path.getmtime(fname) < os.path.getmtime(
+            self.genome_file
+        ):
+            func(self.genome_file, fname)
+        return fname
+
     def _check_annotation_file(self, ext):
         """returns (gzipped) annotation file"""
         pattern = os.path.join(self.genome_dir, self.name + ".annotation.")
         file = glob(pattern + ext + "*")
         return file[0] if file else None
-
-    @staticmethod
-    def _update_provider(metadata):
-        """check if provider is missing and try to update"""
-        metadata["provider"] = "Unknown"
-        url = metadata.get("genome url", "").lower()
-        for provider in ["Ensembl", "UCSC", "NCBI"]:
-            if provider.lower() in url:
-                metadata["provider"] = provider
-                break
-
-    @staticmethod
-    def _update_tax_id(metadata, provider=None, name=None):
-        """check if tax_id is missing and try to update"""
-        taxid = "na"
-        if name:
-            taxid = provider.genome_taxid(name)
-            taxid = str(taxid) if taxid != 0 else "na"
-        metadata["tax_id"] = taxid
-
-    @staticmethod
-    def _update_assembly_accession(metadata, provider=None, name=None):
-        """check if assembly_accession is missing and try to update"""
-        accession = "na"
-        if name:
-            accession = provider.assembly_accession(name)
-        metadata["assembly_accession"] = accession
-
-    def _update_metadata(self, metadata):
-        """check if there is missing info that can be updated"""
-        logger.info("Updating metadata in README.txt")
-        if metadata.get("provider", "na") == "na":
-            self._update_provider(metadata)
-
-        known_provider = metadata["provider"] in ["Ensembl", "UCSC", "NCBI"]
-        name = safe(metadata.get("original name", ""))
-        missing_info = any(
-            key not in metadata for key in ["tax_id", "assembly_accession"]
-        )
-        p = None
-        if known_provider and name and missing_info:
-            p = Provider.create(metadata["provider"])
-
-        if "tax_id" not in metadata:
-            self._update_tax_id(metadata, p, name)
-        if "assembly_accession" not in metadata:
-            self._update_assembly_accession(metadata, p, name)
-
-    def _read_metadata(self):
-        """
-        Read genome metadata from genome README.txt (if it exists).
-        """
-        metadata, lines = read_readme(self.readme_file)
-
-        if (
-            metadata.get("provider", "na") == "na"
-            or "tax_id" not in metadata
-            or "assembly_accession" not in metadata
-        ) and os.access(self.readme_file, os.W_OK):
-            self._update_metadata(metadata)
-            write_readme(self.readme_file, metadata, lines)
-
-        return metadata
 
     def _bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
         bufsize = 10000

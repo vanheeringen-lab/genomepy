@@ -172,15 +172,21 @@ def best_accession(reference: str, targets: list):
     return targets[0]
 
 
-def best_search_result(asm_acc: str, results: List[list]) -> list:
-    """Return the best result from ProviderBase.search_all based on accession IDs"""
+def best_search_result(asm_acc: str, results: List[list], acc_idx=2) -> list:
+    """
+    Return the best search result based on accession IDs.
+
+    Works for ProviderBase.search_all (AKA genomepy.search) by default.
+    Set acc_idx=1 for ProviderBase.search.
+    """
+    results = [res for res in results if res[acc_idx] is not None]
     if len(results) == 0:
         logger.warning(f"No assembly found similar to {asm_acc}")
         return []
 
     if len(results) > 1:
-        accessions = [res[2] for res in results]
+        accessions = [res[acc_idx] for res in results]
         bes_acc = best_accession(asm_acc, accessions)
-        results = [r for r in results if r[2] == bes_acc]
+        results = [res for res in results if res[acc_idx] == bes_acc]
 
     return results[0]
