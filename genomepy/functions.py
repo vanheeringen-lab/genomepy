@@ -3,12 +3,12 @@ import os
 import re
 from typing import Optional
 
-import norns
 from appdirs import user_cache_dir, user_config_dir
 from pyfaidx import Fasta, FastaIndexingError, IndexNotFoundError
 
 from genomepy.__about__ import __version__
 from genomepy.annotation import Annotation
+from genomepy.config import config
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import (
     _fa_to_file,
@@ -22,8 +22,8 @@ from genomepy.files import (
 )
 from genomepy.genome import Genome
 from genomepy.online import check_url
-from genomepy.plugin import get_active_plugins, init_plugins
-from genomepy.provider import Provider
+from genomepy.plugins import get_active_plugins
+from genomepy.providers import online_providers
 from genomepy.utils import (
     get_genomes_dir,
     get_localname,
@@ -33,8 +33,6 @@ from genomepy.utils import (
     try_except_pass,
 )
 
-config = norns.config("genomepy", default="cfg/default.yaml")
-
 
 def clean():
     """Remove cached data on providers"""
@@ -42,31 +40,6 @@ def clean():
     rm_rf(my_cache_dir)
     mkdir_p(my_cache_dir)
     print("All clean!")
-
-
-def manage_config(cmd):
-    """Manage genomepy config file."""
-    if cmd == "file":
-        print(config.config_file)
-    elif cmd == "show":
-        with open(config.config_file) as f:
-            print(f.read())
-    elif cmd == "generate":
-        config_dir = user_config_dir("genomepy")
-        mkdir_p(config_dir)
-
-        new_config = os.path.join(config_dir, "genomepy.yaml")
-        # existing config must be removed before norns picks up the default again
-        rm_rf(new_config)
-        default_config = norns.config(
-            "genomepy", default="cfg/default.yaml"
-        ).config_file
-        with open(new_config, "w") as fout, open(default_config) as fin:
-            fout.write(fin.read())
-        config.config_file = new_config
-        print(f"Created config file {new_config}")
-    else:
-        raise ValueError(f"Invalid config command: {cmd}")
 
 
 def list_available_genomes(provider=None):
@@ -83,7 +56,7 @@ def list_available_genomes(provider=None):
     -------
     list with genome names
     """
-    for p in Provider.online_providers(provider):
+    for p in online_providers(provider):
         for row in p.list_available_genomes():
             yield list(row[:1]) + [p.name] + list(row[1:])
 
@@ -152,7 +125,7 @@ def generate_env(fname: str = "exports.txt", genomes_dir: str = None):
 def _lazy_provider_selection(name, provider=None):
     """return the first PROVIDER which has genome NAME"""
     providers = []
-    for p in Provider.online_providers(provider):
+    for p in online_providers(provider):
         providers.append(p.name)
         if name in p.genomes or (
             p.name == "URL" and try_except_pass(ValueError, check_url, name)
@@ -397,39 +370,3 @@ def install_genome(
             gzip_and_name(annotation.annotation_bed_file)
 
     return genome
-
-
-def manage_plugins(command, plugin_names=None):
-    """List, enable or disable plugins."""
-    plugins = init_plugins()
-    for name in plugin_names if plugin_names else []:
-        if name not in plugins:
-            raise ValueError(f"Unknown plugin: {name}")
-
-    active_plugins = config.get("plugin", [])
-    if command == "list":
-        print("{:20}{}".format("plugin", "enabled"))
-        for plugin in sorted(plugins):
-            print(
-                "{:20}{}".format(
-                    plugin, {False: "", True: "*"}[plugin in active_plugins]
-                )
-            )
-        return
-
-    elif command in ["enable", "activate"]:
-        for name in plugin_names:
-            if name not in active_plugins:
-                active_plugins.append(name)
-
-    elif command in ["disable", "deactivate"]:
-        for name in plugin_names:
-            if name in active_plugins:
-                active_plugins.remove(name)
-
-    else:
-        raise ValueError(f"Invalid plugin command: {command}")
-
-    config["plugin"] = active_plugins
-    config.save()
-    print("Enabled plugins: {}".format(", ".join(sorted(active_plugins))))

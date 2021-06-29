@@ -9,11 +9,15 @@ import time
 from typing import List, Optional
 from urllib.request import urlopen
 
-import norns
 from loguru import logger
-from norns import exceptions
 
-config = norns.config("genomepy", default="cfg/default.yaml")
+from genomepy.config import config
+
+
+def logger_exit(msg, *args, **kwargs):
+    """silently exit after logging the error message"""
+    logger.error(msg, *args, **kwargs)
+    os._exit(0)  # noqa
 
 
 def mkdir_p(path):
@@ -75,7 +79,7 @@ def get_genomes_dir(genomes_dir: str = None, check_exist: Optional[bool] = True)
         # backwards compatibility for "genome_dir" (this fixes issue #87)
         genomes_dir = config.get("genomes_dir", config.get("genome_dir", None))
     if not genomes_dir:
-        raise exceptions.ConfigError("Please provide or configure a genomes_dir")
+        logger_exit("Please provide or configure a genomes_dir")
 
     genomes_dir = os.path.abspath(os.path.expanduser(genomes_dir))
     if not os.path.exists(genomes_dir) and check_exist:

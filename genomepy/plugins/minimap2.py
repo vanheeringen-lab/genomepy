@@ -1,10 +1,10 @@
 import os
 
-from genomepy.plugin import Plugin
+from genomepy.plugins import BasePlugin
 from genomepy.utils import cmd_ok, mkdir_p, rm_rf, run_index_cmd
 
 
-class Minimap2Plugin(Plugin):
+class Minimap2Plugin(BasePlugin):
     def after_genome_download(self, genome, threads=1, force=False):
         if not cmd_ok("minimap2"):
             return

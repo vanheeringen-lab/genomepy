@@ -4,11 +4,11 @@ import subprocess as sp
 from loguru import logger
 
 from genomepy.files import bgzip_and_name, gunzip_and_name, gzip_and_name
-from genomepy.plugin import Plugin
+from genomepy.plugins import BasePlugin
 from genomepy.utils import cmd_ok, mkdir_p, rm_rf, run_index_cmd
 
 
-class Hisat2Plugin(Plugin):
+class Hisat2Plugin(BasePlugin):
     def after_genome_download(self, genome, threads=1, force=False):
         index_name = genome.plugin["hisat2"]["index_name"]
         if not cmd_ok("hisat2-build") or (

@@ -1,10 +1,10 @@
 import os
 
-from genomepy.plugin import Plugin
+from genomepy.plugins import BasePlugin
 from genomepy.utils import cmd_ok, mkdir_p, rm_rf, run_index_cmd
 
 
-class Bowtie2Plugin(Plugin):
+class Bowtie2Plugin(BasePlugin):
     def after_genome_download(self, genome, threads=1, force=False):
         if not cmd_ok("bowtie2-build"):
             return

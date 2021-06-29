@@ -10,10 +10,17 @@ from bucketcache import Bucket
 from loguru import logger
 
 from genomepy.__about__ import __version__
-from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import get_file_info, gunzip_and_name, tar_to_bigfile, update_readme
 from genomepy.online import check_url, download_file
-from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf, safe
+from genomepy.utils import (
+    get_genomes_dir,
+    get_localname,
+    logger_exit,
+    lower,
+    mkdir_p,
+    rm_rf,
+    safe,
+)
 
 # Store the output of slow commands (marked with @cache and @goldfish_cache) for fast reuse.
 # Bucketcache creates a new pickle for each function + set of unique variables,
@@ -45,16 +52,19 @@ class BaseProvider:
     def provider_status(self, url, max_tries=1):
         """check if provider is online (stores results for 10 minutes)"""
         if not check_url(url, max_tries):
-            raise ConnectionError(f"{self.name} appears to be offline.\n")
+            logger_exit(f"{self.name} appears to be offline.")
 
     def check_name(self, name):
         """check if genome name can be found for provider"""
-        if not safe(name) in self.genomes:
-            raise GenomeDownloadError(
-                f"Could not download genome {name} from {self.name}.\n\n"
-                "Check for typos or try\n"
-                f"  genomepy search {name} -p {self.name}\n"
-            )
+        name = safe(name)
+        if name in self.genomes:
+            return name
+
+        logger_exit(
+            f"Could not download genome {name} from {self.name}.\n\n"
+            "Check for typos or try\n"
+            f"  genomepy search {name} -p {self.name}"
+        )
 
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
@@ -157,9 +167,7 @@ class BaseProvider:
         mask: str , optional
             Masking, soft, hard or none (all other strings)
         """
-        name = safe(name)
-        self.check_name(name)
-
+        name = self.check_name(name)
         link = self.get_genome_download_link(name, mask=mask, **kwargs)
 
         localname = get_localname(name, localname)
@@ -192,14 +200,9 @@ class BaseProvider:
 
         # transfer the genome from the tmpdir to the genome_dir
         src = fname
-        dst = os.path.join(genomes_dir, localname, os.path.basename(fname))
+        dst = os.path.join(out_dir, f"{localname}.fa")
         shutil.move(src, dst)
         rm_rf(tmp_dir)
-
-        asm_report = os.path.join(out_dir, "assembly_report.txt")
-        asm_acc = self.assembly_accession(name)
-        if hasattr(self, "download_assembly_report") and asm_acc:
-            self.download_assembly_report(asm_acc, asm_report)
 
         logger.info("name: {}".format(name))
         logger.info("local name: {}".format(localname))
@@ -207,13 +210,15 @@ class BaseProvider:
 
         # Create readme with information
         readme = os.path.join(genomes_dir, localname, "README.txt")
+        asm_acc = self.assembly_accession(name)
+        tax_id = self.genome_taxid(name)
         metadata = {
             "name": localname,
             "provider": self.name,
             "original name": name,
             "original filename": os.path.split(link)[-1],
             "assembly_accession": asm_acc if asm_acc else "na",
-            "tax_id": self.genome_taxid(name) if self.genome_taxid(name) else "na",
+            "tax_id": tax_id if tax_id else "na",
             "mask": mask,
             "genome url": link,
             "genomepy version": __version__,
@@ -229,77 +234,7 @@ class BaseProvider:
         links = self.annotation_links(name)
         if links:
             return links[0]
-        logger.error(f"No gene annotations found for {name} on {self.name}")
-        raise FileNotFoundError
-
-    @staticmethod
-    def _download_annotation(genomes_dir, annot_url, localname):
-        """download annotation file, convert to intermediate file and generate output files"""
-
-        # create output directory if missing
-        out_dir = os.path.join(genomes_dir, localname)
-        mkdir_p(out_dir)
-
-        # download to tmp dir. Move genome on completion.
-        # tmp dir is in genome_dir to prevent moving the genome between disks
-        tmp_dir = mkdtemp(dir=out_dir)
-        ext, gz = get_file_info(annot_url)
-        annot_file = os.path.join(tmp_dir, localname + ".annotation" + ext)
-        download_file(annot_url, annot_file)
-
-        # unzip input file (if needed)
-        if gz:
-            cmd = "mv {0} {1} && gunzip -f {1}"
-            sp.check_call(cmd.format(annot_file, annot_file + ".gz"), shell=True)
-
-        # generate intermediate file (GenePred)
-        pred_file = annot_file.replace(ext, ".gp")
-        if "bed" in ext:
-            cmd = "bedToGenePred {0} {1}"
-        elif "gff" in ext:
-            cmd = "gff3ToGenePred -geneNameAttr=gene {0} {1}"
-        elif "gtf" in ext:
-            cmd = "gtfToGenePred -ignoreGroupsWithoutExons {0} {1}"
-        elif "txt" in ext:
-            # UCSC annotations only
-            with open(annot_file) as f:
-                cols = f.readline().split("\t")
-
-            # extract the genePred format columns
-            start_col = 1
-            for i, col in enumerate(cols):
-                if col in ["+", "-"]:
-                    start_col = i - 1
-                    break
-            end_col = start_col + 10
-            cmd = (
-                f"""cat {{0}} | cut -f {start_col}-{end_col} | """
-                # knownGene.txt.gz has spotty fields, this replaces non-integer fields with zeroes
-                + """awk 'BEGIN {{FS=OFS="\t"}} !($11 ~ /^[0-9]+$/) {{$11="0"}}1' > {1}"""
-            )
-        else:
-            raise TypeError(f"file type extension {ext} not recognized!")
-
-        sp.check_call(cmd.format(annot_file, pred_file), shell=True)
-
-        # generate gzipped gtf file (if required)
-        gtf_file = annot_file.replace(ext, ".gtf")
-        if "gtf" not in ext:
-            cmd = "genePredToGtf -source=genomepy file {0} {1}"
-            sp.check_call(cmd.format(pred_file, gtf_file), shell=True)
-
-        # generate gzipped bed file (if required)
-        bed_file = annot_file.replace(ext, ".bed")
-        if "bed" not in ext:
-            cmd = "genePredToBed {0} {1}"
-            sp.check_call(cmd.format(pred_file, bed_file), shell=True)
-
-        # transfer the files from the tmpdir to the genome_dir
-        for f in [gtf_file, bed_file]:
-            src = f
-            dst = os.path.join(out_dir, os.path.basename(f))
-            shutil.move(src, dst)
-        rm_rf(tmp_dir)
+        logger_exit(f"No gene annotations found for {name} on {self.name}")
 
     def download_annotation(self, name, genomes_dir=None, localname=None, **kwargs):
         """
@@ -316,8 +251,7 @@ class BaseProvider:
         localname : str , optional
             Custom name for your genome
         """
-        self.check_name(name)
-
+        name = self.check_name(name)
         link = self.get_annotation_download_link(name, **kwargs)
 
         localname = get_localname(name, localname)
@@ -325,13 +259,13 @@ class BaseProvider:
 
         logger.info(f"Downloading annotation from {self.name}. Target URL: {link}...")
         try:
-            self._download_annotation(genomes_dir, link, localname)
+            download_annotation(genomes_dir, link, localname)
             logger.info("Annotation download successful")
         except Exception:
-            raise GenomeDownloadError(
-                f"\nCould not download annotation for {name} from {self.name}\n"
-                "If you think the annotation should be there, please file a bug report at:\n"
-                "https://github.com/vanheeringen-lab/genomepy/issues\n"
+            logger_exit(
+                f"Could not download annotation for {name} from {self.name}. "
+                "If you think the annotation should be there, please file a bug report at: "
+                "https://github.com/vanheeringen-lab/genomepy/issues"
             )
 
         # Add annotation URL to readme
@@ -389,3 +323,72 @@ class BaseProvider:
 
         for name in search_function(term):
             yield self._genome_info_tuple(name)
+
+
+def download_annotation(genomes_dir, annot_url, localname):
+    """download annotation file, convert to intermediate file and generate output files"""
+
+    # create output directory if missing
+    out_dir = os.path.join(genomes_dir, localname)
+    mkdir_p(out_dir)
+
+    # download to tmp dir. Move genome on completion.
+    # tmp dir is in genome_dir to prevent moving the genome between disks
+    tmp_dir = mkdtemp(dir=out_dir)
+    ext, gz = get_file_info(annot_url)
+    annot_file = os.path.join(tmp_dir, localname + ".annotation" + ext)
+    download_file(annot_url, annot_file)
+
+    # unzip input file (if needed)
+    if gz:
+        cmd = "mv {0} {1} && gunzip -f {1}"
+        sp.check_call(cmd.format(annot_file, annot_file + ".gz"), shell=True)
+
+    # generate intermediate file (GenePred)
+    pred_file = annot_file.replace(ext, ".gp")
+    if "bed" in ext:
+        cmd = "bedToGenePred {0} {1}"
+    elif "gff" in ext:
+        cmd = "gff3ToGenePred -geneNameAttr=gene {0} {1}"
+    elif "gtf" in ext:
+        cmd = "gtfToGenePred -ignoreGroupsWithoutExons {0} {1}"
+    elif "txt" in ext:
+        # UCSC annotations only
+        with open(annot_file) as f:
+            cols = f.readline().split("\t")
+
+        # extract the genePred format columns
+        start_col = 1
+        for i, col in enumerate(cols):
+            if col in ["+", "-"]:
+                start_col = i - 1
+                break
+        end_col = start_col + 10
+        cmd = (
+            f"""cat {{0}} | cut -f {start_col}-{end_col} | """
+            # knownGene.txt.gz has spotty fields, this replaces non-integer fields with zeroes
+            + """awk 'BEGIN {{FS=OFS="\t"}} !($11 ~ /^[0-9]+$/) {{$11="0"}}1' > {1}"""
+        )
+    else:
+        raise TypeError(f"file type extension {ext} not recognized!")
+
+    sp.check_call(cmd.format(annot_file, pred_file), shell=True)
+
+    # generate gzipped gtf file (if required)
+    gtf_file = annot_file.replace(ext, ".gtf")
+    if "gtf" not in ext:
+        cmd = "genePredToGtf -source=genomepy file {0} {1}"
+        sp.check_call(cmd.format(pred_file, gtf_file), shell=True)
+
+    # generate gzipped bed file (if required)
+    bed_file = annot_file.replace(ext, ".bed")
+    if "bed" not in ext:
+        cmd = "genePredToBed {0} {1}"
+        sp.check_call(cmd.format(pred_file, bed_file), shell=True)
+
+    # transfer the files from the tmpdir to the genome_dir
+    for f in [gtf_file, bed_file]:
+        src = f
+        dst = os.path.join(out_dir, os.path.basename(f))
+        shutil.move(src, dst)
+    rm_rf(tmp_dir)

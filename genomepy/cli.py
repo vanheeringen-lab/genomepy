@@ -171,7 +171,7 @@ def get_install_options():
 
     # extend install options with provider specific options
     if "install" in click.get_os_args():
-        for provider in genomepy.Provider.list_providers():
+        for provider in genomepy.list_providers():
             p_dict = eval(
                 "genomepy.provider."
                 + provider.capitalize()
@@ -272,7 +272,7 @@ def plugin(command, name):
 @click.command("providers", short_help="list available providers")
 def providers():
     """List all available providers."""
-    for p in genomepy.list_available_providers():
+    for p in genomepy.list_providers():
         print(p)
 
 

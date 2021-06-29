@@ -12,7 +12,7 @@ from genomepy.files import (
     glob_ext_files,
     read_readme,
 )
-from genomepy.plugin import get_active_plugins
+from genomepy.plugins import get_active_plugins
 from genomepy.utils import get_genomes_dir, safe
 
 
