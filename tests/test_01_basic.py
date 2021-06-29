@@ -51,7 +51,7 @@ def test_exceptions():
 
 
 def test_config():
-    config = norns.config("genomepy", default="cfg/default.yaml")
+    config = norns.config("genomepy", default="config/default.yaml")
     assert len(config.keys()) == 3
 
 

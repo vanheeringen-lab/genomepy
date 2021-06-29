@@ -1,21 +1,15 @@
-import csv
 import os
 import re
-from typing import Iterable, Optional, Tuple, Union
+from typing import Iterable, Optional, Union
 
-import mygene
 import numpy as np
 import pandas as pd
-from appdirs import user_cache_dir
-from joblib import Memory
 from loguru import logger
-from tqdm import tqdm
 
-from genomepy.__about__ import __version__
-from genomepy.annotation.utils import _check_property, read_annot
-from genomepy.files import _open
-from genomepy.providers import map_locations, search_all
-from genomepy.utils import best_search_result, get_genomes_dir, mkdir_p, safe
+from genomepy.annotation.mygene import query_mygene
+from genomepy.annotation.utils import _check_property, _parse_annot, read_annot
+from genomepy.providers import map_locations
+from genomepy.utils import get_genomes_dir
 
 
 class Annotation:
@@ -35,7 +29,16 @@ class Annotation:
     Annotation object
     """
 
+    from genomepy.annotation.mygene import map_genes
     from genomepy.annotation.sanitize import sanitize
+
+    # lazy attributes (loaded when called)
+    # listed here for code autocompletion
+    bed: pd.DataFrame = None
+    gtf: pd.DataFrame = None
+    named_gtf: pd.DataFrame = None
+    genome_contigs: list = None
+    annotation_contigs: list = None
 
     def __init__(self, name: str, genomes_dir: str = None):
         self.name = name
@@ -56,7 +59,12 @@ class Annotation:
         self.sizes_file = _get_file(self.genome_dir, f"{self.name}.fa.sizes", False)
 
     # lazy attributes
-    def __getattr__(self, name):
+    def __getattribute__(self, name):
+        val = super(Annotation, self).__getattribute__(name)
+        if val is not None:
+            return val
+
+        # if the attribute is None/empty, check if it is a lazy attribute
         if name == "bed":
             _check_property(self.annotation_bed_file, f"{self.name}.annotation.bed")
             val = read_annot(self.annotation_bed_file)
@@ -65,15 +73,6 @@ class Annotation:
         elif name == "gtf":
             _check_property(self.annotation_gtf_file, f"{self.name}.annotation.gtf")
             val = read_annot(self.annotation_gtf_file)
-            setattr(self, name, val)
-
-        elif name == "genome_contigs":
-            _check_property(self.sizes_file, f"{self.name}.fa.sizes")
-            val = get_column(self.sizes_file)
-            setattr(self, name, val)
-
-        elif name == "annotation_contigs":
-            val = list(set(self.bed["chrom"]))
             setattr(self, name, val)
 
         elif name == "named_gtf":
@@ -86,12 +85,26 @@ class Annotation:
             val = df.set_index("gene_name")
             setattr(self, name, val)
 
-        else:
-            raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute called '{name}'."
-            )
+        elif name == "genome_contigs":
+            _check_property(self.sizes_file, f"{self.name}.fa.sizes")
+            val = list(set(pd.read_csv(self.sizes_file, sep="\t", header=None)[0]))
+            setattr(self, name, val)
 
-        return getattr(self, name)
+        elif name == "annotation_contigs":
+            val = list(set(self.bed.chrom))
+            setattr(self, name, val)
+
+        return val
+
+    # lazily update attributes if upstream attribute is updated
+    def __setattr__(self, name, value):
+        if name == "bed":
+            self.annotation_contigs = None  # noqa
+        elif name == "gtf":
+            self.named_gtf = None  # noqa
+        elif name == "sizes_file":
+            self.genome_contigs = None  # noqa
+        super(Annotation, self).__setattr__(name, value)
 
     def genes(self, annot: str = "bed") -> list:
         """
@@ -221,39 +234,33 @@ class Annotation:
         invert_match: Optional[bool] = False,
         column: Union[str, int] = 0,
     ) -> Union[pd.DataFrame, None]:
+        """
+        Filter a pandas dataframe by a column (default: 1st, contig name).
+
+        Parameters
+        ----------
+        annot: str or pd.Dataframe
+            annotation to filter: "bed", "gtf" or a pandas dataframe
+
+        regex : str
+            regex string to match
+
+        invert_match : bool, optional
+            keep contigs NOT matching the regex string
+
+        column: str or int, optional
+            column name or number to filter (default: 1st, contig name)
+
+        Returns
+        -------
+        filtered pd.DataFrame
+        """
         df = _parse_annot(self, annot)
         if df is None:
             logger.error("Argument 'annot' must be 'gtf', 'bed' or a pandas dataframe.")
             return
 
         return filter_regex(df, regex, invert_match, column)
-
-
-def get_column(
-    fname: str,
-    n: Optional[int] = 0,
-    sep: str = "\t",
-    comment_char: Union[None, str] = "#",
-):
-    """
-    Return the nth column from a separated file.
-    """
-
-    def comment(_: str):
-        return False
-
-    if isinstance(comment_char, str):
-
-        def comment(string: str):  # noqa: F811
-            return string.startswith(comment_char)
-
-    column = []
-    with _open(fname) as f:
-        for line in f:
-            line = str(line).strip()
-            if not comment(line):
-                column.append(line.split(sep)[n])
-    return column
 
 
 def _get_file(genome_dir: str, fname: str, warn_missing: Optional[bool] = True):
@@ -271,18 +278,6 @@ def _get_file(genome_dir: str, fname: str, warn_missing: Optional[bool] = True):
             "Methods using this file won't work!"
         )
     return
-
-
-def _parse_annot(self, annot):
-    if isinstance(annot, pd.DataFrame):
-        df = annot
-    elif isinstance(annot, str) and annot == "bed":
-        df = self.bed
-    elif isinstance(annot, str) and annot == "gtf":
-        df = self.gtf
-    else:
-        df = None
-    return df
 
 
 def filter_regex(

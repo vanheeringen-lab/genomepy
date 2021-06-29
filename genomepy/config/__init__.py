@@ -5,7 +5,7 @@ from appdirs import user_config_dir
 from loguru import logger
 from norns import config as cfg
 
-config = cfg("genomepy", default="cfg/default.yaml")
+config = cfg("genomepy", default="config/default.yaml")
 
 
 def generate_config():
@@ -17,7 +17,7 @@ def generate_config():
     if os.path.exists(new_config):
         os.remove(new_config)
 
-    default_config = cfg("genomepy", default="cfg/default.yaml").config_file
+    default_config = cfg("genomepy", default="config/default.yaml").config_file
     copyfile(default_config, new_config)
     config.config_file = new_config
     logger.info(f"Created config file {new_config}")

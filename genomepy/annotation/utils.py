@@ -6,7 +6,7 @@ from tempfile import mkdtemp
 import numpy as np
 import pandas as pd
 
-from genomepy.files import gunzip_and_name, gzip_and_name
+from genomepy.files import _open, gunzip_and_name, gzip_and_name
 from genomepy.utils import rm_rf
 
 GTF_FORMAT = [
@@ -42,13 +42,29 @@ def _check_property(prop, fname):
         raise FileNotFoundError(f"'{fname}' required.")
 
 
+def count_columns(fpath):
+    with _open(fpath) as f:
+        for line in f:
+            if not line.startswith("#"):
+                columns = len(line.split("\t"))
+                return columns
+
+
 def read_annot(fpath: str) -> pd.DataFrame:
-    names = GTF_FORMAT if fpath.endswith(".gtf") else BED12_FORMAT
+    # determine file type by column count
+    columns = count_columns(fpath)
+    if columns == 9:
+        names = GTF_FORMAT
+    elif columns == 12:
+        names = BED12_FORMAT
+    else:
+        raise ValueError(f"{columns} columns detected. BED=12, GTF=9")
+
     df = pd.read_csv(
         fpath,
         sep="\t",
         names=names,
-        dtype={"seqname": str, "start": np.uint32, "end": np.uint32},
+        dtype={"seqname": str, "chrom": str, "start": np.uint32, "end": np.uint32},
         comment="#",
     )
     return df
@@ -109,17 +125,13 @@ def generate_annot(template, target, overwrite=False):
     rm_rf(tmp_dir)
 
 
-def bed_from_gtf(gtf_file, bed_file):
-    """
-    Create an annotation bed file from an annotation gtf file.
-    Overwrites the existing bed file.
-    """
-    generate_annot(gtf_file, bed_file, overwrite=True)
-
-
-def gtf_from_bed(bed_file, gtf_file):
-    """
-    Create an annotation gtf file from an annotation bed file.
-    Overwrites the existing gtf file.
-    """
-    generate_annot(bed_file, gtf_file, overwrite=True)
+def _parse_annot(self, annot):
+    if isinstance(annot, pd.DataFrame):
+        df = annot
+    elif isinstance(annot, str) and annot == "bed":
+        df = self.bed
+    elif isinstance(annot, str) and annot == "gtf":
+        df = self.gtf
+    else:
+        df = None
+    return df

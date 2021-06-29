@@ -15,7 +15,7 @@ with open("README.md", encoding="utf-8") as f:
 
 # List of files and directories to include when packaging for release
 packages = ["genomepy"]  # , "genomepy/plugins", "genomepy/providers"
-package_data = {"genomepy": ["cfg/*.yaml"]}
+package_data = {"genomepy": ["config/*.yaml"]}
 data_files = [("", ["LICENSE", "README.md", "CHANGELOG.md"])]
 
 entry_points = {"console_scripts": ["genomepy=genomepy.cli:cli"]}
