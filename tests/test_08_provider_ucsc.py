@@ -10,16 +10,6 @@ def test_ucscprovider(ucsc):
     assert ucsc.taxid_fields == ["taxId"]
 
 
-def test__get_genomes(ucsc):
-    assert isinstance(ucsc.genomes, dict)
-    assert "ailMel1" in ucsc.genomes
-    genome = ucsc.genomes["ailMel1"]
-    assert isinstance(genome, dict)
-    for field in ucsc.accession_fields + ucsc.taxid_fields + ucsc.description_fields:
-        assert field in genome
-    assert genome["taxId"] == 9646
-
-
 def test__search_accession(ucsc):
     assert list(ucsc._search_accession("not_an_id")) == []
     assert next(ucsc._search_accession("GCA_000004335.1")) == "ailMel1"
@@ -29,6 +19,12 @@ def test_assembly_accession(ucsc):
     accession = ucsc.assembly_accession("sacCer3")
 
     assert accession.startswith("GCA_000146045")
+
+
+def test__annot_types(ucsc):
+    annots = ucsc._annot_types("sacCer3")
+    expected = [False, True, True, False]
+    assert annots == expected
 
 
 def test_genome_info_tuple(ucsc):
@@ -124,3 +120,13 @@ def test_get_annotation_download_link(ucsc):
     # no annotation available
     with pytest.raises(FileNotFoundError):
         ucsc.get_annotation_download_link("apiMel1")
+
+
+def test_get_genomes(ucsc):
+    assert isinstance(ucsc.genomes, dict)
+    assert "ailMel1" in ucsc.genomes
+    genome = ucsc.genomes["ailMel1"]
+    assert isinstance(genome, dict)
+    for field in ucsc.accession_fields + ucsc.taxid_fields + ucsc.description_fields:
+        assert field in genome
+    assert genome["taxId"] == 9646

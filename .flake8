@@ -1,4 +1,3 @@
 [flake8]
-exclude = __init__.py
 extend-ignore = E203,E402,E501
 select = C,E,F,W,B,B950

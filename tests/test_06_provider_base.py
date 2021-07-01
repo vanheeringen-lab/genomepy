@@ -1,3 +1,4 @@
+import filecmp
 import os
 from tempfile import TemporaryDirectory
 
@@ -13,18 +14,11 @@ def test_baseprovider(base):
     assert base.name is None
 
 
-def test_provider_status(base):
-    base.provider_status("https://www.google.com")
-
-    with pytest.raises(ConnectionError):
-        base.provider_status("https://www.thiswebsiteisoffline.nl/")
-
-
-def test_check_name(ucsc):
-    ucsc.check_name("ailMel1")
+def test__check_name(ucsc):
+    ucsc._check_name("ailMel1")
 
     with pytest.raises(genomepy.exceptions.GenomeDownloadError):
-        ucsc.check_name("not_a_real_genome")
+        ucsc._check_name("not_a_real_genome")
 
 
 def test__genome_info_tuple(base):
@@ -179,3 +173,14 @@ def test_search(ucsc):
         genome = next(ucsc.search(method))
         assert genome[0] == "ailMel1"
         assert isinstance(genome, tuple)
+
+
+def test_tar_to_bigfile():
+    fname = "tests/data/tar2.fa.tar.gz"
+    outname = "tests/data/tar2.fa"
+    genomepy.providers.base.tar_to_bigfile(fname, outname)  # noqa
+
+    assert os.path.exists(outname)
+    # tar2.fa is a copy of tar1.fa. Check if they are identical after untarring.
+    assert filecmp.cmp(outname, "tests/data/tar1.fa")
+    os.unlink(outname)

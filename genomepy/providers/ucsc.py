@@ -136,11 +136,9 @@ class UcscProvider(BaseProvider):
         links = self.annotation_links(name)
         if links:
             annot_types = ["knownGene", "ensGene", "ncbiRefSeq", "refGene"]
-            annotations_found = [False, False, False, False]
-            for n, annot in enumerate(annot_types):
-                for link in links:
-                    if annot in link:
-                        annotations_found[n] = True
+            annotations_found = []
+            for annot in annot_types:
+                annotations_found.append(any(annot in link for link in links))
             return annotations_found
 
     def _genome_info_tuple(self, name):

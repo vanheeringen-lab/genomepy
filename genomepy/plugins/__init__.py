@@ -81,6 +81,11 @@ def init_plugins():
 PLUGINS = init_plugins()
 
 
+def get_active_plugins():
+    """Returns all active plugin instances."""
+    return [inst for name, inst in PLUGINS.items() if inst.active]
+
+
 def activate(name):
     """Activate plugin.
 
@@ -107,11 +112,6 @@ def deactivate(name):
         PLUGINS[name].deactivate()
     else:
         raise ValueError(f"plugin {name} not found")
-
-
-def get_active_plugins():
-    """Returns all active plugin instances."""
-    return [inst for name, inst in PLUGINS.items() if inst.active]
 
 
 def manage_plugins(command, plugin_names=None):
@@ -142,6 +142,7 @@ def manage_plugins(command, plugin_names=None):
             f"Invalid plugin command: '{command}'. Options: 'list', 'enable' or 'disable'."
         )
 
-    config["plugin"] = list(set(active_plugins))
+    active_plugins = list(set(active_plugins))
+    config["plugin"] = active_plugins
     config.save()
     logger.info(f"Enabled plugins: {', '.join(sorted(active_plugins))}")

@@ -310,3 +310,6 @@ def filter_regex(
     pattern = re.compile(regex)
     filter_func = df[column].map(lambda x: bool(pattern.match(x)) is not invert_match)
     return df[filter_func]
+
+
+__all__ = [query_mygene, Annotation, filter_regex]

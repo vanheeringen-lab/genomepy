@@ -9,21 +9,6 @@ import genomepy.online
 from tests import linux, travis
 
 
-def test_connect_ftp_link():
-    if not (travis and linux):  # (doesn't work on Travis-Linux)
-        # good FTP host
-        ftp_link = "ftp://ftp.ncbi.nlm.nih.gov/genomes/README.txt"
-        ftp, target = genomepy.online.connect_ftp_link(ftp_link)
-        assert target == "/genomes/README.txt"
-        result = ftp.nlst(target)
-        ftp.quit()  # logout
-        assert result == [target]
-
-        # bad FTP host
-        with pytest.raises(genomepy.exceptions.GenomeDownloadError):
-            genomepy.online.connect_ftp_link("ftp://not.an.ftp/at/all")
-
-
 def test_download_file():
     # HTTP
     tmp = NamedTemporaryFile().name
@@ -39,6 +24,21 @@ def test_download_file():
         url = "ftp://ftp.ncbi.nlm.nih.gov//genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/README.txt"
         genomepy.online.download_file(url, tmp)
         assert os.path.exists(tmp)
+
+
+def test_connect_ftp_link():
+    if not (travis and linux):  # (doesn't work on Travis-Linux)
+        # good FTP host
+        ftp_link = "ftp://ftp.ncbi.nlm.nih.gov/genomes/README.txt"
+        ftp, target = genomepy.online.connect_ftp_link(ftp_link)
+        assert target == "/genomes/README.txt"
+        result = ftp.nlst(target)
+        ftp.quit()  # logout
+        assert result == [target]
+
+        # bad FTP host
+        with pytest.raises(genomepy.exceptions.GenomeDownloadError):
+            genomepy.online.connect_ftp_link("ftp://not.an.ftp/at/all")
 
 
 def test_read_url(

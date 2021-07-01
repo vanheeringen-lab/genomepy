@@ -8,7 +8,7 @@ import os
 import pytest
 from loguru import logger
 
-import genomepy.provider
+import genomepy.providers
 from genomepy.providers.base import BaseProvider
 from genomepy.providers.ensembl import EnsemblProvider
 from genomepy.providers.ncbi import NcbiProvider

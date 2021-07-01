@@ -63,6 +63,16 @@ def get_track_type(track):
     return "bed"
 
 
+def region_to_seq(self, region, extend_up=0, extend_down=0):
+    chrom, coords = region.strip().split(":")
+    start, end = [int(c) for c in coords.split("-")]
+    start += 1
+    start -= extend_up
+    end += extend_down
+    seq = self.get_seq(chrom, start, end)
+    return seq.seq
+
+
 def regions_to_seqs(self, track, extend_up=0, extend_down=0):
     if isinstance(track, list):
         for region in track:
@@ -80,16 +90,6 @@ def regions_to_seqs(self, track, extend_up=0, extend_down=0):
 
                 # load more lines if needed
                 lines += fin.readlines()
-
-
-def region_to_seq(self, region, extend_up=0, extend_down=0):
-    chrom, coords = region.strip().split(":")
-    start, end = [int(c) for c in coords.split("-")]
-    start += 1
-    start -= extend_up
-    end += extend_down
-    seq = self.get_seq(chrom, start, end)
-    return seq.seq
 
 
 def bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):

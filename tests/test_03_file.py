@@ -1,4 +1,3 @@
-import filecmp
 import os
 import subprocess as sp
 from tempfile import NamedTemporaryFile
@@ -65,36 +64,6 @@ def test_update_readme():
     os.unlink(readme)
 
 
-def test_generate_gap_bed(fname="tests/data/gap.fa", outname="tests/data/gap.bed"):
-    tmp = NamedTemporaryFile().name
-    genomepy.files.generate_gap_bed(fname, tmp)
-
-    result = open(tmp).read()
-    expected = open(outname).read()
-
-    assert result == expected
-
-
-def test_generate_fa_sizes(infa="tests/data/gap.fa"):
-    tmp = NamedTemporaryFile().name
-    genomepy.files.generate_fa_sizes(infa, tmp)
-
-    result = open(tmp).read()
-
-    assert result == "chr1\t28\nchr2\t45\nchr3\t15\n"
-
-
-def test_tar_to_bigfile():
-    fname = "tests/data/tar2.fa.tar.gz"
-    outname = "tests/data/tar2.fa"
-    genomepy.files.tar_to_bigfile(fname, outname)
-
-    assert os.path.exists(outname)
-    # tar2.fa is a copy of tar1.fa. Check if they are identical after untarring.
-    assert filecmp.cmp(outname, "tests/data/tar1.fa")
-    os.unlink(outname)
-
-
 def test_gunzip_and_name(fname="tests/data/small_genome.fa.gz"):
     assert os.path.exists(fname)
     fname, gzip_file = genomepy.files.gunzip_and_name(fname)
@@ -127,20 +96,6 @@ def test_bgzip_and_name(fname="tests/data/small_genome.fa"):
         genomepy.files.bgzip_and_name("tests/data/nofile.fa")
 
 
-def test_delete_extensions():
-    fpath1 = "tests/data/weird_ext1.test123"
-    fpath2 = "tests/data/weird_ext2.test123"
-    for fpath in [fpath1, fpath2]:
-        with open(fpath, "w") as f:
-            f.write("asd\n")
-
-    assert os.path.exists(fpath1)
-    assert os.path.exists(fpath2)
-    genomepy.files.delete_extensions("tests/data", ["test123"])
-    assert not os.path.exists(fpath1)
-    assert not os.path.exists(fpath2)
-
-
 def test__open():
     # read/write regular file
     a1 = "tests/data/data.annotation.gtf"
@@ -151,7 +106,7 @@ def test__open():
         lines1 = gtf.readlines()
     assert lines1 == ["regular file"]
 
-    with genomepy.annotation._open(a1) as gtf:
+    with genomepy.files._open(a1) as gtf:
         lines2 = gtf.readlines()
     assert lines2 == lines1
     genomepy.files.rm_rf(a1)
@@ -165,14 +120,10 @@ def test__open():
         with open(a2) as gtf:
             gtf.read()
 
-    with genomepy.annotation._open(a2) as gtf:
+    with genomepy.files._open(a2) as gtf:
         lines = gtf.readlines()
     assert lines == ["gzipped file"]
     genomepy.files.rm_rf(a1)
-
-
-def test_file_len():
-    assert genomepy.files.file_len("tests/data/gap.fa") == 13
 
 
 def test_get_file_info(fname="tests/data/small_genome.fa.gz"):
@@ -188,13 +139,6 @@ def test_glob_ext_files(file="tests/data/small_genome.fa"):
     assert file + ".gz" in genomepy.files.glob_ext_files("tests/data")
     assert len(genomepy.files.glob_ext_files("tests/data", "fake_ext")) == 0
     assert len(genomepy.files.glob_ext_files("tests/data/regexp")) == 1
-
-
-def test_is_genome_dir():
-    # dir contains a fasta
-    assert genomepy.files.is_genome_dir("tests/data/regexp")
-    # dir does not contain a fasta
-    assert not genomepy.files.is_genome_dir("tests/genome")
 
 
 def test_filter_fasta(fname="tests/data/regexp/regexp.fa"):

@@ -27,7 +27,7 @@ exclude_patterns:
   - "setup.py"
   - "LICENSE"
   - "**/*.yaml"
-  - "**/__*"
+  - "__about__.py"
   - "genomepy/cli.py"
   - "docs/*"
   - "paper/*"
