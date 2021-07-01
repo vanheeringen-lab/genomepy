@@ -312,4 +312,4 @@ def filter_regex(
     return df[filter_func]
 
 
-__all__ = [query_mygene, Annotation, filter_regex]
+__all__ = ["query_mygene", "Annotation", "filter_regex"]
