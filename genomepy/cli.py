@@ -164,16 +164,18 @@ INSTALL_OPTIONS = {
 
 
 def get_install_options():
-    """combine general and provider specific options
+    """
+    Combine general and provider specific options.
 
-    add provider in front of the provider specific options to prevent overlap"""
+    Add the provider name in front of the options to prevent overlap.
+    """
     install_options = INSTALL_OPTIONS
 
     # extend install options with provider specific options
-    if "install" in click.get_os_args():
+    if len(set(sys.argv[1:]) & {"install", "-h", "--help"}) > 1:
         for provider in genomepy.list_providers():
             p_dict = eval(
-                "genomepy.provider."
+                "genomepy.providers."
                 + provider.capitalize()
                 + "Provider.provider_specific_install_options"
             )
@@ -355,7 +357,7 @@ def search(term, provider=None):
 
     if sys.stdout.isatty():
         if no_genomes:
-            logger.error("No genomes found!")
+            logger.warning("No genomes found!")
         else:
             print(Fore.GREEN + " ^")
             print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")

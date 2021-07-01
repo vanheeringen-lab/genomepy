@@ -5,9 +5,10 @@ from typing import Iterator
 import requests
 from loguru import logger
 
+from genomepy.caching import cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, read_url
-from genomepy.providers.base import BaseProvider, cache
+from genomepy.providers.base import BaseProvider
 from genomepy.providers.ncbi import NcbiProvider
 from genomepy.utils import lower
 
@@ -19,36 +20,28 @@ class UcscProvider(BaseProvider):
     The UCSC API REST server is used to search and list genomes.
     """
 
+    name = "UCSC"
     accession_fields = []
     taxid_fields = ["taxId"]
     description_fields = ["description", "scientificName"]
-    provider_specific_install_options = {
+    _cli_install_options = {
         "ucsc_annotation_type": {
             "long": "annotation",
             "help": "specify annotation to download: UCSC, Ensembl, NCBI_refseq or UCSC_refseq",
             "default": None,
         },
     }
+    _url = "http://hgdownload.soe.ucsc.edu/goldenPath"
 
     def __init__(self):
-        self.name = "UCSC"
-        self.base_url = "http://hgdownload.soe.ucsc.edu/goldenPath"
-        self.rest_url = "http://api.genome.ucsc.edu/list/ucscGenomes"
-        self.provider_status(self.base_url)
+        self._provider_status()
         # Populate on init, so that methods can be cached
-        self.genomes = self._get_genomes(self.rest_url)
+        self.genomes = get_genomes("http://api.genome.ucsc.edu/list/ucscGenomes")
 
     @staticmethod
-    @cache
-    def _get_genomes(rest_url):
-        logger.info("Downloading assembly summaries from UCSC")
-
-        r = requests.get(rest_url, headers={"Content-Type": "application/json"})
-        if not r.ok:
-            r.raise_for_status()
-        ucsc_json = r.json()
-        genomes = ucsc_json["ucscGenomes"]
-        return genomes
+    def ping():
+        """Can the provider be reached?"""
+        return bool(check_url("http://hgdownload.soe.ucsc.edu/goldenPath"))
 
     def _search_accession(self, term: str) -> Iterator[str]:
         """
@@ -176,10 +169,10 @@ class UcscProvider(BaseProvider):
         ------
         str with the http/ftp download link.
         """
-        ucsc_url = self.base_url + "/{0}/bigZips/chromFa.tar.gz"
-        ucsc_url_masked = self.base_url + "/{0}/bigZips/chromFaMasked.tar.gz"
-        alt_ucsc_url = self.base_url + "/{0}/bigZips/{0}.fa.gz"
-        alt_ucsc_url_masked = self.base_url + "/{0}/bigZips/{0}.fa.masked.gz"
+        ucsc_url = self._url + "/{0}/bigZips/chromFa.tar.gz"
+        ucsc_url_masked = self._url + "/{0}/bigZips/chromFaMasked.tar.gz"
+        alt_ucsc_url = self._url + "/{0}/bigZips/{0}.fa.gz"
+        alt_ucsc_url_masked = self._url + "/{0}/bigZips/{0}.fa.masked.gz"
 
         # soft masked genomes. can be unmasked in _post _process_download
         urls = [ucsc_url, alt_ucsc_url]
@@ -265,7 +258,7 @@ class UcscProvider(BaseProvider):
         links = self.annotation_links(name)
         if links:
             # user specified annotation type
-            annot_type = kwargs.get("ucsc_annotation_type", "")
+            annot_type = kwargs.get("ucsc_annotation_type", "").lower()
             if annot_type:
                 annot_files = {
                     "ucsc": "knownGene",
@@ -273,20 +266,31 @@ class UcscProvider(BaseProvider):
                     "ncbi_refseq": "ncbiRefSeq",
                     "ucsc_refseq": "refGene",
                 }
-                if lower(annot_type) not in annot_files:
-                    logger.error(f"UCSC annotation type '{annot_type}' not recognized.")
-                    raise ValueError
+                if annot_type not in annot_files:
+                    raise ValueError(
+                        f"UCSC annotation type '{annot_type}' not recognized."
+                    )
 
-                annot = annot_files[annot_type.lower()]
+                annot = annot_files[annot_type]
                 links = [link for link in links if annot in link]
                 if links:
                     return links[0]
-                logger.error(
-                    f"Assembly {name} does not possess the {annot_type} '{annot}' annotation."
+                raise FileNotFoundError(
+                    f"Assembly {name} does not possess the {annot_type} '{annot}' gene annotation."
                 )
-                raise FileNotFoundError
 
             # first working link
             return links[0]
-        logger.error(f"No gene annotations found for {name} on {self.name}")
-        raise FileNotFoundError
+        raise FileNotFoundError(f"No gene annotations found for {name} on {self.name}")
+
+
+@cache
+def get_genomes(rest_url):
+    logger.info("Downloading assembly summaries from UCSC")
+
+    r = requests.get(rest_url, headers={"Content-Type": "application/json"})
+    if not r.ok:
+        r.raise_for_status()
+    ucsc_json = r.json()
+    genomes = ucsc_json["ucscGenomes"]
+    return genomes

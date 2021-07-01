@@ -4,10 +4,9 @@ import re
 from loguru import logger
 
 from genomepy.config import config
-from genomepy.utils import logger_exit
 
 
-class BasePlugin(object):
+class Plugin:
     """Plugin base class."""
 
     def __init__(self):
@@ -68,7 +67,7 @@ def init_plugins():
     # for each Plugin subclass, save an instance to a dict
     d = {}
     active_plugins = config.get("plugin", [])
-    for c in BasePlugin.__subclasses__():
+    for c in Plugin.__subclasses__():
         ins = c()
 
         if ins.name in active_plugins:
@@ -130,7 +129,7 @@ def manage_plugins(command, plugin_names=None):
 
     for name in plugin_names if plugin_names else []:
         if name not in PLUGINS:
-            logger_exit(f"Unknown plugin: '{name}'.")
+            raise ValueError(f"Unknown plugin: '{name}'.")
 
     if command in ["enable", "activate"]:
         [active_plugins.append(name) for name in plugin_names]
@@ -139,7 +138,7 @@ def manage_plugins(command, plugin_names=None):
         [active_plugins.remove(name) for name in plugin_names]
 
     else:
-        logger_exit(
+        raise ValueError(
             f"Invalid plugin command: '{command}'. Options: 'list', 'enable' or 'disable'."
         )
 

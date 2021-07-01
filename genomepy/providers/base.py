@@ -1,35 +1,18 @@
 import os
 import shutil
 import subprocess as sp
+import tarfile
 import time
 from tempfile import mkdtemp
 from typing import Iterator, Union
 
-from appdirs import user_cache_dir
-from bucketcache import Bucket
 from loguru import logger
 
 from genomepy.__about__ import __version__
-from genomepy.files import get_file_info, gunzip_and_name, tar_to_bigfile, update_readme
-from genomepy.online import check_url, download_file
-from genomepy.utils import (
-    get_genomes_dir,
-    get_localname,
-    logger_exit,
-    lower,
-    mkdir_p,
-    rm_rf,
-    safe,
-)
-
-# Store the output of slow commands (marked with @cache and @goldfish_cache) for fast reuse.
-# Bucketcache creates a new pickle for each function + set of unique variables,
-# to avoid storing self.genomes, ignore=["self"] or use @staticmethod.
-my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
-if not os.path.exists(my_cache_dir):
-    os.makedirs(my_cache_dir)
-cache = Bucket(my_cache_dir, days=7)
-goldfish_cache = Bucket(my_cache_dir, minutes=10)
+from genomepy.exceptions import GenomeDownloadError
+from genomepy.files import get_file_info, gunzip_and_name, update_readme
+from genomepy.online import download_file
+from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf, safe
 
 
 class BaseProvider:
@@ -43,24 +26,29 @@ class BaseProvider:
     accession_fields = []
     taxid_fields = []
     description_fields = []
-    provider_specific_install_options = {}
+    _cli_install_options = {}
+    _url = None
 
     def __hash__(self):
         return hash(str(self.__class__))
 
-    @goldfish_cache(ignore=["self", "max_tries"])
-    def provider_status(self, url, max_tries=1):
-        """check if provider is online (stores results for 10 minutes)"""
-        if not check_url(url, max_tries):
-            logger_exit(f"{self.name} appears to be offline.")
+    @staticmethod
+    def ping() -> bool:
+        """Can the provider be reached?"""
+        raise NotImplementedError()
 
-    def check_name(self, name):
+    def _provider_status(self):
+        """check if provider is online"""
+        if not self.ping():
+            raise ConnectionError(f"{self.name} appears to be offline.")
+
+    def _check_name(self, name):
         """check if genome name can be found for provider"""
         name = safe(name)
         if name in self.genomes:
             return name
 
-        logger_exit(
+        raise GenomeDownloadError(
             f"Could not download genome {name} from {self.name}.\n\n"
             "Check for typos or try\n"
             f"  genomepy search {name} -p {self.name}"
@@ -167,7 +155,7 @@ class BaseProvider:
         mask: str , optional
             Masking, soft, hard or none (all other strings)
         """
-        name = self.check_name(name)
+        name = self._check_name(name)
         link = self.get_genome_download_link(name, mask=mask, **kwargs)
 
         localname = get_localname(name, localname)
@@ -234,7 +222,11 @@ class BaseProvider:
         links = self.annotation_links(name)
         if links:
             return links[0]
-        logger_exit(f"No gene annotations found for {name} on {self.name}")
+        raise GenomeDownloadError(
+            f"No gene annotations found for {name} on {self.name}.\n"
+            "Check for typos or try\n"
+            f"  genomepy search {name} -p {self.name}"
+        )
 
     def download_annotation(self, name, genomes_dir=None, localname=None, **kwargs):
         """
@@ -251,7 +243,7 @@ class BaseProvider:
         localname : str , optional
             Custom name for your genome
         """
-        name = self.check_name(name)
+        name = self._check_name(name)
         link = self.get_annotation_download_link(name, **kwargs)
 
         localname = get_localname(name, localname)
@@ -261,11 +253,12 @@ class BaseProvider:
         try:
             download_annotation(genomes_dir, link, localname)
             logger.info("Annotation download successful")
-        except Exception:
-            logger_exit(
-                f"Could not download annotation for {name} from {self.name}. "
+        except Exception as e:
+            raise GenomeDownloadError(
+                f"An error occured while installing the gene annotation for {name} from {self.name}.\n"
                 "If you think the annotation should be there, please file a bug report at: "
-                "https://github.com/vanheeringen-lab/genomepy/issues"
+                "https://github.com/vanheeringen-lab/genomepy/issues\n\n"
+                f"Error: {e.args[0]}"
             )
 
         # Add annotation URL to readme
@@ -391,4 +384,23 @@ def download_annotation(genomes_dir, annot_url, localname):
         src = f
         dst = os.path.join(out_dir, os.path.basename(f))
         shutil.move(src, dst)
+    rm_rf(tmp_dir)
+
+
+def tar_to_bigfile(fname, outfile):
+    """Convert tar of multiple FASTAs to one file."""
+    fnames = []
+    # Extract files to temporary directory
+    tmp_dir = mkdtemp(dir=os.path.dirname(outfile))
+    with tarfile.open(fname) as tar:
+        tar.extractall(path=tmp_dir)
+    for root, _, files in os.walk(tmp_dir):
+        fnames += [os.path.join(root, fname) for fname in files]
+
+    # Concatenate
+    with open(outfile, "w") as out:
+        for infile in fnames:
+            for line in open(infile):
+                out.write(line)
+
     rm_rf(tmp_dir)

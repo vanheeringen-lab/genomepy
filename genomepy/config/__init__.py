@@ -36,7 +36,6 @@ def manage_config(cmd):
         generate_config()
 
     else:
-        logger.error(
+        raise ValueError(
             f"Invalid config command: '{cmd}'. Options: 'file', 'show' or 'generate'."
         )
-        os._exit(0)  # noqa: error was caught, now exit silently.

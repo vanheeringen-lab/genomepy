@@ -1,21 +1,15 @@
-import os
 from typing import Iterable, Optional, Tuple, Union
 
 import mygene
 import pandas as pd
-from appdirs import user_cache_dir
-from joblib import Memory
 from loguru import logger
 from tqdm import tqdm
 
-from genomepy.__about__ import __version__
 from genomepy.annotation.utils import _check_property, _parse_annot
+from genomepy.caching import memory
 from genomepy.files import read_readme
-from genomepy.providers import search_all
-from genomepy.utils import best_search_result, safe
-
-cachedir = os.path.join(user_cache_dir("genomepy"), __version__)
-memory = Memory(cachedir, verbose=0)
+from genomepy.providers import nearest_assembly
+from genomepy.utils import safe
 
 
 def map_genes(
@@ -56,13 +50,11 @@ def map_genes(
     to, product = parse_mygene_input(gene_field, product)
     df = _parse_annot(self, annot)
     if df is None:
-        logger.error("Argument 'annot' must be 'bed' or a pandas dataframe.")
-        return
+        raise ValueError("Argument 'annot' must be 'bed' or a pandas dataframe.")
 
     cols = df.columns  # starting columns
     if "name" not in cols:
-        logger.error("Column 'name' is required to map to.")
-        return
+        raise ValueError("Column 'name' is required to map to.")
 
     # remove version numbers from gene IDs
     split_id = df["name"].str.split(r"\.", expand=True)[0]
@@ -72,7 +64,7 @@ def map_genes(
     result = _query_mygene(self, genes, fields=to)
     result = _filter_query(result)
     if len(result) == 0:
-        logger.error("Could not map using mygene.info")
+        logger.warning("Could not map using mygene.info")
         return pd.DataFrame()
     df = df.join(result, on="split_id")
 
@@ -191,9 +183,8 @@ def ensembl_genome_info(self) -> Optional[Tuple[str, str, str]]:
         return
 
     asm_acc = metadata["assembly_accession"]
-    ensembl_search = list(search_all(asm_acc, provider="Ensembl"))
-    search_result = best_search_result(asm_acc, ensembl_search)
-    if len(search_result) == 0:
+    search_result = nearest_assembly(asm_acc, "Ensembl")
+    if search_result is None:
         return
 
     return safe(search_result[0]), search_result[2], search_result[3]
@@ -230,67 +221,3 @@ def _filter_query(query: pd.DataFrame) -> pd.DataFrame:
         query = query.groupby("query").first()  # already sorted by mapping score
         query = query.drop(columns=["_id", "_score"])
     return query
-
-
-# def map_with_mygene(self, query: Iterable[str], fields: str = "genomic_pos"):
-#     """
-#     Use mygene.info to map gene identifiers to another type.
-#
-#     If the identifier can't be mapped, it will be dropped from the resulting
-#     annotation. If multiple identifiers match, the best match is used.
-#
-#     Parameters
-#     ----------
-#     query: iterable
-#         a list or list-like of gene identifiers
-#     fields : str, optional
-#         Target identifier to map the query genes to. Valid fields
-#         are: ensembl.gene, entrezgene, symbol, name, refseq, entrezgene. Note that
-#         refseq will return the protein refseq_id by default, use `product="rna"` to
-#         return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
-#         not supported.
-#
-#     Returns
-#     -------
-#     pandas.DataFrame with mapped gene annotation.
-#     """
-#     # load mapping
-#     gene_hash = hash(tuple(set(query)))  # hash unique names
-#     mygene_mapping = os.path.join(
-#         self.genome_dir, "mygene", f"{fields}_genehash_{gene_hash}.tsv"
-#     )
-#     if os.path.exists(mygene_mapping):
-#         return pd.read_csv(mygene_mapping, sep="\t", index_col=0)
-#
-#     # request mapping
-#     ret = _query_mygene(query, fields)
-#     ret = _filter_query(ret)
-#
-#     # save mapping
-#     mkdir_p(os.path.join(self.genome_dir, "mygene"))
-#     ret.to_csv(mygene_mapping, sep="\t", index=True, header=True)
-#     return ret
-
-
-# def _map_genes(
-#     self, df: pd.DataFrame, to: str, product: str = "protein"
-# ) -> pd.DataFrame:
-#     cols = df.columns  # starting columns
-#     # remove version numbers from gene IDs
-#     split_id = df["name"].str.split(r"\.", expand=True)[0]
-#     df = df.assign(split_id=split_id.values)
-#     genes = set(split_id)
-#     result = self.map_with_mygene(genes, fields=to)
-#     if len(result) == 0:
-#         logger.error("Could not map using mygene.info")
-#         return pd.DataFrame()
-#     df = df.join(result, on="split_id")
-#
-#     # Only in case of RefSeq annotation the product needs to be specified.
-#     if to == "refseq":
-#         to = f"{to}.translation.{product}"
-#
-#     # Get rid of extra columns from query
-#     df["name"] = df[to]
-#     df = df[cols].dropna()
-#     return df

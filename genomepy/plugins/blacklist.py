@@ -5,10 +5,10 @@ from urllib.request import urlopen
 
 from loguru import logger
 
-from genomepy.plugins import BasePlugin
+from genomepy.plugins import Plugin
 
 
-class BlacklistPlugin(BasePlugin):
+class BlacklistPlugin(Plugin):
     stanford_url = "http://mitra.stanford.edu/kundaje/akundaje/release/blacklists/"
     encode_url = "https://www.encodeproject.org/files/"
     http_dict = {

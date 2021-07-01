@@ -3,11 +3,11 @@ from shutil import move
 from tempfile import mkdtemp
 
 from genomepy.files import bgzip_and_name, gunzip_and_name
-from genomepy.plugins import BasePlugin
+from genomepy.plugins import Plugin
 from genomepy.utils import cmd_ok, rm_rf, run_index_cmd
 
 
-class GmapPlugin(BasePlugin):
+class GmapPlugin(Plugin):
     def after_genome_download(self, genome, threads=1, force=False):
         if not cmd_ok("gmap_build"):
             return

@@ -3,11 +3,11 @@ import os
 from loguru import logger
 
 from genomepy.files import bgzip_and_name, gunzip_and_name, gzip_and_name
-from genomepy.plugins import BasePlugin
+from genomepy.plugins import Plugin
 from genomepy.utils import cmd_ok, mkdir_p, rm_rf, run_index_cmd
 
 
-class StarPlugin(BasePlugin):
+class StarPlugin(Plugin):
     def after_genome_download(self, genome, threads=1, force=False):
         index_name = genome.plugin["star"]["index_name"]
         if not cmd_ok("STAR") or (os.path.exists(index_name) and not force):

@@ -3,7 +3,6 @@ import os
 import re
 import shutil
 import subprocess as sp
-import tarfile
 from glob import glob
 from tempfile import mkdtemp
 from typing import Optional, Tuple
@@ -85,60 +84,6 @@ def update_readme(readme: str, updated_metadata: dict = None, extra_lines: list 
     write_readme(readme, metadata, lines)
 
 
-def generate_gap_bed(fname, outname):
-    """Generate a BED file with gap locations.
-
-    Parameters
-    ----------
-    fname : str
-        Filename of input FASTA file.
-
-    outname : str
-        Filename of output BED file.
-    """
-    f = Fasta(fname)
-    with open(outname, "w") as bed:
-        for chrom in f.keys():
-            for m in re.finditer(r"N+", f[chrom][:].seq):
-                bed.write(f"{chrom}\t{m.start(0)}\t{m.end(0)}\n")
-
-
-def generate_fa_sizes(fname, outname):
-    """Generate a fa.sizes file.
-
-    Parameters
-    ----------
-    fname : str
-        Filename of input FASTA file.
-
-    outname : str
-        Filename of output BED file.
-    """
-    f = Fasta(fname)
-    with open(outname, "w") as sizes:
-        for seqname, seq in f.items():
-            sizes.write(f"{seqname}\t{len(seq)}\n")
-
-
-def tar_to_bigfile(fname, outfile):
-    """Convert tar of multiple FASTAs to one file."""
-    fnames = []
-    # Extract files to temporary directory
-    tmp_dir = mkdtemp(dir=os.path.dirname(outfile))
-    with tarfile.open(fname) as tar:
-        tar.extractall(path=tmp_dir)
-    for root, _, files in os.walk(tmp_dir):
-        fnames += [os.path.join(root, fname) for fname in files]
-
-    # Concatenate
-    with open(outfile, "w") as out:
-        for infile in fnames:
-            for line in open(infile):
-                out.write(line)
-
-    rm_rf(tmp_dir)
-
-
 def gunzip_and_name(fname: str) -> (str, bool):
     """
     Gunzips the file if gzipped (also works on bgzipped files)
@@ -180,12 +125,6 @@ def bgzip_and_name(fname, bgzip=True):
     return fname
 
 
-def delete_extensions(directory: str, exts: list):
-    """remove (gzipped) files in a directory matching any given extension"""
-    for ext in exts:
-        [rm_rf(f) for f in glob_ext_files(directory, ext)]
-
-
 def _open(fname: str, mode: Optional[str] = "r"):
     """
     Return a function to open a (gzipped) file.
@@ -199,13 +138,6 @@ def _open(fname: str, mode: Optional[str] = "r"):
     if fname.endswith(".gz"):
         return gzip.open(fname, mode + "t")
     return open(fname, mode)
-
-
-def file_len(fname):
-    with _open(fname) as f:
-        for i, _ in enumerate(f):  # noqa: B007
-            pass
-    return i + 1
 
 
 def get_file_info(fname):
@@ -242,23 +174,6 @@ def glob_ext_files(dirname, ext="fa"):
     """
     fnames = glob(os.path.join(dirname, f"*.{ext}*"))
     return [f for f in fnames if f.endswith((ext, f"{ext}.gz"))]
-
-
-def is_genome_dir(dirname):
-    """
-    Check if a directory contains a fasta file of the same name
-
-    Parameters
-    ----------
-    dirname : str
-        Directory name
-
-    Returns
-    ------
-    bool
-    """
-    genome_file = os.path.join(dirname, f"{os.path.basename(dirname)}.fa")
-    return os.path.exists(genome_file) or os.path.exists(f"{genome_file}.gz")
 
 
 def _fa_to_file(fasta: Fasta, contigs: list, filepath: str):

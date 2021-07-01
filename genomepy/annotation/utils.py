@@ -133,5 +133,5 @@ def _parse_annot(self, annot):
     elif isinstance(annot, str) and annot == "gtf":
         df = self.gtf
     else:
-        df = None
+        raise ValueError("Argument 'annot' must be 'gtf', 'bed' or a pandas dataframe.")
     return df

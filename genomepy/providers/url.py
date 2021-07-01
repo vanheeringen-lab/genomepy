@@ -15,7 +15,8 @@ class UrlProvider(BaseProvider):
     Simply download a genome directly through a url.
     """
 
-    provider_specific_install_options = {
+    name = "URL"
+    _cli_install_options = {
         "to_annotation": {
             "long": "to-annotation",
             "help": "link to the annotation file, required if this is not in the same directory as the fasta file",
@@ -24,8 +25,11 @@ class UrlProvider(BaseProvider):
     }
 
     def __init__(self):
-        self.name = "URL"
         self.genomes = {}
+
+    @staticmethod
+    def ping():
+        return True
 
     def genome_taxid(self, name):
         return
@@ -41,7 +45,7 @@ class UrlProvider(BaseProvider):
     def _genome_info_tuple(self, name):
         return tuple()
 
-    def check_name(self, name):
+    def _check_name(self, name):
         """check if genome name can be found for provider"""
         return
 

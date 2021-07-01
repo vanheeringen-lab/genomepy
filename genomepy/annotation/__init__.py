@@ -29,6 +29,7 @@ class Annotation:
     Annotation object
     """
 
+    # import methods
     from genomepy.annotation.mygene import map_genes
     from genomepy.annotation.sanitize import sanitize
 
@@ -202,16 +203,11 @@ class Annotation:
             return
 
         df = _parse_annot(self, annot)
-        if df is None:
-            logger.error("Argument 'annot' must be 'gtf', 'bed' or a pandas dataframe.")
-            return
-
         index_name = df.index.name
         if not set([index_name] + df.columns.to_list()) & {"chrom", "seqname"}:
-            logger.error(
+            raise ValueError(
                 "Location mapping requires a column named 'chrom' or 'seqname'."
             )
-            return
 
         # join mapping on chromosome column and return with original index
         is_indexed = df.index.to_list() != list(range(df.shape[0]))
@@ -256,10 +252,6 @@ class Annotation:
         filtered pd.DataFrame
         """
         df = _parse_annot(self, annot)
-        if df is None:
-            logger.error("Argument 'annot' must be 'gtf', 'bed' or a pandas dataframe.")
-            return
-
         return filter_regex(df, regex, invert_match, column)
 
 
@@ -311,10 +303,9 @@ def filter_regex(
         if isinstance(column, int):
             column = df.columns[column]
         else:
-            logger.error(
+            raise ValueError(
                 f"Column '{column}' not found in annotation columns {list(df.columns)}"
             )
-            return
 
     pattern = re.compile(regex)
     filter_func = df[column].map(lambda x: bool(pattern.match(x)) is not invert_match)
