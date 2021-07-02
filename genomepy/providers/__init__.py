@@ -11,6 +11,15 @@ from genomepy.providers.ucsc import UcscProvider
 from genomepy.providers.url import UrlProvider
 from genomepy.utils import get_genomes_dir, safe
 
+__all__ = [
+    "Provider",
+    "list_online_providers",
+    "list_providers",
+    "search",
+    "map_locations",
+    "download_assembly_report",
+]
+
 ASM_FORMAT = [
     "Sequence-Name",
     "Sequence-Role",
@@ -105,6 +114,19 @@ def search(term, provider: str = None):
             yield ret
 
 
+def _closest_patch_lvl(reference, targets):
+    ref_patch = int(reference.split(".")[1]) if "." in reference else 0
+    nearest = [999, []]
+    for target in targets:
+        tgt_patch = int(target.split(".")[1]) if "." in target else 0
+        distance = abs(tgt_patch + 0.1 - ref_patch)  # tiebreaker: newer > older patches
+        if distance == nearest[0]:
+            nearest[1].append(target)
+        if distance < nearest[0]:
+            nearest = [distance, [target]]
+    return nearest[1]
+
+
 def _best_accession(reference: str, targets: list):
     """Return the nearest accession ID from a list of IDs"""
     if len(targets) == 1:
@@ -117,16 +139,7 @@ def _best_accession(reference: str, targets: list):
 
     # patch levels
     # e.g. GCA_000002035.4 & GCA_000002035.3
-    ref_patch = int(reference.split(".")[1]) if "." in reference else 0
-    nearest = [999, []]
-    for target in targets:
-        tgt_patch = int(target.split(".")[1]) if "." in target else 0
-        distance = abs(ref_patch - tgt_patch)
-        if distance == nearest[0]:
-            nearest[1].append(target)
-        if distance < nearest[0]:
-            nearest = [distance, [target]]
-    targets = nearest[1]
+    targets = _closest_patch_lvl(reference, targets)
 
     if len(targets) > 1:
         logger.info(

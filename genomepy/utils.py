@@ -133,7 +133,17 @@ def get_localname(name, localname=None):
 
 
 def try_except_pass(errors, func, *args, **kwargs):
-    """try to return FUNC with ARGS, pass on ERRORS"""
+    """
+    try to return FUNC with ARGS, pass on ERRORS
+
+    parameters
+    ----------
+    errors
+      a single error, or a tuple of errors.
+
+    func
+      a function that takes *args and **kwargs
+    """
     try:
         return func(*args, **kwargs)
     except errors:

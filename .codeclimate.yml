@@ -21,14 +21,6 @@ checks:
       threshold: 250
 
 exclude_patterns:
-  - ".*"
-  - "*.md"
-  - "*.yml"
-  - "setup.py"
-  - "LICENSE"
-  - "**/*.yaml"
-  - "__about__.py"
+  - "*"
+  - "!genomepy/*"
   - "genomepy/cli.py"
-  - "docs/*"
-  - "paper/*"
-  - "tests/*"

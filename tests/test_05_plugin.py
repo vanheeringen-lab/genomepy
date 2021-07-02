@@ -81,21 +81,18 @@ def test_deactivate(deactivate_plugins):
     assert len(genomepy.plugins.get_active_plugins()) == 0
 
 
-def test_manage_plugins(capsys, caplog):
-    # TODO: loguru + print combo is difficult to check
-    #
-    # genomepy.plugins.manage_plugins("enable", ["blacklist"])
-    # genomepy.plugins.manage_plugins("list")
-    # captured = capsys.readouterr().out.strip().split("\n")
-    # assert captured[2].startswith("blacklist")
-    # assert captured[2].endswith("*")
-    #
-    # genomepy.plugins.manage_plugins("disable", ["blacklist"])
-    # genomepy.plugins.manage_plugins("list")
-    # captured = capsys.readouterr().out.strip().split("\n")
-    # assert captured[2].startswith("blacklist")
-    # assert not captured[2].endswith("*")
-    #
-    # with pytest.raises(ValueError):
-    #     genomepy.plugins.manage_plugins("blurp")
-    pass
+def test_manage_plugins(capsys):
+    genomepy.plugins.manage_plugins("enable", ["blacklist"])
+    genomepy.plugins.manage_plugins("list")
+    captured = capsys.readouterr().out.strip().split("\n")
+    assert captured[2].startswith("blacklist")
+    assert captured[2].endswith("*")
+
+    genomepy.plugins.manage_plugins("disable", ["blacklist"])
+    genomepy.plugins.manage_plugins("list")
+    captured = capsys.readouterr().out.strip().split("\n")
+    assert captured[2].startswith("blacklist")
+    assert not captured[2].endswith("*")
+
+    with pytest.raises(ValueError):
+        genomepy.plugins.manage_plugins("blurp")

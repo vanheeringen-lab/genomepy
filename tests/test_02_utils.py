@@ -105,4 +105,13 @@ def test_get_localname(name="XENTR_9.1", localname="my genome"):
 
 
 def test_try_except_pass():
-    pass  # TODO
+    def raise_error():
+        raise ValueError
+
+    # expected error is caught
+    genomepy.utils.try_except_pass(ValueError, raise_error)
+    genomepy.utils.try_except_pass((ValueError, FileNotFoundError), raise_error)
+
+    # unexpected error is not caught
+    with pytest.raises(ValueError):
+        genomepy.utils.try_except_pass(FileNotFoundError, raise_error)

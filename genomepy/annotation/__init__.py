@@ -11,6 +11,8 @@ from genomepy.annotation.utils import _check_property, _parse_annot, read_annot
 from genomepy.providers import map_locations
 from genomepy.utils import get_genomes_dir
 
+__all__ = ["Annotation", "query_mygene", "filter_regex"]
+
 
 class Annotation:
     """
@@ -310,6 +312,3 @@ def filter_regex(
     pattern = re.compile(regex)
     filter_func = df[column].map(lambda x: bool(pattern.match(x)) is not invert_match)
     return df[filter_func]
-
-
-__all__ = ["query_mygene", "Annotation", "filter_regex"]

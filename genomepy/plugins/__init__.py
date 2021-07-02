@@ -1,9 +1,9 @@
 import os
 import re
 
-from loguru import logger
-
 from genomepy.config import config
+
+__all__ = ["Plugin", "manage_plugins", "get_active_plugins"]
 
 
 class Plugin:
@@ -114,18 +114,19 @@ def deactivate(name):
         raise ValueError(f"plugin {name} not found")
 
 
-def manage_plugins(command, plugin_names=None):
+def print_plugins(active_plugins):
+    print("{:20}{}".format("plugin", "enabled"))
+    for plugin in sorted(PLUGINS):
+        print(
+            "{:20}{}".format(plugin, {False: "", True: "*"}[plugin in active_plugins])
+        )
+
+
+def manage_plugins(command: str, plugin_names: list = None):
     """List, enable or disable plugins."""
     active_plugins = config.get("plugin", [])
     if command in ["show", "list"]:
-        print("{:20}{}".format("plugin", "enabled"))
-        for plugin in sorted(PLUGINS):
-            print(
-                "{:20}{}".format(
-                    plugin, {False: "", True: "*"}[plugin in active_plugins]
-                )
-            )
-        return
+        return print_plugins(active_plugins)
 
     for name in plugin_names if plugin_names else []:
         if name not in PLUGINS:
@@ -142,7 +143,7 @@ def manage_plugins(command, plugin_names=None):
             f"Invalid plugin command: '{command}'. Options: 'list', 'enable' or 'disable'."
         )
 
-    active_plugins = list(set(active_plugins))
+    active_plugins = sorted(list(set(active_plugins)))
     config["plugin"] = active_plugins
     config.save()
-    logger.info(f"Enabled plugins: {', '.join(sorted(active_plugins))}")
+    print(f"Enabled plugins: {', '.join(active_plugins)}")

@@ -8,6 +8,8 @@ from genomepy.files import glob_ext_files, read_readme
 from genomepy.plugins import get_active_plugins
 from genomepy.utils import get_genomes_dir, safe
 
+__all__ = ["Genome", "generate_fa_sizes", "generate_gap_bed"]
+
 
 class Genome(Fasta):
     """

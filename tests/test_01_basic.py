@@ -77,28 +77,35 @@ def test_config():
     assert len(config.keys()) == 3
 
 
-def test_manage_config(caplog):
+def test_manage_config(capsys):
     # make a new config
     genomepy.config.manage_config("generate")
-    assert "Created config file" in caplog.text
+    captured = capsys.readouterr().out.strip()
+    assert captured.startswith("Created config file")
 
     # check where it is found
     fname = os.path.expanduser("~/Library/Application Support/genomepy/genomepy.yaml")
     if linux:
         fname = os.path.expanduser("~/.config/genomepy/genomepy.yaml")
     genomepy.config.manage_config("file")
-    assert fname in caplog.text
+    captured = capsys.readouterr().out.strip()
+    assert captured == fname
 
     # mess with the config
     with open(fname, "w") as f:
         print("bgzip: na", file=f)
 
-    # # show the mess
-    # genomepy.config.manage_config("show")
-    # assert "bgzip: na" in caplog.text
-    # assert "bgzip: false" not in caplog.text
-    #
-    # # check if the mess was fixed
-    # genomepy.config.manage_config("show")
-    # assert "bgzip: false" in caplog.text
-    # TODO: fix
+    # show the mess
+    genomepy.config.manage_config("show")
+    captured = capsys.readouterr().out.strip()
+    assert captured.startswith("bgzip: na")
+
+    # make a new config
+    genomepy.config.manage_config("generate")
+    captured = capsys.readouterr().out.strip()
+    assert captured.startswith("Created config file")
+
+    # check if the mess was fixed
+    genomepy.config.manage_config("show")
+    captured = capsys.readouterr().out.strip()
+    assert captured.startswith("bgzip: false")

@@ -37,7 +37,6 @@ autoflake \
   --remove-all-unused-imports \
   --remove-duplicate-keys \
   --remove-unused-variables \
-  --ignore-init-module-imports \
   $targets \
   | grep -v 'No issues detected!'
 
