@@ -92,55 +92,59 @@ def regions_to_seqs(self, track, extend_up=0, extend_down=0):
                 lines += fin.readlines()
 
 
+def bed_to_seq(self, vals, stranded=False, extend_up=0, extend_down=0):
+    chrom, start, end = str(vals[0]), int(vals[1]), int(vals[2])
+    name = f"{chrom}:{start}-{end}"
+
+    # there might be more...
+    starts = [start]
+    ends = [end]
+
+    # BED4: add name column to name
+    if len(vals) >= 4:
+        name = " ".join((name, vals[3]))
+
+    # BED5: check strandedness
+    rc = False
+    if stranded and len(vals) >= 6:
+        rc = vals[5] == "-"
+
+    # BED12: get all blocks
+    if len(vals) >= 12:
+        starts = [int(x) for x in vals[11].split(",")[:-1]]
+        sizes = [int(x) for x in vals[10].split(",")[:-1]]
+        starts = [start + x for x in starts]
+        ends = [start + size for start, size in zip(starts, sizes)]
+    # convert to 1-based counting
+    starts = [start + 1 for start in starts]
+
+    # extend
+    if extend_up:
+        if rc:
+            ends[-1] += extend_up
+        else:
+            starts[0] -= extend_up
+    if extend_down:
+        if rc:
+            starts[0] -= extend_down
+        else:
+            ends[-1] += extend_down
+
+    intervals = zip(starts, ends)
+    seq = self.get_spliced_seq(chrom, intervals, rc)
+    return Sequence(name, seq.seq)
+
+
 def bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
     bufsize = 10000
     with open(track) as fin:
         lines = fin.readlines(bufsize)
         for line in lines:
-            if line.startswith("#") or line.startswith("track"):
+            if line.startswith(("#", "track")):
                 continue
 
             vals = line.strip().split("\t")
-            chrom, start, end = str(vals[0]), int(vals[1]), int(vals[2])
-            name = f"{chrom}:{start}-{end}"
-
-            # there might be more...
-            starts = [start]
-            ends = [end]
-
-            # BED4: add name column to name
-            if len(vals) >= 4:
-                name = " ".join((name, vals[3]))
-
-            # BED5: check strandedness
-            rc = False
-            if stranded and len(vals) >= 6:
-                rc = vals[5] == "-"
-
-            # BED12: get all blocks
-            if len(vals) >= 12:
-                starts = [int(x) for x in vals[11].split(",")[:-1]]
-                sizes = [int(x) for x in vals[10].split(",")[:-1]]
-                starts = [start + x for x in starts]
-                ends = [start + size for start, size in zip(starts, sizes)]
-            # convert to 1-based counting
-            starts = [start + 1 for start in starts]
-
-            # extend
-            if extend_up:
-                if rc:
-                    ends[-1] += extend_up
-                else:
-                    starts[0] -= extend_up
-            if extend_down:
-                if rc:
-                    starts[0] -= extend_down
-                else:
-                    ends[-1] += extend_down
-
-            intervals = zip(starts, ends)
-            seq = self.get_spliced_seq(chrom, intervals, rc)
-            yield Sequence(name, seq.seq)
+            yield bed_to_seq(self, vals, stranded, extend_up, extend_down)
 
             # load more lines if needed
             lines += fin.readlines(1)

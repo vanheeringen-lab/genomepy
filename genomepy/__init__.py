@@ -22,7 +22,6 @@ __all__ = [
     "genome",
     "annotation",
     "providers",
-    "plugins",
     "files",
     "online",
     "utils",

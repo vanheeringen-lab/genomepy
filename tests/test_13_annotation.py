@@ -1,9 +1,11 @@
 import os
 from tempfile import mkdtemp
+
 import pandas as pd
 import pytest
 
 import genomepy
+import genomepy.annotation.sanitize
 import genomepy.files
 import genomepy.utils
 from genomepy.annotation import query_mygene
@@ -118,24 +120,36 @@ def test_filter_regex():
 
 
 def test_count_columns():
-    cols = genomepy.annotation.utils.count_columns("tests/data/sacCer3/sacCer3.annotation.gtf")
+    cols = genomepy.annotation.utils.count_columns(
+        "tests/data/sacCer3/sacCer3.annotation.gtf"
+    )
     assert cols == 9
 
-    cols = genomepy.annotation.utils.count_columns("tests/data/sacCer3/sacCer3.annotation.bed")
+    cols = genomepy.annotation.utils.count_columns(
+        "tests/data/sacCer3/sacCer3.annotation.bed"
+    )
     assert cols == 12
 
 
 def test_read_annot():
-    df = genomepy.annotation.utils.read_annot("tests/data/sacCer3/sacCer3.annotation.bed")
+    df = genomepy.annotation.utils.read_annot(
+        "tests/data/sacCer3/sacCer3.annotation.bed"
+    )
     assert len(df.columns) == 12
     assert list(df.columns).__eq__(list(genomepy.annotation.utils.BED12_FORMAT))
 
 
 def test_write_annot():
     for ext in ["bed", "gtf"]:
-        df1 = genomepy.annotation.utils.read_annot(f"tests/data/sacCer3/sacCer3.annotation.{ext}")
-        genomepy.annotation.utils.write_annot(df1, f"tests/data/sacCer3/test.annotation.{ext}")
-        df2 = genomepy.annotation.utils.read_annot(f"tests/data/sacCer3/test.annotation.{ext}")
+        df1 = genomepy.annotation.utils.read_annot(
+            f"tests/data/sacCer3/sacCer3.annotation.{ext}"
+        )
+        genomepy.annotation.utils.write_annot(
+            df1, f"tests/data/sacCer3/test.annotation.{ext}"
+        )
+        df2 = genomepy.annotation.utils.read_annot(
+            f"tests/data/sacCer3/test.annotation.{ext}"
+        )
 
         os.remove(f"tests/data/sacCer3/test.annotation.{ext}")
         assert df1.equals(df2)
@@ -159,7 +173,9 @@ def test_generate_annot():
         lines = f.readlines()
     assert lines == ["this is the old bed\n"]
 
-    genomepy.annotation.utils.generate_annot(a.annotation_gtf_file, a.annotation_bed_file, True)
+    genomepy.annotation.utils.generate_annot(
+        a.annotation_gtf_file, a.annotation_bed_file, True
+    )
     with genomepy.files._open(a.annotation_bed_file, "r") as f:
         lines = f.readlines()
     assert lines == ["chr1\t0\t100\tGP_1234.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n"]
@@ -171,7 +187,9 @@ def test_generate_annot():
 
     # does not overwrite by default
     with pytest.raises(FileExistsError):
-        genomepy.annotation.utils.generate_annot(a.annotation_gtf_file, a.annotation_bed_file)
+        genomepy.annotation.utils.generate_annot(
+            a.annotation_gtf_file, a.annotation_bed_file
+        )
 
     genomepy.utils.rm_rf(gtf_file)
     genomepy.utils.rm_rf(bed_file)
@@ -232,15 +250,22 @@ def test_match_contigs():
 
 
 def test_filter_contigs():
-    pass  # TODO
+    a = genomepy.Annotation("sacCer3", "tests/data")
+    assert "chrV" not in a.bed.chrom.unique()
+
+    # add a chromosome to the BED not present in the genome
+    row = a.bed.loc[0].copy()
+    row.chrom = "chrV"
+    a.bed = a.bed.append(row, ignore_index=True)
+    assert "chrV" in a.bed.chrom.unique()
+
+    missing_contigs = genomepy.annotation.sanitize.filter_contigs(a)
+    assert missing_contigs == {"chrV"}
+    assert "chrV" not in a.bed.chrom.unique()
 
 
 def test_document_sanitizing():
     pass  # TODO
-
-
-# def test_sanitize():
-#     pass  # TODO
 
 
 # def test_filter_genome_contigs():
@@ -347,6 +372,7 @@ def test_document_sanitizing():
 #
 #
 def test_sanitize(caplog):
+    # TODO
     tmp_dir = mkdtemp(dir="tests")
     genome = "testgenome"
     genomepy.utils.mkdir_p(os.path.join(tmp_dir, genome))
@@ -391,8 +417,8 @@ def test_sanitize(caplog):
     with open(bed_file) as f:
         lines = f.readlines()
     assert lines == ["chr1\t0\t100\n", "chr2\t0\t100\n"]
-    metadata, _ = genomepy.files.read_readme(a.readme_file)
-    assert metadata["sanitized annotation"] == "contigs match but not filtered"
+    # metadata, _ = genomepy.files.read_readme(a.readme_file)
+    # assert metadata["sanitized annotation"] == "contigs match but not filtered"
 
     # # conforming, filtering on
     # a.sanitize(match_contigs=False, filter_contigs=True)
@@ -492,6 +518,7 @@ def test_sanitize(caplog):
 
     genomepy.utils.rm_rf(tmp_dir)
 
+
 # annotation.mygene.py
 
 
@@ -526,7 +553,21 @@ def test_query_mygene():
 
 
 def test_parse_mygene_input():
-    pass  # TODO
+    # wrong product
+    with pytest.raises(ValueError):
+        genomepy.annotation.mygene.parse_mygene_input("", "illegal!")
+
+    # wrong field
+    with pytest.raises(ValueError):
+        genomepy.annotation.mygene.parse_mygene_input("illegal!", None)
+
+    # correct input
+    gf, p = genomepy.annotation.mygene.parse_mygene_input(
+        "refseq.translation.rna", None
+    )
+    assert gf == "refseq.translation.rna" and p is None
+    gf, p = genomepy.annotation.mygene.parse_mygene_input("NAME", "RNA")
+    assert gf == "name" and p == "rna"
 
 
 def test_ensembl_genome_info():

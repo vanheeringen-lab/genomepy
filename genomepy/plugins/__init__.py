@@ -114,7 +114,8 @@ def deactivate(name):
         raise ValueError(f"plugin {name} not found")
 
 
-def print_plugins(active_plugins):
+def show_plugins():
+    active_plugins = config.get("plugin", [])
     print("{:20}{}".format("plugin", "enabled"))
     for plugin in sorted(PLUGINS):
         print(
@@ -124,10 +125,10 @@ def print_plugins(active_plugins):
 
 def manage_plugins(command: str, plugin_names: list = None):
     """List, enable or disable plugins."""
-    active_plugins = config.get("plugin", [])
     if command in ["show", "list"]:
-        return print_plugins(active_plugins)
+        return show_plugins()
 
+    active_plugins = config.get("plugin", [])
     for name in plugin_names if plugin_names else []:
         if name not in PLUGINS:
             raise ValueError(f"Unknown plugin: '{name}'.")
