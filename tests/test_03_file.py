@@ -3,6 +3,7 @@ import subprocess as sp
 from tempfile import NamedTemporaryFile
 
 import pytest
+from pyfaidx import Fasta
 
 import genomepy.files
 
@@ -142,28 +143,25 @@ def test_glob_ext_files(file="tests/data/small_genome.fa"):
 
 
 def test_filter_fasta(fname="tests/data/regexp/regexp.fa"):
-    # no sequences left after filtering
-    with pytest.raises(Exception), NamedTemporaryFile(suffix=".fa") as tmpfa:
-        regex = "missing_chromosome"
-        genomepy.files.filter_fasta(fname, regex=regex, outfa=tmpfa.name)
-
     # function proper
     regexps = [
         ("Chr.*", 2, 15),
         ("Scaffold.*", 1, 16),
         ("scaffold_.*", 3, 14),
-        (r"^\d+$", 4, 13),
+        (r">\d+$", 4, 13),
         ("chr.*", 4, 13),
     ]
     for regex, match, no_match in regexps:
         with NamedTemporaryFile(suffix=".fa") as tmpfa:
-            keys = genomepy.files.filter_fasta(
+            genomepy.files.filter_fasta(
                 fname, regex=regex, invert_match=False, outfa=tmpfa.name
-            ).keys()
+            )
+            keys = Fasta(tmpfa.name).keys()
             assert len(keys) == match, regex
 
         with NamedTemporaryFile(suffix=".fa") as tmpfa:
-            keys = genomepy.files.filter_fasta(
+            genomepy.files.filter_fasta(
                 fname, regex=regex, invert_match=True, outfa=tmpfa.name
-            ).keys()
+            )
+            keys = Fasta(tmpfa.name).keys()
             assert len(keys) == no_match, regex

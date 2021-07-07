@@ -32,9 +32,7 @@ def test__post_process_download(ncbi):
         g = os.path.join(tmpdir, localname + ".fa")
         copyfile("tests/data/gap.fa", g)
 
-        ncbi._post_process_download(
-            name=name, localname=localname, out_dir=tmpdir, mask="hard"
-        )
+        ncbi._post_process_download(name=name, fname=g, out_dir=tmpdir, mask="hard")
         assert os.path.exists(g)
         with open(g) as f:
             ln = 0
@@ -47,6 +45,9 @@ def test__post_process_download(ncbi):
                     # test masking
                     assert line.strip() == "ANNNNNNNA"
                 ln += 1
+
+        asm_report = os.path.join(tmpdir, "assembly_report.txt")
+        assert os.path.exists(asm_report)
 
 
 def test_get_annotation_download_link(ncbi):

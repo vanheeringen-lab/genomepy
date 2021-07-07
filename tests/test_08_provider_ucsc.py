@@ -52,23 +52,15 @@ def test__post_process_download(ucsc):
     out_dir = os.getcwd()
     with TemporaryDirectory(dir=out_dir) as tmpdir:
         # this should skip without error
-        ucsc._post_process_download(
-            name=None, localname=localname, out_dir=tmpdir, mask="soft"
-        )
-        ucsc._post_process_download(
-            name=None, localname=localname, out_dir=tmpdir, mask="hard"
-        )
-        ucsc._post_process_download(
-            name=None, localname=localname, out_dir=tmpdir, mask="???"
-        )
+        ucsc._post_process_download(name=None, fname="", out_dir=None, mask="soft")
+        ucsc._post_process_download(name=None, fname="", out_dir=None, mask="hard")
+        ucsc._post_process_download(name=None, fname="", out_dir=None, mask="???")
 
         # copy fa file for unmasking
         g = os.path.join(tmpdir, localname + ".fa")
         copyfile("tests/data/gap.fa", g)
 
-        ucsc._post_process_download(
-            name=None, localname=localname, out_dir=tmpdir, mask="none"
-        )
+        ucsc._post_process_download(name=None, fname=g, out_dir=None, mask="none")
         assert os.path.exists(g)
         with open(g) as f:
             for line in f:

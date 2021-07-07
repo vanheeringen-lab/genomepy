@@ -20,7 +20,11 @@ def test_list_installed_genomes():
 
     gdir = os.path.join(os.getcwd(), "tests", "data")
     genomes = genomepy.functions.list_installed_genomes(gdir)
-    assert set(genomes) == {"regexp", "sacCer3"}  # OSX likes to sort differently
+    assert set(genomes) == {
+        "regexp",
+        "sacCer3",
+        "sanitize",
+    }  # OSX likes to sort differently
 
     empty_list = genomepy.functions.list_installed_genomes("./thisdirdoesnotexist")
     assert empty_list == []
