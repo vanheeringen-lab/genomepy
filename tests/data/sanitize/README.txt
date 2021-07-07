@@ -9,5 +9,6 @@ BED creation:
 genomepy.annotation.utils.generate_annot("tests/data/sanitize/sanitize.annotation.gtf", "tests/data/sanitize/sanitize.annotation.bed")
 
 FASTA creation:
-cat GRCz11.fa | grep "" > tests/data/sanitize/sanitize.fa
+# NC_007112.7 taken from the GTF
+cat GRCz11.fa | grep "NC_007112.7" > tests/data/sanitize/sanitize.fa
 echo ACTG >> tests/data/sanitize/sanitize.fa
