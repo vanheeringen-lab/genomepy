@@ -2,6 +2,7 @@ import os
 import re
 from urllib.request import urlopen
 
+import pandas as pd
 from loguru import logger
 from tqdm.auto import tqdm
 
@@ -80,7 +81,7 @@ class NcbiProvider(BaseProvider):
             f"Broken URL: {link}"
         )
 
-    def _post_process_download(self, name, localname, out_dir, mask="soft"):
+    def _post_process_download(self, name, fname, out_dir, mask="soft"):
         """
         Replace accessions with sequence names in fasta file.
 
@@ -91,27 +92,27 @@ class NcbiProvider(BaseProvider):
         name : str
             NCBI genome name
 
-        localname : str
-            Custom name for your genome
+        fname : str
+            file path to the genome fasta
 
         out_dir : str
-            Output directory
+            output directory
 
         mask : str , optional
             masking level: soft/hard/none, default=soft
         """
-        # Create mapping of accessions to names
-        url = self._ftp_or_html_link(
-            name, file_suffix="_assembly_report.txt", skip_check=True
-        )
+        # (down)load the assembly report
+        asm_fname = os.path.join(out_dir, "assembly_report.txt")
+        if os.path.exists(asm_fname):
+            asm_report = pd.read_csv(asm_fname, sep="\t", comment="#", header=None)
+        else:
+            url = self._ftp_or_html_link(name, "_assembly_report.txt", True)
+            asm_report = pd.read_csv(url, sep="\t", comment="#", header=None)
+            # save assembly report
+            asm_report.to_csv(asm_fname, sep="\t", index=False, header=False)
 
-        tr = {}
-        with urlopen(url) as response:
-            for line in response.read().decode("utf-8").splitlines():
-                if line.startswith("#"):
-                    continue
-                vals = line.strip().split("\t")
-                tr[vals[6]] = vals[0]
+        # create mapping of chromosome accessions to chromosome names
+        tr = asm_report.set_index(6)[0].to_dict()
 
         # mask sequence if required
         if mask == "soft":
@@ -121,9 +122,10 @@ class NcbiProvider(BaseProvider):
 
         elif mask == "hard":
             logger.info("NCBI genomes are softmasked by default. Hard masking...")
+            lower_case_nucleotides = re.compile("[actg]")
 
             def mask_cmd(txt):
-                return re.sub("[actg]", "N", txt)
+                return lower_case_nucleotides.sub("N", txt)
 
         else:
             logger.info("NCBI genomes are softmasked by default. Unmasking...")
@@ -132,15 +134,18 @@ class NcbiProvider(BaseProvider):
                 return txt.upper()
 
         # apply mapping and masking
-        fa = os.path.join(out_dir, f"{localname}.fa")
-        old_fa = os.path.join(out_dir, f"old_{localname}.fa")
-        os.rename(fa, old_fa)
-        with open(old_fa) as old, open(fa, "w") as new:
-            for line in old:
-                if line.startswith(">"):
-                    desc = line.strip()[1:]
+        old_fname = os.path.join(
+            os.path.dirname(fname), f"original_{os.path.basename(fname)}"
+        )
+        os.rename(fname, old_fname)
+        with open(old_fname) as old, open(fname, "w") as new:
+            for line in tqdm(
+                old, desc="Processing NCBI Fasta", unit_scale=1, unit=" lines"
+            ):
+                if line[0] == ">":
+                    desc = line[1:].strip()
                     name = desc.split(" ")[0]
-                    new.write(">{} {}\n".format(tr.get(name, name), desc))
+                    new.write(f">{tr.get(name, name)} {desc}\n")
                 else:
                     new.write(mask_cmd(line))
 

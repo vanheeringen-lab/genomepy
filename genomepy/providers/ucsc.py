@@ -190,7 +190,7 @@ class UcscProvider(BaseProvider):
         )
 
     @staticmethod
-    def _post_process_download(name, localname, out_dir, mask="soft"):  # noqa
+    def _post_process_download(name, fname, out_dir, mask="soft"):  # noqa
         """
         Unmask a softmasked genome if required
 
@@ -199,11 +199,11 @@ class UcscProvider(BaseProvider):
         name : str
             unused for the UCSC function
 
-        localname : str
-            Custom name for your genome
+        fname : str
+            file path to the genome fasta
 
         out_dir : str
-            Output directory
+            unused for the UCSC function
 
         mask : str , optional
             masking level: soft/hard/none, default=soft
@@ -213,12 +213,13 @@ class UcscProvider(BaseProvider):
 
         logger.info("UCSC genomes are softmasked by default. Unmasking...")
 
-        fa = os.path.join(out_dir, f"{localname}.fa")
-        old_fa = os.path.join(out_dir, f"old_{localname}.fa")
-        os.rename(fa, old_fa)
-        with open(old_fa) as old, open(fa, "w") as new:
+        old_fname = os.path.join(
+            os.path.dirname(fname), f"original_{os.path.basename(fname)}"
+        )
+        os.rename(fname, old_fname)
+        with open(old_fname) as old, open(fname, "w") as new:
             for line in old:
-                if line.startswith(">"):
+                if line[0] == ">":
                     new.write(line)
                 else:
                     new.write(line.upper())

@@ -183,7 +183,7 @@ class BaseProvider:
         # process genome (e.g. masking)
         if hasattr(self, "_post_process_download"):
             self._post_process_download(
-                name=name, localname=localname, out_dir=tmp_dir, mask=mask
+                name=name, fname=fname, out_dir=out_dir, mask=mask
             )
 
         # transfer the genome from the tmpdir to the genome_dir
