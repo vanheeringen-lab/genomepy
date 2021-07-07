@@ -7,7 +7,7 @@ from glob import glob
 from tempfile import mkdtemp
 from typing import Optional, Tuple
 
-from pyfaidx import Fasta
+from tqdm.auto import tqdm
 
 from genomepy.utils import rm_rf
 
@@ -176,33 +176,59 @@ def glob_ext_files(dirname, ext="fa"):
     return [f for f in fnames if f.endswith((ext, f"{ext}.gz"))]
 
 
-def _fa_to_file(fasta: Fasta, contigs: list, filepath: str):
-    tmp_dir = mkdtemp(dir=os.path.dirname(filepath))
-    tmpfa = os.path.join(tmp_dir, "regex.fa")
-    with open(tmpfa, "w") as out:
-        for chrom in contigs:
-            out.write(f">{fasta[chrom].name}\n")
-            out.write(f"{fasta[chrom][:].seq}\n")
-    os.rename(tmpfa, filepath)
+def _apply_fasta_regex_func(infa, regex_func, outfa=None):
+    """
+    filter a Fasta using the regex function.
+
+    infa: path to genome fasta
+
+    regex_func: a function that takes a contig header and returns a bool
+
+    outfa: path to output fasta. If None, infa is overwritten
+
+    returns a list of excluded contigs
+    """
+    # move the original file to a tmp folder
+    out_dir = os.path.dirname(infa)
+    tmp_dir = mkdtemp(dir=out_dir)
+    old_fname = os.path.join(tmp_dir, "original") if outfa is None else infa
+    new_fname = os.path.join(tmp_dir, "filtered")
+    os.rename(infa, old_fname)
+
+    # perform the filtering
+    excluded_contigs = []
+    keep_contig = True
+    with open(old_fname) as old, open(new_fname, "w") as new:
+        for line in tqdm(old, desc="Filtering Fasta", unit_scale=1, unit=" lines"):
+            if line[0] == ">":
+                keep_contig = regex_func(line)
+                if keep_contig is False:
+                    excluded_contigs.append(line[1:].split(" ")[0].strip())
+            if keep_contig:
+                new.write(line)
+
+    # move the filtered file to the original folder
+    os.rename(new_fname, outfa if outfa else infa)
     rm_rf(tmp_dir)
+
+    return excluded_contigs
 
 
 def filter_fasta(
     infa: str,
+    outfa: str = None,
     regex: str = ".*",
     invert_match: Optional[bool] = False,
-    outfa: str = None,
-) -> Fasta:
+) -> list:
     """Filter fasta file based on regex.
 
     Parameters
     ----------
     infa : str
-        Filename of input fasta file.
+        Filename of the input fasta file.
 
     outfa : str, optional
-        Filename of output fasta file.
-        Overwrites infa if left blank.
+        Filename of the output fasta file. If None, infa is overwritten.
 
     regex : str, optional
         Regular expression used for selecting sequences.
@@ -213,16 +239,11 @@ def filter_fasta(
 
     Returns
     -------
-        fasta : Fasta instance
-            pyfaidx Fasta instance of newly created file
+    a list of removed contigs
     """
-    fa = Fasta(infa)
     pattern = re.compile(regex)
-    seqs = [k for k in fa.keys() if bool(pattern.search(k)) is not invert_match]
-    if len(seqs) == 0:
-        raise Exception("No sequences left after filtering!")
 
-    outfa = outfa if outfa else infa
-    _fa_to_file(fa, seqs, outfa)
-    rm_rf(f"{infa}.fai")  # old index
-    return Fasta(outfa)
+    def keep(header):
+        return bool(pattern.search(header)) is not invert_match
+
+    return _apply_fasta_regex_func(infa, keep, outfa)

@@ -1,17 +1,16 @@
 """Module-level functions."""
 import os
 import re
-from copy import copy
 from typing import Optional
 
 from appdirs import user_config_dir
-from pyfaidx import Fasta, FastaIndexingError, IndexNotFoundError
+from pyfaidx import FastaIndexingError, IndexNotFoundError
 
 from genomepy.annotation import Annotation
 from genomepy.config import config
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import (
-    _fa_to_file,
+    _apply_fasta_regex_func,
     bgzip_and_name,
     glob_ext_files,
     gzip_and_name,
@@ -76,14 +75,14 @@ def list_installed_genomes(genomes_dir: str = None):
 
 def install_genome(
     name: str,
-    provider: str = None,
-    genomes_dir: str = None,
-    localname: str = None,
+    provider: Optional[str] = None,
+    genomes_dir: Optional[str] = None,
+    localname: Optional[str] = None,
     mask: Optional[str] = "soft",
     keep_alt: Optional[bool] = False,
-    regex: str = None,
+    regex: Optional[str] = None,
     invert_match: Optional[bool] = False,
-    bgzip: bool = None,  # None -> check config. False -> dont check.
+    bgzip: Optional[bool] = None,  # None -> check config. False -> dont check.
     annotation: Optional[bool] = False,
     only_annotation: Optional[bool] = False,
     skip_matching: Optional[bool] = False,
@@ -201,16 +200,15 @@ def install_genome(
         genome_downloaded = True
 
         # Filter genome
-        if keep_alt is False or regex is not None:
-            _filter_genome(genome_file, regex, invert_match, keep_alt)
+        _filter_genome(genome_file, regex, invert_match, keep_alt)
 
         # Generates a Fasta object and the genome index, gaps and sizes files
         genome = Genome(localname, genomes_dir=genomes_dir)
 
         # Download the NCBI assembly report
+        asm_report = os.path.join(out_dir, "assembly_report.txt")
         asm_acc = genome.assembly_accession
-        if asm_acc != "na":
-            asm_report = os.path.join(out_dir, "assembly_report.txt")
+        if not os.path.exists(asm_report) and asm_acc != "na":
             download_assembly_report(asm_acc, asm_report)
 
         # Export installed genome(s)
@@ -318,7 +316,7 @@ def _provider_selection(name, localname, genomes_dir, provider=None):
 
 def _filter_genome(
     genome_file: str,
-    regex: str = None,
+    regex: Optional[str] = None,
     invert_match: Optional[bool] = False,
     keep_alt: Optional[bool] = False,
 ):
@@ -334,21 +332,11 @@ def _filter_genome(
     invert_match : bool , optional
         Set to True to select all chromosomes that don't match the regex.
     """
-    fa = Fasta(genome_file)
-    contigs_in = list(fa.keys())
-    contigs_out = copy(contigs_in)
-    if regex:
-        pattern = re.compile(regex)
-        contigs_out = [
-            c for c in contigs_out if bool(pattern.search(c)) is not invert_match
-        ]
-    if keep_alt is False:
-        pattern = re.compile("(alt)", re.I)  # case insensitive
-        contigs_out = [c for c in contigs_out if not bool(pattern.search(c))]
-    excluded_contigs = list(set(contigs_in) ^ set(contigs_out))
+    if keep_alt is True and regex is None:
+        return
 
-    _fa_to_file(fa, contigs_out, genome_file)
-    rm_rf(f"{genome_file}.fai")  # old index
+    regex_func = _get_fasta_regex_func(regex, invert_match, keep_alt)
+    excluded_contigs = _apply_fasta_regex_func(genome_file, regex_func)
 
     # document
     regex_line = "regex: "
@@ -367,6 +355,40 @@ def _filter_genome(
 
     readme = os.path.join(os.path.dirname(genome_file), "README.txt")
     update_readme(readme, extra_lines=lines)
+
+
+def _get_fasta_regex_func(
+    regex: Optional[str] = None,
+    invert_match: Optional[bool] = False,
+    keep_alt: Optional[bool] = False,
+):
+    """
+    returns a regex function that accepts a contig header and returns a bool to keep the contig or not.
+    """
+    # define filter functions
+    if keep_alt is False:
+        alt_pattern = re.compile("(alt)", re.I)  # case insensitive
+
+        def alt_keep(header):
+            return not bool(alt_pattern.search(header))
+
+        keep = alt_keep  # rename in case there is only 1 filter function
+
+    if regex is not None:
+        re_pattern = re.compile(regex)
+
+        def re_keep(header):
+            return bool(re_pattern.search(header)) is not invert_match
+
+        keep = re_keep  # rename in case there is only 1 filter function
+
+    # combine filter functions?
+    if regex is not None and keep_alt is False:
+
+        def keep(header):
+            return re_keep(header) and alt_keep(header)
+
+    return keep  # noqa: IDE is confused
 
 
 def _delete_extensions(directory: str, exts: list):
