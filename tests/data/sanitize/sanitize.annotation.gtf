@@ -1,0 +1,8 @@
+NC_007112.7	genomepy	exon	11751	11878	.	-	.	gene_id "rpl24"; transcript_id "rna-NM_173235.3"; exon_number "6"; exon_id "rna-NM_173235.3.6"; gene_name "rpl24";
+NC_007112.7	genomepy	CDS	11751	11755	.	-	0	gene_id "rpl24"; transcript_id "rna-NM_173235.3"; exon_number "6"; exon_id "rna-NM_173235.3.6"; gene_name "rpl24";
+NC_007112.7	genomepy	start_codon	11753	11755	.	-	0	gene_id "rpl24"; transcript_id "rna-NM_173235.3"; exon_number "6"; exon_id "rna-NM_173235.3.6"; gene_name "rpl24";
+NC_007112.7	genomepy	stop_codon	6680	6682	.	-	0	gene_id "rpl24"; transcript_id "rna-NM_173235.3"; exon_number "1"; exon_id "rna-NM_173235.3.1"; gene_name "rpl24";
+NC_002333.2	genomepy	transcript	16527	16596	.	-	.	gene_id "trnP"; transcript_id "rna-trnP";  gene_name "trnP";
+NC_002333.2	genomepy	exon	16527	16596	.	-	.	gene_id "trnP"; transcript_id "rna-trnP"; exon_number "1"; exon_id "rna-trnP.1"; gene_name "trnP";
+NC_002333.2	genomepy	transcript	16449	16520	.	+	.	gene_id "trnT"; transcript_id "rna-trnT";  gene_name "trnT";
+NC_002333.2	genomepy	exon	16449	16520	.	+	.	gene_id "trnT"; transcript_id "rna-trnT"; exon_number "1"; exon_id "rna-trnT.1"; gene_name "trnT";
