@@ -90,7 +90,9 @@ class Annotation:
 
         elif name == "genome_contigs":
             _check_property(self.sizes_file, f"{self.name}.fa.sizes")
-            val = list(set(pd.read_csv(self.sizes_file, sep="\t", header=None)[0]))
+            val = list(
+                set(pd.read_csv(self.sizes_file, sep="\t", header=None, dtype=str)[0])
+            )
             setattr(self, name, val)
 
         elif name == "annotation_contigs":

@@ -1,5 +1,4 @@
 import os
-from tempfile import mkdtemp
 
 import pandas as pd
 import pytest
@@ -212,41 +211,21 @@ def test__parse_annot():
 
 
 def test_match_contigs():
-    # TODO: make/find example fasta & annot
+    # nothing to work with
     a = genomepy.Annotation("sacCer3", "tests/data")
-
-    # # chr2 found, chromosome3 missing from genome
-    # gtf_file = "tests/data/regexp/regexp.annotation.gtf"
-    # with open(gtf_file, "w") as f:
-    #     f.write(
-    #         "chr2\tgenomepy\texon\t1\t100\t.\t+\t.\t"
-    #         'gene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "cool_gene";\n'
-    #     )
-    #     f.write(
-    #         "chromosome3\tgenomepy\texon\t1\t100\t.\t+\t.\t"
-    #         'gene_id "ENSGP1235"; transcript_id "GP_1235.1";  gene_name "boring_gene";\n'
-    #     )
-    # a = genomepy.annotation.Annotation("regexp", "tests/data")
-    #
-    # # add bed
-    # bed_file = a.annotation_gtf_file.replace("gtf", "bed")
-    # genomepy.annotation.utils.generate_annot(a.annotation_gtf_file, bed_file, True)
-    # a.annotation_bed_file = bed_file
-
-    # add genome sizes
-    genomepy.genome.generate_fa_sizes(a.genome_file, a.genome_file + ".sizes")
-    a.sizes_file = a.genome_file + ".sizes"
-
     cd = genomepy.annotation.sanitize.match_contigs(a)
-    assert cd is None  # nothing to work with
+    assert cd is None
 
-    # missing_contigs = a._filter_genome_contigs()
-    # assert missing_contigs == ["chromosome3"]
-    #
-    # genomepy.utils.rm_rf(gtf_file)
-    # genomepy.utils.rm_rf(bed_file)
-    # genomepy.utils.rm_rf(a.genome_file + ".fai")
-    # genomepy.utils.rm_rf(a.genome_file + ".sizes")
+    # one missing contig, one fixable contig
+    a = genomepy.Annotation("sanitize", "tests/data")
+    before = a.gtf
+    cd = genomepy.annotation.sanitize.match_contigs(a)
+    after = a.gtf
+
+    assert cd == {"NC_007112.7": "1"}
+    assert a.genome_contigs == ["1"]
+    assert list(before.seqname.unique()) == ["NC_007112.7", "NC_002333.2"]
+    assert list(after.seqname.unique()) == ["1", "NC_002333.2"]
 
 
 def test_filter_contigs():
@@ -265,258 +244,38 @@ def test_filter_contigs():
 
 
 def test_document_sanitizing():
-    pass  # TODO
+    class HasReadme:
+        readme_file = "tests/data/test.log"
 
+        def __init__(self):
+            with open(self.readme_file, "w"):
+                pass
 
-# def test_filter_genome_contigs():
-#     # chr2 found, chromosome3 missing from genome
-#     gtf_file = "tests/data/regexp/regexp.annotation.gtf"
-#     with open(gtf_file, "w") as f:
-#         f.write("chr2\tcool_gene\n")
-#         f.write("chromosome3\tboring_gene\n")
-#     a = genomepy.annotation.Annotation("regexp", "tests/data")
-#     genomepy.files.generate_fa_sizes(a.genome_file, a.genome_file + ".sizes")
-#     a.sizes_file = a.genome_file + ".sizes"
-#
-#     missing_contigs = a._filter_genome_contigs()
-#     assert missing_contigs == ["chromosome3"]
-#
-#     genomepy.utils.rm_rf(gtf_file)
-#     genomepy.utils.rm_rf(a.genome_file + ".sizes")
-#
-#
-# def test__conforming_index():
-#     # genome header found in annotation
-#     bed_file = "tests/data/regexp/regexp.annotation.bed"
-#     with open(bed_file, "w") as f:
-#         f.write(
-#             """chr1\t15307\t16448\tNP_059343.1\t42\t+\t15307\t16448\t0\t1\t1141,\t0,"""
-#         )
-#
-#     a = genomepy.annotation.Annotation("regexp", "tests/data")
-#     i = a._conforming_index()
-#     assert i == 0
-#
-#     # genome header not found in annotation
-#     bed_file = "tests/data/regexp/regexp.annotation.bed"
-#     with open(bed_file, "w") as f:
-#         f.write(
-#             """chrM\t15307\t16448\tNP_059343.1\t42\t+\t15307\t16448\t0\t1\t1141,\t0,"""
-#         )
-#
-#     a = genomepy.annotation.Annotation("regexp", "tests/data")
-#     i = a._conforming_index()
-#     assert i == -1
-#
-#     genomepy.utils.rm_rf(bed_file)
-#
-#
-# def test__contig_conversion_dict():
-#     gtf_file = "tests/data/data.annotation.gtf"
-#     with open(gtf_file, "w") as f:
-#         f.write("\n")
-#     bed_file = "tests/data/data.annotation.bed"
-#     with open(bed_file, "w") as f:
-#         f.write("\n")
-#     genome_file = "tests/data/data.fa"
-#     with open(genome_file, "w") as f:
-#         f.write(">this matches chr2\n" ">that matches chr3\n")
-#     a = genomepy.annotation.Annotation("data", "tests")
-#
-#     conversion_dict, duplicate_contigs = a._contig_conversion_dict(2)
-#     assert not duplicate_contigs
-#     assert conversion_dict["chr2"] == "this"
-#     assert conversion_dict["chr3"] == "that"
-#
-#     # assume "matches" is the contig name
-#     ids, duplicate_contigs = a._contig_conversion_dict(1)
-#     assert "matches" in duplicate_contigs
-#     assert ids["matches"] == "that"
-#
-#     genomepy.utils.rm_rf(gtf_file)
-#     genomepy.utils.rm_rf(bed_file)
-#     genomepy.utils.rm_rf(genome_file)
-#
-#
-# def test__conform_gtf():
-#     bed_file = "tests/data/data.annotation.bed"
-#     with open(bed_file, "w") as f:
-#         f.write("\n")
-#
-#     # filter missing contigs
-#     conversion_dict = {"chr1": "chromosome_one"}
-#     gtf_file = "tests/data/data.annotation.gtf"
-#     with open(gtf_file, "w") as f:
-#         f.write("chr1\t1\t2\n")
-#         f.write("chr2\t1\t2\n")
-#     a = genomepy.annotation.Annotation("data", "tests")
-#     missing_contigs = a._conform_gtf(conversion_dict)
-#     assert missing_contigs == ["chr2"]
-#     with open(gtf_file) as f:
-#         lines = f.readlines()
-#     assert lines == ["chromosome_one\t1\t2\n"]
-#
-#     # keep missing contigs
-#     with open(gtf_file, "w") as f:
-#         f.write("chr1\t1\t2\n")
-#         f.write("chr2\t1\t2\n")
-#     a = genomepy.annotation.Annotation("data", "tests")
-#     missing_contigs = a._conform_gtf(conversion_dict, filter_contigs=False)
-#     assert missing_contigs == ["chr2"]
-#     with open(gtf_file) as f:
-#         lines = f.readlines()
-#     assert lines == ["chromosome_one\t1\t2\n", "chr2\t1\t2\n"]
-#
-#     genomepy.utils.rm_rf(gtf_file)
-#     genomepy.utils.rm_rf(bed_file)
-#
-#
-def test_sanitize(caplog):
-    # TODO
-    tmp_dir = mkdtemp(dir="tests")
-    genome = "testgenome"
-    genomepy.utils.mkdir_p(os.path.join(tmp_dir, genome))
+        def _check_property(self):
+            pass
 
-    bed_file = os.path.join(tmp_dir, genome, genome + ".annotation.bed")
-    gtf_file = os.path.join(tmp_dir, genome, genome + ".annotation.gtf")
-    genome_file = os.path.join(tmp_dir, genome, genome + ".fa")
-    sizes_file = os.path.join(tmp_dir, genome, genome + ".fa.sizes")
-    readme_file = os.path.join(tmp_dir, genome, "README.txt")
+    a = HasReadme()
+    cd = {"1": "a", "2": "b"}
+    mc = ["1", "2", "3", "4", "5"]
+    genomepy.annotation.sanitize.document_sanitizing(a, cd, mc)
+    md, lines = genomepy.files.read_readme(a.readme_file)
+    genomepy.utils.rm_rf(a.readme_file)
 
-    # no genome
-    a = genomepy.annotation.Annotation(genome, tmp_dir)
-    with pytest.raises(FileNotFoundError):
-        a.sanitize()
-
-    # conforming, filtering off
-    with open(bed_file, "w") as f:
-        f.write("chr1\t0\t100\n" "chr2\t0\t100\n")
-    with open(gtf_file, "w") as f:
-        f.write(
-            "chr1\tgenomepy\texon\t1\t100\t.\t+\t.\t"
-            'gene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP1";\n'
-            "chr2\tgenomepy\texon\t1\t100\t.\t+\t.\t"
-            'gene_id "ENSGP1235"; transcript_id "GP_1235.1";  gene_name "GP2";\n'
-        )
-    with open(genome_file, "w") as f:
-        f.write(">chr1\n")
-        f.write("ATCGATCG\n")
-    with open(readme_file, "w") as f:
-        f.write("\n")
-    genomepy.genome.generate_fa_sizes(genome_file, sizes_file)
-    a = genomepy.annotation.Annotation(genome, tmp_dir)
-    a.sanitize(match=False, filter=False)
-
-    # expect no changes
-    with open(gtf_file) as f:
-        lines = f.readlines()
+    status = md["sanitized annotation"]
+    assert status == "2 contigs were renamed. 5 contigs were removed (see below)."
     assert lines == [
-        'chr1\tgenomepy\texon\t1\t100\t.\t+\t.\tgene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP1";\n',
-        'chr2\tgenomepy\texon\t1\t100\t.\t+\t.\tgene_id "ENSGP1235"; transcript_id "GP_1235.1";  gene_name "GP2";\n',
+        "",
+        "The following contigs were filtered out of the gene annotation:",
+        "1, 2, 3, 4, 5",
     ]
-    with open(bed_file) as f:
-        lines = f.readlines()
-    assert lines == ["chr1\t0\t100\n", "chr2\t0\t100\n"]
-    # metadata, _ = genomepy.files.read_readme(a.readme_file)
-    # assert metadata["sanitized annotation"] == "contigs match but not filtered"
 
-    # # conforming, filtering on
-    # a.sanitize(match_contigs=False, filter_contigs=True)
-    #
-    # # expect chr2 to have been removed
-    # with open(gtf_file) as f:
-    #     lines = f.readlines()
-    # assert lines == [
-    #     'chr1\tgenomepy\texon\t1\t100\t.\t+\t.\tgene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP1";\n',
-    # ]
-    # with open(bed_file) as f:
-    #     lines = f.readlines()
-    # assert lines == [
-    #     "chr1\t0\t100\tGP_1234.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n",
-    # ]
-    # metadata, _ = genomepy.files.read_readme(a.readme_file)
-    # assert metadata["sanitized annotation"] == "contigs match and filtered"
-    #
-    # # not conforming, no fix possible
-    # genomepy.utils.rm_rf(os.path.join(tmp_dir, genome))
-    # genomepy.utils.mkdir_p(os.path.join(tmp_dir, genome))
-    # with open(bed_file, "w") as f:
-    #     f.write("chr1\t0\t100\n")
-    # with open(gtf_file, "w") as f:
-    #     f.write("\n")
-    # with open(genome_file, "w") as f:
-    #     f.write(">not_chr1\n")
-    #     f.write("ATCGATCG\n")
-    # with open(readme_file, "w") as f:
-    #     f.write("\n")
-    # genomepy.files.generate_fa_sizes(genome_file, sizes_file)
-    # a = genomepy.annotation.Annotation(genome, tmp_dir)
-    # a.sanitize()
-    # metadata, _ = genomepy.files.read_readme(a.readme_file)
-    # assert metadata["sanitized annotation"] == "not possible"
-    #
-    # # not conforming, filtering off
-    # genomepy.utils.rm_rf(os.path.join(tmp_dir, genome))
-    # genomepy.utils.mkdir_p(os.path.join(tmp_dir, genome))
-    # with open(bed_file, "w") as f:
-    #     f.write("chr1\t0\t100\n" "chr2\t0\t100\n")
-    # with open(gtf_file, "w") as f:
-    #     f.write(
-    #         "chr1\tgenomepy\texon\t1\t100\t.\t+\t.\t"
-    #         'gene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP1";\n'
-    #         "chr2\tgenomepy\texon\t1\t100\t.\t+\t.\t"
-    #         'gene_id "ENSGP1235"; transcript_id "GP_1235.1";  gene_name "GP2";\n'
-    #     )
-    # with open(genome_file, "w") as f:
-    #     f.write(">this matches chr1\n")
-    #     f.write("ATCGATCG\n")
-    #     f.write(">this2 matches chr1\n")
-    #     f.write("ATCGATCG\n")
-    # with open(readme_file, "w") as f:
-    #     f.write("\n")
-    # genomepy.files.generate_fa_sizes(genome_file, sizes_file)
-    # a = genomepy.annotation.Annotation(genome, tmp_dir)
-    # a.sanitize(match_contigs=True, filter_contigs=False)
-    # assert "The genome contains duplicate contig names" in caplog.text
-    # with open(bed_file) as f:
-    #     lines = f.readlines()
-    # assert lines == [
-    #     "this2\t0\t100\tGP_1234.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n",
-    #     "chr2\t0\t100\tGP_1235.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n",
-    # ]
-    # metadata, _ = genomepy.files.read_readme(a.readme_file)
-    # assert metadata["sanitized annotation"] == "contigs fixed but not filtered"
-    #
-    # # not conforming, filtering off
-    # genomepy.utils.rm_rf(os.path.join(tmp_dir, genome))
-    # genomepy.utils.mkdir_p(os.path.join(tmp_dir, genome))
-    # with open(bed_file, "w") as f:
-    #     f.write("chr1\t0\t100\n" "chr2\t0\t100\n")
-    # with open(gtf_file, "w") as f:
-    #     f.write(
-    #         "chr1\tgenomepy\texon\t1\t100\t.\t+\t.\t"
-    #         'gene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP1";\n'
-    #         "chr2\tgenomepy\texon\t1\t100\t.\t+\t.\t"
-    #         'gene_id "ENSGP1235"; transcript_id "GP_1235.1";  gene_name "GP2";\n'
-    #     )
-    # with open(genome_file, "w") as f:
-    #     f.write(">this matches chr1\n")
-    #     f.write("ATCGATCG\n")
-    #     f.write(">this2 matches chr1\n")
-    #     f.write("ATCGATCG\n")
-    # with open(readme_file, "w") as f:
-    #     f.write("\n")
-    # genomepy.files.generate_fa_sizes(genome_file, sizes_file)
-    # a = genomepy.annotation.Annotation(genome, tmp_dir)
-    # a.sanitize(match_contigs=True, filter_contigs=True)
-    # assert "The genome contains duplicate contig names" in caplog.text
-    # with open(bed_file) as f:
-    #     lines = f.readlines()
-    # assert lines == ["this2\t0\t100\tGP_1234.1\t0\t+\t100\t100\t0\t1\t100,\t0,\n"]
-    # metadata, _ = genomepy.files.read_readme(a.readme_file)
-    # assert metadata["sanitized annotation"] == "contigs fixed and filtered"
 
-    genomepy.utils.rm_rf(tmp_dir)
+def test_sanitize():
+    a = genomepy.Annotation("sanitize", "tests/data")
+
+    a.sanitize(overwrite=False)
+    assert a.gtf.shape == (4, 9)
+    assert list(set(a.gtf.seqname)) == ["1"]
 
 
 # annotation.mygene.py
