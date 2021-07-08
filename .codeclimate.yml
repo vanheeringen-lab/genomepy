@@ -21,8 +21,6 @@ checks:
       threshold: 250
 
 exclude_patterns:
-  - "*"                             # exclude all
-  - ".*"                            # exclude all hidden files
-  - "!genomepy/*"                   # re-include genomepy folder
+  - "*"
+  - "!genomepy/*"
   - "genomepy/cli.py"
-  - "genomepy/config/default.yaml"
