@@ -6,7 +6,9 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
+from genomepy.annotation.mygene import map_genes as _map_genes
 from genomepy.annotation.mygene import query_mygene
+from genomepy.annotation.sanitize import sanitize as _sanitize
 from genomepy.annotation.utils import _check_property, _parse_annot, read_annot
 from genomepy.providers import map_locations
 from genomepy.utils import get_genomes_dir
@@ -32,8 +34,8 @@ class Annotation:
     """
 
     # import methods
-    from genomepy.annotation.mygene import map_genes
-    from genomepy.annotation.sanitize import sanitize
+    map_genes = _map_genes
+    sanitize = _sanitize
 
     # lazy attributes (loaded when called)
     # listed here for code autocompletion

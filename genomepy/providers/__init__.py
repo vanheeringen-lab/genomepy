@@ -18,6 +18,8 @@ __all__ = [
     "search",
     "map_locations",
     "download_assembly_report",
+    "nearest_assembly",
+    "online_providers",
 ]
 
 ASM_FORMAT = [

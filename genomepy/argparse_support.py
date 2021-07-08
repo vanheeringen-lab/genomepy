@@ -3,7 +3,7 @@ import sys
 
 from loguru import logger
 
-from genomepy.functions import Genome, install_genome
+from genomepy import Genome, install_genome
 
 
 def parse_genome(auto_install=False, genomes_dir=None):

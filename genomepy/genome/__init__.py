@@ -5,6 +5,8 @@ from glob import glob
 from pyfaidx import Fasta
 
 from genomepy.files import glob_ext_files, read_readme
+from genomepy.genome.sequences import get_random_sequences as _get_random_sequences
+from genomepy.genome.sequences import track2fasta as _track2fasta
 from genomepy.plugins import get_active_plugins
 from genomepy.utils import get_genomes_dir, safe
 
@@ -31,7 +33,8 @@ class Genome(Fasta):
     """
 
     # import methods
-    from genomepy.genome.sequences import get_random_sequences, track2fasta
+    get_random_sequences = _get_random_sequences
+    track2fasta = _track2fasta
 
     # lazy attributes (loaded when called)
     # listed here for code autocompletion
