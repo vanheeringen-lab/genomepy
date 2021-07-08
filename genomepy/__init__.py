@@ -3,7 +3,7 @@ import sys
 from loguru import logger
 
 from genomepy.__about__ import __author__, __version__
-from genomepy.annotation import Annotation
+from genomepy.annotation import Annotation, query_mygene
 from genomepy.caching import clean
 from genomepy.config import manage_config
 from genomepy.functions import (
@@ -12,6 +12,7 @@ from genomepy.functions import (
     list_installed_genomes,
 )
 from genomepy.genome import Genome
+from genomepy.genome.seqdict import as_seqdict
 from genomepy.plugins import manage_plugins
 from genomepy.providers import Provider, list_online_providers, list_providers, search
 
@@ -41,6 +42,8 @@ __all__ = [
     "manage_plugins",
     "manage_config",
     "clean",
+    "query_mygene",
+    "as_seqdict",
 ]
 
 # No traceback

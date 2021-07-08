@@ -1,6 +1,7 @@
 import os
 from tempfile import NamedTemporaryFile
 
+import pyfaidx
 import pytest
 
 import genomepy.files
@@ -52,7 +53,11 @@ def test_sizes(gap_genome):
 
     # repopulates empty dicts
     gap_genome.sizes = None
-    assert list(gap_genome.sizes.keys()) == ["chr1", "chr2", "chr3"]
+    assert list(gap_genome.sizes.keys()) == [
+        "chr1",
+        "chr2",
+        "chr3",
+    ]  # noqa: it's a lazy attribute
 
 
 def test_gaps(gap_genome):
@@ -64,7 +69,10 @@ def test_gaps(gap_genome):
 
     # repopulates empty dicts
     gap_genome.gaps = None
-    assert list(gap_genome.gaps.keys()) == ["chr1", "chr3"]
+    assert list(gap_genome.gaps.keys()) == [
+        "chr1",
+        "chr3",
+    ]  # noqa: it's a lazy attribute
 
 
 # def test__parse_name(small_genome):
@@ -275,3 +283,57 @@ def test_get_random_sequences(small_genome):
     assert (
         str(small_genome.track2fasta(rs[0])[0].seq).upper().count("N") <= length * max_n
     )
+
+
+# genome.seqdict.py
+
+
+def test_as_seqdict():
+    test_data = [
+        "tests/data/as_seqdict/test.bed",
+        "tests/data/as_seqdict/test.fa",
+        "tests/data/as_seqdict/test.fasta",
+        "tests/data/as_seqdict/test.txt",
+        # pybedtools.BedTool("tests/data/as_seqdict/test.bed"),
+        ["chrI:110-120", "chrII:130-140", "chrIII:410-420"],
+        # np.array(['chrI:110-120', 'chrII:130-140', 'chrIII:410-420']),
+        pyfaidx.Fasta("tests/data/as_seqdict/test.fa"),
+    ]
+
+    # test differnt inputs
+    for dataset in test_data:
+        result = genomepy.as_seqdict(dataset, genome="tests/data/small_genome.fa.gz")
+        assert "chrI:110-120" in result, "key not present"
+        assert "chrII:130-140" in result, "key not present"
+        assert "chrIII:410-420" in result, "key not present"
+        assert result["chrI:110-120"] == "CTCTCAACTT", "sequence incorrect"
+        assert result["chrII:130-140"] == "TGTCTCTCGC", "sequence incorrect"
+        assert result["chrIII:410-420"] == "TCCCAACTTA", "sequence incorrect"
+
+    # test minsize argument
+    for dataset in test_data:
+        with pytest.raises(ValueError):
+            genomepy.as_seqdict(
+                dataset, genome="tests/data/small_genome.fa.gz", minsize=100
+            )
+
+    # raise error on empty file
+    with pytest.raises(IOError):
+        genomepy.as_seqdict("tests/data/as_seqdict/empty.fa")
+
+    # test genome@chrom:start-end format
+    datasets = [
+        "tests/data/as_seqdict/test.with_genome.txt",
+        [
+            "tests/data/small_genome.fa.gz@chrI:110-120",
+            "tests/data/small_genome.fa.gz@chrII:130-140",
+            "tests/data/small_genome.fa.gz@chrIII:410-420",
+        ],
+    ]
+
+    for dataset in datasets:
+        assert sorted(genomepy.as_seqdict(dataset).values()) == [
+            "CTCTCAACTT",
+            "TCCCAACTTA",
+            "TGTCTCTCGC",
+        ]
