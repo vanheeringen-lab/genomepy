@@ -16,8 +16,8 @@ region_p = re.compile(r"^[^@]+@([^\s]+):(\d+)-(\d+)$")
 
 @singledispatch
 def as_seqdict(
-    to_convert, genome=None, minsize=None
-):  # noqa: arguments used dispaced functions
+    to_convert, genome=None, minsize=None  # noqa: arguments used dispaced functions
+):
     """
     Convert input to a dictionary with name as key and sequence as value.
     If the input contains genomic coordinates, the genome needs to be
@@ -123,8 +123,8 @@ def _as_seqdict_list(to_convert, genome=None, minsize=None):
 
 @as_seqdict.register(TextIOWrapper)
 def _as_seqdict_file_object(
-    to_convert, genome=None, minsize=None
-):  # noqa: arguments used dispaced functions
+    to_convert, genome=None, minsize=None  # noqa: arguments used dispaced functions
+):
     """
     Accepts file object as input, should be a FASTA file.
     """
@@ -168,8 +168,8 @@ def _as_seqdict_filename(to_convert, genome=None, minsize=None):
 
 @as_seqdict.register(pyfaidx.Fasta)
 def _as_seqdict_pyfaidx(
-    to_convert, genome=None, minsize=None
-):  # noqa: arguments used dispaced functions
+    to_convert, genome=None, minsize=None  # noqa: arguments used dispaced functions
+):
     """
     Accepts pyfaidx.Fasta object as input.
     """
