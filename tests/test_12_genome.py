@@ -1,4 +1,5 @@
 import os
+from tempfile import NamedTemporaryFile
 
 import pytest
 
@@ -11,13 +12,13 @@ import genomepy.utils
 # to recheck file changes
 # git update-index --no-assume-unchanged tests/data/small_genome.fa.gz
 def test_genome__init__(small_genome):
-    # no fasta file
-    with pytest.raises(FileNotFoundError):
-        genomepy.Genome("empty", "tests/data/genome")
-
     # genome dir not found
     with pytest.raises(FileNotFoundError):
         genomepy.Genome("unknown", "unknown")
+
+    # no fasta file
+    with pytest.raises(FileNotFoundError):
+        genomepy.Genome("empty", "tests/data")
 
     readme = "tests/data/README.txt"
     if os.path.exists(readme):
@@ -38,20 +39,48 @@ def test_genome__init__(small_genome):
     assert isinstance(small_genome.plugin, dict)
 
 
-def test__parse_name(small_genome):
-    # name
-    name = small_genome._parse_name("test")
-    assert name == "test"
-
-    # file
-    name = small_genome._parse_name("/home/genomepy/genomes/test2.fa")
-    assert name == "test2"
-
-    # url
-    name = small_genome._parse_name(
-        "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XT9_1.fa.gz"
+def test_sizes(gap_genome):
+    assert list(gap_genome.sizes.keys()) == ["chr1", "chr2", "chr3"]
+    assert all(
+        isinstance(gap_genome.sizes[chrom], int) for chrom in gap_genome.sizes.keys()
     )
-    assert name == "XT9_1"
+    assert gap_genome.sizes["chr1"] == 28
+
+    # does not overwrite user-set sizes
+    gap_genome.sizes = {"asd": 1}
+    assert gap_genome.sizes == {"asd": 1}
+
+    # repopulates empty dicts
+    gap_genome.sizes = None
+    assert list(gap_genome.sizes.keys()) == ["chr1", "chr2", "chr3"]
+
+
+def test_gaps(gap_genome):
+    assert list(gap_genome.gaps.keys()) == ["chr1", "chr3"]
+
+    # does not overwrite user-set gaps
+    gap_genome.gaps = {"asd": 1}
+    assert gap_genome.gaps == {"asd": 1}
+
+    # repopulates empty dicts
+    gap_genome.gaps = None
+    assert list(gap_genome.gaps.keys()) == ["chr1", "chr3"]
+
+
+# def test__parse_name(small_genome):
+#     # name
+#     name = small_genome._parse_name("test")
+#     assert name == "test"
+#
+#     # file
+#     name = small_genome._parse_name("/home/genomepy/genomes/test2.fa")
+#     assert name == "test2"
+#
+#     # url
+#     name = small_genome._parse_name(
+#         "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XT9_1.fa.gz"
+#     )
+#     assert name == "XT9_1"
 
 
 def test__parse_filename(small_genome):
@@ -93,58 +122,26 @@ def test__check_annotation_file(small_genome):
     os.unlink(path)
 
 
-def test__bed_to_seqs(small_genome, track="tests/data/regions.bed"):
-    # extract sequences marked in regions.bed from small_genome.fa.gz
-    seqs = small_genome._bed_to_seqs(
-        track=track, stranded=False, extend_up=0, extend_down=0
-    )
-    for i, seq in enumerate(seqs):
-        assert seq.name == ["chrI:10-20 gene_a", "chrII:20-30 gene_b"][i]
-        assert seq.seq == ["CCCACACACC", "TCCTCCAAGC"][i]
+def test_generate_gap_bed(fname="tests/data/gap.fa", outname="tests/data/gap.bed"):
+    tmp = NamedTemporaryFile().name
+    genomepy.genome.generate_gap_bed(fname, tmp)
 
-    # second sequence is on the negative strand
-    seqs = small_genome._bed_to_seqs(
-        track=track, stranded=True, extend_up=0, extend_down=0
-    )
-    for i, seq in enumerate(seqs):
-        assert seq.name == ["chrI:10-20 gene_a", "chrII:20-30 gene_b"][i]
-        # original:        "CCCACACACC", "TCCTCCAAGC"
-        assert seq.seq == ["CCCACACACC", "GCTTGGAGGA"][i]
+    result = open(tmp).read()
+    expected = open(outname).read()
 
-    # extend by varying amounts
-    seqs = small_genome._bed_to_seqs(
-        track=track, stranded=True, extend_up=1, extend_down=2
-    )
-    for i, seq in enumerate(seqs):
-        assert seq.name == ["chrI:10-20 gene_a", "chrII:20-30 gene_b"][i]
-        # original:         "CCCACACACC",    "GCTTGGAGGA"
-        assert seq.seq == ["ACCCACACACCCA", "GGCTTGGAGGAGA"][i]
+    assert result == expected
 
 
-def test__region_to_seq(small_genome, region="chrI:10-20"):
-    # extract sequences marked in track from small_genome.fa.gz
-    seq = small_genome._region_to_seq(region=region, extend_up=0, extend_down=0)
-    assert seq == "CCCACACACC"
+def test_generate_fa_sizes(infa="tests/data/gap.fa"):
+    tmp = NamedTemporaryFile().name
+    genomepy.genome.generate_fa_sizes(infa, tmp)
 
-    # extend by varying amounts
-    seq = small_genome._region_to_seq(region=region, extend_up=1, extend_down=2)
-    # original:    "CCCACACACC"
-    assert seq == "ACCCACACACCCA"
+    result = open(tmp).read()
+
+    assert result == "chr1\t28\nchr2\t45\nchr3\t15\n"
 
 
-def test__regions_to_seqs(small_genome, track="tests/data/regions.txt"):
-    # extract sequences marked in regions.bed from small_genome.fa.gz
-    seqs = small_genome._regions_to_seqs(track=track, extend_up=0, extend_down=0)
-    for i, seq in enumerate(seqs):
-        assert seq.name == ["chrI:10-20", "chrII:20-30"][i]
-        assert seq.seq == ["CCCACACACC", "TCCTCCAAGC"][i]
-
-    # extend by varying amounts
-    seqs = small_genome._regions_to_seqs(track=track, extend_up=1, extend_down=2)
-    for i, seq in enumerate(seqs):
-        assert seq.name == ["chrI:10-20", "chrII:20-30"][i]
-        # original:         "CCCACACACC",    "TCCTCCAAGC"
-        assert seq.seq == ["ACCCACACACCCA", "CTCCTCCAAGCCC"][i]
+# genome.sequences.py
 
 
 def test_get_track_type():
@@ -156,8 +153,70 @@ def test_get_track_type():
         ("tests/data/regions2.bed", "bed"),
     ]
     for track, track_type in tracks:
-        result = genomepy.Genome.get_track_type(track)
+        result = genomepy.genome.sequences.get_track_type(track)
         assert result == track_type
+
+
+def test_region_to_seq(small_genome, region="chrI:10-20"):
+    # extract sequences marked in track from small_genome.fa.gz
+    seq = genomepy.genome.sequences.region_to_seq(
+        small_genome, region=region, extend_up=0, extend_down=0
+    )
+    assert seq == "CCCACACACC"
+
+    # extend by varying amounts
+    seq = genomepy.genome.sequences.region_to_seq(
+        small_genome, region=region, extend_up=1, extend_down=2
+    )
+    # original:    "CCCACACACC"
+    assert seq == "ACCCACACACCCA"
+
+
+def test__regions_to_seqs(small_genome, track="tests/data/regions.txt"):
+    # extract sequences marked in regions.bed from small_genome.fa.gz
+    seqs = genomepy.genome.sequences.regions_to_seqs(
+        small_genome, track=track, extend_up=0, extend_down=0
+    )
+    for i, seq in enumerate(seqs):
+        assert seq.name == ["chrI:10-20", "chrII:20-30"][i]
+        assert seq.seq == ["CCCACACACC", "TCCTCCAAGC"][i]
+
+    # extend by varying amounts
+    seqs = genomepy.genome.sequences.regions_to_seqs(
+        small_genome, track=track, extend_up=1, extend_down=2
+    )
+    for i, seq in enumerate(seqs):
+        assert seq.name == ["chrI:10-20", "chrII:20-30"][i]
+        # original:         "CCCACACACC",    "TCCTCCAAGC"
+        assert seq.seq == ["ACCCACACACCCA", "CTCCTCCAAGCCC"][i]
+
+
+def test_bed_to_seqs(small_genome, track="tests/data/regions.bed"):
+    # extract sequences marked in regions.bed from small_genome.fa.gz
+    seqs = genomepy.genome.sequences.bed_to_seqs(
+        small_genome, track=track, stranded=False, extend_up=0, extend_down=0
+    )
+    for i, seq in enumerate(seqs):
+        assert seq.name == ["chrI:10-20 gene_a", "chrII:20-30 gene_b"][i]
+        assert seq.seq == ["CCCACACACC", "TCCTCCAAGC"][i]
+
+    # second sequence is on the negative strand
+    seqs = genomepy.genome.sequences.bed_to_seqs(
+        small_genome, track=track, stranded=True, extend_up=0, extend_down=0
+    )
+    for i, seq in enumerate(seqs):
+        assert seq.name == ["chrI:10-20 gene_a", "chrII:20-30 gene_b"][i]
+        # original:        "CCCACACACC", "TCCTCCAAGC"
+        assert seq.seq == ["CCCACACACC", "GCTTGGAGGA"][i]
+
+    # extend by varying amounts
+    seqs = genomepy.genome.sequences.bed_to_seqs(
+        small_genome, track=track, stranded=True, extend_up=1, extend_down=2
+    )
+    for i, seq in enumerate(seqs):
+        assert seq.name == ["chrI:10-20 gene_a", "chrII:20-30 gene_b"][i]
+        # original:         "CCCACACACC",    "GCTTGGAGGA"
+        assert seq.seq == ["ACCCACACACCCA", "GGCTTGGAGGAGA"][i]
 
 
 def test_track2fasta(small_genome):
@@ -182,37 +241,9 @@ def test_track2fasta(small_genome):
             assert seq[1].seq == "CTCCTCCAAGCCC"
 
 
-def test_sizes(gap_genome):
-    assert list(gap_genome.sizes.keys()) == ["chr1", "chr2", "chr3"]
-    assert all(
-        isinstance(gap_genome.sizes[chrom], int) for chrom in gap_genome.sizes.keys()
-    )
-    assert gap_genome.sizes["chr1"] == 28
-
-    # does not overwrite user-set sizes
-    gap_genome.sizes = {"asd": 1}
-    assert gap_genome.sizes == {"asd": 1}
-
-    # repopulates empty dicts
-    gap_genome.sizes = {}
-    assert list(gap_genome.sizes.keys()) == ["chr1", "chr2", "chr3"]
-
-
-def test_gaps(gap_genome):
-    assert list(gap_genome.gaps.keys()) == ["chr1", "chr3"]
-
-    # does not overwrite user-set gaps
-    gap_genome.gaps = {"asd": 1}
-    assert gap_genome.gaps == {"asd": 1}
-
-    # repopulates empty dicts
-    gap_genome.gaps = {}
-    assert list(gap_genome.gaps.keys()) == ["chr1", "chr3"]
-
-
-def test__weighted_selection(n=2):
+def test_weighted_selection(n=2):
     tuples = [(1, "one"), (2, "two"), (3, "three")]
-    ws = genomepy.Genome._weighted_selection(tuples, n)
+    ws = genomepy.genome.sequences.weighted_selection(tuples, n)
 
     assert len(ws) == n
     assert isinstance(ws[0], str)

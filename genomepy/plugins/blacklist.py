@@ -5,7 +5,7 @@ from urllib.request import urlopen
 
 from loguru import logger
 
-from genomepy.plugin import Plugin
+from genomepy.plugins import Plugin
 
 
 class BlacklistPlugin(Plugin):

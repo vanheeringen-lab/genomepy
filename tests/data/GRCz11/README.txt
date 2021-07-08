@@ -20,22 +20,16 @@ a = genomepy.Annotation("GRCz11", "tests/data")
 bed = a.bed
 bed = bed[~bed.chrom.str.contains("K")]  # drop scaffolds
 bed = bed.groupby(["chrom"]).head(5)  # subset to 5 genes per chromosome
-bed.to_csv(
+genomepy.annotations.utils.write_annot(
+    bed,
     "tests/data/GRCz11/GRCz11.annotation.bed",
-    sep="\t",
-    header=None,
-    index=None,
-    quoting=csv.QUOTE_NONE,
 )
 
 gtf = a.gtf
 gtf = gtf[~gtf.seqname.str.contains("K")]  # drop scaffolds
 gtf = gtf.groupby(["seqname"]).head(5)  # subset to 5 genes per chromosome
-gtf.to_csv(
+genomepy.annotations.utils.write_annot(
+    gtf,
     "tests/data/GRCz11/GRCz11.annotation.gtf",
-    sep="\t",
-    header=None,
-    index=None,
-    quoting=csv.QUOTE_NONE,
 )
 ```

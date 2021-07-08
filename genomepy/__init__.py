@@ -1,24 +1,50 @@
-"""Search, download and use genome FASTA files."""
 import sys
 
 from loguru import logger
 
 from genomepy.__about__ import __author__, __version__
 from genomepy.annotation import Annotation
-from genomepy.exceptions import GenomeDownloadError
+from genomepy.caching import clean
+from genomepy.config import manage_config
 from genomepy.functions import (
-    clean,
     install_genome,
     list_available_genomes,
     list_installed_genomes,
-    manage_config,
-    manage_plugins,
 )
 from genomepy.genome import Genome
-from genomepy.provider import Provider
+from genomepy.plugins import manage_plugins
+from genomepy.providers import Provider, list_online_providers, list_providers, search
 
-list_available_providers = Provider.list_providers
-search = Provider.search_all
+# Public API objects
+# everything made available with `from genomepy import *`
+__all__ = [
+    # modules
+    "genome",
+    "annotation",
+    "providers",
+    "files",
+    "online",
+    "utils",
+    "exceptions",
+    # objects
+    "__author__",
+    "__version__",
+    "Genome",
+    "Annotation",
+    "Provider",
+    "search",
+    "install_genome",
+    "list_providers",
+    "list_online_providers",
+    "list_installed_genomes",
+    "list_available_genomes",
+    "manage_plugins",
+    "manage_config",
+    "clean",
+]
+
+# No traceback
+# sys.tracebacklimit = 0
 
 # logger is a singleton, configuration here will be used module-wide
 logger.remove()

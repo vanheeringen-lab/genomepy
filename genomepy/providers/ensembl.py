@@ -3,9 +3,10 @@ import re
 import requests
 from loguru import logger
 
+from genomepy.caching import cache, goldfish_cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, retry
-from genomepy.providers.base import BaseProvider, cache, goldfish_cache
+from genomepy.providers.base import BaseProvider
 from genomepy.utils import safe
 
 
@@ -17,6 +18,7 @@ class EnsemblProvider(BaseProvider):
     The bacteria division is not yet supported.
     """
 
+    name = "Ensembl"
     accession_fields = ["assembly_accession"]
     taxid_fields = ["taxonomy_id"]
     description_fields = [
@@ -25,7 +27,7 @@ class EnsemblProvider(BaseProvider):
         "url_name",
         "display_name",
     ]
-    provider_specific_install_options = {
+    _cli_install_options = {
         "toplevel": {
             "long": "toplevel",
             "help": "always download toplevel-genome",
@@ -38,29 +40,17 @@ class EnsemblProvider(BaseProvider):
             "default": None,
         },
     }
+    _url = "https://rest.ensembl.org/"
 
     def __init__(self):
-        self.name = "Ensembl"
-        self.rest_url = "https://rest.ensembl.org/"
-        self.provider_status(self.rest_url + "info/ping?", max_tries=2)
+        self._provider_status()
         # Populate on init, so that methods can be cached
-        self.genomes = self._get_genomes(self.rest_url)
+        self.genomes = get_genomes(self._url)
 
-    @cache(ignore=["self"])
-    def _get_genomes(self, rest_url):
-        logger.info("Downloading assembly summaries from Ensembl")
-
-        genomes = {}
-        divisions = retry(request_json, 3, rest_url, "info/divisions?")
-        for division in divisions:
-            if division == "EnsemblBacteria":
-                continue
-            division_genomes = retry(
-                request_json, 3, rest_url, f"info/genomes/division/{division}?"
-            )
-            for genome in division_genomes:
-                genomes[safe(genome["assembly_name"])] = genome
-        return genomes
+    @staticmethod
+    def ping():
+        """Can the provider be reached?"""
+        return bool(check_url("https://rest.ensembl.org/info/ping?"))
 
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
@@ -110,7 +100,7 @@ class EnsemblProvider(BaseProvider):
         # Ensembl release version
         version = kwargs.get("version")
         if version is None:
-            version = self.get_version(self.rest_url, division == "vertebrates")
+            version = self.get_version(self._url, division == "vertebrates")
 
         # division dependent url format
         ftp_dir = "{}/release-{}/fasta/{}/dna".format(
@@ -174,7 +164,7 @@ class EnsemblProvider(BaseProvider):
         # Ensembl release version
         version = kwargs.get("version")
         if version is None:
-            version = self.get_version(self.rest_url, division == "vertebrates")
+            version = self.get_version(self._url, division == "vertebrates")
 
         if division != "vertebrates":
             ftp_site += f"/{division}"
@@ -205,3 +195,20 @@ def request_json(rest_url, ext):
         r.raise_for_status()
 
     return r.json()
+
+
+@cache
+def get_genomes(rest_url):
+    logger.info("Downloading assembly summaries from Ensembl")
+
+    genomes = {}
+    divisions = retry(request_json, 3, rest_url, "info/divisions?")
+    for division in divisions:
+        if division == "EnsemblBacteria":
+            continue
+        division_genomes = retry(
+            request_json, 3, rest_url, f"info/genomes/division/{division}?"
+        )
+        for genome in division_genomes:
+            genomes[safe(genome["assembly_name"])] = genome
+    return genomes

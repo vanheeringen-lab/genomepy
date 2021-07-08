@@ -2,12 +2,14 @@ import os
 import re
 from urllib.request import urlopen
 
+import pandas as pd
 from loguru import logger
 from tqdm.auto import tqdm
 
+from genomepy.caching import cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url
-from genomepy.providers.base import BaseProvider, cache
+from genomepy.providers.base import BaseProvider
 from genomepy.utils import safe
 
 
@@ -18,6 +20,7 @@ class NcbiProvider(BaseProvider):
     Uses the assembly reports page to search and list genomes.
     """
 
+    name = "NCBI"
     accession_fields = ["assembly_accession", "gbrs_paired_asm"]
     taxid_fields = ["species_taxid", "taxid"]
     description_fields = [
@@ -27,50 +30,18 @@ class NcbiProvider(BaseProvider):
         "gbrs_paired_asm",
         "paired_asm_comp",
     ]
-    provider_specific_install_options = {}
+    _cli_install_options = {}
+    _url = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"
 
     def __init__(self):
-        self.name = "NCBI"
-        self.assembly_url = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"
-        self.provider_status(self.assembly_url)
+        self._provider_status()
         # Populate on init, so that methods can be cached
-        self.genomes = self._get_genomes(self.assembly_url)
+        self.genomes = get_genomes(self._url)
 
     @staticmethod
-    @cache
-    def _get_genomes(assembly_url):
-        """Parse genomes from assembly summary txt files."""
-        logger.info(
-            "Downloading assembly summaries from NCBI, this will take a while..."
-        )
-
-        def load_summary(url):
-            """
-            lazy loading of the url so we can parse while downloading
-            """
-            for row in urlopen(url):
-                yield row
-
-        genomes = {}
-        # order is important as asm_name can repeat (overwriting the older name)
-        names = [
-            "assembly_summary_genbank_historical.txt",
-            "assembly_summary_refseq_historical.txt",
-            "assembly_summary_genbank.txt",
-            "assembly_summary_refseq.txt",
-        ]
-        for fname in names:
-            lines = load_summary(f"{assembly_url}/{fname}")
-            _ = next(lines)  # line 0 = comment
-            header = (
-                next(lines).decode("utf-8").strip("# ").strip("\n").split("\t")
-            )  # line 1 = header
-            for line in tqdm(lines, desc=fname[17:-4], unit_scale=1, unit=" genomes"):
-                line = line.decode("utf-8").strip("\n").split("\t")
-                if line[19] != "na":  # ftp_path must exist
-                    name = safe(line[15])  # overwrites older asm_names
-                    genomes[name] = dict(zip(header, line))
-        return genomes
+    def ping():
+        """Can the provider be reached?"""
+        return bool(check_url("https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"))
 
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
@@ -110,7 +81,7 @@ class NcbiProvider(BaseProvider):
             f"Broken URL: {link}"
         )
 
-    def _post_process_download(self, name, localname, out_dir, mask="soft"):
+    def _post_process_download(self, name, fname, out_dir, mask="soft"):
         """
         Replace accessions with sequence names in fasta file.
 
@@ -121,27 +92,27 @@ class NcbiProvider(BaseProvider):
         name : str
             NCBI genome name
 
-        localname : str
-            Custom name for your genome
+        fname : str
+            file path to the genome fasta
 
         out_dir : str
-            Output directory
+            output directory
 
         mask : str , optional
             masking level: soft/hard/none, default=soft
         """
-        # Create mapping of accessions to names
-        url = self._ftp_or_html_link(
-            name, file_suffix="_assembly_report.txt", skip_check=True
-        )
+        # (down)load the assembly report
+        asm_fname = os.path.join(out_dir, "assembly_report.txt")
+        if os.path.exists(asm_fname):
+            asm_report = pd.read_csv(asm_fname, sep="\t", comment="#", header=None)
+        else:
+            url = self._ftp_or_html_link(name, "_assembly_report.txt", True)
+            asm_report = pd.read_csv(url, sep="\t", comment="#", header=None)
+            # save assembly report
+            asm_report.to_csv(asm_fname, sep="\t", index=False, header=False)
 
-        tr = {}
-        with urlopen(url) as response:
-            for line in response.read().decode("utf-8").splitlines():
-                if line.startswith("#"):
-                    continue
-                vals = line.strip().split("\t")
-                tr[vals[6]] = vals[0]
+        # create mapping of chromosome accessions to chromosome names
+        tr = asm_report.set_index(6)[0].to_dict()
 
         # mask sequence if required
         if mask == "soft":
@@ -151,9 +122,10 @@ class NcbiProvider(BaseProvider):
 
         elif mask == "hard":
             logger.info("NCBI genomes are softmasked by default. Hard masking...")
+            lower_case_nucleotides = re.compile("[actg]")
 
             def mask_cmd(txt):
-                return re.sub("[actg]", "N", txt)
+                return lower_case_nucleotides.sub("N", txt)
 
         else:
             logger.info("NCBI genomes are softmasked by default. Unmasking...")
@@ -162,15 +134,18 @@ class NcbiProvider(BaseProvider):
                 return txt.upper()
 
         # apply mapping and masking
-        fa = os.path.join(out_dir, f"{localname}.fa")
-        old_fa = os.path.join(out_dir, f"old_{localname}.fa")
-        os.rename(fa, old_fa)
-        with open(old_fa) as old, open(fa, "w") as new:
-            for line in old:
-                if line.startswith(">"):
-                    desc = line.strip()[1:]
+        old_fname = os.path.join(
+            os.path.dirname(fname), f"original_{os.path.basename(fname)}"
+        )
+        os.rename(fname, old_fname)
+        with open(old_fname) as old, open(fname, "w") as new:
+            for line in tqdm(
+                old, desc="Processing NCBI Fasta", unit_scale=1, unit=" lines"
+            ):
+                if line[0] == ">":
+                    desc = line[1:].strip()
                     name = desc.split(" ")[0]
-                    new.write(">{} {}\n".format(tr.get(name, name), desc))
+                    new.write(f">{tr.get(name, name)} {desc}\n")
                 else:
                     new.write(mask_cmd(line))
 
@@ -200,3 +175,37 @@ class NcbiProvider(BaseProvider):
 
             if skip_check or check_url(link, max_tries=2, timeout=10):
                 return link
+
+
+@cache
+def get_genomes(assembly_url):
+    """Parse genomes from assembly summary txt files."""
+    logger.info("Downloading assembly summaries from NCBI, this will take a while...")
+
+    def load_summary(url):
+        """
+        lazy loading of the url so we can parse while downloading
+        """
+        for row in urlopen(url):
+            yield row
+
+    genomes = {}
+    # order is important as asm_name can repeat (overwriting the older name)
+    names = [
+        "assembly_summary_genbank_historical.txt",
+        "assembly_summary_refseq_historical.txt",
+        "assembly_summary_genbank.txt",
+        "assembly_summary_refseq.txt",
+    ]
+    for fname in names:
+        lines = load_summary(f"{assembly_url}/{fname}")
+        _ = next(lines)  # line 0 = comment
+        header = (
+            next(lines).decode("utf-8").strip("# ").strip("\n").split("\t")
+        )  # line 1 = header
+        for line in tqdm(lines, desc=fname[17:-4], unit_scale=1, unit=" genomes"):
+            line = line.decode("utf-8").strip("\n").split("\t")
+            if line[19] != "na":  # ftp_path must exist
+                name = safe(line[15])  # overwrites older asm_names
+                genomes[name] = dict(zip(header, line))
+    return genomes

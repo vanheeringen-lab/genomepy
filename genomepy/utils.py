@@ -6,14 +6,12 @@ import shutil
 import subprocess as sp
 import sys
 import time
-from typing import List, Optional
+from typing import Optional
 from urllib.request import urlopen
 
-import norns
 from loguru import logger
-from norns import exceptions
 
-config = norns.config("genomepy", default="cfg/default.yaml")
+from genomepy.config import config
 
 
 def mkdir_p(path):
@@ -34,6 +32,21 @@ def rm_rf(path):
         shutil.rmtree(path, ignore_errors=True)
 
 
+def get_genomes_dir(genomes_dir: str = None, check_exist: Optional[bool] = True) -> str:
+    """import genomes_dir if none is given, and check validity"""
+    if not genomes_dir:
+        # backwards compatibility for "genome_dir" (this fixes issue #87)
+        genomes_dir = config.get("genomes_dir", config.get("genome_dir", None))
+    if not genomes_dir:
+        raise FileNotFoundError("Please provide or configure a genomes_dir")
+
+    genomes_dir = os.path.abspath(os.path.expanduser(genomes_dir))
+    if not os.path.exists(genomes_dir) and check_exist:
+        raise FileNotFoundError(f"Genomes_dir {genomes_dir} does not exist!")
+
+    return genomes_dir
+
+
 def cmd_ok(cmd):
     """Returns True if cmd can be run."""
     try:
@@ -42,7 +55,7 @@ def cmd_ok(cmd):
         # bwa gives return code of 1 with no argument
         pass
     except FileNotFoundError:
-        logger.error(f"{cmd} not found, skipping\n")
+        logger.error(f"{cmd} not found, skipping")
         return False
     return True
 
@@ -67,21 +80,6 @@ def run_index_cmd(name, cmd):
             f"stdout: {stdout.decode('utf8')}\n"
             f"stderr: {stderr.decode('utf8')}"
         )
-
-
-def get_genomes_dir(genomes_dir: str = None, check_exist: Optional[bool] = True) -> str:
-    """import genomes_dir if none is given, and check validity"""
-    if not genomes_dir:
-        # backwards compatibility for "genome_dir" (this fixes issue #87)
-        genomes_dir = config.get("genomes_dir", config.get("genome_dir", None))
-    if not genomes_dir:
-        raise exceptions.ConfigError("Please provide or configure a genomes_dir")
-
-    genomes_dir = os.path.abspath(os.path.expanduser(genomes_dir))
-    if not os.path.exists(genomes_dir) and check_exist:
-        raise FileNotFoundError(f"Genomes_dir {genomes_dir} does not exist!")
-
-    return genomes_dir
 
 
 def safe(name) -> str:
@@ -135,58 +133,18 @@ def get_localname(name, localname=None):
 
 
 def try_except_pass(errors, func, *args, **kwargs):
-    """try to return FUNC with ARGS, pass on ERRORS"""
+    """
+    try to return FUNC with ARGS, pass on ERRORS
+
+    parameters
+    ----------
+    errors
+      a single error, or a tuple of errors.
+
+    func
+      a function that takes *args and **kwargs
+    """
     try:
         return func(*args, **kwargs)
     except errors:
         pass
-
-
-def best_accession(reference: str, targets: list):
-    """Return the nearest accession ID from a list of IDs"""
-    if len(targets) == 1:
-        return targets[0]
-
-    # GCA/GCF
-    matching_prefix = [t for t in targets if t.startswith(reference[0:3])]
-    if len(matching_prefix) > 0:
-        targets = matching_prefix
-
-    # patch levels
-    # e.g. GCA_000002035.4 & GCA_000002035.3
-    ref_patch = int(reference.split(".")[1]) if "." in reference else 0
-    nearest = [999, []]
-    for target in targets:
-        tgt_patch = int(target.split(".")[1]) if "." in target else 0
-        distance = abs(ref_patch - tgt_patch)
-        if distance == nearest[0]:
-            nearest[1].append(target)
-        if distance < nearest[0]:
-            nearest = [distance, [target]]
-    targets = nearest[1]
-
-    if len(targets) > 1:
-        logger.warning(
-            f"Multiple matching accession numbers found. Returning the closest ({targets[0]})."
-        )
-    return targets[0]
-
-
-def best_search_result(asm_acc: str, results: List[list], acc_idx=2) -> list:
-    """
-    Return the best search result based on accession IDs.
-
-    Works for ProviderBase.search_all (AKA genomepy.search) by default.
-    Set acc_idx=1 for ProviderBase.search.
-    """
-    results = [res for res in results if res[acc_idx] is not None]
-    if len(results) == 0:
-        logger.warning(f"No assembly found similar to {asm_acc}")
-        return []
-
-    if len(results) > 1:
-        accessions = [res[acc_idx] for res in results]
-        bes_acc = best_accession(asm_acc, accessions)
-        results = [res for res in results if res[acc_idx] == bes_acc]
-
-    return results[0]

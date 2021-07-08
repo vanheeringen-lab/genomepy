@@ -3,27 +3,24 @@ import os
 import re
 from typing import Optional
 
-import norns
-from appdirs import user_cache_dir, user_config_dir
-from pyfaidx import Fasta, FastaIndexingError, IndexNotFoundError
+from appdirs import user_config_dir
+from pyfaidx import FastaIndexingError, IndexNotFoundError
 
-from genomepy.__about__ import __version__
 from genomepy.annotation import Annotation
+from genomepy.config import config
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import (
-    _fa_to_file,
+    _apply_fasta_regex_func,
     bgzip_and_name,
-    delete_extensions,
     glob_ext_files,
     gzip_and_name,
-    is_genome_dir,
     read_readme,
     update_readme,
 )
 from genomepy.genome import Genome
 from genomepy.online import check_url
-from genomepy.plugin import get_active_plugins, init_plugins
-from genomepy.provider import Provider
+from genomepy.plugins import get_active_plugins
+from genomepy.providers import download_assembly_report, online_providers
 from genomepy.utils import (
     get_genomes_dir,
     get_localname,
@@ -32,41 +29,6 @@ from genomepy.utils import (
     safe,
     try_except_pass,
 )
-
-config = norns.config("genomepy", default="cfg/default.yaml")
-
-
-def clean():
-    """Remove cached data on providers"""
-    my_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
-    rm_rf(my_cache_dir)
-    mkdir_p(my_cache_dir)
-    print("All clean!")
-
-
-def manage_config(cmd):
-    """Manage genomepy config file."""
-    if cmd == "file":
-        print(config.config_file)
-    elif cmd == "show":
-        with open(config.config_file) as f:
-            print(f.read())
-    elif cmd == "generate":
-        config_dir = user_config_dir("genomepy")
-        mkdir_p(config_dir)
-
-        new_config = os.path.join(config_dir, "genomepy.yaml")
-        # existing config must be removed before norns picks up the default again
-        rm_rf(new_config)
-        default_config = norns.config(
-            "genomepy", default="cfg/default.yaml"
-        ).config_file
-        with open(new_config, "w") as fout, open(default_config) as fin:
-            fout.write(fin.read())
-        config.config_file = new_config
-        print(f"Created config file {new_config}")
-    else:
-        raise ValueError(f"Invalid config command: {cmd}")
 
 
 def list_available_genomes(provider=None):
@@ -83,7 +45,7 @@ def list_available_genomes(provider=None):
     -------
     list with genome names
     """
-    for p in Provider.online_providers(provider):
+    for p in online_providers(provider):
         for row in p.list_available_genomes():
             yield list(row[:1]) + [p.name] + list(row[1:])
 
@@ -106,142 +68,21 @@ def list_installed_genomes(genomes_dir: str = None):
         return [
             subdir
             for subdir in os.listdir(genomes_dir)
-            if is_genome_dir(os.path.join(genomes_dir, subdir))
+            if _is_genome_dir(os.path.join(genomes_dir, subdir))
         ]
     return []
 
 
-def generate_exports(genomes_dir: str = None):
-    """Print export commands for setting environment variables."""
-    env = []
-    for name in list_installed_genomes(genomes_dir):
-        try:
-            g = Genome(name, genomes_dir, build_index=False)
-            env_name = re.sub(r"[^\w]+", "_", name).upper()
-            env.append(f"export {env_name}={g.filename}")
-        except (FastaIndexingError, IndexNotFoundError, FileNotFoundError):
-            pass
-    return env
-
-
-def generate_env(fname: str = "exports.txt", genomes_dir: str = None):
-    """
-    Generate file with exports.
-
-    By default this is .config/genomepy/exports.txt.
-
-    An alternative file name or file path is accepted too.
-
-    Parameters
-    ----------
-    fname: str, optional
-        Absolute path or name of the output file.
-
-    genomes_dir: str, optional
-        Directory with installed genomes to export.
-    """
-    fname1 = os.path.expanduser(fname)
-    fname2 = os.path.join(user_config_dir("genomepy"), fname)
-    fname = fname1 if os.path.isabs(fname1) else fname2
-    mkdir_p(os.path.dirname(fname))
-    with open(fname, "w") as fout:
-        for env in generate_exports(genomes_dir):
-            fout.write(f"{env}\n")
-
-
-def _lazy_provider_selection(name, provider=None):
-    """return the first PROVIDER which has genome NAME"""
-    providers = []
-    for p in Provider.online_providers(provider):
-        providers.append(p.name)
-        if name in p.genomes or (
-            p.name == "URL" and try_except_pass(ValueError, check_url, name)
-        ):
-            return p
-
-    raise GenomeDownloadError(f"{name} not found on {', '.join(providers)}.")
-
-
-def _provider_selection(name, localname, genomes_dir, provider=None):
-    """
-    Return a provider object
-
-    First tries to return a specified provider,
-    Second tries to return the provider from the README
-    Third tries to return the first provider which has the genome (Ensembl>UCSC>NCBI)
-    """
-    readme = os.path.join(genomes_dir, localname, "README.txt")
-    if provider is None and os.path.exists(readme):
-        m, _ = read_readme(readme)
-        p = m["provider"].lower()
-        if p in ["ensembl", "ucsc", "ncbi"]:
-            provider = p
-
-    return _lazy_provider_selection(name, provider)
-
-
-def _filter_genome(
-    genome_file: str,
-    regex: str = None,
-    invert_match: Optional[bool] = False,
-    keep_alt: Optional[bool] = False,
-):
-    """
-    Combine regex filters & document filtered contigs
-
-    keep_alt : bool , optional
-        Set to true to keep these alternative regions.
-
-    regex : str , optional
-        Regular expression to select specific chromosome / scaffold names.
-
-    invert_match : bool , optional
-        Set to True to select all chromosomes that don't match the regex.
-    """
-    fa = Fasta(genome_file)
-    contigs_in = fa.keys()
-    contigs_out = contigs_in
-    if regex:
-        pattern = re.compile(regex)
-        contigs_out = [
-            c for c in contigs_out if bool(pattern.search(c)) is not invert_match
-        ]
-    if keep_alt is False:
-        pattern = re.compile("(alt)", re.I)  # case insensitive
-        contigs_out = [c for c in contigs_out if not bool(pattern.search(c))]
-    excluded_contigs = list(set(contigs_in) ^ set(contigs_out))
-
-    _fa_to_file(fa, contigs_out, genome_file)
-    rm_rf(f"{genome_file}.fai")  # old index
-
-    regex_line = "regex: "
-    if keep_alt is False:
-        regex_line += "'alt' (inverted match)" + (" and " if regex else "")
-    if regex:
-        regex_line += f"'{regex}'" + (" (inverted match)" if invert_match else "")
-    lines = ["", regex_line, ""] + (
-        [
-            "The following contigs were filtered out of the genome:",
-            f"{', '.join(excluded_contigs)}",
-        ]
-        if excluded_contigs
-        else ["No contigs were removed."]
-    )
-
-    readme = os.path.join(os.path.dirname(genome_file), "README.txt")
-    update_readme(readme, extra_lines=lines)
-
-
 def install_genome(
     name: str,
-    provider: str = None,
-    genomes_dir: str = None,
-    localname: str = None,
+    provider: Optional[str] = None,
+    genomes_dir: Optional[str] = None,
+    localname: Optional[str] = None,
     mask: Optional[str] = "soft",
     keep_alt: Optional[bool] = False,
-    regex: str = None,
+    regex: Optional[str] = None,
     invert_match: Optional[bool] = False,
-    bgzip: bool = None,  # None -> check config. False -> dont check.
+    bgzip: Optional[bool] = None,  # None -> check config. False -> dont check.
     annotation: Optional[bool] = False,
     only_annotation: Optional[bool] = False,
     skip_matching: Optional[bool] = False,
@@ -325,7 +166,7 @@ def install_genome(
     provider = _provider_selection(name, localname, genomes_dir, provider)
 
     # check which files need to be downloaded
-    genome_found = is_genome_dir(out_dir)
+    genome_found = _is_genome_dir(out_dir)
     download_genome = (
         genome_found is False or force is True
     ) and only_annotation is False
@@ -347,7 +188,7 @@ def install_genome(
     genome_downloaded = False
     if download_genome:
         if force:
-            delete_extensions(out_dir, ["fa", "fai"])
+            _delete_extensions(out_dir, ["fa", "fai"])
         provider.download_genome(
             name,
             genomes_dir,
@@ -359,11 +200,16 @@ def install_genome(
         genome_downloaded = True
 
         # Filter genome
-        if keep_alt is False or regex is not None:
-            _filter_genome(genome_file, regex, invert_match, keep_alt)
+        _filter_genome(genome_file, regex, invert_match, keep_alt)
 
         # Generates a Fasta object and the genome index, gaps and sizes files
         genome = Genome(localname, genomes_dir=genomes_dir)
+
+        # Download the NCBI assembly report
+        asm_report = os.path.join(out_dir, "assembly_report.txt")
+        asm_acc = genome.assembly_accession
+        if not os.path.exists(asm_report) and asm_acc != "na":
+            download_assembly_report(asm_acc, asm_report)
 
         # Export installed genome(s)
         generate_env(genomes_dir=genomes_dir)
@@ -371,7 +217,7 @@ def install_genome(
     annotation_downloaded = False
     if download_annotation:
         if force:
-            delete_extensions(out_dir, ["annotation.gtf", "annotation.bed"])
+            _delete_extensions(out_dir, ["annotation.gtf", "annotation.bed"])
         provider.download_annotation(name, genomes_dir, localname=localname, **kwargs)
         annotation_downloaded = bool(
             glob_ext_files(out_dir, "annotation.gtf")
@@ -379,8 +225,8 @@ def install_genome(
 
     if annotation_downloaded:
         annotation = Annotation(localname, genomes_dir)
-        if genome_found and (not skip_matching or not skip_filter):
-            annotation.sanitize(not skip_matching, not skip_filter)
+        if genome_found and not (skip_matching and skip_filter):
+            annotation.sanitize(not skip_matching, not skip_filter, True)
 
     # Run active plugins (also if the genome was downloaded earlier)
     if genome_found:
@@ -399,37 +245,170 @@ def install_genome(
     return genome
 
 
-def manage_plugins(command, plugin_names=None):
-    """List, enable or disable plugins."""
-    plugins = init_plugins()
-    for name in plugin_names if plugin_names else []:
-        if name not in plugins:
-            raise ValueError(f"Unknown plugin: {name}")
+def generate_env(fname: str = "exports.txt", genomes_dir: str = None):
+    """
+    Generate file with exports.
 
-    active_plugins = config.get("plugin", [])
-    if command == "list":
-        print("{:20}{}".format("plugin", "enabled"))
-        for plugin in sorted(plugins):
-            print(
-                "{:20}{}".format(
-                    plugin, {False: "", True: "*"}[plugin in active_plugins]
-                )
-            )
+    By default this is .config/genomepy/exports.txt.
+
+    An alternative file name or file path is accepted too.
+
+    Parameters
+    ----------
+    fname: str, optional
+        Absolute path or name of the output file.
+
+    genomes_dir: str, optional
+        Directory with installed genomes to export.
+    """
+    fname1 = os.path.expanduser(fname)
+    fname2 = os.path.join(user_config_dir("genomepy"), fname)
+    fname = fname1 if os.path.isabs(fname1) else fname2
+    mkdir_p(os.path.dirname(fname))
+    with open(fname, "w") as fout:
+        for env in _generate_exports(genomes_dir):
+            fout.write(f"{env}\n")
+
+
+def _generate_exports(genomes_dir: str = None):
+    """Print export commands for setting environment variables."""
+    env = []
+    for name in list_installed_genomes(genomes_dir):
+        try:
+            g = Genome(name, genomes_dir, build_index=False)
+            env_name = re.sub(r"[^\w]+", "_", name).upper()
+            env.append(f"export {env_name}={g.filename}")
+        except (FastaIndexingError, IndexNotFoundError, FileNotFoundError):
+            pass
+    return env
+
+
+def _lazy_provider_selection(name, provider=None):
+    """return the first PROVIDER which has genome NAME"""
+    providers = []
+    for p in online_providers(provider):
+        providers.append(p.name)
+        if name in p.genomes or (
+            p.name == "URL" and try_except_pass(ValueError, check_url, name)
+        ):
+            return p
+
+    raise GenomeDownloadError(f"{name} not found on {', '.join(providers)}.")
+
+
+def _provider_selection(name, localname, genomes_dir, provider=None):
+    """
+    Return a provider object
+
+    First tries to return a specified provider,
+    Second tries to return the provider from the README
+    Third tries to return the first provider which has the genome (Ensembl>UCSC>NCBI)
+    """
+    readme = os.path.join(genomes_dir, localname, "README.txt")
+    if provider is None and os.path.exists(readme):
+        m, _ = read_readme(readme)
+        p = m["provider"].lower()
+        if p in ["ensembl", "ucsc", "ncbi"]:
+            provider = p
+
+    return _lazy_provider_selection(name, provider)
+
+
+def _filter_genome(
+    genome_file: str,
+    regex: Optional[str] = None,
+    invert_match: Optional[bool] = False,
+    keep_alt: Optional[bool] = False,
+):
+    """
+    Combine regex filters & document filtered contigs
+
+    keep_alt : bool , optional
+        Set to true to keep these alternative regions.
+
+    regex : str , optional
+        Regular expression to select specific chromosome / scaffold names.
+
+    invert_match : bool , optional
+        Set to True to select all chromosomes that don't match the regex.
+    """
+    if keep_alt is True and regex is None:
         return
 
-    elif command in ["enable", "activate"]:
-        for name in plugin_names:
-            if name not in active_plugins:
-                active_plugins.append(name)
+    regex_func = _get_fasta_regex_func(regex, invert_match, keep_alt)
+    excluded_contigs = _apply_fasta_regex_func(genome_file, regex_func)
 
-    elif command in ["disable", "deactivate"]:
-        for name in plugin_names:
-            if name in active_plugins:
-                active_plugins.remove(name)
+    # document
+    regex_line = "regex: "
+    if keep_alt is False:
+        regex_line += "'alt' (inverted match)" + (" and " if regex else "")
+    if regex:
+        regex_line += f"'{regex}'" + (" (inverted match)" if invert_match else "")
+    lines = ["", regex_line, ""] + (
+        [
+            "The following contigs were filtered out of the genome:",
+            f"{', '.join(excluded_contigs)}",
+        ]
+        if excluded_contigs
+        else ["No contigs were removed."]
+    )
 
-    else:
-        raise ValueError(f"Invalid plugin command: {command}")
+    readme = os.path.join(os.path.dirname(genome_file), "README.txt")
+    update_readme(readme, extra_lines=lines)
 
-    config["plugin"] = active_plugins
-    config.save()
-    print("Enabled plugins: {}".format(", ".join(sorted(active_plugins))))
+
+def _get_fasta_regex_func(
+    regex: Optional[str] = None,
+    invert_match: Optional[bool] = False,
+    keep_alt: Optional[bool] = False,
+):
+    """
+    returns a regex function that accepts a contig header and returns a bool to keep the contig or not.
+    """
+    # define filter functions
+    if keep_alt is False:
+        alt_pattern = re.compile("(alt)", re.I)  # case insensitive
+
+        def alt_keep(header):
+            return not bool(alt_pattern.search(header))
+
+        keep = alt_keep  # rename in case there is only 1 filter function
+
+    if regex is not None:
+        re_pattern = re.compile(regex)
+
+        def re_keep(header):
+            return bool(re_pattern.search(header)) is not invert_match
+
+        keep = re_keep  # rename in case there is only 1 filter function
+
+    # combine filter functions?
+    if regex is not None and keep_alt is False:
+
+        def keep(header):
+            return re_keep(header) and alt_keep(header)
+
+    return keep  # noqa: IDE is confused
+
+
+def _delete_extensions(directory: str, exts: list):
+    """remove (gzipped) files in a directory matching any given extension"""
+    for ext in exts:
+        [rm_rf(f) for f in glob_ext_files(directory, ext)]
+
+
+def _is_genome_dir(dirname):
+    """
+    Check if a directory contains a fasta file of the same name
+
+    Parameters
+    ----------
+    dirname : str
+        Directory name
+
+    Returns
+    ------
+    bool
+    """
+    genome_file = os.path.join(dirname, f"{os.path.basename(dirname)}.fa")
+    return os.path.exists(genome_file) or os.path.exists(f"{genome_file}.gz")

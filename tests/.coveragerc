@@ -4,5 +4,4 @@
 
 [run]
 omit =
-    **/__*
     genomepy/cli.py

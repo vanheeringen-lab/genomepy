@@ -8,17 +8,6 @@ def test_ncbiprovider(ncbi):
     assert ncbi.taxid_fields == ["species_taxid", "taxid"]
 
 
-def test__get_genomes(ncbi):
-    assert isinstance(ncbi.genomes, dict)
-    assert "ASM2732v1" in ncbi.genomes
-    genome = ncbi.genomes["ASM2732v1"]
-    assert isinstance(genome, dict)
-    for field in ncbi.accession_fields + ncbi.taxid_fields + ncbi.description_fields:
-        assert field in genome
-    assert genome["species_taxid"] == "2097"
-    assert genome["taxid"] == "243273"
-
-
 def test_genome_info_tuple(ncbi):
     t = ncbi._genome_info_tuple("ASM2732v1")
     assert isinstance(t, tuple)
@@ -43,9 +32,7 @@ def test__post_process_download(ncbi):
         g = os.path.join(tmpdir, localname + ".fa")
         copyfile("tests/data/gap.fa", g)
 
-        ncbi._post_process_download(
-            name=name, localname=localname, out_dir=tmpdir, mask="hard"
-        )
+        ncbi._post_process_download(name=name, fname=g, out_dir=tmpdir, mask="hard")
         assert os.path.exists(g)
         with open(g) as f:
             ln = 0
@@ -59,7 +46,21 @@ def test__post_process_download(ncbi):
                     assert line.strip() == "ANNNNNNNA"
                 ln += 1
 
+        asm_report = os.path.join(tmpdir, "assembly_report.txt")
+        assert os.path.exists(asm_report)
+
 
 def test_get_annotation_download_link(ncbi):
     links = ncbi.get_annotation_download_links("ASM2732v1")
     assert links[0].endswith("GCF_000027325.1_ASM2732v1_genomic.gff.gz")
+
+
+def test__get_genomes(ncbi):
+    assert isinstance(ncbi.genomes, dict)
+    assert "ASM2732v1" in ncbi.genomes
+    genome = ncbi.genomes["ASM2732v1"]
+    assert isinstance(genome, dict)
+    for field in ncbi.accession_fields + ncbi.taxid_fields + ncbi.description_fields:
+        assert field in genome
+    assert genome["species_taxid"] == "2097"
+    assert genome["taxid"] == "243273"

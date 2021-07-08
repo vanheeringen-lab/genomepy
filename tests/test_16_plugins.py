@@ -7,7 +7,7 @@ from time import sleep
 import pytest
 
 import genomepy.utils
-from genomepy.plugin import activate, deactivate, get_active_plugins, init_plugins
+from genomepy.plugins import activate, deactivate, get_active_plugins, init_plugins
 from genomepy.plugins.blacklist import BlacklistPlugin
 from genomepy.plugins.bowtie2 import Bowtie2Plugin
 from genomepy.plugins.bwa import BwaPlugin
@@ -21,7 +21,7 @@ from tests import linux, travis
 @pytest.fixture(autouse=True)
 def activate_plugins():
     # save originally active plugins
-    original_plugins = [p.name() for p in get_active_plugins()]
+    original_plugins = [p.name for p in get_active_plugins()]
     # activate all plugins
     [activate(p) for p in init_plugins()]
 

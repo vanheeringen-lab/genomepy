@@ -5,46 +5,7 @@ from appdirs import user_config_dir
 
 import genomepy
 import genomepy.utils
-from tests import linux, travis
-
-
-def test_clean():
-    # test moved to 01_tests to prevent errors in parallel tests
-    pass
-
-
-def test_manage_config(capsys):
-    # make a new config
-    genomepy.functions.manage_config("generate")
-    captured = capsys.readouterr().out.strip()
-    assert captured.startswith("Created config file")
-
-    # check where it is found
-    fname = os.path.expanduser("~/Library/Application Support/genomepy/genomepy.yaml")
-    if linux:
-        fname = os.path.expanduser("~/.config/genomepy/genomepy.yaml")
-    genomepy.functions.manage_config("file")
-    captured = capsys.readouterr().out.strip()
-    assert captured == fname
-
-    # mess with the config
-    with open(fname, "w") as f:
-        print("bgzip: na", file=f)
-
-    # show the mess
-    genomepy.functions.manage_config("show")
-    captured = capsys.readouterr().out.strip()
-    assert captured.startswith("bgzip: na")
-
-    # make a new config
-    genomepy.functions.manage_config("generate")
-    captured = capsys.readouterr().out.strip()
-    assert captured.startswith("Created config file")
-
-    # check if the mess was fixed
-    genomepy.functions.manage_config("show")
-    captured = capsys.readouterr().out.strip()
-    assert captured.startswith("bgzip: false")
+from tests import travis
 
 
 def test_list_available_genomes():
@@ -59,7 +20,11 @@ def test_list_installed_genomes():
 
     gdir = os.path.join(os.getcwd(), "tests", "data")
     genomes = genomepy.functions.list_installed_genomes(gdir)
-    assert set(genomes) == {"regexp", "sacCer3"}  # OSX likes to sort differently
+    assert set(genomes) == {
+        "regexp",
+        "sacCer3",
+        "sanitize",
+    }  # OSX likes to sort differently
 
     empty_list = genomepy.functions.list_installed_genomes("./thisdirdoesnotexist")
     assert empty_list == []
@@ -82,7 +47,7 @@ def test__lazy_provider_selection():
 
     # cant find genome anywhere
     name = "not_a_genome"
-    with pytest.raises(genomepy.GenomeDownloadError):
+    with pytest.raises(genomepy.exceptions.GenomeDownloadError):
         genomepy.functions._lazy_provider_selection(name, provider)
 
 
@@ -110,8 +75,36 @@ def test__provider_selection():
     assert "ensembl" in str(p)
 
 
-def test__filter_genome():
-    pass  # TODO
+def test__get_fasta_regex_func():
+    # filter alt regions (default)
+    func = genomepy.functions._get_fasta_regex_func(regex=None, keep_alt=False)
+    assert func("alt1") is False
+    assert func("chr1") is True
+    assert func("ALT1") is False  # case insensitive
+
+    # filter user specified regex
+    func = genomepy.functions._get_fasta_regex_func(
+        regex="chr", invert_match=False, keep_alt=True
+    )
+    assert func("chr1") is True
+    assert func("alt1") is False
+    assert func("something_else") is False
+
+    # filter user specified regex (inverted)
+    func = genomepy.functions._get_fasta_regex_func(
+        regex="chr", invert_match=True, keep_alt=True
+    )
+    assert func("chr1") is False
+    assert func("alt1") is True
+    assert func("something_else") is True
+
+    # filter both
+    func = genomepy.functions._get_fasta_regex_func(
+        regex="chr", invert_match=True, keep_alt=False
+    )
+    assert func("chr1") is False
+    assert func("alt1") is False
+    assert func("something_else") is True
 
 
 @pytest.mark.skipif(not travis, reason="slow")
@@ -148,7 +141,7 @@ def test_install_genome():
 # already used, but we had to install a genome first to test it
 @pytest.mark.skipif(not travis, reason="a genome must be installed")
 def test_generate_exports():
-    exports = genomepy.functions.generate_exports()
+    exports = genomepy.functions._generate_exports()
     assert isinstance(exports, list)
     # check if my_genome was installed in the last test
     assert any([x for x in exports if x.startswith("export MY_GENOME")])
@@ -160,14 +153,14 @@ def test_generate_exports():
     path = os.path.join(gd, name, f"{name}.fa")
     with open(path, "w") as fa:
         fa.write("genome without index")
-    exports = genomepy.functions.generate_exports()
+    exports = genomepy.functions._generate_exports()
     assert f"export TESTGENOME={path}" not in exports
 
     # add genome that works
     with open(path, "w") as fa:
         fa.write(">chr1\nallowed characters")
     genomepy.Genome(name, gd)  # create index
-    exports = genomepy.functions.generate_exports()
+    exports = genomepy.functions._generate_exports()
     assert f"export TESTGENOME={path}" in exports
 
     genomepy.utils.rm_rf(os.path.join(gd, "testgenome"))
@@ -206,18 +199,22 @@ def test_generate_env():
     os.unlink(path)
 
 
-def test_manage_plugins(capsys):
-    genomepy.functions.manage_plugins("enable", ["blacklist"])
-    genomepy.functions.manage_plugins("list")
-    captured = capsys.readouterr().out.strip().split("\n")
-    assert captured[2].startswith("blacklist")
-    assert captured[2].endswith("*")
+def test__delete_extensions():
+    fpath1 = "tests/data/empty/weird_ext1.test123"
+    fpath2 = "tests/data/empty/weird_ext2.test123"
+    for fpath in [fpath1, fpath2]:
+        with open(fpath, "w") as f:
+            f.write("asd\n")
 
-    genomepy.functions.manage_plugins("disable", ["blacklist"])
-    genomepy.functions.manage_plugins("list")
-    captured = capsys.readouterr().out.strip().split("\n")
-    assert captured[2].startswith("blacklist")
-    assert not captured[2].endswith("*")
+    assert os.path.exists(fpath1)
+    assert os.path.exists(fpath2)
+    genomepy.functions._delete_extensions("tests/data/empty", ["test123"])
+    assert not os.path.exists(fpath1)
+    assert not os.path.exists(fpath2)
 
-    with pytest.raises(ValueError):
-        genomepy.functions.manage_plugins("blurp")
+
+def test__is_genome_dir():
+    # dir contains a fasta
+    assert genomepy.functions._is_genome_dir("tests/data/regexp")
+    # dir does not contain a fasta
+    assert not genomepy.functions._is_genome_dir("tests/genome")

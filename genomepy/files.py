@@ -3,12 +3,11 @@ import os
 import re
 import shutil
 import subprocess as sp
-import tarfile
 from glob import glob
 from tempfile import mkdtemp
 from typing import Optional, Tuple
 
-from pyfaidx import Fasta
+from tqdm.auto import tqdm
 
 from genomepy.utils import rm_rf
 
@@ -85,105 +84,6 @@ def update_readme(readme: str, updated_metadata: dict = None, extra_lines: list 
     write_readme(readme, metadata, lines)
 
 
-def generate_gap_bed(fname, outname):
-    """Generate a BED file with gap locations.
-
-    Parameters
-    ----------
-    fname : str
-        Filename of input FASTA file.
-
-    outname : str
-        Filename of output BED file.
-    """
-    f = Fasta(fname)
-    with open(outname, "w") as bed:
-        for chrom in f.keys():
-            for m in re.finditer(r"N+", f[chrom][:].seq):
-                bed.write(f"{chrom}\t{m.start(0)}\t{m.end(0)}\n")
-
-
-def generate_fa_sizes(fname, outname):
-    """Generate a fa.sizes file.
-
-    Parameters
-    ----------
-    fname : str
-        Filename of input FASTA file.
-
-    outname : str
-        Filename of output BED file.
-    """
-    f = Fasta(fname)
-    with open(outname, "w") as sizes:
-        for seqname, seq in f.items():
-            sizes.write(f"{seqname}\t{len(seq)}\n")
-
-
-def generate_annot(template, target, overwrite=False):
-    """
-    Create an annotation file type from the other file type.
-
-    Parameters
-    ----------
-    template: str
-        a GTF or BED filepath.
-
-    target: str
-        filepath to save the new annotation to.
-
-    overwrite: bool, optional
-        overwrite existing target file?
-    """
-    exts = os.path.basename(template.lower()).split(".")
-    exts = [e for e in exts if e in ["gtf", "bed"]]
-    if len(exts) == 0:
-        raise ValueError("Template file must be in GTF or BED format.")
-    template_ext = exts[-1]
-
-    if not overwrite and os.path.exists(target):
-        raise FileExistsError(f"{target} already exists! Set overwrite=True to ignore.")
-
-    target_dir = os.path.dirname(target)
-    tmp_dir = mkdtemp(dir=target_dir)
-    tmp_target = os.path.join(tmp_dir, "new_annot")
-
-    if template_ext == "bed":
-        cmd = "bedToGenePred {0} /dev/stdout | genePredToGtf -source=genomepy file /dev/stdin {1}"
-    else:
-        cmd = "gtfToGenePred -ignoreGroupsWithoutExons {0} /dev/stdout | genePredToBed /dev/stdin {1}"
-
-    # unzip template if needed
-    template, is_unzipped = gunzip_and_name(template)
-    # create new file
-    sp.check_call(cmd.format(template, tmp_target), shell=True)
-    # gzip if needed
-    tmp_target = gzip_and_name(tmp_target, target.endswith(".gz"))
-    _ = gzip_and_name(template, is_unzipped)
-
-    os.replace(tmp_target, target)
-    rm_rf(tmp_dir)
-
-
-def tar_to_bigfile(fname, outfile):
-    """Convert tar of multiple FASTAs to one file."""
-    fnames = []
-    # Extract files to temporary directory
-    tmp_dir = mkdtemp(dir=os.path.dirname(outfile))
-    with tarfile.open(fname) as tar:
-        tar.extractall(path=tmp_dir)
-    for root, _, files in os.walk(tmp_dir):
-        fnames += [os.path.join(root, fname) for fname in files]
-
-    # Concatenate
-    with open(outfile, "w") as out:
-        for infile in fnames:
-            for line in open(infile):
-                out.write(line)
-
-    rm_rf(tmp_dir)
-
-
 def gunzip_and_name(fname: str) -> (str, bool):
     """
     Gunzips the file if gzipped (also works on bgzipped files)
@@ -225,12 +125,6 @@ def bgzip_and_name(fname, bgzip=True):
     return fname
 
 
-def delete_extensions(directory: str, exts: list):
-    """remove (gzipped) files in a directory matching any given extension"""
-    for ext in exts:
-        [rm_rf(f) for f in glob_ext_files(directory, ext)]
-
-
 def _open(fname: str, mode: Optional[str] = "r"):
     """
     Return a function to open a (gzipped) file.
@@ -244,13 +138,6 @@ def _open(fname: str, mode: Optional[str] = "r"):
     if fname.endswith(".gz"):
         return gzip.open(fname, mode + "t")
     return open(fname, mode)
-
-
-def file_len(fname):
-    with _open(fname) as f:
-        for i, _ in enumerate(f):  # noqa: B007
-            pass
-    return i + 1
 
 
 def get_file_info(fname):
@@ -289,50 +176,59 @@ def glob_ext_files(dirname, ext="fa"):
     return [f for f in fnames if f.endswith((ext, f"{ext}.gz"))]
 
 
-def is_genome_dir(dirname):
+def _apply_fasta_regex_func(infa, regex_func, outfa=None):
     """
-    Check if a directory contains a fasta file of the same name
+    filter a Fasta using the regex function.
 
-    Parameters
-    ----------
-    dirname : str
-        Directory name
+    infa: path to genome fasta
 
-    Returns
-    ------
-    bool
+    regex_func: a function that takes a contig header and returns a bool
+
+    outfa: path to output fasta. If None, infa is overwritten
+
+    returns a list of excluded contigs
     """
-    genome_file = os.path.join(dirname, f"{os.path.basename(dirname)}.fa")
-    return os.path.exists(genome_file) or os.path.exists(f"{genome_file}.gz")
+    # move the original file to a tmp folder
+    out_dir = os.path.dirname(infa)
+    tmp_dir = mkdtemp(dir=out_dir)
+    old_fname = os.path.join(tmp_dir, "original") if outfa is None else infa
+    new_fname = os.path.join(tmp_dir, "filtered")
+    os.rename(infa, old_fname)
 
+    # perform the filtering
+    excluded_contigs = []
+    keep_contig = True
+    with open(old_fname) as old, open(new_fname, "w") as new:
+        for line in tqdm(old, desc="Filtering Fasta", unit_scale=1, unit=" lines"):
+            if line[0] == ">":
+                keep_contig = regex_func(line)
+                if keep_contig is False:
+                    excluded_contigs.append(line[1:].split(" ")[0].strip())
+            if keep_contig:
+                new.write(line)
 
-def _fa_to_file(fasta: Fasta, contigs: list, filepath: str):
-    tmp_dir = mkdtemp(dir=os.path.dirname(filepath))
-    tmpfa = os.path.join(tmp_dir, "regex.fa")
-    with open(tmpfa, "w") as out:
-        for chrom in contigs:
-            out.write(f">{fasta[chrom].name}\n")
-            out.write(f"{fasta[chrom][:].seq}\n")
-    os.rename(tmpfa, filepath)
+    # move the filtered file to the original folder
+    os.rename(new_fname, outfa if outfa else infa)
     rm_rf(tmp_dir)
+
+    return excluded_contigs
 
 
 def filter_fasta(
     infa: str,
+    outfa: str = None,
     regex: str = ".*",
     invert_match: Optional[bool] = False,
-    outfa: str = None,
-) -> Fasta:
+) -> list:
     """Filter fasta file based on regex.
 
     Parameters
     ----------
     infa : str
-        Filename of input fasta file.
+        Filename of the input fasta file.
 
     outfa : str, optional
-        Filename of output fasta file.
-        Overwrites infa if left blank.
+        Filename of the output fasta file. If None, infa is overwritten.
 
     regex : str, optional
         Regular expression used for selecting sequences.
@@ -343,16 +239,11 @@ def filter_fasta(
 
     Returns
     -------
-        fasta : Fasta instance
-            pyfaidx Fasta instance of newly created file
+    a list of removed contigs
     """
-    fa = Fasta(infa)
     pattern = re.compile(regex)
-    seqs = [k for k in fa.keys() if bool(pattern.search(k)) is not invert_match]
-    if len(seqs) == 0:
-        raise Exception("No sequences left after filtering!")
 
-    outfa = outfa if outfa else infa
-    _fa_to_file(fa, seqs, outfa)
-    rm_rf(f"{infa}.fai")  # old index
-    return Fasta(outfa)
+    def keep(header):
+        return bool(pattern.search(header)) is not invert_match
+
+    return _apply_fasta_regex_func(infa, keep, outfa)

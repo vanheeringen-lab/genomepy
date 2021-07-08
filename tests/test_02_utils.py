@@ -42,6 +42,16 @@ def test_rm_rf(path="./tests/dir1/dir2/nestled_dir"):
     genomepy.utils.rm_rf(path)
 
 
+def test_get_genomes_dir(genomes_dir="tests/data"):
+    # dir does exist
+    gd = genomepy.utils.get_genomes_dir(genomes_dir=genomes_dir, check_exist=True)
+    assert os.path.abspath(gd) == os.path.abspath(genomes_dir)
+
+    # dir does not exist
+    with pytest.raises(FileNotFoundError):
+        genomepy.utils.get_genomes_dir(genomes_dir="fake_dir", check_exist=True)
+
+
 def test_cmd_ok():
     assert genomepy.utils.cmd_ok("STAR")
     assert genomepy.utils.cmd_ok("bwa")
@@ -61,18 +71,13 @@ def test_run_index_cmd(caplog, name="tests", good_cmd="ls", bad_cmd="bad_cmd"):
         assert f"{bad_cmd}: command not found" in caplog.text
 
 
-def test_get_genomes_dir(genomes_dir="tests/data"):
-    # dir does exist
-    gd = genomepy.utils.get_genomes_dir(genomes_dir=genomes_dir, check_exist=True)
-    assert os.path.abspath(gd) == os.path.abspath(genomes_dir)
-
-    # dir does not exist
-    with pytest.raises(FileNotFoundError):
-        genomepy.utils.get_genomes_dir(genomes_dir="fake_dir", check_exist=True)
-
-
 def test_safe(unsafe_name="a name ", safe_name="a_name"):
     result = genomepy.utils.safe(unsafe_name)
+    assert result == safe_name
+
+
+def test_lower(unsafe_name="A nAme ", safe_name="a_name"):
+    result = genomepy.utils.lower(unsafe_name)
     assert result == safe_name
 
 
@@ -99,153 +104,14 @@ def test_get_localname(name="XENTR_9.1", localname="my genome"):
     assert result == "GCF_000027325.1_ASM2732v1"
 
 
-def test_best_search_result():
-    # ncbi_human = list(genomepy.search("GCA_000001405", provider="NCBI"))
-    ncbi_human = [
-        [
-            "GRCh38",
-            "NCBI",
-            "GCF_000001405.26",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh38.p1",
-            "NCBI",
-            "GCF_000001405.27",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh38.p2",
-            "NCBI",
-            "GCF_000001405.28",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh38.p3",
-            "NCBI",
-            "GCF_000001405.29",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh38.p4",
-            "NCBI",
-            "GCF_000001405.30",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh38.p5",
-            "NCBI",
-            "GCF_000001405.31",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh38.p6",
-            "NCBI",
-            "GCF_000001405.32",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh38.p7",
-            "NCBI",
-            "GCF_000001405.33",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh38.p8",
-            "NCBI",
-            "GCF_000001405.34",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh38.p9",
-            "NCBI",
-            "GCF_000001405.35",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh38.p10",
-            "NCBI",
-            "GCF_000001405.36",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh38.p11",
-            "NCBI",
-            "GCF_000001405.37",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh38.p12",
-            "NCBI",
-            "GCF_000001405.38",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh37.p13",
-            "NCBI",
-            "GCF_000001405.25",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-        [
-            "GRCh38.p13",
-            "NCBI",
-            "GCF_000001405.39",
-            9606,
-            True,
-            "Homo sapiens",
-            "Genome Reference Consortium",
-        ],
-    ]
+def test_try_except_pass():
+    def raise_error():
+        raise ValueError
 
-    # list of search results
-    best_result = genomepy.utils.best_search_result("GCA_000001405.39", ncbi_human)
-    assert best_result[2] == "GCF_000001405.39"
+    # expected error is caught
+    genomepy.utils.try_except_pass(ValueError, raise_error)
+    genomepy.utils.try_except_pass((ValueError, FileNotFoundError), raise_error)
 
-    # zero search results
-    assert len(genomepy.utils.best_search_result("GCA_000001405.39", [])) == 0
-
-    # one search results
-    best_result = genomepy.utils.best_search_result("GCA_000001405.26", [ncbi_human[0]])
-    assert best_result[2] == ncbi_human[0][2]
+    # unexpected error is not caught
+    with pytest.raises(ValueError):
+        genomepy.utils.try_except_pass(FileNotFoundError, raise_error)

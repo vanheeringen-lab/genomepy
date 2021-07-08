@@ -27,8 +27,8 @@ def test__genome_info_tuple(url):
     assert url._genome_info_tuple(None) is tuple()
 
 
-def test_check_name(url):
-    assert url.check_name(None) is None
+def test__check_name(url):
+    assert url._check_name(None) is None
 
 
 def test_get_genome_download_link(url):

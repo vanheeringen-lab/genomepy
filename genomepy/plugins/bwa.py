@@ -1,6 +1,6 @@
 import os
 
-from genomepy.plugin import Plugin
+from genomepy.plugins import Plugin
 from genomepy.utils import cmd_ok, mkdir_p, rm_rf, run_index_cmd
 
 

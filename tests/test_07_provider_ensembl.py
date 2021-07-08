@@ -10,30 +10,6 @@ def test_ensemblprovider(ensembl):
     assert ensembl.taxid_fields == ["taxonomy_id"]
 
 
-def test_request_json(ensembl):
-    divisions = genomepy.providers.ensembl.request_json(
-        "https://rest.ensembl.org/", "info/divisions?"
-    )
-    assert isinstance(divisions, list)
-    assert "EnsemblVertebrates" in divisions
-
-    # test not r.ok
-    with pytest.raises(requests.exceptions.HTTPError):
-        genomepy.providers.ensembl.request_json("https://rest.ensembl.org/", "error")
-
-
-def test__get_genomes(ensembl):
-    assert isinstance(ensembl.genomes, dict)
-    assert "KH" in ensembl.genomes
-    genome = ensembl.genomes["KH"]
-    assert isinstance(genome, dict)
-    for field in (
-        ensembl.accession_fields + ensembl.taxid_fields + ensembl.description_fields
-    ):
-        assert field in genome
-    assert genome["taxonomy_id"] == 7719
-
-
 def test_genome_info_tuple(ensembl):
     t = ensembl._genome_info_tuple("KH")
     assert isinstance(t, tuple)
@@ -116,3 +92,27 @@ def test_get_annotation_download_links(ensembl):
         f"gtf/danio_rerio/Danio_rerio.GRCz11.{version}.gtf.gz"
     )
     assert links[0] == expected_link
+
+
+def test_request_json():
+    divisions = genomepy.providers.ensembl.request_json(
+        "https://rest.ensembl.org/", "info/divisions?"
+    )
+    assert isinstance(divisions, list)
+    assert "EnsemblVertebrates" in divisions
+
+    # test not r.ok
+    with pytest.raises(requests.exceptions.HTTPError):
+        genomepy.providers.ensembl.request_json("https://rest.ensembl.org/", "error")
+
+
+def test_get_genomes(ensembl):
+    assert isinstance(ensembl.genomes, dict)
+    assert "KH" in ensembl.genomes
+    genome = ensembl.genomes["KH"]
+    assert isinstance(genome, dict)
+    for field in (
+        ensembl.accession_fields + ensembl.taxid_fields + ensembl.description_fields
+    ):
+        assert field in genome
+    assert genome["taxonomy_id"] == 7719
