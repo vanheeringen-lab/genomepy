@@ -17,11 +17,6 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.version_option(genomepy.__version__)
 def cli():
-    """ Genomes for Python (and others)!
-
-    Version: {}""".format(
-        genomepy.__version__
-    )
     pass  # noqa
 
 
@@ -169,21 +164,22 @@ def get_install_options():
 
     Add the provider name in front of the options to prevent overlap.
     """
-    install_options = INSTALL_OPTIONS
-
     # extend install options with provider specific options
     if len(set(sys.argv[1:]) & {"install", "-h", "--help"}) > 1:
+        install_options = INSTALL_OPTIONS
+
         for provider in genomepy.list_providers():
             p_dict = eval(
                 "genomepy.providers."
                 + provider.capitalize()
-                + "Provider.provider_specific_install_options"
+                + "Provider._cli_install_options"
             )
             for option in p_dict.keys():
                 p_dict[option]["long"] = provider + "-" + p_dict[option]["long"]
             install_options.update(p_dict)
 
-    return install_options
+        return install_options
+    return {}
 
 
 def custom_options(options):
@@ -215,7 +211,7 @@ def custom_options(options):
 
 @custom_options(get_install_options())
 @click.argument("name")
-@cli.command()
+@cli.command(short_help="install a genome & run active plugins")
 def install(
     name,
     provider,
@@ -234,7 +230,11 @@ def install(
     force,
     **kwargs,
 ):
-    """install a genome & run active plugins"""
+    """
+    Install a genome & run active plugins.
+
+    NAME (and more) can be obtained from genomepy search.
+    """
     genomepy.install_genome(
         name,
         provider=provider,
@@ -334,20 +334,21 @@ else:
         print("\t".join(SEARCH_FORMAT))
 
 
-@click.command("search", short_help="search for genomes")
-@click.argument("term")
-@click.option("-p", "--provider", help="provider")
+@click.command(short_help="search for genomes")
+@click.argument("term", nargs=-1)
+@click.option("-p", "--provider", help="Only search here.")
 def search(term, provider=None):
     """
-    Search for genomes that contain TERM in their name, description,
-    accession (must start with GCA_ or GCF_) or taxonomy (exact matches only).
-
-    Function is case-insensitive. Spaces in TERM can be replaced with underscores
-    (_) or TERM can be "quoted", e.g., "homo sapiens".
+    Search for genomes that contain TERM in their name, description
+    accession (must start with GCA_ or GCF_) or (matching) taxonomy.
+    Search is case-insensitive.
 
     Returns the metadata of each found genome, including the availability of a gene annotation.
-    For UCSC, up to 4 gene annotation styles may be available: UCSC, Ensembl, NCBI_refseq and UCSC_refseq.
+    For UCSC, up to 4 gene annotation styles may be available:
+    UCSC, Ensembl, NCBI_refseq and UCSC_refseq (respectively).
+    Each with different naming schemes.
     """
+    term = "_".join(term)
     no_genomes = True
     for row in genomepy.search(term, provider):
         if no_genomes:
