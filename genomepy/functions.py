@@ -3,8 +3,8 @@ import os
 import re
 from typing import Optional
 
+import pyfaidx
 from appdirs import user_config_dir
-from pyfaidx import FastaIndexingError, IndexNotFoundError
 
 from genomepy.annotation import Annotation
 from genomepy.config import config
@@ -278,7 +278,11 @@ def _generate_exports(genomes_dir: str = None):
             g = Genome(name, genomes_dir, build_index=False)
             env_name = re.sub(r"[^\w]+", "_", name).upper()
             env.append(f"export {env_name}={g.filename}")
-        except (FastaIndexingError, IndexNotFoundError, FileNotFoundError):
+        except (
+            pyfaidx.FastaIndexingError,
+            pyfaidx.IndexNotFoundError,
+            FileNotFoundError,
+        ):
             pass
     return env
 

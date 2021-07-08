@@ -1,0 +1,3 @@
+tests/data/small_genome.fa.gz@chrI:110-120
+tests/data/small_genome.fa.gz@chrII:130-140
+tests/data/small_genome.fa.gz@chrIII:410-420
