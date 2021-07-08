@@ -75,8 +75,36 @@ def test__provider_selection():
     assert "ensembl" in str(p)
 
 
-def test__filter_genome():
-    pass  # TODO
+def test__get_fasta_regex_func():
+    # filter alt regions (default)
+    func = genomepy.functions._get_fasta_regex_func(regex=None, keep_alt=False)
+    assert func("alt1") is False
+    assert func("chr1") is True
+    assert func("ALT1") is False  # case insensitive
+
+    # filter user specified regex
+    func = genomepy.functions._get_fasta_regex_func(
+        regex="chr", invert_match=False, keep_alt=True
+    )
+    assert func("chr1") is True
+    assert func("alt1") is False
+    assert func("something_else") is False
+
+    # filter user specified regex (inverted)
+    func = genomepy.functions._get_fasta_regex_func(
+        regex="chr", invert_match=True, keep_alt=True
+    )
+    assert func("chr1") is False
+    assert func("alt1") is True
+    assert func("something_else") is True
+
+    # filter both
+    func = genomepy.functions._get_fasta_regex_func(
+        regex="chr", invert_match=True, keep_alt=False
+    )
+    assert func("chr1") is False
+    assert func("alt1") is False
+    assert func("something_else") is True
 
 
 @pytest.mark.skipif(not travis, reason="slow")
