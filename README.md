@@ -10,7 +10,7 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/test_coverage)](https://codeclimate.com/github/vanheeringen-lab/genomepy/test_coverage)
 
 [![status](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd/status.svg)](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.831969.svg)](https://doi.org/10.5281/zenodo.831969)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1010458.svg)](https://doi.org/10.5281/zenodo.1010458)
 
 Easily install and use genomes in Python and elsewhere!
 

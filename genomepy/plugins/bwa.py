@@ -1,6 +1,7 @@
 import os
-from genomepy.plugin import Plugin
-from genomepy.utils import mkdir_p, rm_rf, cmd_ok, run_index_cmd
+
+from genomepy.plugins import Plugin
+from genomepy.utils import cmd_ok, mkdir_p, rm_rf, run_index_cmd
 
 
 class BwaPlugin(Plugin):

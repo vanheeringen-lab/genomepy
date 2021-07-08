@@ -10,10 +10,15 @@ dependencies:
   - bucketcache
   - click
   - colorama
+  - joblib
+  - loguru
+  - mygene
   - norns>=0.1.5
-  - psutil
+  - numpy
+  - pandas
   - pyfaidx>=0.5.7
   - requests
+  - tqdm>=4.51
 
   # Bgzip
   - tabix
@@ -37,9 +42,12 @@ dependencies:
   - setuptools
 
   # Testing
-  - black
-  - flake8
-  - flake8-bugbear
+  - autoflake=1.4  # versions match .pre-commit-config.yaml
+  - black=21.5b2
+  - flake8=3.9.2
+  - flake8-bugbear=21.4.3
+  - isort=5.9.1
+  - pre-commit
   - pytest
   - pytest-rerunfailures
   - pytest-cov

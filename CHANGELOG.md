@@ -7,7 +7,77 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Annotation class, containing
+  - regex filter (`genomepy.Annotation.filter_regex()`)
+  - sanitize functions (`genomepy.Annotation.sanitize()`)
+    - option to skip filtering and/or matching the annotation to the genome (also on CLI)
+  - gene name remapping to various formats (`genomepy.Annotation.map_genes()`)
+    - using MyGene.info. Can be queried separately (`genomepy.annotation.query_mygene()`)
+  - contig name remapping to other provider formats (`genomepy.Annotation.map_locations()`)
+  - get the annotations, or gene locations, as dataframes (`genomepy.Annotation.gtf`, `bed` or `gene_coords()` respectively)
+  - get the gene names as a list (`genomepy.Annotation.genes("gtf")` or `genomepy.Annotation.genes("bed")`)
+- genomepy install now attempts to install the NCBI assembly report
+- NCBI provider also indexes the NCBI `genbank_historical` summary
+- genomepy search now shows if the genome has an annotation
+    - this slows down the results a bit
+    - to compensate, results are now shown as soon as they are found
+- for developers:
+  - pre-commit-hooks for linting
+  - formatting/linting script `tests/format.sh` (optional argument `lint`)
+  - isort & autoflake formatters
+
+### Changed
+- provider module split per provider
+- ProviderBase overhauled, now called Provider
+- regex filtering separated from `Provider.download_genome`
+- utils module split into utils, files and online
+- now using loguru to pretty logging
+- accession `search` improved
+  - now finds GCA and GCF accessions
+  - now ignores patch levels
+- `genomepy install` automatic provider selection refactored
+    - `Provider.online_providers` returns a generator (faster!)
+- `genomepy install` uses a combined filter function (faster!)
+- `genomepy install` only zips annotation files if the genome is zipped (with the bgzip flag) (faster!)
+- NCBI provider should be parsed faster (faster!)
+- new dependency: pandas
+- tests no longer format code
+
+### Fixed
+- broken URLs should keep genomepy occupied for less long (check_url will immediately return on "Not Found" errors 404/450) (faster!)
+- the `Genome` class now passes arguments to the parent `Fasta` class
+- the `Genome` class now regenerates the sizes and gaps files similarly to the `Fasta` class and its index (when the genome is younger) (faster!)
+- somewhat more pythonic tests
+
+## [0.9.3] - 2021-02-03
+
+### Changed
+- URL provider got better at searching for annotation files
+- NCBI provider will fall back on FTP if HTTPS is offline
+
+### Fixed
+- genomes from ftp locations not working
+
+## [0.9.2] - 2021-01-28
+
+### Added
+- progress bars for downloading and bgzipping (the slow stuff)
+- spinner to indexing plugins (the slowest stuff)
+
+### Changed
+- removed dependency of psutils
+- added dependency of tqdm
+
+### Fixed
+- an oopsie in the regex filter functions slowing down `install`.
+- rm_rf and mkdir_p to behave more like their namesakes.
+
+## [0.9.1] - 2020-10-26
+
+### Added
+
 - `genomepy install` flag `-k/--keep-alt` to keep alternative regions
+- argparse custom type for a genome command line argument
 
 ### Changed
 
@@ -259,6 +329,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.9.3]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.2...0.9.3
+[0.9.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.1...0.9.2
+[0.9.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.0...0.9.1
 [0.9.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.4...0.9.0
 [0.8.4]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.3...0.8.4
 [0.8.3]: https://github.com/vanheeringen-lab/genomepy/compare/0.8.2...0.8.3
