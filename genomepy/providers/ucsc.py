@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Iterator
+from typing import Iterator, List
 
 import mysql.connector
 import pandas as pd
@@ -89,11 +89,12 @@ class UcscProvider(BaseProvider):
 
     @cache(ignore=["self"])
     def assembly_accession(self, name: str) -> str:
-        """Return the assembly accession (GCA_/GCF_....) for a genome.
+        """
+        Return the assembly accession (GCA_/GCF_....) for a genome.
 
-        UCSC does not serve the assembly accession through the REST API.
-        Therefore, the readme.html is scanned for an assembly accession. If it is
-        not found, the linked NCBI assembly page will be checked.
+        Some accession IDs can be retrieved from the UCSC MySQL hgFixed database.
+        For others, the accession IDs can sometimes be scraped from the readme.html.
+        If not, any linked NCBI assembly pages can also be scraped.
 
         Parameters
         ----------
@@ -105,10 +106,12 @@ class UcscProvider(BaseProvider):
         str
             Assembly accession.
         """
+        acc = self.genomes[name].get("assembly_accession")
+        if acc:
+            return acc
+
+        ucsc_url = f"https://hgdownload.soe.ucsc.edu/{self.genomes[name]['htmlPath']}"
         try:
-            ucsc_url = (
-                "https://hgdownload.soe.ucsc.edu/" + self.genomes[name]["htmlPath"]
-            )
             text = read_url(ucsc_url)
         except UnicodeDecodeError:
             return "na"
@@ -133,6 +136,8 @@ class UcscProvider(BaseProvider):
             match = accession_regex.search(text)
             if match:
                 return match.group(0)
+
+        return "na"
 
     def _annot_types(self, name):
         links = self.annotation_links(name)
@@ -295,6 +300,9 @@ def get_genomes(rest_url):
     ucsc_json = r.json()
     genomes = ucsc_json["ucscGenomes"]
 
+    # add accession IDs (self.assembly_accession will try to fill in the blanks)
+    for genome in genomes:
+        genomes[genome]["assembly_accession"] = None
     genomes = add_accessions(genomes)
 
     return genomes
@@ -305,28 +313,18 @@ def add_accessions(genomes: dict) -> dict:
     Use the UCSC MySQL to obtain accession IDs.
 
     For NCBI, RefSeq and GenBank accession IDs are stored in this table.
-    For Ensembl assembly names are stored. These could be used to find
-    more their assembly IDs, but there were only 2 unique names in that list.
 
     Returns the genome dict with "assembly_accession" added for each genome found.
     """
     # MySQL query
-    cnx = mysql.connector.connect(
-        host="genome-mysql.soe.ucsc.edu",
-        user="genome",
-        port=3306,
-        database="hgFixed",
-    )
-    cur = cnx.cursor()
-    cur.execute(
+    database = "hgFixed"
+    command = (
         "SELECT source,destination,matchCount "
         "FROM asmEquivalent "
         "WHERE sourceAuthority='ucsc' "
         "AND destinationAuthority!='ensembl' "
     )
-    ret = cur.fetchall()
-    cur.close()
-    cnx.close()
+    ret = query_ucsc(command, database)
 
     # extract genomes matching our database
     df = pd.DataFrame.from_records(ret)
@@ -340,16 +338,34 @@ def add_accessions(genomes: dict) -> dict:
 
     # extract accessions
     # example: GCF_000090745.1_AnoCar2.0 -> GCF_000090745.1
-    df = df["accession_name2"].str.extract(r"(GC._\d+.\d+)")
+    df = df["accession_name2"].str.extract(r"(GC[AF]_\d{9}\.\d+)")
 
     # GCA > GCF
-    unique_names = df[~df.index.duplicated(False)]
-    dup_names = df[df.index.duplicated(False)]
-    dup_names = dup_names[dup_names[0].str[2] == "A"]
-    df = unique_names.append(dup_names)
+    duplicates = df.index.duplicated(False)
+    unique_df = df[~duplicates]
+    dup_df = df[duplicates]
+    filtered_dup_df = dup_df[dup_df[0].str[2] == "A"]
+    df = unique_df.append(filtered_dup_df)
 
+    # During testing, 93/217 genomes we assigned an accession ID
     accession_series = df[0]
     for name, acc in accession_series.items():
         genomes[name]["assembly_accession"] = acc
 
     return genomes
+
+
+def query_ucsc(command: str, database: str = None) -> List[tuple]:
+    cnx = mysql.connector.connect(
+        host="genome-mysql.soe.ucsc.edu",
+        user="genome",
+        port=3306,
+        database=database,
+    )
+    cur = cnx.cursor()
+    cur.execute(command)
+    ret = cur.fetchall()
+    cur.close()
+    cnx.close()
+
+    return ret
