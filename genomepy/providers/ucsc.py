@@ -2,6 +2,8 @@ import os
 import re
 from typing import Iterator
 
+import mysql.connector
+import pandas as pd
 import requests
 from loguru import logger
 
@@ -21,7 +23,7 @@ class UcscProvider(BaseProvider):
     """
 
     name = "UCSC"
-    accession_fields = []
+    accession_fields = ["assembly_accession"]
     taxid_fields = ["taxId"]
     description_fields = ["description", "scientificName"]
     _cli_install_options = {
@@ -292,4 +294,62 @@ def get_genomes(rest_url):
         r.raise_for_status()
     ucsc_json = r.json()
     genomes = ucsc_json["ucscGenomes"]
+
+    genomes = add_accessions(genomes)
+
+    return genomes
+
+
+def add_accessions(genomes: dict) -> dict:
+    """
+    Use the UCSC MySQL to obtain accession IDs.
+
+    For NCBI, RefSeq and GenBank accession IDs are stored in this table.
+    For Ensembl assembly names are stored. These could be used to find
+    more their assembly IDs, but there were only 2 unique names in that list.
+
+    Returns the genome dict with "assembly_accession" added for each genome found.
+    """
+    # MySQL query
+    cnx = mysql.connector.connect(
+        host="genome-mysql.soe.ucsc.edu",
+        user="genome",
+        port=3306,
+        database="hgFixed",
+    )
+    cur = cnx.cursor()
+    cur.execute(
+        "SELECT source,destination,matchCount "
+        "FROM asmEquivalent "
+        "WHERE sourceAuthority='ucsc' "
+        "AND destinationAuthority!='ensembl' "
+    )
+    ret = cur.fetchall()
+    cur.close()
+    cnx.close()
+
+    # extract genomes matching our database
+    df = pd.DataFrame.from_records(ret)
+    df.columns = ["name", "accession_name2", "match"]
+    df.set_index("name", inplace=True)
+    df = df[df.index.isin(genomes)]
+
+    # get best match
+    df["match_max"] = df.groupby(df.index)["match"].max()
+    df = df[df["match"] == df["match_max"]]
+
+    # extract accessions
+    # example: GCF_000090745.1_AnoCar2.0 -> GCF_000090745.1
+    df = df["accession_name2"].str.extract(r"(GC._\d+.\d+)")
+
+    # GCA > GCF
+    unique_names = df[~df.index.duplicated(False)]
+    dup_names = df[df.index.duplicated(False)]
+    dup_names = dup_names[dup_names[0].str[2] == "A"]
+    df = unique_names.append(dup_names)
+
+    accession_series = df[0]
+    for name, acc in accession_series.items():
+        genomes[name]["assembly_accession"] = acc
+
     return genomes
