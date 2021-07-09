@@ -1,5 +1,6 @@
 import os
 import re
+import subprocess as sp
 from typing import Iterator, List
 
 import mysql.connector
@@ -289,6 +290,38 @@ class UcscProvider(BaseProvider):
             return links[0]
         raise FileNotFoundError(f"No gene annotations found for {name} on {self.name}")
 
+    def download_annotation(self, name, genomes_dir=None, localname=None, **kwargs):
+        """
+        Download the UCSC genePred via their MySQL database, and convert to annotations.
+        """
+        # annot options: 'ensGene', 'ncbiRefSeq', 'knownGene', 'refGene'
+        # not all are available for each genome
+        annot = self.get_annotation_download_link(name, **kwargs)  # TODO: change output
+
+        pred_file = f"{name}.annotation.extended.gp"
+        gtf_file = f"{name}.annotation.gtf"
+        bed_file = f"{name}.annotation.bed"
+
+        # MySQL query
+        command = f"SELECT * FROM {annot};"  # cant seem to safe to file?
+        ret = query_ucsc(command, database=name)
+
+        # clean up (extended) genePred file
+        df = pd.DataFrame.from_records(ret)
+        df.drop(columns={0}, inplace=True)
+        for n in [9, 10, 15]:
+            df[n] = df[n].str.decode("utf-8")
+        df.to_csv(pred_file, index=False, header=False, sep="\t")
+
+        # convert genePred to GTF and BED
+        cmd = "genePredToGtf -source=genomepy file {0} {1}"
+        sp.check_call(cmd.format(pred_file, gtf_file), shell=True)
+        cmd = "genePredToBed {0} {1}"
+        sp.check_call(cmd.format(pred_file, bed_file), shell=True)
+        os.remove(pred_file)
+
+        # TODO document
+
 
 @cache
 def get_genomes(rest_url):
@@ -300,10 +333,12 @@ def get_genomes(rest_url):
     ucsc_json = r.json()
     genomes = ucsc_json["ucscGenomes"]
 
-    # add accession IDs (self.assembly_accession will try to fill in the blanks)
     for genome in genomes:
         genomes[genome]["assembly_accession"] = None
+        genomes[genome]["annot"] = []
+    # add accession IDs (self.assembly_accession will try to fill in the blanks)
     genomes = add_accessions(genomes)
+    genomes = add_annotation_links(genomes)
 
     return genomes
 
@@ -351,6 +386,27 @@ def add_accessions(genomes: dict) -> dict:
     accession_series = df[0]
     for name, acc in accession_series.items():
         genomes[name]["assembly_accession"] = acc
+
+    return genomes
+
+
+def add_annotation_links(genomes):
+    """
+    identify the available annotation types for each genome.
+    """
+    # MySQL query
+    command = (
+        "SELECT TABLE_SCHEMA,TABLE_NAME "
+        "FROM information_schema.tables "
+        "WHERE table_name IN "
+        "('ensGene', 'ncbiRefSeq', 'knownGene', 'refGene') "
+    )
+    ret = query_ucsc(command, database=None)
+
+    for name, annot in ret:
+        if name not in genomes:
+            continue
+        genomes[name]["annot"].append(annot)
 
     return genomes
 
