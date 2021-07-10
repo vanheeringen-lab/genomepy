@@ -1,7 +1,9 @@
 import os
 import re
 import subprocess as sp
-from typing import Iterator, List
+import urllib.error
+from tempfile import mkdtemp
+from typing import Generator, Iterator
 
 import mysql.connector
 import pandas as pd
@@ -10,10 +12,11 @@ from loguru import logger
 
 from genomepy.caching import cache
 from genomepy.exceptions import GenomeDownloadError
+from genomepy.files import update_readme
 from genomepy.online import check_url, read_url
 from genomepy.providers.base import BaseProvider
 from genomepy.providers.ncbi import NcbiProvider
-from genomepy.utils import lower
+from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf
 
 
 class UcscProvider(BaseProvider):
@@ -48,8 +51,34 @@ class UcscProvider(BaseProvider):
 
     def _search_accession(self, term: str) -> Iterator[str]:
         """
-        UCSC does not store assembly accessions.
-        This function searches NCBI (most genomes + stable accession IDs),
+        UCSC does not always store assembly accessions.
+        If no hits were found for UCSC it will search NCBI (most genomes + stable accession IDs),
+        then uses the NCBI accession search results for a UCSC text search.
+
+        Parameters
+        ----------
+        term : str
+            Assembly accession, GCA_/GCF_....
+
+        Yields
+        ------
+        genome names
+        """
+        # cut off prefix (GCA_/GCF_) and suffix (version numbers, e.g. '.3')
+        term = term[4:].split(".")[0]
+        hits = 0
+        for name, metadata in self.genomes.items():
+            if any([term in str(metadata[f]) for f in self.accession_fields]):
+                hits += 1
+                yield name
+
+        # search NCBI only if we found no local hits
+        if hits == 0:
+            yield self._search_accession_ncbi(term)
+
+    def _search_accession_ncbi(self, term: str) -> Iterator[str]:
+        """
+        search NCBI (most genomes + stable accession IDs),
         then uses the NCBI accession search results for a UCSC text search.
 
         Parameters
@@ -88,7 +117,6 @@ class UcscProvider(BaseProvider):
                     yield name
                     break  # max one hit per genome
 
-    @cache(ignore=["self"])
     def assembly_accession(self, name: str) -> str:
         """
         Return the assembly accession (GCA_/GCF_....) for a genome.
@@ -111,37 +139,14 @@ class UcscProvider(BaseProvider):
         if acc:
             return acc
 
-        ucsc_url = f"https://hgdownload.soe.ucsc.edu/{self.genomes[name]['htmlPath']}"
-        try:
-            text = read_url(ucsc_url)
-        except UnicodeDecodeError:
-            return "na"
-
-        # example accessions: GCA_000004335.1 (ailMel1)
-        # regex: GC[AF]_ = GCA_ or GCF_, \d = digit, \. = period
-        accession_regex = re.compile(r"GC[AF]_\d{9}\.\d+")
-        match = accession_regex.search(text)
-        if match:
-            return match.group(0)
-
-        # Search for an assembly link at NCBI
-        match = re.search(r"https?://www.ncbi.nlm.nih.gov/assembly/\d+", text)
-        if match:
-            ncbi_url = match.group(0)
-            text = read_url(ncbi_url)
-
-            # retrieve valid assembly accessions.
-            # contains additional info, such as '(latest)' or '(suppressed)'. Unused for now.
-            valid_accessions = re.findall(r"assembly accession:.*?GC[AF]_.*?<", text)
-            text = " ".join(valid_accessions)
-            match = accession_regex.search(text)
-            if match:
-                return match.group(0)
+        acc = scrape_accession(self.genomes[name]["htmlPath"])
+        if acc:
+            return acc
 
         return "na"
 
     def _annot_types(self, name):
-        links = self.annotation_links(name)
+        links = self.genomes[name]["annotations"]
         if links:
             annot_types = ["knownGene", "ensGene", "ncbiRefSeq", "refGene"]
             annotations_found = []
@@ -232,95 +237,38 @@ class UcscProvider(BaseProvider):
                 else:
                     new.write(line.upper())
 
-    def get_annotation_download_links(self, name, **kwargs):
-        """
-        Parse and test the link to the UCSC annotation file.
-
-        Will check UCSC, Ensembl, NCBI RefSeq and UCSC RefSeq annotation, respectively.
-        More info on the annotation file on: https://genome.ucsc.edu/FAQ/FAQgenes.html#whatdo
-
-        Parameters
-        ----------
-        name : str
-            Genome name
-        """
-        gtf_url = f"http://hgdownload.soe.ucsc.edu/goldenPath/{name}/bigZips/genes/"
-        txt_url = f"http://hgdownload.cse.ucsc.edu/goldenPath/{name}/database/"
-
-        # download gtf format if possible, txt format if not
-        gtfs_exists = check_url(gtf_url, 2)
-        base_url = gtf_url + name + "." if gtfs_exists else txt_url
-        base_ext = ".gtf.gz" if gtfs_exists else ".txt.gz"
-
-        links = []
-        for annot in ["knownGene", "ensGene", "ncbiRefSeq", "refGene"]:
-            link = base_url + annot + base_ext
-            if check_url(link, max_tries=2):
-                links.append(link)
-        if links:
-            return links
-
-    def get_annotation_download_link(self, name: str, **kwargs) -> str:
-        """select a functional annotation download link from a list of links"""
-        links = self.annotation_links(name)
-        if links:
-            # user specified annotation type
-            annot_type = kwargs.get("ucsc_annotation_type", "").lower()
-            if annot_type:
-                annot_files = {
-                    "ucsc": "knownGene",
-                    "ensembl": "ensGene",
-                    "ncbi_refseq": "ncbiRefSeq",
-                    "ucsc_refseq": "refGene",
-                }
-                if annot_type not in annot_files:
-                    raise ValueError(
-                        f"UCSC annotation type '{annot_type}' not recognized."
-                    )
-
-                annot = annot_files[annot_type]
-                links = [link for link in links if annot in link]
-                if links:
-                    return links[0]
-                raise FileNotFoundError(
-                    f"Assembly {name} does not possess the {annot_type} '{annot}' gene annotation."
-                )
-
-            # first working link
-            return links[0]
-        raise FileNotFoundError(f"No gene annotations found for {name} on {self.name}")
-
     def download_annotation(self, name, genomes_dir=None, localname=None, **kwargs):
         """
         Download the UCSC genePred via their MySQL database, and convert to annotations.
         """
+        name = self._check_name(name)
         # annot options: 'ensGene', 'ncbiRefSeq', 'knownGene', 'refGene'
         # not all are available for each genome
         annot = self.get_annotation_download_link(name, **kwargs)  # TODO: change output
 
-        pred_file = f"{name}.annotation.extended.gp"
-        gtf_file = f"{name}.annotation.gtf"
-        bed_file = f"{name}.annotation.bed"
+        localname = get_localname(name, localname)
+        genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
 
-        # MySQL query
-        command = f"SELECT * FROM {annot};"  # cant seem to safe to file?
-        ret = query_ucsc(command, database=name)
+        logger.info("Downloading annotation from the UCSC MySQL database.")
+        try:
+            download_annotation(name, annot, genomes_dir, localname)
+            logger.info("Annotation download successful")
+        except Exception as e:
+            raise GenomeDownloadError(
+                f"An error occured while installing the gene annotation for {name} from {self.name}.\n"
+                "If you think the annotation should be there, please file a bug report at: "
+                "https://github.com/vanheeringen-lab/genomepy/issues\n\n"
+                f"Error: {e.args[0]}"
+            )
 
-        # clean up (extended) genePred file
-        df = pd.DataFrame.from_records(ret)
-        df.drop(columns={0}, inplace=True)
-        for n in [9, 10, 15]:
-            df[n] = df[n].str.decode("utf-8")
-        df.to_csv(pred_file, index=False, header=False, sep="\t")
-
-        # convert genePred to GTF and BED
-        cmd = "genePredToGtf -source=genomepy file {0} {1}"
-        sp.check_call(cmd.format(pred_file, gtf_file), shell=True)
-        cmd = "genePredToBed {0} {1}"
-        sp.check_call(cmd.format(pred_file, bed_file), shell=True)
-        os.remove(pred_file)
-
-        # TODO document
+        # Add annotation URL to readme
+        readme = os.path.join(genomes_dir, localname, "README.txt")
+        update_readme(
+            readme,
+            updated_metadata={
+                "annotation url": f"UCSC MySQL database: {name}, table: {annot}"
+            },
+        )
 
 
 @cache
@@ -335,21 +283,23 @@ def get_genomes(rest_url):
 
     for genome in genomes:
         genomes[genome]["assembly_accession"] = None
-        genomes[genome]["annot"] = []
+        genomes[genome]["annotations"] = []
     # add accession IDs (self.assembly_accession will try to fill in the blanks)
-    genomes = add_accessions(genomes)
+    genomes = add_accessions1(genomes)
+    genomes = add_accessions2(genomes)
     genomes = add_annotation_links(genomes)
 
     return genomes
 
 
-def add_accessions(genomes: dict) -> dict:
+def add_accessions1(genomes: dict) -> dict:
     """
-    Use the UCSC MySQL to obtain accession IDs.
+    Use the UCSC MySQL database to obtain accession IDs
+    (of the most similar assemblies on other providers).
 
-    For NCBI, RefSeq and GenBank accession IDs are stored in this table.
+    For NCBI, RefSeq and GenBank accession IDs are stored directly in this table.
 
-    Returns the genome dict with "assembly_accession" added for each genome found.
+    Updates the the genome dict "assembly_accession" field for each genome found.
     """
     # MySQL query
     database = "hgFixed"
@@ -390,6 +340,20 @@ def add_accessions(genomes: dict) -> dict:
     return genomes
 
 
+def add_accessions2(genomes: dict) -> dict:
+    """
+    Some genomes have their assembly accession in the 'sourceName' field.
+
+    Updates the the genome dict "assembly_accession" field for each genome found.
+    """
+    re_acc = re.compile(r"GC[AF]_\d{9}\.\d+")
+    for name in genomes:
+        hit = re_acc.search(genomes[name]["sourceName"])
+        if hit:
+            genomes[name]["assembly_accession"] = hit.group()
+    return genomes
+
+
 def add_annotation_links(genomes):
     """
     identify the available annotation types for each genome.
@@ -406,22 +370,112 @@ def add_annotation_links(genomes):
     for name, annot in ret:
         if name not in genomes:
             continue
-        genomes[name]["annot"].append(annot)
+        genomes[name]["annotations"].append(annot)
 
     return genomes
 
 
-def query_ucsc(command: str, database: str = None) -> List[tuple]:
+def query_ucsc(command: str, database: str = None) -> Generator:
+    """
+    Execute a single MySQL query on the UCSC database.
+    Streams the output into a generator.
+    """
     cnx = mysql.connector.connect(
         host="genome-mysql.soe.ucsc.edu",
         user="genome",
         port=3306,
         database=database,
     )
-    cur = cnx.cursor()
-    cur.execute(command)
-    ret = cur.fetchall()
-    cur.close()
-    cnx.close()
+    try:
+        cur = cnx.cursor(buffered=False, raw=False)
+        cur.execute(command)
+        while True:
+            ret = cur.fetchone()
+            if not ret:
+                break
+            yield ret
+    finally:
+        cnx.close()
 
-    return ret
+
+def download_annotation(name, annot, genomes_dir, localname):
+    """
+    Download the extended genePred file from the UCSC MySQL database.
+    Next convert this to a BED and GTF file.
+    """
+    out_dir = os.path.join(genomes_dir, localname)
+    mkdir_p(out_dir)
+    tmp_dir = mkdtemp(dir=out_dir)
+    pred_file = f"{os.path.join(tmp_dir, localname)}.annotation.extended.gp"
+    gtf_file = f"{os.path.join(out_dir, localname)}.annotation.gtf"
+    bed_file = f"{os.path.join(out_dir, localname)}.annotation.bed"
+
+    # MySQL query 1: get column names for this genePred
+    command = f"SHOW COLUMNS FROM {annot};"
+    cols = list(query_ucsc(command, database=name))
+    cols = [c[0] for c in cols if c[0] != "bin"]  # drop MySQL index column
+    cols = ",".join(cols)
+
+    # MySQL query 2: download genePred
+    command = f"SELECT {cols} FROM {annot};"
+    ret = query_ucsc(command, database=name)
+
+    # clean up genePred
+    df = pd.DataFrame.from_records(ret)
+    for n in [8, 9, 14]:
+        df[n] = df[n].str.decode("utf-8")
+    df.to_csv(pred_file, index=False, header=False, sep="\t")
+
+    # convert genePred to GTF and BED
+    cmd = "genePredToGtf -source=genomepy file {0} {1}"
+    sp.check_call(cmd.format(pred_file, gtf_file), shell=True)
+    cmd = "genePredToBed {0} {1}"
+    sp.check_call(cmd.format(pred_file, bed_file), shell=True)
+    rm_rf(tmp_dir)
+
+
+@cache
+def scrape_accession(htmlpath: str) -> str:
+    """
+    Attempt to scrape the assembly accession (GCA_/GCF_....) from a genome's readme.html,
+    or any linked NCBI assembly pages can also be scraped.
+
+    Parameters
+    ----------
+    htmlpath: str
+        path to the readme.tml on hgdownload.soe.ucsc.edu
+
+    Returns
+    ------
+    str
+        Assembly accession.
+    """
+    ucsc_url = f"https://hgdownload.soe.ucsc.edu/{htmlpath}"
+    try:
+        text = read_url(ucsc_url)
+    except (UnicodeDecodeError, urllib.error.URLError):
+        return "na"
+
+    # example accessions: GCA_000004335.1 (ailMel1)
+    # regex: GC[AF]_ = GCA_ or GCF_, \d = digit, \. = period
+    accession_regex = re.compile(r"GC[AF]_\d{9}\.\d+")
+    match = accession_regex.search(text)
+    if match:
+        return match.group(0)
+
+    # Search for an assembly link at NCBI
+    match = re.search(r"https?://www.ncbi.nlm.nih.gov/assembly/\d+", text)
+    if match:
+        ncbi_url = match.group(0)
+        try:
+            text = read_url(ncbi_url)
+        except (UnicodeDecodeError, urllib.error.URLError):
+            return "na"
+
+        # retrieve valid assembly accessions.
+        # contains additional info, such as '(latest)' or '(suppressed)'. Unused for now.
+        valid_accessions = re.findall(r"assembly accession:.*?GC[AF]_.*?<", text)
+        text = " ".join(valid_accessions)
+        match = accession_regex.search(text)
+        if match:
+            return match.group(0)
