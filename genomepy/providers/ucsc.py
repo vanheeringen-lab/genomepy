@@ -237,14 +237,44 @@ class UcscProvider(BaseProvider):
                 else:
                     new.write(line.upper())
 
+    def get_annotation_download_link(self, name: str, **kwargs) -> str:
+        available = self.genomes[name]["annotation"]
+        if not available:
+            raise GenomeDownloadError(
+                f"No gene annotations found for {name} on {self.name}.\n"
+                "Check for typos or try\n"
+                f"  genomepy search {name} -p {self.name}"
+            )
+
+        # not all are available for each genome
+        annot_files = {
+            "ucsc": "knownGene",
+            "ensembl": "ensGene",
+            "ncbi_refseq": "ncbiRefSeq",
+            "ucsc_refseq": "refGene",
+        }
+        usr_annot = kwargs.get("ucsc_annotation_type")
+        if usr_annot:
+            if usr_annot not in annot_files:
+                raise ValueError(f"Annotation type must in {', '.join(annot_files)}.\n")
+            if annot_files[usr_annot] not in available:
+                keys = [k for k, v in annot_files.items() if v in available]
+                raise FileNotFoundError(
+                    f"{name} only has annotations {', '.join(keys)}.\n"
+                )
+            annot = annot_files[usr_annot]
+        else:
+            # TODO: smart order?
+            annot = self.genomes[name]["annotation"][0]
+
+        return annot
+
     def download_annotation(self, name, genomes_dir=None, localname=None, **kwargs):
         """
         Download the UCSC genePred via their MySQL database, and convert to annotations.
         """
         name = self._check_name(name)
-        # annot options: 'ensGene', 'ncbiRefSeq', 'knownGene', 'refGene'
-        # not all are available for each genome
-        annot = self.get_annotation_download_link(name, **kwargs)  # TODO: change output
+        annot = self.get_annotation_download_link(name, **kwargs)
 
         localname = get_localname(name, localname)
         genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
