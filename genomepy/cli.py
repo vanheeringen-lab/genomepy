@@ -20,6 +20,19 @@ def cli():
     pass  # noqa
 
 
+@click.command(short_help="show 1st line of UCSC annotations")
+@click.argument("name")
+@click.option("-n", "--lines", help="lines")
+def annotations(name, lines=1):
+    """
+    Quickly inspect the metadata of each GTF annotation available for the given genome.
+
+    For UCSC, up to 4 gene annotation styles are available:
+    "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
+    """
+    genomepy.head_annotations(name, n=int(lines))
+
+
 @click.command("clean", short_help="remove provider data")
 def clean():
     """
@@ -375,6 +388,7 @@ def search(term, provider=None):
             print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")
 
 
+cli.add_command(annotations)
 cli.add_command(clean)
 cli.add_command(config)
 cli.add_command(genomes)

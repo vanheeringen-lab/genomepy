@@ -7,6 +7,7 @@ from genomepy.annotation import Annotation, query_mygene
 from genomepy.caching import clean
 from genomepy.config import manage_config
 from genomepy.functions import (
+    head_annotations,
     install_genome,
     list_available_genomes,
     list_installed_genomes,
@@ -34,6 +35,7 @@ __all__ = [
     "Annotation",
     "Provider",
     "search",
+    "head_annotations",
     "install_genome",
     "list_providers",
     "list_online_providers",

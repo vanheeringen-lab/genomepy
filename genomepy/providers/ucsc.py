@@ -379,8 +379,12 @@ class UcscProvider(BaseProvider):
             fpath = os.path.join(genomes_dir, localname, f"{localname}.annotation.gtf")
             download_annotation(name, annot, genomes_dir, localname, n=n)
 
+            logger.info(annot)
             with open(fpath) as f:
-                logger.info(f"{fpath}:\n{next(f)}")
+                for m, line in enumerate(f):
+                    print(line.strip())
+                    if m + 1 == n:
+                        break
 
 
 @cache

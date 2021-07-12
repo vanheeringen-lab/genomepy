@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - genomepy search now shows if the genome has an annotation
     - this slows down the results a bit
     - to compensate, results are now shown as soon as they are found
+    - for UCSC, availability of any of the 4 annotations is shown
+- genomepy annotation shows the first line(s) of each UCSC gene annotation.gtf
 - for developers:
   - pre-commit-hooks for linting
   - formatting/linting script `tests/format.sh` (optional argument `lint`)
