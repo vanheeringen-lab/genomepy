@@ -38,7 +38,8 @@ class UcscProvider(BaseProvider):
     _cli_install_options = {
         "ucsc_annotation_type": {
             "long": "annotation",
-            "help": "specify annotation to download: UCSC, Ensembl, NCBI_refseq or UCSC_refseq",
+            "help": "specify annotation to download: "
+            f"{', '.join(ANNOTATIONS)} (case-insensitive)",
             "default": None,
         },
     }
@@ -301,23 +302,15 @@ class UcscProvider(BaseProvider):
             )
         annot = available[0]
 
-        usr_annot = kwargs.get("ucsc_annotation_type", "").lower()
+        usr_annot = kwargs.get("ucsc_annotation_type")
         if usr_annot:
-            # TODO: do we want to use custom names?
-            annot_types = {
-                "ucsc": "knownGene",
-                "ensembl": "ensGene",
-                "ncbi_refseq": "ncbiRefSeq",
-                "ucsc_refseq": "refGene",
-            }
             # not all types are available for each genome
-            available_keys = [k for k, v in annot_types.items() if v in available]
-            if usr_annot not in available_keys:
+            annot = [a for a in ANNOTATIONS if a.lower() == usr_annot.lower()]
+            if not annot:
                 raise FileNotFoundError(
                     f"{usr_annot} is not available for {name}. "
-                    f"Options: {', '.join(available_keys)}.\n"
+                    f"Options: {', '.join(available)}.\n"
                 )
-            annot = annot_types[usr_annot]
 
         return annot
 

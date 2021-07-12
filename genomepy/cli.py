@@ -50,10 +50,16 @@ def genomes(provider=None):
     List all available genomes.
 
     Returns the metadata of each found genome, including the availability of a gene annotation.
-    For UCSC, up to 4 gene annotation styles may be available: UCSC, Ensembl, NCBI_refseq and UCSC_refseq.
+    For UCSC, up to 4 gene annotation styles are available:
+    "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
     """
-    terminal_header()
+    provider_init = True
     for row in genomepy.list_available_genomes(provider):
+        if provider_init:
+            provider_init = False
+            terminal_header()
+            if str(provider).lower() in ["none", "ucsc"]:
+                terminal_subheader()
         terminal_formatting(row)
 
 
@@ -318,6 +324,9 @@ if sys.stdout.isatty():
     def terminal_header():
         print(Style.BRIGHT + SEARCH_STRING.format(*SEARCH_FORMAT))
 
+    def terminal_subheader():
+        print(SEARCH_STRING.format(*["", "", "", "", "n r e k", "", ""]))
+
 
 else:
 
@@ -344,8 +353,8 @@ def search(term, provider=None):
     Search is case-insensitive.
 
     Returns the metadata of each found genome, including the availability of a gene annotation.
-    For UCSC, up to 4 gene annotation styles may be available:
-    UCSC, Ensembl, NCBI_refseq and UCSC_refseq (respectively).
+    For UCSC, up to 4 gene annotation styles are available:
+    "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
     Each with different naming schemes.
     """
     term = "_".join(term)
@@ -354,6 +363,8 @@ def search(term, provider=None):
         if no_genomes:
             no_genomes = False
             terminal_header()
+            if sys.stdout.isatty() and str(provider).lower() in ["none", "ucsc"]:
+                terminal_subheader()
         terminal_formatting(row)
 
     if sys.stdout.isatty():
