@@ -3,6 +3,7 @@ from typing import Iterable, Optional, Tuple, Union
 import mygene
 import pandas as pd
 from loguru import logger
+import re
 from tqdm import tqdm
 
 from genomepy.annotation.utils import _check_property, _parse_annot
@@ -214,9 +215,11 @@ def _query_mygene(
 def _filter_query(query: pd.DataFrame) -> pd.DataFrame:
     """per queried gene, keep the best matching, non-NaN, mapping"""
     if "notfound" in query:
-        query = query[query.notfound.astype(str) != "nan"]  # drop unmatched genes
-        query = query.drop(columns="notfound")
+        query = query[query.notfound.isnull()]  # drop unmatched genes
+        query = query.drop(columns=["notfound"])
+    
     query = query.dropna()
+    
     if "query" in query:
         query = query.groupby("query").first()  # already sorted by mapping score
         query = query.drop(columns=["_id", "_score"])
