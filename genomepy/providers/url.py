@@ -1,4 +1,5 @@
 import re
+from typing import List
 
 from loguru import logger
 
@@ -52,11 +53,24 @@ class UrlProvider(BaseProvider):
     def get_genome_download_link(self, url, mask=None, **kwargs):
         return url
 
-    def get_annotation_download_links(self, name, **kwargs):
+    def get_annotation_download_links(self, name: str, **kwargs) -> List[str]:
         """
-        If provided, check if the annotation url links to a supported file type (gtf/gff3/bed)
+        Retrieve functioning gene annotation download link(s).
 
+        If provided, check if the annotation url links to a supported file type (gtf/gff3/bed).
         Else try to find an annotation in the same location as the genome url.
+
+        Parameters
+        ----------
+        name : str
+            genome name
+        **kwargs: dict, optional:
+            to_annotation : direct URL to the gene annotation
+
+        Returns
+        -------
+        list
+            http/ftp link(s)
         """
         link = kwargs.get("to_annotation")
         if link:
@@ -69,8 +83,7 @@ class UrlProvider(BaseProvider):
 
         # name = url to genome
         links = search_url_for_annotations(name)
-        if links:
-            return links
+        return links if links else []
 
 
 def search_url_for_annotations(url: str) -> list:

@@ -4,6 +4,8 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
+import genomepy.exceptions
+
 
 def test_ucscprovider(ucsc):
     assert ucsc.name == "UCSC"
@@ -21,9 +23,9 @@ def test_assembly_accession(ucsc):
     assert accession.startswith("GCA_000146045")
 
 
-def test__annot_types(ucsc):
-    annots = ucsc._annot_types("sacCer3")
-    expected = [False, True, True, False]
+def test_annotation_links(ucsc):
+    annots = ucsc.annotation_links("sacCer3")
+    expected = ["ensGene", "ncbiRefSeq"]
     assert annots == expected
 
 
@@ -70,48 +72,39 @@ def test__post_process_download(ucsc):
 def test_get_annotation_download_links(ucsc):
     # any GTF format annotation
     genome = "sacCer3"
-    links = ucsc.get_annotation_download_links(genome)
-    assert genome in links[0]
-    assert links[0].endswith(".gtf.gz")
-
-    # any TXT format annotation (no GTF available)
-    genome = "xenTro2"
-    links = ucsc.get_annotation_download_links(genome)
-    assert genome in links[0]
-    assert links[0].endswith(".txt.gz")
+    annots = ucsc.get_annotation_download_links(genome)
+    annots.sort()
+    expected = ["ensGene", "ncbiRefSeq"]
+    assert annots == expected
 
     # no annotation available
-    assert ucsc.get_annotation_download_links("apiMel1") is None
+    assert ucsc.get_annotation_download_links("apiMel1") == []
 
 
 def test_get_annotation_download_link(ucsc):
-    # specific GTF annotation type
+    # any annotation
+    genome = "xenTro2"
+    annot = ucsc.get_annotation_download_link(genome)
+    assert annot == "ensGene"
+
+    # specific annotation type
     genome = "sacCer3"
-    link = ucsc.get_annotation_download_link(
+    annot = ucsc.get_annotation_download_link(
         genome, **{"ucsc_annotation_type": "NCBI_refseq"}
     )
-    assert genome in link
-    assert link.endswith("ncbiRefSeq.gtf.gz")
+    assert annot == "ncbiRefSeq"
 
-    # specific TXT annotation type (no GTF available)
-    genome = "xenTro2"
-    link = ucsc.get_annotation_download_link(
-        genome, **{"ucsc_annotation_type": "UCSC_refseq"}
-    )
-    assert genome in link
-    assert link.endswith("refGene.txt.gz")
+    # no annotation available
+    with pytest.raises(genomepy.exceptions.GenomeDownloadError):
+        ucsc.get_annotation_download_link("apiMel1")
 
     # annotation type non-existing for this genome
     with pytest.raises(FileNotFoundError):
         ucsc.get_annotation_download_link(genome, **{"ucsc_annotation_type": "UCSC"})
 
     # annotation type non-existing
-    with pytest.raises(ValueError):
-        ucsc.get_annotation_download_link(genome, **{"ucsc_annotation_type": "what?"})
-
-    # no annotation available
     with pytest.raises(FileNotFoundError):
-        ucsc.get_annotation_download_link("apiMel1")
+        ucsc.get_annotation_download_link(genome, **{"ucsc_annotation_type": "what?"})
 
 
 def test_get_genomes(ucsc):
@@ -122,3 +115,15 @@ def test_get_genomes(ucsc):
     for field in ucsc.accession_fields + ucsc.taxid_fields + ucsc.description_fields:
         assert field in genome
     assert genome["taxId"] == 9646
+    assert genome["assembly_accession"] == "GCF_000004335.2"
+    assert genome["annotations"] == ["ncbiRefSeq", "ensGene"]
+
+
+def test_head_annotations(ucsc, caplog):
+    ucsc.head_annotations("hg38", annotations=["ncbiRefSeq", "refGene"], n=1)
+
+    assert "hg38_head_ncbiRefSeq.annotation.gtf" in caplog.text
+    assert 'gene_name "DDX11L1";' in caplog.text
+
+    assert "hg38_head_refGene.annotation.gtf" in caplog.text
+    assert 'gene_name "WASH7P";' in caplog.text

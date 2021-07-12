@@ -4,7 +4,7 @@ import subprocess as sp
 import tarfile
 import time
 from tempfile import mkdtemp
-from typing import Iterator, Union
+from typing import Iterator, List, Union
 
 from loguru import logger
 
@@ -108,7 +108,7 @@ class BaseProvider:
             if accession.startswith(("GCA", "GCF")):
                 return accession
 
-    def annotation_links(self, name: str) -> list:
+    def annotation_links(self, name: str) -> List[str]:
         """
         Return available gene annotation links (http/ftp) for a genome
 
@@ -215,10 +215,42 @@ class BaseProvider:
         update_readme(readme, metadata)
 
     def get_annotation_download_links(self, name, **kwargs):
+        """
+        Retrieve functioning gene annotation download link(s).
+
+        Parameters
+        ----------
+        name : str
+            genome name
+        **kwargs: dict, optional:
+            provider specific options.
+
+        Returns
+        -------
+        list
+            http/ftp link(s)
+        """
         raise NotImplementedError()
 
     def get_annotation_download_link(self, name: str, **kwargs) -> str:
-        """select a functional annotation download link from a list of links"""
+        """
+        Return a functional annotation download link.
+
+        Parameters
+        ----------
+        name : str
+            genome name
+
+        Returns
+        -------
+        str
+            http/ftp link
+
+        Raises
+        ------
+        GenomeDownloadError
+            if no functional link was found
+        """
         links = self.annotation_links(name)
         if links:
             return links[0]

@@ -40,18 +40,18 @@ def test_assembly_accession(ncbi):
     assert "000004335" in accession
 
 
-def test_annotation_links(ucsc):
-    # most UCSC genomes: 1-4 annotations
-    links = ucsc.annotation_links("ailMel1")
+def test_annotation_links(ncbi):
+    # most genomes: 1 annotations
+    links = ncbi.annotation_links("AilMel_1.0")
     expected = [
-        "http://hgdownload.soe.ucsc.edu/goldenPath/ailMel1/bigZips/genes/ailMel1.ensGene.gtf.gz",
-        "http://hgdownload.soe.ucsc.edu/goldenPath/ailMel1/bigZips/genes/ailMel1.ncbiRefSeq.gtf.gz",
+        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/004/335/"
+        "GCA_000004335.1_AilMel_1.0/GCA_000004335.1_AilMel_1.0_genomic.gff.gz"
     ]
     assert links == expected
 
-    # regular genomes & some UCSC genomes: no annotation
-    links = ucsc.annotation_links("apiMel1")
-    assert links is None
+    # some genomes: no annotation
+    links = ncbi.annotation_links("Oryza_glaberrima_V1")
+    assert links == []
 
 
 def get_genome_download_link(base):
@@ -95,9 +95,12 @@ def test_get_annotation_download_links(base):
         base.get_annotation_download_links(None)
 
 
-def test_get_annotation_download_link(ucsc):
-    link = ucsc.get_annotation_download_link("ailMel1")
-    expected = "http://hgdownload.soe.ucsc.edu/goldenPath/ailMel1/bigZips/genes/ailMel1.ensGene.gtf.gz"
+def test_get_annotation_download_link(ncbi):
+    link = ncbi.get_annotation_download_link("AilMel_1.0")
+    expected = (
+        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/004/335/"
+        "GCA_000004335.1_AilMel_1.0/GCA_000004335.1_AilMel_1.0_genomic.gff.gz"
+    )
     assert link == expected
 
 

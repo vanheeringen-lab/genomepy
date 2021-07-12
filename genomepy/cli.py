@@ -164,10 +164,10 @@ def get_install_options():
 
     Add the provider name in front of the options to prevent overlap.
     """
-    # extend install options with provider specific options
-    if len(set(sys.argv[1:]) & {"install", "-h", "--help"}) > 1:
+    if sys.argv[1] == "install":
         install_options = INSTALL_OPTIONS
 
+        # extend install options with provider specific options
         for provider in genomepy.list_providers():
             p_dict = eval(
                 "genomepy.providers."

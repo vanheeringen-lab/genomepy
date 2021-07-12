@@ -3,7 +3,7 @@ import re
 import subprocess as sp
 import urllib.error
 from tempfile import mkdtemp
-from typing import Generator, Iterator
+from typing import Generator, Iterator, List
 
 import mysql.connector
 import pandas as pd
@@ -18,12 +18,17 @@ from genomepy.providers.base import BaseProvider
 from genomepy.providers.ncbi import NcbiProvider
 from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf
 
+# order determines which annotation genomepy will attempt to install
+# for more info, see http://genome.ucsc.edu/FAQ/FAQgenes.html
+ANNOTATIONS = ["ncbiRefSeq", "refGene", "ensGene", "knownGene"]
+
 
 class UcscProvider(BaseProvider):
     """
     UCSC genome provider.
 
     The UCSC API REST server is used to search and list genomes.
+    The UCSC MySQL database is used to find metadata and annotations.
     """
 
     name = "UCSC"
@@ -52,8 +57,8 @@ class UcscProvider(BaseProvider):
     def _search_accession(self, term: str) -> Iterator[str]:
         """
         UCSC does not always store assembly accessions.
-        If no hits were found for UCSC it will search NCBI (most genomes + stable accession IDs),
-        then uses the NCBI accession search results for a UCSC text search.
+        If no hits were found, search accession on NCBI (most genomes + stable accession IDs),
+        then uses those search results for a UCSC text search.
 
         Parameters
         ----------
@@ -74,7 +79,7 @@ class UcscProvider(BaseProvider):
 
         # search NCBI only if we found no local hits
         if hits == 0:
-            yield self._search_accession_ncbi(term)
+            return self._search_accession_ncbi(term)
 
     def _search_accession_ncbi(self, term: str) -> Iterator[str]:
         """
@@ -135,7 +140,7 @@ class UcscProvider(BaseProvider):
         str
             Assembly accession.
         """
-        acc = self.genomes[name].get("assembly_accession")
+        acc = self.genomes[name]["assembly_accession"]
         if acc:
             return acc
 
@@ -145,20 +150,29 @@ class UcscProvider(BaseProvider):
 
         return "na"
 
-    def _annot_types(self, name):
-        links = self.genomes[name]["annotations"]
-        if links:
-            annot_types = ["knownGene", "ensGene", "ncbiRefSeq", "refGene"]
-            annotations_found = []
-            for annot in annot_types:
-                annotations_found.append(any(annot in link for link in links))
-            return annotations_found
+    def annotation_links(self, name) -> List[str]:
+        """
+        Return a sorted list of available gene annotation types for a genome
+
+        Parameters
+        ----------
+        name: str
+            genome name
+
+        Returns
+        ------
+        list
+            Gene annotation types
+        """
+        available = self.get_annotation_download_links(name)
+        annotations_found = [a for a in ANNOTATIONS if a in available]
+        return annotations_found
 
     def _genome_info_tuple(self, name):
         """tuple with assembly metadata"""
         accession = self.assembly_accession(name)
         taxid = self.genome_taxid(name)
-        annotations = self._annot_types(name)
+        annotations = [a in self.annotation_links(name) for a in ANNOTATIONS]
         species = self.genomes[name].get("scientificName")
         other = self.genomes[name].get("description")
         return name, accession, taxid, annotations, species, other
@@ -237,35 +251,73 @@ class UcscProvider(BaseProvider):
                 else:
                     new.write(line.upper())
 
+    def get_annotation_download_links(self, name, **kwargs):
+        """
+        Return available gene annotation table(s) from the UCSC MySQL database.
+
+        Available tables were retrieved on init.
+
+        Parameters
+        ----------
+        name : str
+            genome name
+
+        Returns
+        -------
+        list
+            annotation types
+        """
+        return self.genomes[name]["annotations"]
+
     def get_annotation_download_link(self, name: str, **kwargs) -> str:
-        available = self.genomes[name]["annotation"]
+        """
+        Return an available annotation type.
+
+        Parameters
+        ----------
+        name : str
+            genome name
+        **kwargs: dict, optional:
+            ucsc_annotation_type : specific annotation type to download.
+
+        Returns
+        -------
+        str
+            http/ftp link
+
+        Raises
+        ------
+        GenomeDownloadError
+            if no functional link was found
+        FileNotFoundError
+            if the specified annotation type is unavailable
+        """
+        available = self.annotation_links(name)
         if not available:
             raise GenomeDownloadError(
                 f"No gene annotations found for {name} on {self.name}.\n"
                 "Check for typos or try\n"
                 f"  genomepy search {name} -p {self.name}"
             )
+        annot = available[0]
 
-        # not all are available for each genome
-        annot_files = {
-            "ucsc": "knownGene",
-            "ensembl": "ensGene",
-            "ncbi_refseq": "ncbiRefSeq",
-            "ucsc_refseq": "refGene",
-        }
-        usr_annot = kwargs.get("ucsc_annotation_type")
+        usr_annot = kwargs.get("ucsc_annotation_type", "").lower()
         if usr_annot:
-            if usr_annot not in annot_files:
-                raise ValueError(f"Annotation type must in {', '.join(annot_files)}.\n")
-            if annot_files[usr_annot] not in available:
-                keys = [k for k, v in annot_files.items() if v in available]
+            # TODO: do we want to use custom names?
+            annot_types = {
+                "ucsc": "knownGene",
+                "ensembl": "ensGene",
+                "ncbi_refseq": "ncbiRefSeq",
+                "ucsc_refseq": "refGene",
+            }
+            # not all types are available for each genome
+            available_keys = [k for k, v in annot_types.items() if v in available]
+            if usr_annot not in available_keys:
                 raise FileNotFoundError(
-                    f"{name} only has annotations {', '.join(keys)}.\n"
+                    f"{usr_annot} is not available for {name}. "
+                    f"Options: {', '.join(available_keys)}.\n"
                 )
-            annot = annot_files[usr_annot]
-        else:
-            # TODO: smart order?
-            annot = self.genomes[name]["annotation"][0]
+            annot = annot_types[usr_annot]
 
         return annot
 
@@ -299,6 +351,43 @@ class UcscProvider(BaseProvider):
                 "annotation url": f"UCSC MySQL database: {name}, table: {annot}"
             },
         )
+
+    def head_annotations(
+        self, name, genomes_dir=None, annotations: list = None, n: int = 5
+    ):
+        """
+        Download the first n genes of each annotation type.
+
+        The first line of the GTF is printed for review
+        (of the gene_name field, for instance).
+
+        Parameters
+        ----------
+        name : str
+            genome name
+        genomes_dir : str, optional
+            genomes directory to install the annotation in.
+        annotations : list, optional
+            only download this list of annotation types.
+            Downloads all available if left blank.
+        n : int, optional
+            download the annotation for n genes.
+        """
+        name = self._check_name(name)
+        genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
+        if annotations is None:
+            annotations = self.annotation_links(name)
+
+        for annot in annotations:
+            if annot not in ANNOTATIONS:
+                raise ValueError(f"{annot} not in {ANNOTATIONS}")
+
+            localname = f"{name}_head_{annot}"
+            fpath = os.path.join(genomes_dir, localname, f"{localname}.annotation.gtf")
+            download_annotation(name, annot, genomes_dir, localname, n=n)
+
+            with open(fpath) as f:
+                logger.info(f"{fpath}:\n{next(f)}")
 
 
 @cache
@@ -341,11 +430,10 @@ def add_accessions1(genomes: dict) -> dict:
     )
     ret = query_ucsc(command, database)
 
-    # extract genomes matching our database
+    # convert to dataframe
     df = pd.DataFrame.from_records(ret)
     df.columns = ["name", "accession_name2", "match"]
     df.set_index("name", inplace=True)
-    df = df[df.index.isin(genomes)]
 
     # get best match
     df["match_max"] = df.groupby(df.index)["match"].max()
@@ -365,6 +453,8 @@ def add_accessions1(genomes: dict) -> dict:
     # During testing, 93/217 genomes we assigned an accession ID
     accession_series = df[0]
     for name, acc in accession_series.items():
+        if name not in genomes:
+            continue
         genomes[name]["assembly_accession"] = acc
 
     return genomes
@@ -428,7 +518,7 @@ def query_ucsc(command: str, database: str = None) -> Generator:
         cnx.close()
 
 
-def download_annotation(name, annot, genomes_dir, localname):
+def download_annotation(name, annot, genomes_dir, localname, n=None):
     """
     Download the extended genePred file from the UCSC MySQL database.
     Next convert this to a BED and GTF file.
@@ -443,17 +533,41 @@ def download_annotation(name, annot, genomes_dir, localname):
     # MySQL query 1: get column names for this genePred
     command = f"SHOW COLUMNS FROM {annot};"
     cols = list(query_ucsc(command, database=name))
-    cols = [c[0] for c in cols if c[0] != "bin"]  # drop MySQL index column
+
+    # drop columns the UCSC tools cannot handle
+    # see https://genome.ucsc.edu/FAQ/FAQformat.html#format9
+    accepted_cols = [
+        "geneName",
+        "name",
+        "chrom",
+        "strand",
+        "txStart",
+        "txEnd",
+        "cdsStart",
+        "cdsEnd",
+        "exonCount",
+        "exonStarts",
+        "exonEnds",
+        "score",
+        "name2",
+        "cdsStartStat",
+        "cdsEndStat",
+        "exonFrames",
+    ]
+    cols = [c[0] for c in cols if c[0] in accepted_cols]
     cols = ",".join(cols)
 
     # MySQL query 2: download genePred
     command = f"SELECT {cols} FROM {annot};"
+    if n:
+        command = f"SELECT {cols} FROM {annot} LIMIT {n};"
     ret = query_ucsc(command, database=name)
 
     # clean up genePred
     df = pd.DataFrame.from_records(ret)
-    for n in [8, 9, 14]:
-        df[n] = df[n].str.decode("utf-8")
+    for c in [8, 9, 14]:
+        if c in df:
+            df[c] = df[c].str.decode("utf-8")
     df.to_csv(pred_file, index=False, header=False, sep="\t")
 
     # convert genePred to GTF and BED
@@ -478,7 +592,7 @@ def scrape_accession(htmlpath: str) -> str:
     Returns
     ------
     str
-        Assembly accession.
+        Assembly accession or 'na'
     """
     ucsc_url = f"https://hgdownload.soe.ucsc.edu/{htmlpath}"
     try:
