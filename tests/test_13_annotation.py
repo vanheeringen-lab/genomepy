@@ -28,19 +28,49 @@ def test_annotation_init(caplog, annot):
     g2 = "tests/data/data.annotation.gtf.gz"
     with genomepy.files._open(g2, "w") as fa:
         fa.write("2")
-    a = genomepy.Annotation(name="data", genomes_dir="tests")
+    a = genomepy.Annotation(genome="data", genomes_dir="tests")
     assert a.annotation_gtf_file.endswith(g1)
     genomepy.utils.rm_rf(g1)
     genomepy.utils.rm_rf(g2)
 
     # not enough GTF files
-    genomepy.Annotation(name="never_existed", genomes_dir="tests/data")
-    assert "Could not find 'never_existed.annotation.bed" in caplog.text
-    assert "Could not find 'never_existed.annotation.gtf" in caplog.text
+    genomepy.Annotation(genome="empty", genomes_dir="tests/data")
+    assert "Could not find 'empty.annotation.bed" in caplog.text
+    assert "Could not find 'empty.annotation.gtf" in caplog.text
+
+    # Genome doesn't exist
+    with pytest.raises(ValueError):
+        genomepy.Annotation(genome="never_existed", genomes_dir="tests/data")
+
+
+def test_custom_annotation():
+    for fname in [
+        "tests/data/custom.annotation.bed",
+        "tests/data/custom.annotation.bed.gz",
+    ]:
+        a = genomepy.Annotation(name=fname, genome="sacCer3", genomes_dir="tests/data")
+        assert a.bed.shape[0] == 10
+
+        with pytest.raises(AttributeError):
+            a.gtf
+
+    for fname in [
+        "tests/data/custom.annotation.gtf",
+        "tests/data/custom.annotation.gtf.gz",
+    ]:
+        a = genomepy.Annotation(name=fname, genome="sacCer3", genomes_dir="tests/data")
+        assert a.gtf.shape[0] == 45
+        with pytest.raises(AttributeError):
+            a.bed
+
+    with pytest.raises(NotImplementedError):
+        a = genomepy.Annotation(
+            name="tests/data/regions.txt", genome="sacCer3", genomes_dir="tests/data"
+        )
 
 
 def test_named_gtf():
-    a = genomepy.Annotation("sacCer3", "tests/data")
+    a = genomepy.Annotation("sacCer3", genomes_dir="tests/data")
     df = a.named_gtf
     assert df.index.name == "gene_name"
     assert str(a.gtf.index.dtype) == "int64"
@@ -56,7 +86,7 @@ def test_genes(annot):
 
 
 def test_gene_coords(caplog):
-    a = genomepy.Annotation("sacCer3", "tests/data")
+    a = genomepy.Annotation("sacCer3", genomes_dir="tests/data")
 
     bed_genes = a.genes()[0:10]
     c = a.gene_coords(bed_genes, "bed")
@@ -77,7 +107,7 @@ def test_gene_coords(caplog):
 
 
 def test_map_locations():
-    a = genomepy.Annotation("sacCer3", "tests/data")
+    a = genomepy.Annotation("sacCer3", genomes_dir="tests/data")
 
     # BED + Ensembl
     ens = a.map_locations(annot=a.bed.head(1), to="Ensembl")
@@ -100,7 +130,7 @@ def test_filter_regex():
     with open(gtf_file, "w") as f:
         f.write("chr2\tcool_gene\n")
         f.write("chromosome3\tboring_gene\n")
-    a = genomepy.annotation.Annotation("regexp", "tests/data")
+    a = genomepy.annotation.Annotation("regexp", genomes_dir="tests/data")
     gtf_df = pd.read_csv(gtf_file, sep="\t", header=None)
 
     df = a.filter_regex(gtf_df, regex=".*2")
@@ -165,7 +195,7 @@ def test_generate_annot():
             "chr1\tgenomepy\texon\t1\t100\t.\t+\t.\t"
             'gene_id "ENSGP1234"; transcript_id "GP_1234.1";  gene_name "GP";\n'
         )
-    a = genomepy.annotation.Annotation("data", "tests")
+    a = genomepy.annotation.Annotation("data", genomes_dir="tests")
 
     # BED file before & after
     with genomepy.files._open(a.annotation_bed_file, "r") as f:
@@ -195,7 +225,7 @@ def test_generate_annot():
 
 
 def test__parse_annot():
-    a = genomepy.Annotation("sacCer3", "tests/data")
+    a = genomepy.Annotation("sacCer3", genomes_dir="tests/data")
     df = genomepy.annotation.utils._parse_annot(a, "bed")
     assert df.equals(a.bed)
     df = genomepy.annotation.utils._parse_annot(a, "gtf")
@@ -212,12 +242,12 @@ def test__parse_annot():
 
 def test_match_contigs():
     # nothing to work with
-    a = genomepy.Annotation("sacCer3", "tests/data")
+    a = genomepy.Annotation("sacCer3", genomes_dir="tests/data")
     cd = genomepy.annotation.sanitize.match_contigs(a)
     assert cd is None
 
     # one missing contig, one fixable contig
-    a = genomepy.Annotation("sanitize", "tests/data")
+    a = genomepy.Annotation("sanitize", genomes_dir="tests/data")
     before = a.gtf
     cd = genomepy.annotation.sanitize.match_contigs(a)
     after = a.gtf
@@ -229,7 +259,7 @@ def test_match_contigs():
 
 
 def test_filter_contigs():
-    a = genomepy.Annotation("sacCer3", "tests/data")
+    a = genomepy.Annotation("sacCer3", genomes_dir="tests/data")
     assert "chrV" not in a.bed.chrom.unique()
 
     # add a chromosome to the BED not present in the genome
@@ -271,7 +301,7 @@ def test_document_sanitizing():
 
 
 def test_sanitize():
-    a = genomepy.Annotation("sanitize", "tests/data")
+    a = genomepy.Annotation("sanitize", genomes_dir="tests/data")
 
     a.sanitize(overwrite=False)
     assert a.gtf.shape == (4, 9)
@@ -282,7 +312,7 @@ def test_sanitize():
 
 
 def test_map_genes():
-    a = genomepy.Annotation("GRCz11", "tests/data")
+    a = genomepy.Annotation("GRCz11", genomes_dir="tests/data")
 
     bed = a.bed.head()
     transcript_ids = bed.name.to_list()
@@ -331,13 +361,13 @@ def test_parse_mygene_input():
 
 def test_ensembl_genome_info():
     # Works
-    a = genomepy.Annotation("sacCer3", "tests/data")
+    a = genomepy.Annotation("sacCer3", genomes_dir="tests/data")
     egi = genomepy.annotation.mygene.ensembl_genome_info(a)
     assert egi == ("R64-1-1", "GCA_000146045.2", 4932)
     # genomepy.utils.rm_rf(os.path.join(a.genome_dir, "assembly_report.txt"))
 
     # No readme
-    a = genomepy.Annotation("regexp", "tests/data")
+    a = genomepy.Annotation("regexp", genomes_dir="tests/data")
     readme_file = os.path.join(a.genome_dir, "README.txt")
     with pytest.raises(FileNotFoundError):
         genomepy.annotation.mygene.ensembl_genome_info(a)
@@ -345,7 +375,7 @@ def test_ensembl_genome_info():
     # Empty readme
     with open(readme_file, "w") as f:
         f.write("\n")
-    a = genomepy.Annotation("regexp", "tests/data")
+    a = genomepy.Annotation("regexp", genomes_dir="tests/data")
     egi = genomepy.annotation.mygene.ensembl_genome_info(a)
     assert egi is None
     genomepy.utils.rm_rf(readme_file)

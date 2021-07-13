@@ -1,5 +1,6 @@
 import os
 import re
+from pathlib import Path
 from typing import Iterable, Optional, Union
 
 import numpy as np
@@ -22,11 +23,15 @@ class Annotation:
 
     Parameters
     ----------
-    name : str
-        Genome name
+    genome : str
+        Genome name.
 
-    genomes_dir : str
-        Genomes installation directory
+    name : str, optional
+        Name of annotation file. If name is not specified, then the default annotation
+        for the genome is used.
+
+    genomes_dir : str, optional
+        Genomes installation directory.
 
     Returns
     -------
@@ -45,23 +50,37 @@ class Annotation:
     genome_contigs: list = None
     annotation_contigs: list = None
 
-    def __init__(self, name: str, genomes_dir: str = None):
-        self.name = name
-        self.genome_dir = os.path.join(get_genomes_dir(genomes_dir), name)
+    def __init__(self, genome: str, name: str = None, genomes_dir: str = None):
+        self.genome = genome
+        self.genome_dir = os.path.join(get_genomes_dir(genomes_dir), genome)
+        if not os.path.exists(self.genome_dir):
+            raise ValueError(f"Genome {self.genome} not found!")
 
-        # annotation files
-        self.readme_file = _get_file(self.genome_dir, "README.txt", False)
-        self.annotation_gtf_file = _get_file(
-            self.genome_dir, f"{self.name}.annotation.gtf"
-        )
-        self.annotation_bed_file = _get_file(
-            self.genome_dir, f"{self.name}.annotation.bed"
-        )
+        # annotation file provided
+        if name:
+            suffixes = Path(name).suffixes[-2:]
+            if ".bed" in suffixes or ".BED" in suffixes:
+                self.annotation_bed_file = name
+            elif ".gtf" in suffixes or ".GTF" in suffixes:
+                self.annotation_gtf_file = name
+            else:
+                raise NotImplementedError(
+                    "Only (gzipped) bed and gtf files are supported at the moment!"
+                )
+        else:
+            # annotation files
+            self.annotation_gtf_file = _get_file(
+                self.genome_dir, f"{self.genome}.annotation.gtf"
+            )
+            self.annotation_bed_file = _get_file(
+                self.genome_dir, f"{self.genome}.annotation.bed"
+            )
 
         # genome files
-        self.genome_file = _get_file(self.genome_dir, f"{self.name}.fa", False)
-        self.index_file = _get_file(self.genome_dir, f"{self.name}.fa.fai", False)
-        self.sizes_file = _get_file(self.genome_dir, f"{self.name}.fa.sizes", False)
+        self.readme_file = _get_file(self.genome_dir, "README.txt", False)
+        self.genome_file = _get_file(self.genome_dir, f"{self.genome}.fa", False)
+        self.index_file = _get_file(self.genome_dir, f"{self.genome}.fa.fai", False)
+        self.sizes_file = _get_file(self.genome_dir, f"{self.genome}.fa.sizes", False)
 
     # lazy attributes
     def __getattribute__(self, name):
@@ -71,12 +90,12 @@ class Annotation:
 
         # if the attribute is None/empty, check if it is a lazy attribute
         if name == "bed":
-            _check_property(self.annotation_bed_file, f"{self.name}.annotation.bed")
+            _check_property(self.annotation_bed_file, f"{self.genome}.annotation.bed")
             val = read_annot(self.annotation_bed_file)
             setattr(self, name, val)
 
         elif name == "gtf":
-            _check_property(self.annotation_gtf_file, f"{self.name}.annotation.gtf")
+            _check_property(self.annotation_gtf_file, f"{self.genome}.annotation.gtf")
             val = read_annot(self.annotation_gtf_file)
             setattr(self, name, val)
 
@@ -91,7 +110,7 @@ class Annotation:
             setattr(self, name, val)
 
         elif name == "genome_contigs":
-            _check_property(self.sizes_file, f"{self.name}.fa.sizes")
+            _check_property(self.sizes_file, f"{self.genome}.fa.sizes")
             val = list(
                 set(pd.read_csv(self.sizes_file, sep="\t", header=None, dtype=str)[0])
             )
@@ -204,7 +223,7 @@ class Annotation:
             Chromosome mapping.
         """
         genomes_dir = os.path.dirname(self.genome_dir)
-        mapping = map_locations(self.name, to, genomes_dir)
+        mapping = map_locations(self.genome, to, genomes_dir)
         if mapping is None:
             return
 
