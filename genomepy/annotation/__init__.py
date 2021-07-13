@@ -59,7 +59,6 @@ class Annotation:
         # annotation file provided
         if name:
             suffixes = Path(name).suffixes[-2:]
-            print(suffixes)
             if ".bed" in suffixes or ".BED" in suffixes:
                 self.annotation_bed_file = name
             elif ".gtf" in suffixes or ".GTF" in suffixes:

@@ -43,6 +43,32 @@ def test_annotation_init(caplog, annot):
         genomepy.Annotation(genome="never_existed", genomes_dir="tests/data")
 
 
+def test_custom_annotation():
+    for fname in [
+        "tests/data/custom.annotation.bed",
+        "tests/data/custom.annotation.bed.gz",
+    ]:
+        a = genomepy.Annotation(name=fname, genome="sacCer3", genomes_dir="tests/data")
+        assert a.bed.shape[0] == 10
+
+        with pytest.raises(AttributeError):
+            a.gtf
+
+    for fname in [
+        "tests/data/custom.annotation.gtf",
+        "tests/data/custom.annotation.gtf.gz",
+    ]:
+        a = genomepy.Annotation(name=fname, genome="sacCer3", genomes_dir="tests/data")
+        assert a.gtf.shape[0] == 45
+        with pytest.raises(AttributeError):
+            a.bed
+
+    with pytest.raises(NotImplementedError):
+        a = genomepy.Annotation(
+            name="tests/data/regions.txt", genome="sacCer3", genomes_dir="tests/data"
+        )
+
+
 def test_named_gtf():
     a = genomepy.Annotation("sacCer3", genomes_dir="tests/data")
     df = a.named_gtf
