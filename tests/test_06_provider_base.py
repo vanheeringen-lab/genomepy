@@ -129,18 +129,16 @@ def test_get_annotation_download_link(ncbi):
 
 
 @pytest.mark.skipif(not travis, reason="slow")
-def test_download_annotation(ucsc):
+def test_download_annotation(ncbi):
     out_dir = os.getcwd()
     localname = "my_annot"
-
-    name = "xenTro2"
-
+    name = "ASM14646v1"
     annot_urls = [
-        "http://hgdownload.cse.ucsc.edu/goldenPath/xenTro2/database/ensGene.txt.gz",
-        "http://hgdownload.cse.ucsc.edu/goldenPath/xenTro2/database/refGene.txt.gz",
+        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/146/465/"
+        "GCF_000146465.1_ASM14646v1/GCF_000146465.1_ASM14646v1_genomic.gff.gz"
     ]
     with TemporaryDirectory(dir=out_dir) as tmpdir:
-        ucsc.download_annotation(name=name, genomes_dir=tmpdir, localname=localname)
+        ncbi.download_annotation(name=name, genomes_dir=tmpdir, localname=localname)
 
         # check download_and_generate_annotation output
         fname = os.path.join(tmpdir, localname, localname + ".annotation.gtf")
