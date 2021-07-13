@@ -224,7 +224,7 @@ def install_genome(
         ) and bool(glob_ext_files(out_dir, "annotation.bed"))
 
     if annotation_downloaded:
-        annotation = Annotation(localname, genomes_dir)
+        annotation = Annotation(localname, genomes_dir=genomes_dir)
         if genome_found and not (skip_matching and skip_filter):
             annotation.sanitize(not skip_matching, not skip_filter, True)
 
