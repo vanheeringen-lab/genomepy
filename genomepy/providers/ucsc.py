@@ -300,19 +300,19 @@ class UcscProvider(BaseProvider):
                 "Check for typos or try\n"
                 f"  genomepy search {name} -p {self.name}"
             )
-        annot = available[0]
+        annot = available
 
         usr_annot = kwargs.get("ucsc_annotation_type")
         if usr_annot:
             # not all types are available for each genome
-            annot = [a for a in ANNOTATIONS if a.lower() == usr_annot.lower()]
+            annot = [a for a in available if a.lower() == usr_annot.lower()]
             if not annot:
                 raise FileNotFoundError(
                     f"{usr_annot} is not available for {name}. "
                     f"Options: {', '.join(available)}.\n"
                 )
 
-        return annot
+        return annot[0]
 
     def download_annotation(self, name, genomes_dir=None, localname=None, **kwargs):
         """
@@ -382,9 +382,10 @@ class UcscProvider(BaseProvider):
             logger.info(annot)
             with open(fpath) as f:
                 for m, line in enumerate(f):
-                    print(line.strip())
-                    if m + 1 == n:
-                        break
+                    if line:
+                        print(line.strip())
+                        if m + 1 == n:
+                            break
 
 
 @cache

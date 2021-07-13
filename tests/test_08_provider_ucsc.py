@@ -26,13 +26,13 @@ def test_assembly_accession(ucsc):
 def test_annotation_links(ucsc):
     annots = ucsc.annotation_links("sacCer3")
     expected = ["ensGene", "ncbiRefSeq"]
-    assert annots == expected
+    assert sorted(annots) == sorted(expected)
 
 
 def test_genome_info_tuple(ucsc):
     t = ucsc._genome_info_tuple("sacCer3")
     assert isinstance(t, tuple)
-    assert t[0:4] == ("sacCer3", "GCA_000146045.2", 559292, [False, True, True, False])
+    assert t[0:4] == ("sacCer3", "GCA_000146045.2", 559292, [True, False, True, False])
 
 
 def test_get_genome_download_link(ucsc):
@@ -85,12 +85,12 @@ def test_get_annotation_download_link(ucsc):
     # any annotation
     genome = "xenTro2"
     annot = ucsc.get_annotation_download_link(genome)
-    assert annot == "ensGene"
+    assert annot == "refGene"
 
     # specific annotation type
     genome = "sacCer3"
     annot = ucsc.get_annotation_download_link(
-        genome, **{"ucsc_annotation_type": "NCBI_refseq"}
+        genome, **{"ucsc_annotation_type": "ncbiRefSeq"}
     )
     assert annot == "ncbiRefSeq"
 
@@ -100,7 +100,7 @@ def test_get_annotation_download_link(ucsc):
 
     # annotation type non-existing for this genome
     with pytest.raises(FileNotFoundError):
-        ucsc.get_annotation_download_link(genome, **{"ucsc_annotation_type": "UCSC"})
+        ucsc.get_annotation_download_link(genome, **{"ucsc_annotation_type": "refGene"})
 
     # annotation type non-existing
     with pytest.raises(FileNotFoundError):
@@ -119,11 +119,12 @@ def test_get_genomes(ucsc):
     assert genome["annotations"] == ["ncbiRefSeq", "ensGene"]
 
 
-def test_head_annotations(ucsc, caplog):
+def test_head_annotations(ucsc, caplog, capsys):
     ucsc.head_annotations("hg38", annotations=["ncbiRefSeq", "refGene"], n=1)
+    captured = capsys.readouterr().out.strip()
 
-    assert "hg38_head_ncbiRefSeq.annotation.gtf" in caplog.text
-    assert 'gene_name "DDX11L1";' in caplog.text
+    assert "ncbiRefSeq" in caplog.text
+    assert 'gene_name "DDX11L1";' in captured
 
-    assert "hg38_head_refGene.annotation.gtf" in caplog.text
-    assert 'gene_name "WASH7P";' in caplog.text
+    assert "refGene" in caplog.text
+    assert 'gene_name "WASH7P";' in captured
