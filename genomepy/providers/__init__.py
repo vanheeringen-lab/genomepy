@@ -54,7 +54,7 @@ def create(name: str):
 
     Returns
     -------
-    provider :
+    provider
         Provider instance.
     """
     name = name.lower()
@@ -68,19 +68,42 @@ def create(name: str):
 
 
 def list_providers():
-    """List available providers."""
+    """
+    List of providers genomepy supports
+
+    Returns
+    -------
+    list
+        names of providers
+    """
     return [p.name for p in PROVIDERS.values()]
 
 
 def list_online_providers():
-    """Return a list of all providers that can be pinged."""
+    """
+    Check which providers are online right now.
+
+    Returns
+    -------
+    list
+        names of online providers
+    """
     return [p.name for p in PROVIDERS.values() if p.ping()]
 
 
 def online_providers(provider: str = None):
     """
     Check if the provider can be reached, or any provider if none is specified.
-    Return online provider(s) as objects.
+
+    Parameters
+    ----------
+    provider : str, optional
+        Only try to yield the specified provider.
+
+    Yields
+    -------
+    provider
+        Provider instances
     """
     for provider in [provider] if provider else list_providers():
         try:
@@ -102,12 +125,12 @@ def search(term, provider: str = None):
     term : str
         Search term, case-insensitive.
     provider : str , optional
-        Provider name
+        Only search the specified provider (faster).
 
     Yields
     ------
     list
-        genome information (name/identifier and description)
+        genome name, provider and metadata
     """
     term = safe(str(term))
     for p in online_providers(provider):

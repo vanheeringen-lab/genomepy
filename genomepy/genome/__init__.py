@@ -24,12 +24,13 @@ class Genome(Fasta):
     name : str
         Genome name
 
-    genomes_dir : str
+    genomes_dir : str, optional
         Genome installation directory
 
     Returns
     -------
-    pyfaidx.Fasta object
+    pyfaidx.Fasta
+        An object that provides a pygr compatible interface.
     """
 
     # import methods

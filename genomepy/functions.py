@@ -43,7 +43,8 @@ def list_available_genomes(provider=None):
 
     Returns
     -------
-    list with genome names
+    list
+        tuples with genome name, provider and metadata
     """
     for p in online_providers(provider):
         for row in p.list_available_genomes():
@@ -61,7 +62,8 @@ def list_installed_genomes(genomes_dir: str = None):
 
     Returns
     -------
-    list with genome names
+    list
+        genome names
     """
     genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
     if os.path.exists(genomes_dir):
@@ -103,13 +105,13 @@ def install_genome(
         Provider name. will try Ensembl, UCSC and NCBI (in that order) if not specified.
 
     genomes_dir : str , optional
-        Where to store the fasta files
+        Where to create the output folder.
 
     localname : str , optional
         Custom name for this genome.
 
     mask : str , optional
-        Default is 'soft', choices 'hard'/'soft/'none' for respective masking level.
+        Genome masking of repetitive sequences. Options: hard/soft/none, default is soft.
 
     keep_alt : bool , optional
         Some genomes contain alternative regions. These regions cause issues with
@@ -120,15 +122,14 @@ def install_genome(
         Regular expression to select specific chromosome / scaffold names.
 
     invert_match : bool , optional
-        Set to True to select all chromosomes that don't match the regex.
+        Set to True to select all chromosomes that *don't* match the regex.
 
     bgzip : bool , optional
         If set to True the genome FASTA file will be compressed using bgzip,
         and gene annotation will be compressed with gzip.
-        If not specified, the setting from the configuration file will be used.
 
     threads : int , optional
-        Build genome index using multithreading (if supported). Default: lowest of 8/all threads
+        Build genome index using multithreading (if supported). Default: lowest of 8/all threads.
 
     force : bool , optional
         Set to True to overwrite existing files.
@@ -137,7 +138,7 @@ def install_genome(
         If set to True, download gene annotation in BED and GTF format.
 
     only_annotation : bool , optional
-        If set to True, only download the annotation files.
+        If set to True, only download the gene annotation files.
 
     skip_matching : bool , optional
         If set to True, contigs in the annotation not matching
@@ -148,6 +149,7 @@ def install_genome(
 
     kwargs : dict , optional
         Provider specific options.
+
         toplevel : bool , optional
             Ensembl only: Always download the toplevel genome. Ignores potential primary assembly.
 
