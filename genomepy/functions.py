@@ -21,7 +21,7 @@ from genomepy.files import (
 from genomepy.genome import Genome
 from genomepy.online import check_url
 from genomepy.plugins import get_active_plugins
-from genomepy.providers import Provider, download_assembly_report, online_providers
+from genomepy.providers import download_assembly_report, online_providers
 from genomepy.utils import (
     get_genomes_dir,
     get_localname,
@@ -32,16 +32,20 @@ from genomepy.utils import (
 )
 
 
-def head_annotations(name: str, n: int = 1):
+def head_annotations(name: str, provider=None, n: int = 2):
     """
+    Quickly inspect the metadata of each available annotation for the specified genome.
+
     For UCSC, up to 4 gene annotation styles are available:
     "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
 
-    Quickly inspect the metadata of each available annotation.
+    For NCBI, the chromosome names are not yet sanitized.
     """
-    tmp_dir = mkdtemp()
-    u = Provider.create("ucsc")
-    u.head_annotations(name, genomes_dir=tmp_dir, n=n)
+    for p in online_providers(provider):
+        if name in p.genomes:
+            tmp_dir = mkdtemp()
+            p.head_annotation(name, genomes_dir=tmp_dir, n=n)
+            rm_rf(tmp_dir)
 
 
 def list_available_genomes(provider=None):

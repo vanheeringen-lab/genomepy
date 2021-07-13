@@ -119,8 +119,8 @@ def test_get_genomes(ucsc):
     assert genome["annotations"] == ["ncbiRefSeq", "ensGene"]
 
 
-def test_head_annotations(ucsc, caplog, capsys):
-    ucsc.head_annotations("hg38", annotations=["ncbiRefSeq", "refGene"], n=1)
+def test_head_annotation(ucsc, caplog, capsys):
+    ucsc.head_annotation("hg38", n=1, **{"annotations": ["ncbiRefSeq", "refGene"]})
     captured = capsys.readouterr().out.strip()
 
     assert "ncbiRefSeq" in caplog.text

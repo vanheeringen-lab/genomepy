@@ -324,7 +324,7 @@ class UcscProvider(BaseProvider):
         localname = get_localname(name, localname)
         genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
 
-        logger.info("Downloading annotation from the UCSC MySQL database.")
+        logger.info(f"Downloading the {annot} annotation from the UCSC MySQL database.")
         try:
             download_annotation(name, annot, genomes_dir, localname)
             logger.info("Annotation download successful")
@@ -345,11 +345,9 @@ class UcscProvider(BaseProvider):
             },
         )
 
-    def head_annotations(
-        self, name, genomes_dir=None, annotations: list = None, n: int = 5
-    ):
+    def head_annotation(self, name, genomes_dir=None, n: int = 5, **kwargs):
         """
-        Download the first n genes of each annotation type.
+        Download the first n genes of each UCSC annotation type.
 
         The first line of the GTF is printed for review
         (of the gene_name field, for instance).
@@ -360,14 +358,17 @@ class UcscProvider(BaseProvider):
             genome name
         genomes_dir : str, optional
             genomes directory to install the annotation in.
-        annotations : list, optional
-            only download this list of annotation types.
-            Downloads all available if left blank.
         n : int, optional
             download the annotation for n genes.
+        kwargs : dict , optional
+            annotations : list
+                specify which UCSC annotation types to download.
+                Downloads all available if left blank.
         """
         name = self._check_name(name)
         genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
+
+        annotations = kwargs.get("annotations")
         if annotations is None:
             annotations = self.annotation_links(name)
 
@@ -379,7 +380,7 @@ class UcscProvider(BaseProvider):
             fpath = os.path.join(genomes_dir, localname, f"{localname}.annotation.gtf")
             download_annotation(name, annot, genomes_dir, localname, n=n)
 
-            logger.info(annot)
+            logger.info(f"{self.name} {annot}")
             with open(fpath) as f:
                 for m, line in enumerate(f):
                     if line:

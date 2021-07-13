@@ -153,6 +153,14 @@ def test_download_annotation(ncbi):
         assert metadata["annotation url"] in annot_urls
 
 
+def test_head_annotation(ncbi, caplog, capsys):
+    ncbi.head_annotation("ASM14646v1", n=1)
+    captured = capsys.readouterr().out.strip()
+
+    assert "NCBI" in caplog.text
+    assert 'gene_name "gene-Eint_010010";' in captured
+
+
 def test__search_text(ucsc):
     term = genomepy.utils.lower("Ailuropoda melanoleuca")
     assert list(ucsc._search_text("not_in_description")) == []

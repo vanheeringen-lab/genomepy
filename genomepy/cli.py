@@ -22,15 +22,19 @@ def cli():
 
 @click.command(short_help="show 1st line of UCSC annotations")
 @click.argument("name")
-@click.option("-n", "--lines", help="lines")
-def annotations(name, lines=1):
+@click.option("-p", "--provider", help="only search this provider")
+@click.option("-n", "--lines", help="number of lines to print", default=2)
+def annotation(name, provider=None, lines=None):
     """
-    Quickly inspect the metadata of each GTF annotation available for the given genome.
+    Quickly inspect the metadata of each GTF annotation available
+    for the given genome.
 
     For UCSC, up to 4 gene annotation styles are available:
     "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
+
+    For NCBI, the chromosome names are not yet sanitized.
     """
-    genomepy.head_annotations(name, n=int(lines))
+    genomepy.head_annotations(name, provider, n=int(lines))
 
 
 @click.command("clean", short_help="remove provider data")
@@ -358,7 +362,7 @@ else:
 
 @click.command(short_help="search for genomes")
 @click.argument("term", nargs=-1)
-@click.option("-p", "--provider", help="Only search here.")
+@click.option("-p", "--provider", help="only search this provider")
 def search(term, provider=None):
     """
     Search for genomes that contain TERM in their name, description
@@ -388,7 +392,7 @@ def search(term, provider=None):
             print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")
 
 
-cli.add_command(annotations)
+cli.add_command(annotation)
 cli.add_command(clean)
 cli.add_command(config)
 cli.add_command(genomes)
