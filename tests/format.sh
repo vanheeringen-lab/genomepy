@@ -33,6 +33,7 @@ before=$(git diff)
 
 autoflake \
   $( $lint && echo '--check' ) \
+  --in-place \
   --recursive \
   --remove-all-unused-imports \
   --remove-duplicate-keys \

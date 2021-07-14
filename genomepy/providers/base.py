@@ -1,10 +1,12 @@
+import gzip
 import os
 import shutil
 import subprocess as sp
 import tarfile
 import time
 from tempfile import mkdtemp
-from typing import Iterator, Union
+from typing import Iterator, List, Union
+from urllib.request import urlopen
 
 from loguru import logger
 
@@ -108,7 +110,7 @@ class BaseProvider:
             if accession.startswith(("GCA", "GCF")):
                 return accession
 
-    def annotation_links(self, name: str) -> list:
+    def annotation_links(self, name: str) -> List[str]:
         """
         Return available gene annotation links (http/ftp) for a genome
 
@@ -215,10 +217,42 @@ class BaseProvider:
         update_readme(readme, metadata)
 
     def get_annotation_download_links(self, name, **kwargs):
+        """
+        Retrieve functioning gene annotation download link(s).
+
+        Parameters
+        ----------
+        name : str
+            genome name
+        **kwargs: dict, optional:
+            provider specific options.
+
+        Returns
+        -------
+        list
+            http/ftp link(s)
+        """
         raise NotImplementedError()
 
     def get_annotation_download_link(self, name: str, **kwargs) -> str:
-        """select a functional annotation download link from a list of links"""
+        """
+        Return a functional annotation download link.
+
+        Parameters
+        ----------
+        name : str
+            genome name
+
+        Returns
+        -------
+        str
+            http/ftp link
+
+        Raises
+        ------
+        GenomeDownloadError
+            if no functional link was found
+        """
         links = self.annotation_links(name)
         if links:
             return links[0]
@@ -317,8 +351,44 @@ class BaseProvider:
         for name in search_function(term):
             yield self._genome_info_tuple(name)
 
+    def head_annotation(self, name: str, genomes_dir=None, n: int = 5, **kwargs):
+        """
+        Download the first n lines of the annotation.
 
-def download_annotation(genomes_dir, annot_url, localname):
+        The first line of the GTF is printed for review
+        (of the gene_name field, for instance).
+
+        Parameters
+        ----------
+        name : str
+            genome name
+        genomes_dir : str, optional
+            genomes directory to install the annotation in.
+        n : int, optional
+            download the annotation for n genes.
+        """
+        name = self._check_name(name)
+        link = self.get_annotation_download_link(name, **kwargs)
+
+        localname = f"{name}_head"
+        genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
+
+        fpath = os.path.join(genomes_dir, localname, f"{localname}.annotation.gtf")
+        download_annotation(genomes_dir, link, localname, n=n)
+
+        logger.info(self.name)
+        m = 0
+        with open(fpath) as f:
+            for line in f:
+                line = line.strip()
+                if line and line[0] != "#":
+                    print(line)
+                    m += 1
+                if m == n:
+                    break
+
+
+def download_annotation(genomes_dir, annot_url, localname, n=None):
     """download annotation file, convert to intermediate file and generate output files"""
 
     # create output directory if missing
@@ -330,7 +400,11 @@ def download_annotation(genomes_dir, annot_url, localname):
     tmp_dir = mkdtemp(dir=out_dir)
     ext, gz = get_file_info(annot_url)
     annot_file = os.path.join(tmp_dir, localname + ".annotation" + ext)
-    download_file(annot_url, annot_file)
+    if n is None:
+        download_file(annot_url, annot_file)
+    else:
+        download_head(annot_url, annot_file, n)
+        gz = False
 
     # unzip input file (if needed)
     if gz:
@@ -404,3 +478,32 @@ def tar_to_bigfile(fname, outfile):
                 out.write(line)
 
     rm_rf(tmp_dir)
+
+
+def download_head(annot_url, annot_file, n: int = 5):
+    """
+    Download the first n lines of a (gzipped) file.
+    Comment lines are downloaded but do not count towards the line limit.
+
+    Parameters
+    ----------
+    annot_url : str
+        url to the file
+    annot_file : str
+        output filename
+    n : int, optional
+        number of lines to download
+    """
+    res = urlopen(annot_url)
+    if annot_url.endswith(".gz"):
+        res = gzip.GzipFile(fileobj=res)
+    m = 0
+    with open(annot_file, "w") as f:
+        for line in res:
+            line = line.decode("utf-8")
+            f.write(line)
+            if line[0] != "#":
+                m += 1
+            # add a few extra lines to the intermediate file
+            if m == n + 2:
+                break

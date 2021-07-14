@@ -9,7 +9,6 @@ repos:
           - --remove-all-unused-imports
           - --remove-duplicate-keys
           - --remove-unused-variables
-          - --ignore-init-module-imports
           - setup.py
           - genomepy/
           - tests/

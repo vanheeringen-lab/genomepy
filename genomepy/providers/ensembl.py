@@ -142,17 +142,19 @@ class EnsemblProvider(BaseProvider):
 
     def get_annotation_download_links(self, name, **kwargs):
         """
-        Parse and test the link to the Ensembl annotation file.
+        Retrieve functioning gene annotation download link(s).
 
         Parameters
         ----------
         name : str
-            Genome name
-        kwargs: dict , optional:
-            Provider specific options.
+            genome name
+        **kwargs: dict, optional:
+            version : Ensembl version to use. By default the latest version is used
 
-            version : int , optional
-                Ensembl version. By default the latest version is used.
+        Returns
+        -------
+        list
+            http/ftp link(s)
         """
         genome = self.genomes[safe(name)]
         division = genome["division"].lower().replace("ensembl", "")
@@ -180,8 +182,7 @@ class EnsemblProvider(BaseProvider):
             version,
         )
 
-        if check_url(link, max_tries=2):
-            return [link]
+        return [link] if check_url(link, max_tries=2) else []
 
 
 def request_json(rest_url, ext):
