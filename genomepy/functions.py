@@ -1,6 +1,7 @@
 """Module-level functions."""
 import os
 import re
+from tempfile import mkdtemp
 from typing import Optional
 
 import pyfaidx
@@ -29,6 +30,22 @@ from genomepy.utils import (
     safe,
     try_except_pass,
 )
+
+
+def head_annotations(name: str, provider=None, n: int = 2):
+    """
+    Quickly inspect the metadata of each available annotation for the specified genome.
+
+    For UCSC, up to 4 gene annotation styles are available:
+    "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
+
+    For NCBI, the chromosome names are not yet sanitized.
+    """
+    for p in online_providers(provider):
+        if name in p.genomes:
+            tmp_dir = mkdtemp()
+            p.head_annotation(name, genomes_dir=tmp_dir, n=n)
+            rm_rf(tmp_dir)
 
 
 def list_available_genomes(provider=None):
@@ -226,7 +243,7 @@ def install_genome(
         ) and bool(glob_ext_files(out_dir, "annotation.bed"))
 
     if annotation_downloaded:
-        annotation = Annotation(localname, genomes_dir)
+        annotation = Annotation(localname, genomes_dir=genomes_dir)
         if genome_found and not (skip_matching and skip_filter):
             annotation.sanitize(not skip_matching, not skip_filter, True)
 

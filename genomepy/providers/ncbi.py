@@ -1,5 +1,6 @@
 import os
 import re
+from typing import List
 from urllib.request import urlopen
 
 import pandas as pd
@@ -149,18 +150,24 @@ class NcbiProvider(BaseProvider):
                 else:
                     new.write(mask_cmd(line))
 
-    def get_annotation_download_links(self, name, **kwargs):
+    def get_annotation_download_links(self, name: str, **kwargs) -> List[str]:
         """
+        Retrieve functioning gene annotation download link(s).
+
         Parse and test the link to the NCBI annotation file.
 
         Parameters
         ----------
         name : str
-            Genome name
+            genome name
+
+        Returns
+        -------
+        list
+            http/ftp link(s)
         """
         link = self._ftp_or_html_link(name, file_suffix="_genomic.gff.gz")
-        if link:
-            return [link]
+        return [link] if link else []
 
     def _ftp_or_html_link(self, name, file_suffix, skip_check=False):
         """

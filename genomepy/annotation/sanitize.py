@@ -28,7 +28,7 @@ def sanitize(self, match=True, filter=True, overwrite=False):
     -------
     updated Annotation class instance
     """
-    _check_property(self.genome_file, f"{self.name}.fa")
+    _check_property(self.genome_file, f"{self.genome}.fa")
 
     cd = {}
     if match:
