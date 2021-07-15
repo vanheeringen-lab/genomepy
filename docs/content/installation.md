@@ -1,0 +1,7 @@
+# Installation
+
+conda
+
+pip
+
+git

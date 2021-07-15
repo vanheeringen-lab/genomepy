@@ -64,7 +64,7 @@ class UcscProvider(BaseProvider):
         Parameters
         ----------
         term : str
-            Assembly accession, GCA_/GCF_....
+            Assembly accession, `GCA_`/`GCF_`
 
         Yields
         ------
@@ -90,7 +90,7 @@ class UcscProvider(BaseProvider):
         Parameters
         ----------
         term : str
-            Assembly accession, GCA_/GCF_....
+            Assembly accession, `GCA_`/`GCF_`
 
         Yields
         ------
@@ -125,7 +125,7 @@ class UcscProvider(BaseProvider):
 
     def assembly_accession(self, name: str) -> str:
         """
-        Return the assembly accession (GCA_/GCF_....) for a genome.
+        Return the assembly accession (`GCA_`/`GCF_`) for a genome.
 
         Some accession IDs can be retrieved from the UCSC MySQL hgFixed database.
         For others, the accession IDs can sometimes be scraped from the readme.html.
@@ -580,7 +580,7 @@ def download_annotation(name, annot, genomes_dir, localname, n=None):
 @cache
 def scrape_accession(htmlpath: str) -> str:
     """
-    Attempt to scrape the assembly accession (GCA_/GCF_....) from a genome's readme.html,
+    Attempt to scrape the assembly accession (`GCA_`/`GCF_`) from a genome's readme.html,
     or any linked NCBI assembly pages can also be scraped.
 
     Parameters

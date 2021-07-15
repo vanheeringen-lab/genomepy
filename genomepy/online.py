@@ -83,7 +83,7 @@ def retry(func, tries, *args, **kwargs):
     """
     Retry functions with potential connection errors.
 
-    *args and **kwargs are passed to func.
+    args and kwargs are passed to func.
     """
     for n in range(tries):
         try:

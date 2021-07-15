@@ -81,7 +81,7 @@ def list_providers():
 
 def list_online_providers():
     """
-    Check which providers are online right now.
+    List of providers genomepy supports *that are online right now*.
 
     Returns
     -------

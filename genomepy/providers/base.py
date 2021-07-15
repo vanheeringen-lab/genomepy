@@ -333,7 +333,7 @@ class BaseProvider:
             Search term, case-insensitive.
             Can be (part of) an assembly name (e.g. hg38),
             scientific name (Danio rerio) or assembly
-            accession (GCA_000146045/GCF_...),
+            accession (`GCA_000146045`/`GCF_`),
             or an exact taxonomy id (7227).
 
         Yields

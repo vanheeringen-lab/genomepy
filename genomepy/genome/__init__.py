@@ -40,23 +40,35 @@ class Genome(Fasta):
     # lazy attributes (loaded when called)
     # listed here for code autocompletion
     sizes: dict = None
+    "contents of the sizes file: contigs and their lengths"
     gaps: dict = None
+    "contents of the gaps file: contigs and the number of Ns contained"
 
     def __init__(self, name, genomes_dir=None, *args, **kwargs):
         self.genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
+        "path to the genomepy genomes directory"
         self.name = os.path.basename(re.sub(".fa(.gz)?$", "", safe(name)))
+        "genome name"
         self.filename = self._parse_filename(name)
         super(Genome, self).__init__(self.filename, *args, **kwargs)
 
         # file paths
         self.genome_file = self.filename
+        "path to the genome fasta"
         self.genome_dir = os.path.dirname(self.filename)
+        "path to the genome directory"
         self.index_file = self.genome_file + ".fai"
+        "path to the genome index"
         self.sizes_file = self._check_support_file("sizes")
+        "path to the chromosome sizes file"
         self.gaps_file = self._check_support_file("gaps")
+        "path to the chromosome gaps file"
         self.annotation_gtf_file = self._check_annotation_file("gtf")
+        "path to the gene annotation GTF file"
         self.annotation_bed_file = self._check_annotation_file("bed")
+        "path to the gene annotation BED file"
         self.readme_file = os.path.join(self.genome_dir, "README.txt")
+        "path to the README file"
 
         # genome attributes
         metadata, _ = read_readme(self.readme_file)

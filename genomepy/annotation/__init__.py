@@ -33,6 +33,8 @@ class Annotation:
     genomes_dir : str, optional
         Genomes installation directory.
 
+    # TODO: attributes to this and other classes
+
     Returns
     -------
     Annotation object

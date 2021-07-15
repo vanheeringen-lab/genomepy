@@ -35,7 +35,6 @@ Currently, genomepy supports UCSC, Ensembl and NCBI.
 9.  [Contributing](#contributing)
 10.  [License](#license)
 
-
 ## Installation
 
 Genomepy works with Python 3.6+. 
@@ -486,19 +485,19 @@ Here are some of the more common issues with solutions.
 
 Let us know if you encounter issues you cannot solve!
 
-#### Provider is offline/URL is broken
+### Provider is offline/URL is broken
 Occasionally one of the providers experience connection issues, which can last anywhere between seconds to hours.
 When this happens genomepy will warn that the provider is offline, or that the URL is broken.
 
 Connection issues are usually resolved in minutes.
 
-#### A genome is missing from `genomepy search`
+### A genome is missing from `genomepy search`
 Genomepy stores provider data on your computer to rerun it faster later.
 If a provider was offline during this time, it may miss (parts of) the data.
 
 To re-download the data, remove the local data with `genomepy clean`, then `search` for your genome again.
 
-#### URL is still broken
+### URL is still broken
 Sadly, not everything (naming, structure, filenames) is always consistent on the provider end. Contact the provider to get it fixed!
 One notable group are Ensembl fungi, which seems to be mostly mislabelled.
 

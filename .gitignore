@@ -11,11 +11,12 @@ Log.out
 genomepy/config/default.yaml
 
 # Directories
+docs/_autosummary
+docs/_build
+tests/data
 .pytest_cache
 build
-docs/_build
 genomepy.egg-info
-tests/data
 dist
 eggs
 tmp

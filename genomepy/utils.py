@@ -142,7 +142,7 @@ def try_except_pass(errors, func, *args, **kwargs):
       a single error, or a tuple of errors.
 
     func
-      a function that takes *args and **kwargs
+      a function that takes args and kwargs
     """
     try:
         return func(*args, **kwargs)

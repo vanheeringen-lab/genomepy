@@ -1,23 +1,35 @@
-Welcome to genomepy's documentation!
-====================================
+=================================================
+genomepy: genes and genomes at your fingertips!
+=================================================
 
-.. automodule:: genomepy
-    :members:
-    :exclude-members: Provider, Genome, Annotation
+.. image:: images/logo.png
+    :scale: 50 %
+    :align: right
 
-.. autoclass:: Provider
-    :members:
+*genomepy* is a **python** and **command line** tool aimed at:
 
-.. autoclass:: Genome
-    :members:
-    :inherited-members:
+* finding
+* downloading
+* preprocessing
+* manupulating
 
-.. autoclass:: Annotation
-    :members:
+genomes and gene annotations.
 
+Contents
+=========
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+
+   Home <self>
+   Command line documentation <content/command_line>
+   Python API documentation (core) <content/api_core>
+   Python API documentation (full) <_autosummary/genomepy>
+   FAQ <content/help_faq>
+
+..
+   content/installation
+   content/command_line <content/README_AUTOCOPY.md>
+   content/about
 
 Indices and tables
 ==================
