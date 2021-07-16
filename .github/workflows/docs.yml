@@ -28,10 +28,11 @@ jobs:
       - name: Build 🔧
         run: |
           $CONDA/bin/sphinx-build docs build
+          touch build/.nojekyll
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
           branch: gh-pages # The branch the action should deploy to.
           folder: build # The folder the action should deploy.
-          clean: True
+          clean: true
