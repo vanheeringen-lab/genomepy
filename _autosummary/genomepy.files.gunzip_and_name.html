@@ -198,9 +198,26 @@
 <h1>genomepy.files.gunzip_and_name<a class="headerlink" href="#genomepy-files-gunzip-and-name" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="genomepy.files.gunzip_and_name">
-<span class="sig-prename descclassname"><span class="pre">genomepy.files.</span></span><span class="sig-name descname"><span class="pre">gunzip_and_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">fname:</span> <span class="pre">str)</span> <span class="pre">-&gt;</span> <span class="pre">(&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">&lt;class</span> <span class="pre">'bool'&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.files.gunzip_and_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gunzips the file if gzipped (also works on bgzipped files)
-Returns up-to-date filename and if it was gunzipped</p>
+<span class="sig-prename descclassname"><span class="pre">genomepy.files.</span></span><span class="sig-name descname"><span class="pre">gunzip_and_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#genomepy.files.gunzip_and_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gunzips the file if gzipped.</p>
+<p>Also works on bgzipped files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fname</strong> (<em>str</em>) – path to file</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>fname, str</dt><dd><p>up to date filename</p>
+</dd>
+<dt>gzip, bool</dt><dd><p>whether the file was gunzipped</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>

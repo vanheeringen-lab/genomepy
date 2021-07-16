@@ -196,22 +196,21 @@
 <dt class="sig sig-object py" id="genomepy.annotation.Annotation">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">genomepy.annotation.</span></span><span class="sig-name descname"><span class="pre">Annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">genome</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genomes_dir</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.annotation.Annotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Gene annotation related functions</p>
+<p>Manipulate genes and whole gene annotations with pandas dataframes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>genome</strong> (<em>str</em>) – Genome name.</p></li>
-<li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of annotation file. If name is not specified, then the default annotation
-for the genome is used.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of annotation file.
+If name is not specified the default annotation for the genome is used.</p></li>
 <li><p><strong>genomes_dir</strong> (<em>str</em><em>, </em><em>optional</em>) – Genomes installation directory.</p></li>
-<li><p><strong>TODO</strong> (<em>#</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>attributes &amp; methods to manipulate gene annotations</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Annotation object</p>
+<dd class="field-odd"><p>object</p>
 </dd>
 </dl>
 <dl class="py method">
@@ -230,22 +229,22 @@ for the genome is used.</p></li>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.filter_regex" title="genomepy.annotation.Annotation.filter_regex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_regex</span></code></a>(annot[, regex, invert_match, …])</p></td>
-<td><p>Filter a pandas dataframe by a column (default: 1st, contig name).</p></td>
+<td><p>Filter a dataframe by any column using regex.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.gene_coords" title="genomepy.annotation.Annotation.gene_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gene_coords</span></code></a>(genes[, annot])</p></td>
 <td><p>Retrieve gene locations.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.genes" title="genomepy.annotation.Annotation.genes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">genes</span></code></a>([annot])</p></td>
-<td><p>Retrieve gene names from the specified annotation.</p></td>
+<td><p>Retrieve gene names from an annotation.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.map_genes" title="genomepy.annotation.Annotation.map_genes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_genes</span></code></a>(gene_field[, product, annot])</p></td>
-<td><p>Uses mygene.info to map gene identifiers on the fly by specifying <cite>gene_field</cite>.</p></td>
+<td><p>Use mygene.info to map gene identifiers to any specified <cite>gene_field</cite>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.map_locations" title="genomepy.annotation.Annotation.map_locations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_locations</span></code></a>(annot, to[, drop])</p></td>
-<td><p>Map chromosome mapping from one assembly to another using the NCBI assembly reports.</p></td>
+<td><p>Map chromosome mapping from one assembly to another.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.sanitize" title="genomepy.annotation.Annotation.sanitize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sanitize</span></code></a>([match, filter, overwrite])</p></td>
-<td><p>Compares the contigs names between the genome and the gene annotation.</p></td>
+<td><p>Match the contigs names of the gene annotations to the genome’s.</p></td>
 </tr>
 </tbody>
 </table>
@@ -256,27 +255,39 @@ for the genome is used.</p></li>
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">annotation_contigs</span></code></p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.annotation_contigs" title="genomepy.annotation.Annotation.annotation_contigs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">annotation_contigs</span></code></a></p></td>
+<td><p>Contigs found in the gene annotation BED</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bed</span></code></p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.bed" title="genomepy.annotation.Annotation.bed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bed</span></code></a></p></td>
+<td><p>Dataframe with BED format annotation</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">genome_contigs</span></code></p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.genome_contigs" title="genomepy.annotation.Annotation.genome_contigs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">genome_contigs</span></code></a></p></td>
+<td><p>Contigs found in the genome fasta</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">gtf</span></code></p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.gtf" title="genomepy.annotation.Annotation.gtf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gtf</span></code></a></p></td>
+<td><p>Dataframe with GTF format annotation</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_gtf</span></code></p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.named_gtf" title="genomepy.annotation.Annotation.named_gtf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_gtf</span></code></a></p></td>
+<td><p>Dataframe with GTF format annotation, with gene_name as index</p></td>
 </tr>
 </tbody>
 </table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genomepy.annotation.Annotation.annotation_contigs">
+<span class="sig-name descname"><span class="pre">annotation_contigs</span></span><em class="property"><span class="pre">:</span> <span class="pre">list</span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#genomepy.annotation.Annotation.annotation_contigs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contigs found in the gene annotation BED</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genomepy.annotation.Annotation.bed">
+<span class="sig-name descname"><span class="pre">bed</span></span><em class="property"><span class="pre">:</span> <span class="pre">pandas.core.frame.DataFrame</span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#genomepy.annotation.Annotation.bed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dataframe with BED format annotation</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.annotation.Annotation.filter_regex">
-<span class="sig-name descname"><span class="pre">filter_regex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regex</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'.*'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_match</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#genomepy.annotation.Annotation.filter_regex" title="Permalink to this definition">¶</a></dt>
-<dd><p>Filter a pandas dataframe by a column (default: 1st, contig name).</p>
+<span class="sig-name descname"><span class="pre">filter_regex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regex</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'.*'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_match</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#genomepy.annotation.Annotation.filter_regex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter a dataframe by any column using regex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -287,10 +298,10 @@ for the genome is used.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>filtered dataframe</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>filtered pd.DataFrame</p>
+<dd class="field-odd"><p>pd.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -302,15 +313,15 @@ for the genome is used.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>genes</strong> (<em>Iterable</em>) – List of gene names as found in the given annotation file type.</p></li>
-<li><p><strong>annot</strong> (<em>str</em><em>, </em><em>optional</em>) – Annotation file type: ‘bed’ or ‘gtf’</p></li>
+<li><p><strong>genes</strong> (<em>Iterable</em>) – List of gene names as found in the given annotation file type</p></li>
+<li><p><strong>annot</strong> (<em>str</em><em>, </em><em>optional</em>) – Annotation file type: ‘bed’ or ‘gtf’ (default: “bed”)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>gene annotation</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.DataFrame with gene annotation.</p>
+<dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -318,33 +329,44 @@ for the genome is used.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.annotation.Annotation.genes">
 <span class="sig-name descname"><span class="pre">genes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'bed'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#genomepy.annotation.Annotation.genes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieve gene names from the specified annotation.</p>
-<p>For BED files, names from the ‘name’ columns</p>
-<p>For GTF files, names from the ‘gene_name’ field in the attribute column, if available.</p>
+<dd><p>Retrieve gene names from an annotation.</p>
+<p>For BED files, names are taken from the ‘name’ columns.</p>
+<p>For GTF files, names are taken from the ‘gene_name’ field
+in the attribute column, if available.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>annot</strong> (<em>str</em><em>, </em><em>optional</em>) – Annotation file type: ‘bed’ or ‘gtf’</p>
+<dd class="field-odd"><p><strong>annot</strong> (<em>str</em><em>, </em><em>optional</em>) – Annotation file type: ‘bed’ or ‘gtf’ (default: “bed”)</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>gene names</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list with gene names</p>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genomepy.annotation.Annotation.genome_contigs">
+<span class="sig-name descname"><span class="pre">genome_contigs</span></span><em class="property"><span class="pre">:</span> <span class="pre">list</span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#genomepy.annotation.Annotation.genome_contigs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contigs found in the genome fasta</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genomepy.annotation.Annotation.gtf">
+<span class="sig-name descname"><span class="pre">gtf</span></span><em class="property"><span class="pre">:</span> <span class="pre">pandas.core.frame.DataFrame</span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#genomepy.annotation.Annotation.gtf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dataframe with GTF format annotation</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.annotation.Annotation.map_genes">
-<span class="sig-name descname"><span class="pre">map_genes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gene_field</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">product</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'protein'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'bed'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#genomepy.annotation.Annotation.map_genes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Uses mygene.info to map gene identifiers on the fly by specifying
-<cite>gene_field</cite>. If the identifier can’t be mapped, it will be dropped
-from the resulting annotation.</p>
-<p>Returns the dataframe with remapped “name” column.</p>
+<span class="sig-name descname"><span class="pre">map_genes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gene_field</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">product</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'protein'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'bed'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span><a class="headerlink" href="#genomepy.annotation.Annotation.map_genes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use mygene.info to map gene identifiers to any specified <cite>gene_field</cite>.</p>
+<p>Returns the dataframe with remapped “name” column.
+Drops missing identifiers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>self</strong> (<em>Annotation class instance</em>) – </p></li>
 <li><p><strong>annot</strong> (<em>str</em><em> or </em><em>pd.Dataframe</em>) – Annotation dataframe to map (a pandas dataframe or “bed”).
 Is mapped to a column named “name” (required).</p></li>
 <li><p><strong>gene_field</strong> (<em>str</em><em>, </em><em>optional</em>) – Identifier for gene annotation. Uses mygene.info to map ids. Valid fields
@@ -356,31 +378,7 @@ not supported.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.DataFrame with gene annotation.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="genomepy.annotation.Annotation.map_locations">
-<span class="sig-name descname"><span class="pre">map_locations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#genomepy.annotation.Annotation.map_locations" title="Permalink to this definition">¶</a></dt>
-<dd><p>Map chromosome mapping from one assembly to another using the
-NCBI assembly reports.</p>
-<p>Drops missing contigs.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>annot</strong> (<em>str</em><em> or </em><em>pd.Dataframe</em>) – annotation to map (a pandas dataframe, “bed” or “gtf”)</p></li>
-<li><p><strong>to</strong> (<em>str</em>) – target provider (UCSC, Ensembl or NCBI)</p></li>
-<li><p><strong>drop</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True, replace the chromosome column.
-if False, add a 2nd chromosome column</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Chromosome mapping.</p>
+<dd class="field-even"><p>remapped gene annotation</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
@@ -389,26 +387,55 @@ if False, add a 2nd chromosome column</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="genomepy.annotation.Annotation.map_locations">
+<span class="sig-name descname"><span class="pre">map_locations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#genomepy.annotation.Annotation.map_locations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map chromosome mapping from one assembly to another.</p>
+<p>Uses the NCBI assembly reports to find contigs.
+Drops missing contigs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>annot</strong> (<em>str</em><em> or </em><em>pd.Dataframe</em>) – annotation to map: “bed”, “gtf” or a pandas dataframe.</p></li>
+<li><p><strong>to</strong> (<em>str</em>) – target provider (UCSC, Ensembl or NCBI)</p></li>
+<li><p><strong>drop</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True, replace the chromosome column.
+If False, add a 2nd chromosome column.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>chromosome mapping.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genomepy.annotation.Annotation.named_gtf">
+<span class="sig-name descname"><span class="pre">named_gtf</span></span><em class="property"><span class="pre">:</span> <span class="pre">pandas.core.frame.DataFrame</span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#genomepy.annotation.Annotation.named_gtf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dataframe with GTF format annotation, with gene_name as index</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="genomepy.annotation.Annotation.sanitize">
 <span class="sig-name descname"><span class="pre">sanitize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.annotation.Annotation.sanitize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compares the contigs names between the genome and the gene annotation.
-First, match the contig names if possible.
+<dd><p>Match the contigs names of the gene annotations to the genome’s.</p>
+<p>First, match the contig names if possible.
 Second, remove contig names not found in the genome.
 Third, save the results and log this in the README.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>self</strong> (<em>Annotation class instance</em>) – </p></li>
 <li><p><strong>match</strong> (<em>bool</em><em>, </em><em>optional</em>) – match annotation contig names to the genome contig names (default is True)</p></li>
 <li><p><strong>filter</strong> (<em>bool</em><em>, </em><em>optional</em>) – remove annotation contig names not found in the genome contig names (default is True)</p></li>
 <li><p><strong>overwrite</strong> (<em>bool</em><em>, </em><em>optional</em>) – update the annotation files on disk, and log this in the README (default is False).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>updated attributes</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>updated Annotation class instance</p>
+<dd class="field-odd"><p>Annotation class</p>
 </dd>
 </dl>
 </dd></dl>

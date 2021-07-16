@@ -205,6 +205,7 @@
 <dt class="sig sig-object py" id="genomepy.providers.Provider">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">genomepy.providers.</span></span><span class="sig-name descname"><span class="pre">Provider</span></span><a class="headerlink" href="#genomepy.providers.Provider" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Find &amp; instantiate providers</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.Provider.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.Provider.__init__" title="Permalink to this definition">¶</a></dt>
@@ -235,12 +236,13 @@
 <dt class="sig sig-object py" id="genomepy.providers.Provider.create">
 <em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.Provider.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a provider based on the provider name.</p>
+<p>Adds additional method(s) to the instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – Name of the provider (eg. UCSC, Ensembl, …)</p>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – Name of the provider (e.g. UCSC, Ensembl, …)</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Provider instance.</p>
+<dd class="field-even"><p>Provider instance</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>provider</p>

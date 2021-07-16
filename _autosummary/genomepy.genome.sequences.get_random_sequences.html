@@ -211,7 +211,6 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>self</strong> (<em>Genome class instance</em>) – </p></li>
 <li><p><strong>n</strong> (<em>int</em><em> , </em><em>optional</em>) – Number of sequences to return.</p></li>
 <li><p><strong>length</strong> (<em>int</em><em> , </em><em>optional</em>) – Length of sequences to return.</p></li>
 <li><p><strong>chroms</strong> (<em>list</em><em> , </em><em>optional</em>) – Return sequences only from these chromosomes.</p></li>
@@ -221,12 +220,13 @@ Options: “list” or “string”, default: “list”.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>coords</strong> – List with [chrom, start, end] genomic coordinates.
+<dd class="field-even"><p>coordinates as lists or strings:
+List with [chrom, start, end] genomic coordinates.
 String with “chrom:start-end” genomic coordinates
 (can be used as input for track2fasta).</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list of lists/strings</p>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>

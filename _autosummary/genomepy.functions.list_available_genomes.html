@@ -194,18 +194,15 @@
 <h1>genomepy.functions.list_available_genomes<a class="headerlink" href="#genomepy-functions-list-available-genomes" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="genomepy.functions.list_available_genomes">
-<span class="sig-prename descclassname"><span class="pre">genomepy.functions.</span></span><span class="sig-name descname"><span class="pre">list_available_genomes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.functions.list_available_genomes" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">genomepy.functions.</span></span><span class="sig-name descname"><span class="pre">list_available_genomes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#genomepy.functions.list_available_genomes" title="Permalink to this definition">¶</a></dt>
 <dd><p>List all available genomes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>provider</strong> (<em>str</em><em>, </em><em>optional</em>) – List genomes from specific provider. Genomes from all
 providers will be returned if not specified.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>tuples with genome name, provider and metadata</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><p><em>list</em> – tuples with genome name, provider and metadata</p>
 </dd>
 </dl>
 </dd></dl>

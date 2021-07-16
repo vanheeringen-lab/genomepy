@@ -210,8 +210,8 @@
 <span class="sig-prename descclassname"><span class="pre">genomepy.genome.seqdict.</span></span><span class="sig-name descname"><span class="pre">as_seqdict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_convert</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pyfaidx.Fasta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genome</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">genomepy.genome.seqdict.</span></span><span class="sig-name descname"><span class="pre">as_seqdict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_convert</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genome</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Convert input to a dictionary with name as key and sequence as value.
-If the input contains genomic coordinates, the genome needs to be
+<dd><p>Convert input to a dictionary with name as key and sequence as value.</p>
+<p>If the input contains genomic coordinates, the genome needs to be
 specified. If minsize is specified all sequences will be checked if they
 are not shorter than minsize. If regions (or a region file) are used as
 the input, the genome can optionally be specified in the region using the
@@ -230,10 +230,10 @@ following format: <a class="reference external" href="mailto:genome&#37;&#52;&#4
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>sequence names as key and sequences as value.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict with sequence names as key and sequences as value.</p>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>

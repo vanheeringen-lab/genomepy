@@ -196,8 +196,8 @@
 <dt class="sig sig-object py" id="genomepy.genome.Genome">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">genomepy.genome.</span></span><span class="sig-name descname"><span class="pre">Genome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genomes_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.genome.Genome" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pyfaidx.Fasta</span></code></p>
-<p>Get pyfaidx Fasta object of genome</p>
-<p>Also generates an index file of the genome</p>
+<p>pyfaidx Fasta object of a genome with additional attributes &amp; methods.</p>
+<p>Generates a genome index file, sizes file and gaps file of the genome.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -357,7 +357,6 @@ filename: name of fasta file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>self</strong> (<em>Genome class instance</em>) – </p></li>
 <li><p><strong>n</strong> (<em>int</em><em> , </em><em>optional</em>) – Number of sequences to return.</p></li>
 <li><p><strong>length</strong> (<em>int</em><em> , </em><em>optional</em>) – Length of sequences to return.</p></li>
 <li><p><strong>chroms</strong> (<em>list</em><em> , </em><em>optional</em>) – Return sequences only from these chromosomes.</p></li>
@@ -367,12 +366,13 @@ Options: “list” or “string”, default: “list”.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>coords</strong> – List with [chrom, start, end] genomic coordinates.
+<dd class="field-even"><p>coordinates as lists or strings:
+List with [chrom, start, end] genomic coordinates.
 String with “chrom:start-end” genomic coordinates
 (can be used as input for track2fasta).</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list of lists/strings</p>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -443,7 +443,6 @@ as directed from the track(s).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>self</strong> (<em>Genome class instance</em>) – </p></li>
 <li><p><strong>track</strong> (<em>list/region file/bed file</em>) – region(s) you wish to translate to fasta.
 Example input files can be found in genomepy/tests/data/regions.*</p></li>
 <li><p><strong>fastafile</strong> (<em>bool</em><em> , </em><em>optional</em>) – return Sequences as list or save to file? (default: list)</p></li>
