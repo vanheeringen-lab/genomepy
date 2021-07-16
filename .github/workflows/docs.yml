@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - master
-      - docs # TODO: remove when finished
+      - docs # backdoor branch to update docs
 
 jobs:
   build-and-deploy:

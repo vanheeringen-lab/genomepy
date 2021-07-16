@@ -20,7 +20,7 @@ def cli():
     pass  # noqa
 
 
-@click.command(short_help="show 1st line of UCSC annotations")
+@click.command(short_help="show 1st lines of each annotation")
 @click.argument("name")
 @click.option("-p", "--provider", help="only search this provider")
 @click.option("-n", "--lines", help="number of lines to print", default=2)

@@ -1,10 +1,10 @@
-==========================
-Command line documentation
-==========================
+============
+Installation
+============
 
 .. mdinclude:: ../../README.md
-   :start-line: 82
-   :end-line: 486
+   :start-line: 45
+   :end-line: 81
 
 ..
    note: start- and end-line are 0-indexed.
