@@ -11,7 +11,7 @@ genomepy: genes and genomes at your fingertips!
 * finding
 * downloading
 * preprocessing
-* manupulating
+* manipulating
 
 genomes and gene annotations.
 
@@ -27,11 +27,6 @@ Contents
    Python API documentation (full) <_autosummary/genomepy>
    FAQ <content/help_faq>
    About <content/about>
-
-..
-   content/installation
-   content/command_line <content/README_AUTOCOPY.md>
-   content/about
 
 Indices and tables
 ==================
