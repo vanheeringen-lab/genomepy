@@ -20,7 +20,7 @@ memory = Memory(genomepy_cache_dir, verbose=0)
 
 
 def clean():
-    """Remove cached data on providers"""
+    """Remove cached data on providers."""
     rmtree(genomepy_cache_dir, ignore_errors=True)
     os.makedirs(genomepy_cache_dir, exist_ok=True)
     print("All clean!")

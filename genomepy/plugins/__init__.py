@@ -1,3 +1,4 @@
+"""Plugin class, modules & related functions"""
 import os
 import re
 
@@ -81,7 +82,7 @@ def init_plugins():
 PLUGINS = init_plugins()
 
 
-def get_active_plugins():
+def get_active_plugins() -> list:
     """Returns all active plugin instances."""
     return [inst for name, inst in PLUGINS.items() if inst.active]
 
@@ -124,7 +125,23 @@ def show_plugins():
 
 
 def manage_plugins(command: str, plugin_names: list = None):
-    """List, enable or disable plugins."""
+    """
+    Manage genomepy plugins
+
+    Parameters
+    ----------
+    command : str
+        command to perform. Options:
+
+        list
+            show plugins and status
+        enable
+            enable plugins
+        disable
+            disable plugins
+    plugin_names : list
+        plugin names for the enable/disable command
+    """
     if command in ["show", "list"]:
         return show_plugins()
 

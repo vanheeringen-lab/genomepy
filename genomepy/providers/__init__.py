@@ -1,3 +1,4 @@
+"""Provider class, modules & related functions"""
 import os
 from typing import List, Optional
 
@@ -47,15 +48,17 @@ def create(name: str):
     """
     Create a provider based on the provider name.
 
+    Adds additional method(s) to the instance.
+
     Parameters
     ----------
     name : str
-        Name of the provider (eg. UCSC, Ensembl, ...)
+        Name of the provider (e.g. UCSC, Ensembl, ...)
 
     Returns
     -------
-    provider :
-        Provider instance.
+    provider
+        Provider instance
     """
     name = name.lower()
     if name not in PROVIDERS:
@@ -68,19 +71,42 @@ def create(name: str):
 
 
 def list_providers():
-    """List available providers."""
+    """
+    List of providers genomepy supports
+
+    Returns
+    -------
+    list
+        names of providers
+    """
     return [p.name for p in PROVIDERS.values()]
 
 
 def list_online_providers():
-    """Return a list of all providers that can be pinged."""
+    """
+    List of providers genomepy supports *that are online right now*.
+
+    Returns
+    -------
+    list
+        names of online providers
+    """
     return [p.name for p in PROVIDERS.values() if p.ping()]
 
 
 def online_providers(provider: str = None):
     """
     Check if the provider can be reached, or any provider if none is specified.
-    Return online provider(s) as objects.
+
+    Parameters
+    ----------
+    provider : str, optional
+        Only try to yield the specified provider.
+
+    Yields
+    ------
+    provider
+        Provider instances
     """
     for provider in [provider] if provider else list_providers():
         try:
@@ -102,12 +128,12 @@ def search(term, provider: str = None):
     term : str
         Search term, case-insensitive.
     provider : str , optional
-        Provider name
+        Only search the specified provider (faster).
 
     Yields
     ------
     list
-        genome information (name/identifier and description)
+        genome name, provider and metadata
     """
     term = safe(str(term))
     for p in online_providers(provider):
@@ -151,9 +177,7 @@ def _best_accession(reference: str, targets: list):
 
 
 def _best_search_result(asm_acc: str, results: List[list]) -> list:
-    """
-    Return the best search result based on accession IDs.
-    """
+    """Return the best search result based on accession IDs."""
     results = [res for res in results if res[2] is not None]
 
     if len(results) > 1:
@@ -287,6 +311,8 @@ def map_locations(
 
 
 class Provider:
+    """Find & instantiate providers"""
+
     list = staticmethod(list_providers)
     online = staticmethod(list_online_providers)
     create = staticmethod(create)

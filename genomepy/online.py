@@ -1,7 +1,9 @@
+"""Utility functions with internet connections"""
 import socket
 import urllib.error
 from ftplib import FTP, all_errors, error_temp
 from time import sleep
+from typing import Tuple
 from urllib.request import urlopen
 
 import requests
@@ -10,10 +12,21 @@ from tqdm.auto import tqdm
 from genomepy.exceptions import GenomeDownloadError
 
 
-def download_file(url, filename):
+def download_file(url, filename) -> str:
     """
     Helper method handling downloading large files from `url` to `filename`.
-    Returns a pointer to `filename`.
+
+    Parameters
+    ----------
+    url : str
+        download target url
+    filename : str
+        file to download to
+
+    Returns
+    -------
+    str
+        filename
     """
 
     def decorated_pbar(total):
@@ -53,10 +66,27 @@ def download_file(url, filename):
     return filename
 
 
-def connect_ftp_link(link, timeout=None):
+def connect_ftp_link(link, timeout=None) -> Tuple[FTP, str]:
     """
-    anonymous login to ftp
-    accepts link in the form of ftp://ftp.name.domain/... and ftp.name.domain/...
+    Anonymous login to ftp.
+
+    Accepts link in the form of ftp://ftp.name.domain/...
+    and ftp.name.domain/...
+
+    Parameters
+    ----------
+    link : str
+        FTP link
+    timeout : int, optional
+        number of idle seconds before the connection closes
+
+    Returns
+    -------
+    tuple
+        ftp: FTP
+            object with connection established
+        target: str
+            target file
     """
     link = link.replace("ftp://", "")
     host = link.split("/")[0]
@@ -83,7 +113,7 @@ def retry(func, tries, *args, **kwargs):
     """
     Retry functions with potential connection errors.
 
-    *args and **kwargs are passed to func.
+    args and kwargs are passed to func.
     """
     for n in range(tries):
         try:
@@ -99,7 +129,7 @@ def retry(func, tries, *args, **kwargs):
                 sleep(1)
 
 
-def check_url(url, max_tries=1, timeout=15):
+def check_url(url, max_tries=1, timeout=15) -> bool:
     """Check if URL works. Returns bool"""
 
     def _check_url(_url, _timeout):
@@ -113,5 +143,7 @@ def check_url(url, max_tries=1, timeout=15):
             ret = urlopen(_url, timeout=_timeout)
             if ret.getcode() == 200:
                 return True
+
+        return False
 
     return retry(_check_url, max_tries, url, timeout)

@@ -1,0 +1,8 @@
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - sphinx
+  - sphinx_rtd_theme  # read the docs theme
+  - m2r2              # include markdown files
