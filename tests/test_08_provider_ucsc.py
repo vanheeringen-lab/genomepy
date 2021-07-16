@@ -116,7 +116,7 @@ def test_get_genomes(ucsc):
         assert field in genome
     assert genome["taxId"] == 9646
     assert genome["assembly_accession"] == "GCF_000004335.2"
-    assert genome["annotations"] == ["ncbiRefSeq", "ensGene"]
+    assert sorted(genome["annotations"]) == sorted(["ncbiRefSeq", "ensGene"])
 
 
 def test_head_annotation(ucsc, caplog, capsys):
