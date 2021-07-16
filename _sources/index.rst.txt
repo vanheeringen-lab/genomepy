@@ -21,10 +21,12 @@ Contents
    :maxdepth: 1
 
    Home <self>
+   Installation <content/installation>
    Command line documentation <content/command_line>
    Python API documentation (core) <content/api_core>
    Python API documentation (full) <_autosummary/genomepy>
    FAQ <content/help_faq>
+   About <content/about>
 
 ..
    content/installation
