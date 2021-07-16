@@ -26,6 +26,7 @@ check that the lines still match in the various content pages.
 * line 30: added extensions & extention configurations
 * line 56: added `html_sidebars`
 * line 65: `html_theme = "sphinx_rtd_theme"`
+* line 66: added last-updated time
 * line 73: added `html_context`
 
 ### entry point: `index.rst`
