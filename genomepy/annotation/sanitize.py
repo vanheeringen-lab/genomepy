@@ -1,32 +1,31 @@
+"""Functions to match gene annotations to genomes"""
 from itertools import compress
 
 from genomepy.annotation.utils import _check_property, write_annot
 from genomepy.files import _open, update_readme
 
 
-def sanitize(self, match=True, filter=True, overwrite=False):
+def sanitize(self, match=True, filter=True, overwrite=False):  # noqa
     """
-    Compares the contigs names between the genome and the gene annotation.
+    Match the contigs names of the gene annotations to the genome's.
+
     First, match the contig names if possible.
     Second, remove contig names not found in the genome.
     Third, save the results and log this in the README.
 
     Parameters
     ----------
-    self: Annotation class instance
-
     match: bool, optional
         match annotation contig names to the genome contig names (default is True)
-
     filter: bool, optional
         remove annotation contig names not found in the genome contig names (default is True)
-
     overwrite: bool, optional
         update the annotation files on disk, and log this in the README (default is False).
 
     Returns
     -------
-    updated Annotation class instance
+    Annotation class
+        updated attributes
     """
     _check_property(self.genome_file, f"{self.genome}.fa")
 

@@ -1,3 +1,7 @@
+"""
+Genes and genomes at your fingertips!
+"""
+
 import sys
 
 from loguru import logger

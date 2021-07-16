@@ -1,3 +1,4 @@
+"""Functions to extract or convert genomic sequences"""
 import re
 from bisect import bisect
 from random import random
@@ -6,7 +7,7 @@ from pyfaidx import Sequence
 
 
 def track2fasta(
-    self, track, fastafile=None, stranded=False, extend_up=0, extend_down=0
+    self, track, fastafile=None, stranded=False, extend_up=0, extend_down=0  # noqa
 ):
     """
     Return a list of fasta sequences as Sequence objects
@@ -14,8 +15,6 @@ def track2fasta(
 
     Parameters
     ----------
-    self: Genome class instance
-
     track: list/region file/bed file
         region(s) you wish to translate to fasta.
         Example input files can be found in genomepy/tests/data/regions.*
@@ -151,15 +150,13 @@ def bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
 
 
 def get_random_sequences(
-    self, n=10, length=200, chroms=None, max_n=0.1, outtype="list"
+    self, n=10, length=200, chroms=None, max_n=0.1, outtype="list"  # noqa
 ):
     """
     Return random genomic sequences.
 
     Parameters
     ----------
-    self: Genome class instance
-
     n : int , optional
         Number of sequences to return.
 
@@ -178,7 +175,8 @@ def get_random_sequences(
 
     Returns
     -------
-    coords : list of lists/strings
+    list
+        coordinates as lists or strings:
         List with [chrom, start, end] genomic coordinates.
         String with "chrom:start-end" genomic coordinates
         (can be used as input for track2fasta).

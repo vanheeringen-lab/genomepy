@@ -1,3 +1,4 @@
+"""Mygene.info functions"""
 from typing import Iterable, Optional, Tuple, Union
 
 import mygene
@@ -13,39 +14,35 @@ from genomepy.utils import safe
 
 
 def map_genes(
-    self,
+    self,  # noqa
     gene_field: str,
     product: str = "protein",
     annot: Union[str, pd.DataFrame] = "bed",
-) -> Optional[pd.DataFrame]:
+) -> pd.DataFrame:
     """
-    Uses mygene.info to map gene identifiers on the fly by specifying
-    `gene_field`. If the identifier can't be mapped, it will be dropped
-    from the resulting annotation.
+    Use mygene.info to map gene identifiers to any specified `gene_field`.
 
     Returns the dataframe with remapped "name" column.
+    Drops missing identifiers.
 
     Parameters
     ----------
-    self: Annotation class instance
-
     annot: str or pd.Dataframe
         Annotation dataframe to map (a pandas dataframe or "bed").
         Is mapped to a column named "name" (required).
-
     gene_field : str, optional
         Identifier for gene annotation. Uses mygene.info to map ids. Valid fields
         are: ensembl.gene, entrezgene, symbol, name, refseq, entrezgene. Note that
         refseq will return the protein refseq_id by default, use `product="rna"` to
         return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
         not supported.
-
     product : str, optional
         Either "protein" or "rna". Only used when `gene_field="refseq"`
 
     Returns
     -------
-    pandas.DataFrame with gene annotation.
+    pandas.DataFrame
+        remapped gene annotation
     """
     to, product = parse_mygene_input(gene_field, product)
     df = _parse_annot(self, annot)
@@ -105,7 +102,8 @@ def query_mygene(
 
     Returns
     -------
-    pandas.DataFrame with mapped gene annotation.
+    pandas.DataFrame
+        mapped gene annotation.
     """
     field, _ = parse_mygene_input(field)
 
@@ -165,6 +163,7 @@ def parse_mygene_input(gene_field, product=None):
 def ensembl_genome_info(self) -> Optional[Tuple[str, str, str]]:
     """
     Return Ensembl genome information for this genome.
+
     Requires accession numbers to match (excluding patch numbers)
 
     Returns

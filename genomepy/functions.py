@@ -1,4 +1,4 @@
-"""Module-level functions."""
+"""Module-level functions"""
 import os
 import re
 from tempfile import mkdtemp
@@ -40,6 +40,15 @@ def head_annotations(name: str, provider=None, n: int = 2):
     "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
 
     For NCBI, the chromosome names are not yet sanitized.
+
+    Parameters
+    ----------
+    name: str
+        genome name
+    provider: str, optional
+        only search the specified provider for the genome name
+    n: int, optional
+        number of lines to show
     """
     for p in online_providers(provider):
         if name in p.genomes:
@@ -48,7 +57,7 @@ def head_annotations(name: str, provider=None, n: int = 2):
             rm_rf(tmp_dir)
 
 
-def list_available_genomes(provider=None):
+def list_available_genomes(provider=None) -> list:
     """
     List all available genomes.
 
@@ -58,27 +67,29 @@ def list_available_genomes(provider=None):
         List genomes from specific provider. Genomes from all
         providers will be returned if not specified.
 
-    Returns
-    -------
-    list with genome names
+    Yields
+    ------
+    list
+        tuples with genome name, provider and metadata
     """
     for p in online_providers(provider):
         for row in p.list_available_genomes():
             yield list(row[:1]) + [p.name] + list(row[1:])
 
 
-def list_installed_genomes(genomes_dir: str = None):
+def list_installed_genomes(genomes_dir: str = None) -> list:
     """
     List all locally available genomes.
 
     Parameters
     ----------
-    genomes_dir : str
+    genomes_dir : str, optional
         Directory with genomes installed by genomepy.
 
     Returns
     -------
-    list with genome names
+    list
+        genome names
     """
     genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
     if os.path.exists(genomes_dir):
@@ -107,9 +118,9 @@ def install_genome(
     threads: Optional[int] = 1,
     force: Optional[bool] = False,
     **kwargs: Optional[dict],
-):
+) -> Genome:
     """
-    Install a genome.
+    Install a genome (& gene annotation).
 
     Parameters
     ----------
@@ -120,13 +131,13 @@ def install_genome(
         Provider name. will try Ensembl, UCSC and NCBI (in that order) if not specified.
 
     genomes_dir : str , optional
-        Where to store the fasta files
+        Where to create the output folder.
 
     localname : str , optional
         Custom name for this genome.
 
     mask : str , optional
-        Default is 'soft', choices 'hard'/'soft/'none' for respective masking level.
+        Genome masking of repetitive sequences. Options: hard/soft/none, default is soft.
 
     keep_alt : bool , optional
         Some genomes contain alternative regions. These regions cause issues with
@@ -137,15 +148,14 @@ def install_genome(
         Regular expression to select specific chromosome / scaffold names.
 
     invert_match : bool , optional
-        Set to True to select all chromosomes that don't match the regex.
+        Set to True to select all chromosomes that *don't* match the regex.
 
     bgzip : bool , optional
         If set to True the genome FASTA file will be compressed using bgzip,
         and gene annotation will be compressed with gzip.
-        If not specified, the setting from the configuration file will be used.
 
     threads : int , optional
-        Build genome index using multithreading (if supported). Default: lowest of 8/all threads
+        Build genome index using multithreading (if supported). Default: lowest of 8/all threads.
 
     force : bool , optional
         Set to True to overwrite existing files.
@@ -154,7 +164,7 @@ def install_genome(
         If set to True, download gene annotation in BED and GTF format.
 
     only_annotation : bool , optional
-        If set to True, only download the annotation files.
+        If set to True, only download the gene annotation files.
 
     skip_matching : bool , optional
         If set to True, contigs in the annotation not matching
@@ -165,6 +175,7 @@ def install_genome(
 
     kwargs : dict , optional
         Provider specific options.
+
         toplevel : bool , optional
             Ensembl only: Always download the toplevel genome. Ignores potential primary assembly.
 
@@ -174,6 +185,11 @@ def install_genome(
         to_annotation : text , optional
             URL only: direct link to annotation file.
             Required if this is not the same directory as the fasta.
+
+    Returns
+    -------
+    Genome
+        Genome class with the installed genome
     """
     name = safe(name)
     localname = get_localname(name, localname)
@@ -266,8 +282,7 @@ def generate_env(fname: str = "exports.txt", genomes_dir: str = None):
     """
     Generate file with exports.
 
-    By default this is .config/genomepy/exports.txt.
-
+    By default the export file generated is .config/genomepy/exports.txt.
     An alternative file name or file path is accepted too.
 
     Parameters

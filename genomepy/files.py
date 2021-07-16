@@ -1,3 +1,4 @@
+"""Utility functions with files"""
 import gzip
 import os
 import re
@@ -14,7 +15,7 @@ from genomepy.utils import rm_rf
 
 def read_readme(readme: str) -> Tuple[dict, list]:
     """
-    parse readme file
+    Parse a readme file.
 
     Parameters
     ----------
@@ -24,8 +25,11 @@ def read_readme(readme: str) -> Tuple[dict, list]:
     Returns
     -------
     tuple
-        metadata : dict with genome metadata
-        lines: list with non-metadata text (such as regex info)
+        metadata : dict
+            genome metadata
+
+        lines: list
+            non-metadata text (such as regex info)
     """
     metadata = {
         "name": "na",
@@ -66,7 +70,18 @@ def read_readme(readme: str) -> Tuple[dict, list]:
 
 
 def write_readme(readme: str, metadata: dict, lines: list = None):
-    """Create a new readme with updated information"""
+    """
+    Create a new readme file with supplied information.
+
+    Parameters
+    ----------
+    readme: str
+        filename
+    metadata: dict
+        dict to write
+    lines: list, optional
+        additional lines of text to append
+    """
     with open(readme, "w") as f:
         for k, v in metadata.items():
             print(f"{k}: {v}", file=f)
@@ -76,6 +91,18 @@ def write_readme(readme: str, metadata: dict, lines: list = None):
 
 
 def update_readme(readme: str, updated_metadata: dict = None, extra_lines: list = None):
+    """
+    Update a readme file with supplied information.
+
+    Parameters
+    ----------
+    readme: str
+        filename
+    updated_metadata: dict
+        dict with updated data
+    extra_lines: list, optional
+        additional lines of text to append
+    """
     metadata, lines = read_readme(readme)
     if updated_metadata:
         metadata = {**metadata, **updated_metadata}
@@ -84,10 +111,24 @@ def update_readme(readme: str, updated_metadata: dict = None, extra_lines: list 
     write_readme(readme, metadata, lines)
 
 
-def gunzip_and_name(fname: str) -> (str, bool):
+def gunzip_and_name(fname: str) -> Tuple[str, bool]:
     """
-    Gunzips the file if gzipped (also works on bgzipped files)
-    Returns up-to-date filename and if it was gunzipped
+    Gunzips the file if gzipped.
+
+    Also works on bgzipped files.
+
+    Parameters
+    ----------
+    fname: str
+        path to file
+
+    Returns
+    -------
+    tuple
+        fname, str
+            up to date filename
+        gzip, bool
+            whether the file was gunzipped
     """
     if fname.endswith(".gz"):
         with gzip.open(fname, "rb") as f_in:
@@ -98,10 +139,21 @@ def gunzip_and_name(fname: str) -> (str, bool):
     return fname, False
 
 
-def gzip_and_name(fname, gzip_file=True):
+def gzip_and_name(fname, gzip_file=True) -> str:
     """
-    Gzip file if requested
-    Returns up to date filename
+    Gzip file if requested.
+
+    Parameters
+    ----------
+    fname: str
+        path to file
+    gzip_file: bool, optional
+        whether to gzip the file
+
+    Returns
+    -------
+    str
+        up to date filename
     """
     if gzip_file:
         with open(fname, "rb") as f_in:
@@ -112,12 +164,23 @@ def gzip_and_name(fname, gzip_file=True):
     return fname
 
 
-def bgzip_and_name(fname, bgzip=True):
+def bgzip_and_name(fname, bgzip_file=True) -> str:
     """
-    Bgzip file if requested
-    Returns up to date filename
+    Bgzip file if requested.
+
+    Parameters
+    ----------
+    fname: str
+        path to file
+    bgzip_file: bool, optional
+        whether to gzip the file
+
+    Returns
+    -------
+    str
+        up to date filename
     """
-    if bgzip:
+    if bgzip_file:
         ret = sp.check_call(["bgzip", fname])
         fname += ".gz"
         if ret != 0:
@@ -129,8 +192,17 @@ def _open(fname: str, mode: Optional[str] = "r"):
     """
     Return a function to open a (gzipped) file.
 
-    fname: (gzipped) file path
-    mode: (r)ead or (w)rite.
+    Parameters
+    ----------
+    fname: str
+        (gzipped) file path
+    mode: str
+        (r)ead or (w)rite.
+
+    Returns
+    -------
+    generator
+        opened file
     """
     if mode not in ["r", "w"]:
         raise ValueError("mode must be either 'r' or 'w'.")
@@ -140,12 +212,22 @@ def _open(fname: str, mode: Optional[str] = "r"):
     return open(fname, mode)
 
 
-def get_file_info(fname):
+def get_file_info(fname) -> Tuple[str, bool]:
     """
     Returns the lower case file type of a file, and if it is gzipped
 
+    Parameters
+    ----------
     fname: str
         filename
+
+    Returns
+    -------
+    tuple
+        ext: str
+            fname file type
+        gz: bool
+            whether fname was gzipped
     """
     fname = fname.lower()
     gz = False
@@ -156,7 +238,7 @@ def get_file_info(fname):
     return split[1], gz
 
 
-def glob_ext_files(dirname, ext="fa"):
+def glob_ext_files(dirname, ext="fa") -> list:
     """
     Return (gzipped) file names in directory containing the given extension.
 
@@ -170,7 +252,8 @@ def glob_ext_files(dirname, ext="fa"):
 
     Returns
     -------
-        File names.
+    list
+        file names
     """
     fnames = glob(os.path.join(dirname, f"*.{ext}*"))
     return [f for f in fnames if f.endswith((ext, f"{ext}.gz"))]
@@ -220,26 +303,25 @@ def filter_fasta(
     regex: str = ".*",
     invert_match: Optional[bool] = False,
 ) -> list:
-    """Filter fasta file based on regex.
+    """
+    Filter fasta file based on regex.
 
     Parameters
     ----------
     infa : str
         Filename of the input fasta file.
-
     outfa : str, optional
         Filename of the output fasta file. If None, infa is overwritten.
-
     regex : str, optional
         Regular expression used for selecting sequences.
         Matches everything if left blank.
-
     invert_match : bool, optional
         Select all sequence *not* matching regex if set.
 
     Returns
     -------
-    a list of removed contigs
+    list
+        removed contigs
     """
     pattern = re.compile(regex)
 

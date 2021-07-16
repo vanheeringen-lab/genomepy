@@ -1,0 +1,38 @@
+name: Build and Deploy
+on:
+  push:
+    branches:
+      - master
+      - docs # backdoor branch to update docs
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2.3.1
+
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Install dependencies 🔨
+        run: |
+          $CONDA/bin/conda config --add channels conda-forge
+          $CONDA/bin/conda config --add channels bioconda
+          $CONDA/bin/conda install mamba
+          $CONDA/bin/mamba env update --file environment.yml --name base
+          $CONDA/bin/mamba env update --file docs/requirements.yaml --name base
+          $CONDA/bin/pip install .
+
+      - name: Build 🔧
+        run: |
+          $CONDA/bin/sphinx-build docs build
+          touch build/.nojekyll
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: build # The folder the action should deploy.
+          clean: true

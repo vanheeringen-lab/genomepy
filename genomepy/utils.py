@@ -1,4 +1,4 @@
-"""Utility functions."""
+"""Utility functions"""
 import itertools
 import os
 import re
@@ -6,7 +6,7 @@ import shutil
 import subprocess as sp
 import sys
 import time
-from typing import Optional
+from typing import Any, Optional
 from urllib.request import urlopen
 
 from loguru import logger
@@ -47,7 +47,7 @@ def get_genomes_dir(genomes_dir: str = None, check_exist: Optional[bool] = True)
     return genomes_dir
 
 
-def cmd_ok(cmd):
+def cmd_ok(cmd) -> bool:
     """Returns True if cmd can be run."""
     try:
         sp.check_call(cmd, stderr=sp.PIPE, stdout=sp.PIPE)
@@ -82,19 +82,20 @@ def run_index_cmd(name, cmd):
         )
 
 
-def safe(name) -> str:
+def safe(name: Any) -> str:
     """Replace spaces with undescores."""
     return str(name).strip().replace(" ", "_")
 
 
-def lower(string) -> str:
-    """for case-insensitive text comparisons"""
+def lower(string: Any) -> str:
+    """safe(str).lower() for case-insensitive text comparisons"""
     return safe(string).lower()
 
 
-def get_localname(name, localname=None):
+def get_localname(name: Any, localname=None) -> str:
     """
-    Returns the safe version of the given localname, if provided.
+    Returns the safe version of the given localname.
+
     If no localname is provided, return the safe version of the name.
     If the name is a working URL, return the safe version of the filename.
     """
@@ -142,7 +143,7 @@ def try_except_pass(errors, func, *args, **kwargs):
       a single error, or a tuple of errors.
 
     func
-      a function that takes *args and **kwargs
+      a function that takes args and kwargs
     """
     try:
         return func(*args, **kwargs)
