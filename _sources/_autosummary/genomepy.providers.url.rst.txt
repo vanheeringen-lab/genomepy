@@ -1,0 +1,39 @@
+genomepy.providers.url
+======================
+
+.. automodule:: genomepy.providers.url
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      fuzzy_annotation_search
+      search_url_for_annotations
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      UrlProvider
+   
+   
+
+   
+   
+   
+
+
+

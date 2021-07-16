@@ -1,0 +1,28 @@
+genomepy.providers.Provider
+===========================
+
+.. currentmodule:: genomepy.providers
+
+.. autoclass:: Provider
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Provider.__init__
+      ~Provider.create
+      ~Provider.list
+      ~Provider.online
+   
+   
+
+   
+   
+   

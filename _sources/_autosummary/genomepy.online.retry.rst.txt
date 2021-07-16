@@ -1,0 +1,6 @@
+genomepy.online.retry
+=====================
+
+.. currentmodule:: genomepy.online
+
+.. autofunction:: retry

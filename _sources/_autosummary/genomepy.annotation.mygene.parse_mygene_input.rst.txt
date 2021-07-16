@@ -1,0 +1,6 @@
+genomepy.annotation.mygene.parse\_mygene\_input
+===============================================
+
+.. currentmodule:: genomepy.annotation.mygene
+
+.. autofunction:: parse_mygene_input

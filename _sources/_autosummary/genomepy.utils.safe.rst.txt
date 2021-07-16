@@ -1,0 +1,6 @@
+genomepy.utils.safe
+===================
+
+.. currentmodule:: genomepy.utils
+
+.. autofunction:: safe

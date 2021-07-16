@@ -1,0 +1,282 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>genomepy.utils &mdash; genomepy  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="genomepy.utils.cmd_ok" href="genomepy.utils.cmd_ok.html" />
+    <link rel="prev" title="genomepy.providers.url.UrlProvider" href="genomepy.providers.url.UrlProvider.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> genomepy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../content/command_line.html">Command line documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../content/api_core.html">Python API documentation (core)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="genomepy.html">Python API documentation (full)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="genomepy.annotation.html">genomepy.annotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.argparse_support.html">genomepy.argparse_support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.caching.html">genomepy.caching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.cli.html">genomepy.cli</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.config.html">genomepy.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.exceptions.html">genomepy.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.files.html">genomepy.files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.functions.html">genomepy.functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.genome.html">genomepy.genome</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.online.html">genomepy.online</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.plugins.html">genomepy.plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.providers.html">genomepy.providers</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">genomepy.utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.cmd_ok.html">genomepy.utils.cmd_ok</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.get_genomes_dir.html">genomepy.utils.get_genomes_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.get_localname.html">genomepy.utils.get_localname</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.lower.html">genomepy.utils.lower</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.mkdir_p.html">genomepy.utils.mkdir_p</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.rm_rf.html">genomepy.utils.rm_rf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.run_index_cmd.html">genomepy.utils.run_index_cmd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.safe.html">genomepy.utils.safe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.try_except_pass.html">genomepy.utils.try_except_pass</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../content/help_faq.html">FAQ</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">genomepy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="genomepy.html">genomepy</a> &raquo;</li>
+        
+      <li>genomepy.utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/vanheeringen-lab/genomepy/blob/master/docs/_autosummary/genomepy.utils.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-genomepy.utils">
+<span id="genomepy-utils"></span><h1>genomepy.utils<a class="headerlink" href="#module-genomepy.utils" title="Permalink to this headline">¶</a></h1>
+<p>Utility functions.</p>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.utils.cmd_ok.html#genomepy.utils.cmd_ok" title="genomepy.utils.cmd_ok"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cmd_ok</span></code></a>(cmd)</p></td>
+<td><p>Returns True if cmd can be run.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.utils.get_genomes_dir.html#genomepy.utils.get_genomes_dir" title="genomepy.utils.get_genomes_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_genomes_dir</span></code></a>([genomes_dir, check_exist])</p></td>
+<td><p>import genomes_dir if none is given, and check validity</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.utils.get_localname.html#genomepy.utils.get_localname" title="genomepy.utils.get_localname"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_localname</span></code></a>(name[, localname])</p></td>
+<td><p>Returns the safe version of the given localname, if provided.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.utils.lower.html#genomepy.utils.lower" title="genomepy.utils.lower"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lower</span></code></a>(string)</p></td>
+<td><p>for case-insensitive text comparisons</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.utils.mkdir_p.html#genomepy.utils.mkdir_p" title="genomepy.utils.mkdir_p"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mkdir_p</span></code></a>(path)</p></td>
+<td><p>‘mkdir -p’ in Python</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.utils.rm_rf.html#genomepy.utils.rm_rf" title="genomepy.utils.rm_rf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rm_rf</span></code></a>(path)</p></td>
+<td><p>‘rm -rf’ in Python</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.utils.run_index_cmd.html#genomepy.utils.run_index_cmd" title="genomepy.utils.run_index_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_index_cmd</span></code></a>(name, cmd)</p></td>
+<td><p>Run command, show errors if the returncode is non-zero.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.utils.safe.html#genomepy.utils.safe" title="genomepy.utils.safe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">safe</span></code></a>(name)</p></td>
+<td><p>Replace spaces with undescores.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.utils.try_except_pass.html#genomepy.utils.try_except_pass" title="genomepy.utils.try_except_pass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">try_except_pass</span></code></a>(errors, func, *args, **kwargs)</p></td>
+<td><p>try to return FUNC with ARGS, pass on ERRORS</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="genomepy.utils.cmd_ok.html" class="btn btn-neutral float-right" title="genomepy.utils.cmd_ok" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="genomepy.providers.url.UrlProvider.html" class="btn btn-neutral float-left" title="genomepy.providers.url.UrlProvider" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+genomepy.files.filter\_fasta
+============================
+
+.. currentmodule:: genomepy.files
+
+.. autofunction:: filter_fasta

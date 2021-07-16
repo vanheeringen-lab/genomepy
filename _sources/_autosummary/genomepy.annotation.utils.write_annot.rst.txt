@@ -1,0 +1,6 @@
+genomepy.annotation.utils.write\_annot
+======================================
+
+.. currentmodule:: genomepy.annotation.utils
+
+.. autofunction:: write_annot

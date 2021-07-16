@@ -1,0 +1,39 @@
+genomepy.providers.ensembl
+==========================
+
+.. automodule:: genomepy.providers.ensembl
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      get_genomes
+      request_json
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      EnsemblProvider
+   
+   
+
+   
+   
+   
+
+
+

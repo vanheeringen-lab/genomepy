@@ -1,0 +1,30 @@
+genomepy.exceptions
+===================
+
+.. automodule:: genomepy.exceptions
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+      :toctree:
+   
+      GenomeDownloadError
+   
+   
+
+
+

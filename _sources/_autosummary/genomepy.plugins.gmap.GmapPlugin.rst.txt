@@ -1,0 +1,29 @@
+genomepy.plugins.gmap.GmapPlugin
+================================
+
+.. currentmodule:: genomepy.plugins.gmap
+
+.. autoclass:: GmapPlugin
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~GmapPlugin.__init__
+      ~GmapPlugin.activate
+      ~GmapPlugin.after_genome_download
+      ~GmapPlugin.deactivate
+      ~GmapPlugin.get_properties
+   
+   
+
+   
+   
+   

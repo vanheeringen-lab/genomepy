@@ -1,0 +1,6 @@
+genomepy.annotation.utils.count\_columns
+========================================
+
+.. currentmodule:: genomepy.annotation.utils
+
+.. autofunction:: count_columns

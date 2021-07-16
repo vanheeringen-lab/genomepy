@@ -1,0 +1,245 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Generating the docs &mdash; genomepy  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> genomepy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/command_line.html">Command line documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/api_core.html">Python API documentation (core)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/genomepy.html">Python API documentation (full)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/help_faq.html">FAQ</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">genomepy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Generating the docs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/vanheeringen-lab/genomepy/blob/master/docs/README.md" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="generating-the-docs">
+<h1>Generating the docs<a class="headerlink" href="#generating-the-docs" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="run">
+<h2>Run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>install genomepy with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">develop</span></code> (needed only once)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sphinx-build</span> <span class="pre">docs</span> <span class="pre">build</span></code></p></li>
+<li><p>open <code class="docutils literal notranslate"><span class="pre">build/index.html</span></code> in your browser</p></li>
+</ul>
+</div>
+<div class="section" id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="install-dependencies">
+<h3>Install dependencies<a class="headerlink" href="#install-dependencies" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">env</span> <span class="pre">update</span> <span class="pre">--file</span> <span class="pre">environment.yml</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">env</span> <span class="pre">update</span> <span class="pre">--file</span> <span class="pre">docs/requirements.yaml</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="follow-steps-on">
+<h3>follow steps on:<a class="headerlink" href="#follow-steps-on" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://eikonomega.medium.com/getting-started-with-sphinx-autodoc-part-1-2cebbbca5365">https://eikonomega.medium.com/getting-started-with-sphinx-autodoc-part-1-2cebbbca5365</a>
+(I manually moved all created files to ./docs)</p>
+<p><a class="reference external" href="https://stackoverflow.com/a/62613202">https://stackoverflow.com/a/62613202</a>
+(only change the marked lines in the template examples)</p>
+</div>
+<div class="section" id="changes-to-conf-py">
+<h3>changes to conf.py<a class="headerlink" href="#changes-to-conf-py" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>line 12: uncomment path setup</p></li>
+<li><p>line 15: <code class="docutils literal notranslate"><span class="pre">sys.path.insert(0,</span> <span class="pre">os.path.abspath('..'))</span></code></p></li>
+<li><p>line 30: added extensions &amp; source_suffix</p></li>
+<li><p>line 54: <code class="docutils literal notranslate"><span class="pre">html_theme</span> <span class="pre">=</span> <span class="pre">&quot;sphinx_rtd_theme&quot;</span></code></p></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

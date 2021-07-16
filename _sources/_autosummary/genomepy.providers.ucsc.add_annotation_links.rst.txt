@@ -1,0 +1,6 @@
+genomepy.providers.ucsc.add\_annotation\_links
+==============================================
+
+.. currentmodule:: genomepy.providers.ucsc
+
+.. autofunction:: add_annotation_links

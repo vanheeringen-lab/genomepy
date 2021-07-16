@@ -1,0 +1,6 @@
+genomepy.annotation.mygene.ensembl\_genome\_info
+================================================
+
+.. currentmodule:: genomepy.annotation.mygene
+
+.. autofunction:: ensembl_genome_info

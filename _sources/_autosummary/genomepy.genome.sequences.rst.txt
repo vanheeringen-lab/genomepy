@@ -1,0 +1,37 @@
+genomepy.genome.sequences
+=========================
+
+.. automodule:: genomepy.genome.sequences
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      bed_to_seq
+      bed_to_seqs
+      get_random_sequences
+      get_track_type
+      region_to_seq
+      regions_to_seqs
+      track2fasta
+      weighted_selection
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

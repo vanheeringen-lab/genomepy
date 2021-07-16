@@ -1,0 +1,6 @@
+genomepy.providers.nearest\_assembly
+====================================
+
+.. currentmodule:: genomepy.providers
+
+.. autofunction:: nearest_assembly

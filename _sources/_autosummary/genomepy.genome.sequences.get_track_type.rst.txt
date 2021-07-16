@@ -1,0 +1,6 @@
+genomepy.genome.sequences.get\_track\_type
+==========================================
+
+.. currentmodule:: genomepy.genome.sequences
+
+.. autofunction:: get_track_type

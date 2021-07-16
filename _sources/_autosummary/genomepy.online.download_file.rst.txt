@@ -1,0 +1,6 @@
+genomepy.online.download\_file
+==============================
+
+.. currentmodule:: genomepy.online
+
+.. autofunction:: download_file

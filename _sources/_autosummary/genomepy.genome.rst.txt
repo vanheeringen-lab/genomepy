@@ -1,0 +1,49 @@
+genomepy.genome
+===============
+
+.. automodule:: genomepy.genome
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      generate_fa_sizes
+      generate_gap_bed
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      Genome
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   genomepy.genome.seqdict
+   genomepy.genome.sequences
+

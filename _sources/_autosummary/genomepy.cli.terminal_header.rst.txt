@@ -1,0 +1,6 @@
+genomepy.cli.terminal\_header
+=============================
+
+.. currentmodule:: genomepy.cli
+
+.. autofunction:: terminal_header

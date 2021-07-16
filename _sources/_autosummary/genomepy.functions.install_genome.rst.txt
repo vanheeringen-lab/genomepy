@@ -1,0 +1,6 @@
+genomepy.functions.install\_genome
+==================================
+
+.. currentmodule:: genomepy.functions
+
+.. autofunction:: install_genome

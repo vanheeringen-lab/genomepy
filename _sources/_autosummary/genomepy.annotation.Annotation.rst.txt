@@ -1,0 +1,41 @@
+genomepy.annotation.Annotation
+==============================
+
+.. currentmodule:: genomepy.annotation
+
+.. autoclass:: Annotation
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Annotation.__init__
+      ~Annotation.filter_regex
+      ~Annotation.gene_coords
+      ~Annotation.genes
+      ~Annotation.map_genes
+      ~Annotation.map_locations
+      ~Annotation.sanitize
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Annotation.annotation_contigs
+      ~Annotation.bed
+      ~Annotation.genome_contigs
+      ~Annotation.gtf
+      ~Annotation.named_gtf
+   
+   

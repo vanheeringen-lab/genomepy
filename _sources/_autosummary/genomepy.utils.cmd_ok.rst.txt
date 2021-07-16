@@ -1,0 +1,6 @@
+genomepy.utils.cmd\_ok
+======================
+
+.. currentmodule:: genomepy.utils
+
+.. autofunction:: cmd_ok

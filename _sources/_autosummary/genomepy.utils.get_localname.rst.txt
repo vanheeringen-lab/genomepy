@@ -1,0 +1,6 @@
+genomepy.utils.get\_localname
+=============================
+
+.. currentmodule:: genomepy.utils
+
+.. autofunction:: get_localname

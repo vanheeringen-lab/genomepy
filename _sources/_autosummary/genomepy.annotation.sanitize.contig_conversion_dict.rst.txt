@@ -1,0 +1,6 @@
+genomepy.annotation.sanitize.contig\_conversion\_dict
+=====================================================
+
+.. currentmodule:: genomepy.annotation.sanitize
+
+.. autofunction:: contig_conversion_dict

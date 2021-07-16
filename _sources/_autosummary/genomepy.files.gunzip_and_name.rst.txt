@@ -1,0 +1,6 @@
+genomepy.files.gunzip\_and\_name
+================================
+
+.. currentmodule:: genomepy.files
+
+.. autofunction:: gunzip_and_name

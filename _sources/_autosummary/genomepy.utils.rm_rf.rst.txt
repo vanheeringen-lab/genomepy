@@ -1,0 +1,6 @@
+genomepy.utils.rm\_rf
+=====================
+
+.. currentmodule:: genomepy.utils
+
+.. autofunction:: rm_rf

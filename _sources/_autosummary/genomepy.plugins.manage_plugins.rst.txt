@@ -1,0 +1,6 @@
+genomepy.plugins.manage\_plugins
+================================
+
+.. currentmodule:: genomepy.plugins
+
+.. autofunction:: manage_plugins

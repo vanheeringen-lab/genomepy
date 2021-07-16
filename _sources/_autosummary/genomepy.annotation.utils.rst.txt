@@ -1,0 +1,33 @@
+genomepy.annotation.utils
+=========================
+
+.. automodule:: genomepy.annotation.utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      count_columns
+      generate_annot
+      read_annot
+      write_annot
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

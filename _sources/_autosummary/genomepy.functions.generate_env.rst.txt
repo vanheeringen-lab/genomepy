@@ -1,0 +1,6 @@
+genomepy.functions.generate\_env
+================================
+
+.. currentmodule:: genomepy.functions
+
+.. autofunction:: generate_env

@@ -1,0 +1,6 @@
+genomepy.annotation.sanitize.filter\_contigs
+============================================
+
+.. currentmodule:: genomepy.annotation.sanitize
+
+.. autofunction:: filter_contigs

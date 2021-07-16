@@ -1,0 +1,29 @@
+genomepy.plugins.bowtie2.Bowtie2Plugin
+======================================
+
+.. currentmodule:: genomepy.plugins.bowtie2
+
+.. autoclass:: Bowtie2Plugin
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Bowtie2Plugin.__init__
+      ~Bowtie2Plugin.activate
+      ~Bowtie2Plugin.after_genome_download
+      ~Bowtie2Plugin.deactivate
+      ~Bowtie2Plugin.get_properties
+   
+   
+
+   
+   
+   

@@ -1,0 +1,51 @@
+genomepy.genome.Genome
+======================
+
+.. currentmodule:: genomepy.genome
+
+.. autoclass:: Genome
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Genome.__init__
+      ~Genome.close
+      ~Genome.get_random_sequences
+      ~Genome.get_seq
+      ~Genome.get_spliced_seq
+      ~Genome.items
+      ~Genome.keys
+      ~Genome.track2fasta
+      ~Genome.values
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Genome.gaps
+      ~Genome.plugin
+      ~Genome.sizes
+      ~Genome.genomes_dir
+      ~Genome.name
+      ~Genome.genome_file
+      ~Genome.genome_dir
+      ~Genome.index_file
+      ~Genome.sizes_file
+      ~Genome.gaps_file
+      ~Genome.annotation_gtf_file
+      ~Genome.annotation_bed_file
+      ~Genome.readme_file
+   
+   

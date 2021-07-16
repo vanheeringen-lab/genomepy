@@ -1,0 +1,6 @@
+genomepy.utils.mkdir\_p
+=======================
+
+.. currentmodule:: genomepy.utils
+
+.. autofunction:: mkdir_p

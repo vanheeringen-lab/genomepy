@@ -1,0 +1,6 @@
+genomepy.annotation.sanitize.match\_contigs
+===========================================
+
+.. currentmodule:: genomepy.annotation.sanitize
+
+.. autofunction:: match_contigs

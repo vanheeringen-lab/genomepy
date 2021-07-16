@@ -1,0 +1,30 @@
+genomepy.genome.seqdict
+=======================
+
+.. automodule:: genomepy.genome.seqdict
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      as_seqdict
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

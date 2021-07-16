@@ -1,0 +1,6 @@
+genomepy.annotation.sanitize.full\_genome\_headers
+==================================================
+
+.. currentmodule:: genomepy.annotation.sanitize
+
+.. autofunction:: full_genome_headers
