@@ -1,3 +1,4 @@
+"""BaseProvider class, the parent of the provider classes"""
 import gzip
 import os
 import shutil
@@ -30,6 +31,8 @@ class BaseProvider:
     description_fields = []
     _cli_install_options = {}
     _url = None
+
+    # TODO: attributes to this and other classes
 
     def __hash__(self):
         return hash(str(self.__class__))

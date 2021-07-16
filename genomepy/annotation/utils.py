@@ -1,3 +1,4 @@
+"""Utility functions with gene annotations"""
 import csv
 import os
 import subprocess as sp
@@ -51,6 +52,19 @@ def count_columns(fpath):
 
 
 def read_annot(fpath: str) -> pd.DataFrame:
+    """
+    Read a GTF or BED file to a dataframe.
+
+    Parameters
+    ----------
+    fpath : str
+        path to the annotation file
+
+    Returns
+    -------
+    pd.DataFrame
+        annotation dataframe
+    """
     # determine file type by column count
     columns = count_columns(fpath)
     if columns == 9:
@@ -58,7 +72,7 @@ def read_annot(fpath: str) -> pd.DataFrame:
     elif columns == 12:
         names = BED12_FORMAT
     else:
-        raise ValueError(f"{columns} columns detected. BED=12, GTF=9")
+        raise ValueError(f"{columns} columns detected. BED=12, GTF=9.")
 
     df = pd.read_csv(
         fpath,
@@ -70,12 +84,22 @@ def read_annot(fpath: str) -> pd.DataFrame:
     return df
 
 
-def write_annot(df, fpath):
+def write_annot(df: pd.DataFrame, fpath: str):
+    """
+    Write a dataframe to a GTF or BED file.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        annotation dataframe
+    fpath : str
+        path to the annotation file
+    """
     df.to_csv(
         fpath,
         sep="\t",
-        header=None,
-        index=None,
+        header=False,
+        index=False,
         quoting=csv.QUOTE_NONE,
     )
 
@@ -88,10 +112,8 @@ def generate_annot(template, target, overwrite=False):
     ----------
     template: str
         a GTF or BED filepath.
-
     target: str
         filepath to save the new annotation to.
-
     overwrite: bool, optional
         overwrite existing target file?
     """

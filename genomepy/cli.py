@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Command line wrappers"""
 import os
 import sys
 from collections import deque
@@ -206,7 +207,7 @@ def get_install_options():
 
 
 def custom_options(options):
-    """dynamically add options to a click.command (based on a dict with options)"""
+    """Dynamically add options to a click.command (based on a dict with options)."""
 
     def decorator(f):
         for opt_name, opt_params in options.items():
@@ -283,7 +284,7 @@ def install(
 @click.argument("name", nargs=-1)
 def plugin(command, name):
     """
-    Enable or disable plugins
+    Enable or disable plugins.
 
     genomepy plugin list                 show plugins and status
 
@@ -315,10 +316,11 @@ SEARCH_STRING = "    ".join([f"{{: <{size}}}" for size in SEARCH_FORMAT.values()
 if sys.stdout.isatty():
 
     def bool_to_unicode(boolean: bool) -> str:
-        """converts True to a checkmark and False to a cross-mark"""
+        """Converts True to a checkmark and False to a cross-mark."""
         return "\u2713" if boolean else "\u2717"
 
     def color_unicode(string):
+        """Color checkmark green and cross-mark red."""
         sting = string.replace("\u2713", Fore.GREEN + "\u2713" + Fore.RESET)
         sting = sting.replace("\u2717", Fore.RED + "\u2717" + Fore.RESET)
         return sting
@@ -339,9 +341,11 @@ if sys.stdout.isatty():
         print(color_unicode(row))
 
     def terminal_header():
+        """Header for search output."""
         print(Style.BRIGHT + SEARCH_STRING.format(*SEARCH_FORMAT))
 
     def terminal_subheader():
+        """Subheader for search output."""
         print(SEARCH_STRING.format(*["", "", "", "", "n r e k", "", ""]))
 
 
@@ -357,6 +361,7 @@ else:
         print("\t".join([str(element) for element in row]))
 
     def terminal_header():
+        """Header for search output."""
         print("\t".join(SEARCH_FORMAT))
 
 

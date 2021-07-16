@@ -7,13 +7,13 @@ from genomepy import Genome, install_genome
 
 
 def parse_genome(auto_install=False, genomes_dir=None):
-    """argparse action for command-line genome option.
+    """
+    Argparse action for command-line genome option.
 
     Parameters
     ----------
         auto_install : bool, optional
             Install a genome if it's not found locally.
-
         genomes_dir : str, optional
             Directory to look for and/or insall genomes.
     """

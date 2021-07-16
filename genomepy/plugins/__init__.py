@@ -1,3 +1,4 @@
+"""Plugin class, modules & related functions"""
 import os
 import re
 
@@ -81,7 +82,7 @@ def init_plugins():
 PLUGINS = init_plugins()
 
 
-def get_active_plugins():
+def get_active_plugins() -> list:
     """Returns all active plugin instances."""
     return [inst for name, inst in PLUGINS.items() if inst.active]
 

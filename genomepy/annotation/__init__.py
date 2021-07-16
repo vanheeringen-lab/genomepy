@@ -1,3 +1,4 @@
+"""Annotation class, modules & related functions"""
 import os
 import re
 from pathlib import Path
@@ -19,25 +20,22 @@ __all__ = ["Annotation", "query_mygene", "filter_regex"]
 
 class Annotation:
     """
-    Gene annotation related functions
+    Manipulate genes and whole gene annotations with pandas dataframes.
 
     Parameters
     ----------
     genome : str
         Genome name.
-
     name : str, optional
-        Name of annotation file. If name is not specified, then the default annotation
-        for the genome is used.
-
+        Name of annotation file.
+        If name is not specified the default annotation for the genome is used.
     genomes_dir : str, optional
         Genomes installation directory.
 
-    # TODO: attributes to this and other classes
-
     Returns
     -------
-    Annotation object
+    object
+        attributes & methods to manipulate gene annotations
     """
 
     # import methods
@@ -47,10 +45,15 @@ class Annotation:
     # lazy attributes (loaded when called)
     # listed here for code autocompletion
     bed: pd.DataFrame = None
+    "Dataframe with BED format annotation"
     gtf: pd.DataFrame = None
+    "Dataframe with GTF format annotation"
     named_gtf: pd.DataFrame = None
+    "Dataframe with GTF format annotation, with gene_name as index"
     genome_contigs: list = None
+    "Contigs found in the genome fasta"
     annotation_contigs: list = None
+    "Contigs found in the gene annotation BED"
 
     def __init__(self, genome: str, name: str = None, genomes_dir: str = None):
         self.genome = genome
@@ -136,20 +139,22 @@ class Annotation:
 
     def genes(self, annot: str = "bed") -> list:
         """
-        Retrieve gene names from the specified annotation.
+        Retrieve gene names from an annotation.
 
-        For BED files, names from the 'name' columns
+        For BED files, names are taken from the 'name' columns.
 
-        For GTF files, names from the 'gene_name' field in the attribute column, if available.
+        For GTF files, names are taken from the 'gene_name' field
+        in the attribute column, if available.
 
         Parameters
         ----------
         annot : str, optional
-            Annotation file type: 'bed' or 'gtf'
+            Annotation file type: 'bed' or 'gtf' (default: "bed")
 
         Returns
         -------
-        list with gene names
+        list
+            gene names
         """
         if annot.lower() == "bed":
             return list(set(self.bed.name))
@@ -162,14 +167,14 @@ class Annotation:
         Parameters
         ----------
         genes : Iterable
-            List of gene names as found in the given annotation file type.
-
+            List of gene names as found in the given annotation file type
         annot : str, optional
-            Annotation file type: 'bed' or 'gtf'
+            Annotation file type: 'bed' or 'gtf' (default: "bed")
 
         Returns
         -------
-        pandas.DataFrame with gene annotation.
+        pandas.DataFrame
+            gene annotation
         """
         gene_list = list(genes)
         if annot.lower() == "bed":
@@ -204,25 +209,25 @@ class Annotation:
         self, annot: Union[str, pd.DataFrame], to: str, drop=True
     ) -> Union[None, pd.DataFrame]:
         """
-        Map chromosome mapping from one assembly to another using the
-        NCBI assembly reports.
+        Map chromosome mapping from one assembly to another.
 
+        Uses the NCBI assembly reports to find contigs.
         Drops missing contigs.
 
         Parameters
         ----------
-        annot: str or pd.Dataframe
-            annotation to map (a pandas dataframe, "bed" or "gtf")
+        annot : str or pd.Dataframe
+            annotation to map: "bed", "gtf" or a pandas dataframe.
         to: str
             target provider (UCSC, Ensembl or NCBI)
         drop: bool, optional
             if True, replace the chromosome column.
-            if False, add a 2nd chromosome column
+            If False, add a 2nd chromosome column.
 
         Returns
         -------
         pandas.DataFrame
-            Chromosome mapping.
+            chromosome mapping.
         """
         genomes_dir = os.path.dirname(self.genome_dir)
         mapping = map_locations(self.genome, to, genomes_dir)
@@ -256,27 +261,25 @@ class Annotation:
         regex: Optional[str] = ".*",
         invert_match: Optional[bool] = False,
         column: Union[str, int] = 0,
-    ) -> Union[pd.DataFrame, None]:
+    ) -> pd.DataFrame:
         """
-        Filter a pandas dataframe by a column (default: 1st, contig name).
+        Filter a dataframe by any column using regex.
 
         Parameters
         ----------
-        annot: str or pd.Dataframe
+        annot : str or pd.Dataframe
             annotation to filter: "bed", "gtf" or a pandas dataframe
-
         regex : str
             regex string to match
-
         invert_match : bool, optional
             keep contigs NOT matching the regex string
-
         column: str or int, optional
             column name or number to filter (default: 1st, contig name)
 
         Returns
         -------
-        filtered pd.DataFrame
+        pd.DataFrame
+            filtered dataframe
         """
         df = _parse_annot(self, annot)
         return filter_regex(df, regex, invert_match, column)
@@ -304,7 +307,7 @@ def filter_regex(
     regex: str,
     invert_match: Optional[bool] = False,
     column: Union[str, int] = 0,
-) -> Union[pd.DataFrame, None]:
+) -> pd.DataFrame:
     """
     Filter a pandas dataframe by a column (default: 1st, contig name).
 
@@ -312,19 +315,17 @@ def filter_regex(
     ----------
     df: pd.Dataframe
         annotation to filter (a pandas dataframe)
-
     regex : str
         regex string to match
-
     invert_match : bool, optional
         keep contigs NOT matching the regex string
-
     column: str or int, optional
         column name or number to filter (default: 1st, contig name)
 
     Returns
     -------
-    filtered pd.DataFrame
+    pd.DataFrame
+        filtered dataframe
     """
     if column not in df.columns:
         if isinstance(column, int):

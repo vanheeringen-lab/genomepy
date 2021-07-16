@@ -1,3 +1,4 @@
+"""Provider class, modules & related functions"""
 import os
 from typing import List, Optional
 
@@ -47,15 +48,17 @@ def create(name: str):
     """
     Create a provider based on the provider name.
 
+    Adds additional method(s) to the instance.
+
     Parameters
     ----------
     name : str
-        Name of the provider (eg. UCSC, Ensembl, ...)
+        Name of the provider (e.g. UCSC, Ensembl, ...)
 
     Returns
     -------
     provider
-        Provider instance.
+        Provider instance
     """
     name = name.lower()
     if name not in PROVIDERS:
@@ -101,7 +104,7 @@ def online_providers(provider: str = None):
         Only try to yield the specified provider.
 
     Yields
-    -------
+    ------
     provider
         Provider instances
     """
@@ -174,9 +177,7 @@ def _best_accession(reference: str, targets: list):
 
 
 def _best_search_result(asm_acc: str, results: List[list]) -> list:
-    """
-    Return the best search result based on accession IDs.
-    """
+    """Return the best search result based on accession IDs."""
     results = [res for res in results if res[2] is not None]
 
     if len(results) > 1:
@@ -310,6 +311,8 @@ def map_locations(
 
 
 class Provider:
+    """Find & instantiate providers"""
+
     list = staticmethod(list_providers)
     online = staticmethod(list_online_providers)
     create = staticmethod(create)

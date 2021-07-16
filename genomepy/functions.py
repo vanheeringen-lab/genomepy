@@ -1,4 +1,4 @@
-"""Module-level functions."""
+"""Module-level functions"""
 import os
 import re
 from tempfile import mkdtemp
@@ -40,6 +40,15 @@ def head_annotations(name: str, provider=None, n: int = 2):
     "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
 
     For NCBI, the chromosome names are not yet sanitized.
+
+    Parameters
+    ----------
+    name: str
+        genome name
+    provider: str, optional
+        only search the specified provider for the genome name
+    n: int, optional
+        number of lines to show
     """
     for p in online_providers(provider):
         if name in p.genomes:
@@ -48,7 +57,7 @@ def head_annotations(name: str, provider=None, n: int = 2):
             rm_rf(tmp_dir)
 
 
-def list_available_genomes(provider=None):
+def list_available_genomes(provider=None) -> list:
     """
     List all available genomes.
 
@@ -58,8 +67,8 @@ def list_available_genomes(provider=None):
         List genomes from specific provider. Genomes from all
         providers will be returned if not specified.
 
-    Returns
-    -------
+    Yields
+    ------
     list
         tuples with genome name, provider and metadata
     """
@@ -68,13 +77,13 @@ def list_available_genomes(provider=None):
             yield list(row[:1]) + [p.name] + list(row[1:])
 
 
-def list_installed_genomes(genomes_dir: str = None):
+def list_installed_genomes(genomes_dir: str = None) -> list:
     """
     List all locally available genomes.
 
     Parameters
     ----------
-    genomes_dir : str
+    genomes_dir : str, optional
         Directory with genomes installed by genomepy.
 
     Returns
@@ -109,9 +118,9 @@ def install_genome(
     threads: Optional[int] = 1,
     force: Optional[bool] = False,
     **kwargs: Optional[dict],
-):
+) -> Genome:
     """
-    Install a genome.
+    Install a genome (& gene annotation).
 
     Parameters
     ----------
@@ -176,6 +185,11 @@ def install_genome(
         to_annotation : text , optional
             URL only: direct link to annotation file.
             Required if this is not the same directory as the fasta.
+
+    Returns
+    -------
+    Genome
+        Genome class with the installed genome
     """
     name = safe(name)
     localname = get_localname(name, localname)
@@ -268,8 +282,7 @@ def generate_env(fname: str = "exports.txt", genomes_dir: str = None):
     """
     Generate file with exports.
 
-    By default this is .config/genomepy/exports.txt.
-
+    By default the export file generated is .config/genomepy/exports.txt.
     An alternative file name or file path is accepted too.
 
     Parameters

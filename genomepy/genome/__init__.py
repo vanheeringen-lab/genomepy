@@ -1,3 +1,4 @@
+"""Genome class, modules & related functions"""
 import os.path
 import re
 from glob import glob
@@ -15,9 +16,9 @@ __all__ = ["Genome", "generate_fa_sizes", "generate_gap_bed"]
 
 class Genome(Fasta):
     """
-    Get pyfaidx Fasta object of genome
+    pyfaidx Fasta object of a genome with additional attributes & methods.
 
-    Also generates an index file of the genome
+    Generates a genome index file, sizes file and gaps file of the genome.
 
     Parameters
     ----------
