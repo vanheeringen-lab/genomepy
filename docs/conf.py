@@ -63,6 +63,7 @@ html_sidebars = {
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"
+html_last_updated_fmt = '%Y-%m-%d, %X'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -75,7 +76,7 @@ html_context = {
     "github_host": "github.com",
     "github_user": "vanheeringen-lab",
     "github_repo": "genomepy",
-    "github_version": "master",
+    "github_version": "develop",
     "conf_py_path": "/docs/",
     "source_suffix": [".rst", ".md"],
 }
