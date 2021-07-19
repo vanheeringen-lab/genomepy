@@ -191,11 +191,9 @@ def _as_seqdict_array(to_convert, genome=None, minsize=None):
     return as_seqdict(list(to_convert), genome, minsize)
 
 
-print("importing")
 # pybedtools is loaded
 if "pybedtools" in sys.modules:
     if hasattr(pybedtools, "BedTool"):
-        print("GOT IT")
 
         @as_seqdict.register(pybedtools.bedtool.BedTool)
         def _as_seqdict_bedtool(to_convert, genome=None, minsize=None):
