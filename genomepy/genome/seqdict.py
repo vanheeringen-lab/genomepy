@@ -1,3 +1,4 @@
+"""as_seqdict function & overloads"""
 import os
 import re
 import sys
@@ -26,6 +27,7 @@ def as_seqdict(
 ):
     """
     Convert input to a dictionary with name as key and sequence as value.
+
     If the input contains genomic coordinates, the genome needs to be
     specified. If minsize is specified all sequences will be checked if they
     are not shorter than minsize. If regions (or a region file) are used as
@@ -49,7 +51,8 @@ def as_seqdict(
 
     Returns
     -------
-        dict with sequence names as key and sequences as value.
+    dict
+        sequence names as key and sequences as value.
     """
     raise NotImplementedError(f"Not implement for {type(to_convert)}")
 

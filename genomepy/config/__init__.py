@@ -24,19 +24,34 @@ def generate_config():
     print(f"Created config file {new_config}")
 
 
-def manage_config(cmd):
-    """Manage the genomepy config file."""
-    if cmd in ["file", "path"]:
+def manage_config(command):
+    """
+    Manage the genomepy configuration
+
+    Parameters
+    ----------
+    command : str
+        command to perform. Options:
+
+        file
+            return config filepath
+        show
+            return config content
+        generate
+            create new config file
+    """
+    if command in ["file", "path"]:
         print(config.config_file)
 
-    elif cmd in ["show", "list"]:
+    elif command in ["show", "list"]:
         with open(config.config_file) as f:
             print(f.read())
 
-    elif cmd == "generate":
+    elif command == "generate":
         generate_config()
 
     else:
         raise ValueError(
-            f"Invalid config command: '{cmd}'. Options: 'file', 'show' or 'generate'."
+            f"Invalid config command: '{command}'. "
+            "Options: 'file', 'show' or 'generate'."
         )

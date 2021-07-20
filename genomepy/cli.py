@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Command line wrappers"""
 import os
 import sys
 from collections import deque
@@ -18,6 +19,23 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 @click.version_option(genomepy.__version__)
 def cli():
     pass  # noqa
+
+
+@click.command(short_help="show 1st lines of each annotation")
+@click.argument("name")
+@click.option("-p", "--provider", help="only search this provider")
+@click.option("-n", "--lines", help="number of lines to print", default=2)
+def annotation(name, provider=None, lines=None):
+    """
+    Quickly inspect the metadata of each GTF annotation available
+    for the given genome.
+
+    For UCSC, up to 4 gene annotation styles are available:
+    "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
+
+    For NCBI, the chromosome names are not yet sanitized.
+    """
+    genomepy.head_annotations(name, provider, n=int(lines))
 
 
 @click.command("clean", short_help="remove provider data")
@@ -50,10 +68,16 @@ def genomes(provider=None):
     List all available genomes.
 
     Returns the metadata of each found genome, including the availability of a gene annotation.
-    For UCSC, up to 4 gene annotation styles may be available: UCSC, Ensembl, NCBI_refseq and UCSC_refseq.
+    For UCSC, up to 4 gene annotation styles are available:
+    "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
     """
-    terminal_header()
+    provider_init = True
     for row in genomepy.list_available_genomes(provider):
+        if provider_init:
+            provider_init = False
+            terminal_header()
+            if str(provider).lower() in ["none", "ucsc"]:
+                terminal_subheader()
         terminal_formatting(row)
 
 
@@ -164,10 +188,10 @@ def get_install_options():
 
     Add the provider name in front of the options to prevent overlap.
     """
-    # extend install options with provider specific options
-    if len(set(sys.argv[1:]) & {"install", "-h", "--help"}) > 1:
+    if sys.argv[1] == "install":
         install_options = INSTALL_OPTIONS
 
+        # extend install options with provider specific options
         for provider in genomepy.list_providers():
             p_dict = eval(
                 "genomepy.providers."
@@ -183,7 +207,7 @@ def get_install_options():
 
 
 def custom_options(options):
-    """dynamically add options to a click.command (based on a dict with options)"""
+    """Dynamically add options to a click.command (based on a dict with options)."""
 
     def decorator(f):
         for opt_name, opt_params in options.items():
@@ -260,7 +284,7 @@ def install(
 @click.argument("name", nargs=-1)
 def plugin(command, name):
     """
-    Enable or disable plugins
+    Enable or disable plugins.
 
     genomepy plugin list                 show plugins and status
 
@@ -292,10 +316,11 @@ SEARCH_STRING = "    ".join([f"{{: <{size}}}" for size in SEARCH_FORMAT.values()
 if sys.stdout.isatty():
 
     def bool_to_unicode(boolean: bool) -> str:
-        """converts True to a checkmark and False to a cross-mark"""
+        """Converts True to a checkmark and False to a cross-mark."""
         return "\u2713" if boolean else "\u2717"
 
     def color_unicode(string):
+        """Color checkmark green and cross-mark red."""
         sting = string.replace("\u2713", Fore.GREEN + "\u2713" + Fore.RESET)
         sting = sting.replace("\u2717", Fore.RED + "\u2717" + Fore.RESET)
         return sting
@@ -316,7 +341,12 @@ if sys.stdout.isatty():
         print(color_unicode(row))
 
     def terminal_header():
+        """Header for search output."""
         print(Style.BRIGHT + SEARCH_STRING.format(*SEARCH_FORMAT))
+
+    def terminal_subheader():
+        """Subheader for search output."""
+        print(SEARCH_STRING.format(*["", "", "", "", "n r e k", "", ""]))
 
 
 else:
@@ -331,12 +361,13 @@ else:
         print("\t".join([str(element) for element in row]))
 
     def terminal_header():
+        """Header for search output."""
         print("\t".join(SEARCH_FORMAT))
 
 
 @click.command(short_help="search for genomes")
 @click.argument("term", nargs=-1)
-@click.option("-p", "--provider", help="Only search here.")
+@click.option("-p", "--provider", help="only search this provider")
 def search(term, provider=None):
     """
     Search for genomes that contain TERM in their name, description
@@ -344,8 +375,8 @@ def search(term, provider=None):
     Search is case-insensitive.
 
     Returns the metadata of each found genome, including the availability of a gene annotation.
-    For UCSC, up to 4 gene annotation styles may be available:
-    UCSC, Ensembl, NCBI_refseq and UCSC_refseq (respectively).
+    For UCSC, up to 4 gene annotation styles are available:
+    "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
     Each with different naming schemes.
     """
     term = "_".join(term)
@@ -354,6 +385,8 @@ def search(term, provider=None):
         if no_genomes:
             no_genomes = False
             terminal_header()
+            if sys.stdout.isatty() and str(provider).lower() in ["none", "ucsc"]:
+                terminal_subheader()
         terminal_formatting(row)
 
     if sys.stdout.isatty():
@@ -364,6 +397,7 @@ def search(term, provider=None):
             print(Fore.GREEN + " Use name for " + Fore.CYAN + "genomepy install")
 
 
+cli.add_command(annotation)
 cli.add_command(clean)
 cli.add_command(config)
 cli.add_command(genomes)
