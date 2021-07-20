@@ -158,7 +158,7 @@ to get specific sequences from your genome, and save these to file.
 
 ------------
 
-You can obtain genomic sequence from a wide variety of inputs with :code:`as_seqdict`.
+You can obtain genomic sequences from a wide variety of inputs with :code:`as_seqdict`.
 To use the function, it must be explicitly imported with :code:`from genomepy.seq import as_seqdict`.
 
 ------------
