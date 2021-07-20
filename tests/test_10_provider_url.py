@@ -36,18 +36,18 @@ def test_get_genome_download_link(url):
     assert link == "url"
 
 
-def test_get_annotation_download_links(url):
+def test_get_annotation_download_link(url):
     target = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_Xenbase.gtf"
-    links = url.get_annotation_download_links(None, **{"to_annotation": target})
-    assert links[0] == target
+    links = url.get_annotation_download_link(None, **{"to_annotation": target})
+    assert links == target
 
     with pytest.raises(TypeError):
         bad_url = "bad_url"
-        url.get_annotation_download_links(None, **{"to_annotation": bad_url})
+        url.get_annotation_download_link(None, **{"to_annotation": bad_url})
 
     with pytest.raises(TypeError):
         bad_url = "http://good_url.bad_ext"
-        url.get_annotation_download_links(None, **{"to_annotation": bad_url})
+        url.get_annotation_download_link(None, **{"to_annotation": bad_url})
 
 
 def test_fuzzy_annotation_search():
@@ -99,4 +99,4 @@ def test_search_url_for_annotations():
         "dna/Marmota_marmota_marmota.marMar2.1.dna.toplevel.fa.gz"
     )
     links = genomepy.providers.url.search_url_for_annotations(target)
-    assert links is None
+    assert links == []

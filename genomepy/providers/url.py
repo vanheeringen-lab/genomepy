@@ -3,6 +3,7 @@ from typing import List
 
 from loguru import logger
 
+from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import get_file_info
 from genomepy.online import read_url
 from genomepy.providers.base import BaseProvider
@@ -48,10 +49,48 @@ class UrlProvider(BaseProvider):
 
     def _check_name(self, name):
         """check if genome name can be found for provider"""
-        return
+        return name
 
     def get_genome_download_link(self, url, mask=None, **kwargs):
         return url
+
+    def get_annotation_download_link(self, name: str, **kwargs) -> str:
+        """
+        Return a functional annotation download link.
+
+        Parameters
+        ----------
+        name : str
+            genome name
+        **kwargs: dict, optional:
+            to_annotation : direct URL to the gene annotation
+
+        Returns
+        -------
+        str
+            http/ftp link
+
+        Raises
+        ------
+        GenomeDownloadError
+            if no functional link was found
+        """
+        link = kwargs.get("to_annotation")
+        if link:
+            ext = get_file_info(link)[0]
+            if ext not in [".gtf", ".gff", ".gff3", ".bed"]:
+                raise TypeError(
+                    "Only (gzipped) gtf, gff and bed files are supported.\n"
+                )
+            return link
+
+        links = self.get_annotation_download_links(name)
+        if links:
+            return links[0]
+
+        raise GenomeDownloadError(
+            f"No gene annotations found for {get_localname(name)}.\n"
+        )
 
     def get_annotation_download_links(self, name: str, **kwargs) -> List[str]:
         """
@@ -64,26 +103,14 @@ class UrlProvider(BaseProvider):
         ----------
         name : str
             genome name
-        **kwargs: dict, optional:
-            to_annotation : direct URL to the gene annotation
 
         Returns
         -------
         list
             http/ftp link(s)
         """
-        link = kwargs.get("to_annotation")
-        if link:
-            ext = get_file_info(link)[0]
-            if ext not in [".gtf", ".gff", ".gff3", ".bed"]:
-                raise TypeError(
-                    "Only (gzipped) gtf, gff and bed files are supported.\n"
-                )
-            return [link]
-
         # name = url to genome
-        links = search_url_for_annotations(name)
-        return links if links else []
+        return search_url_for_annotations(name)
 
 
 def search_url_for_annotations(url: str) -> list:
@@ -100,14 +127,13 @@ def search_url_for_annotations(url: str) -> list:
     # try to find a GTF or GFF3 file
     dirty_list = read_url(urldir).split("\n")
     fnames = fuzzy_annotation_search(name, dirty_list)
-    if fnames:
-        links = [urldir + "/" + fname for fname in fnames]
-        return links
-
-    logger.warning(
-        "Could not parse the remote directory. "
-        "Please supply a URL using --url-to-annotation.\n"
-    )
+    links = [urldir + "/" + fname for fname in fnames]
+    if not links:
+        logger.warning(
+            "Could not parse the remote directory. "
+            "Please supply a URL using --URL-to-annotation.\n"
+        )
+    return links
 
 
 def fuzzy_annotation_search(search_name, search_list):
