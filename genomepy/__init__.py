@@ -17,7 +17,6 @@ from genomepy.functions import (
     list_installed_genomes,
 )
 from genomepy.genome import Genome
-from genomepy.genome.seqdict import as_seqdict
 from genomepy.plugins import manage_plugins
 from genomepy.providers import Provider, list_online_providers, list_providers, search
 
@@ -49,7 +48,6 @@ __all__ = [
     "manage_config",
     "clean",
     "query_mygene",
-    "as_seqdict",
 ]
 
 # No traceback

@@ -6,6 +6,7 @@ import pytest
 
 import genomepy.files
 import genomepy.utils
+from genomepy.seq import as_seqdict
 
 
 # to ignore file changes
@@ -285,7 +286,7 @@ def test_get_random_sequences(small_genome):
     )
 
 
-# genome.seqdict.py
+# seq.py
 
 
 def test_as_seqdict():
@@ -302,7 +303,7 @@ def test_as_seqdict():
 
     # test differnt inputs
     for dataset in test_data:
-        result = genomepy.as_seqdict(dataset, genome="tests/data/small_genome.fa.gz")
+        result = as_seqdict(dataset, genome="tests/data/small_genome.fa.gz")
         assert "chrI:110-120" in result, "key not present"
         assert "chrII:130-140" in result, "key not present"
         assert "chrIII:410-420" in result, "key not present"
@@ -313,13 +314,11 @@ def test_as_seqdict():
     # test minsize argument
     for dataset in test_data:
         with pytest.raises(ValueError):
-            genomepy.as_seqdict(
-                dataset, genome="tests/data/small_genome.fa.gz", minsize=100
-            )
+            as_seqdict(dataset, genome="tests/data/small_genome.fa.gz", minsize=100)
 
     # raise error on empty file
     with pytest.raises(IOError):
-        genomepy.as_seqdict("tests/data/as_seqdict/empty.fa")
+        as_seqdict("tests/data/as_seqdict/empty.fa")
 
     # test genome@chrom:start-end format
     datasets = [
@@ -332,7 +331,7 @@ def test_as_seqdict():
     ]
 
     for dataset in datasets:
-        assert sorted(genomepy.as_seqdict(dataset).values()) == [
+        assert sorted(as_seqdict(dataset).values()) == [
             "CTCTCAACTT",
             "TCCCAACTTA",
             "TGTCTCTCGC",

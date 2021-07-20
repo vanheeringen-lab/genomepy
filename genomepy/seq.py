@@ -1,9 +1,15 @@
 """as_seqdict function & overloads"""
 import os
 import re
+import sys
 from functools import singledispatch
 from io import TextIOWrapper
 from tempfile import NamedTemporaryFile
+
+try:
+    import pybedtools
+except ImportError:
+    pass
 
 import numpy as np
 import pyfaidx
@@ -188,18 +194,15 @@ def _as_seqdict_array(to_convert, genome=None, minsize=None):
     return as_seqdict(list(to_convert), genome, minsize)
 
 
-try:
-    import pybedtools  # noqa: only used when pybedtools is installed externally
+# pybedtools is loaded
+if "pybedtools" in sys.modules:
+    if hasattr(pybedtools, "BedTool"):
 
-    @as_seqdict.register(pybedtools.BedTool)
-    def _as_seqdict_bedtool(to_convert, genome=None, minsize=None):
-        """
-        Accepts pybedtools.BedTool as input.
-        """
-        return _genomepy_convert(
-            ["{}:{}-{}".format(*f[:3]) for f in to_convert], genome, minsize
-        )
-
-
-except ImportError:
-    pass
+        @as_seqdict.register(pybedtools.bedtool.BedTool)
+        def _as_seqdict_bedtool(to_convert, genome=None, minsize=None):
+            """
+            Accepts pybedtools.BedTool as input.
+            """
+            return _genomepy_convert(
+                ["{}:{}-{}".format(*f[:3]) for f in to_convert], genome, minsize
+            )
