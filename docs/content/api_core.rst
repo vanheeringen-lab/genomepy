@@ -116,8 +116,6 @@ You can browse the genome's sequences and metadata with the :code:`genomepy.Geno
 This class builds on the :code:`pyfaidx.Fasta` class to also provide you with several options
 to get specific sequences from your genome, and save these to file.
 
-Don't be alarmed by the :code:`as_seqdict` function: it takes a wide variety of inputs, for your convenience!
-
 ------------
 
 .. autoclass:: Genome
@@ -158,7 +156,14 @@ Don't be alarmed by the :code:`as_seqdict` function: it takes a wide variety of 
    The code above is mostly copy-pasted from this file now.
    .. include:: ../_autosummary/genomepy.genome.Genome.rst
 
-.. autofunction:: as_seqdict
+------------
+
+You can obtain genomic sequence from a wide variety of inputs with :code:`as_seqdict`.
+To use the function, it must be specifically imported with :code:`from genomepy.genome.seqdict import as_seqdict`.
+
+------------
+
+.. autofunction:: genomepy.genome.seqdict.as_seqdict
    :noindex:
 
 ------------
