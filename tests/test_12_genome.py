@@ -6,7 +6,7 @@ import pytest
 
 import genomepy.files
 import genomepy.utils
-from genomepy.genome.seqdict import as_seqdict
+from genomepy.seq import as_seqdict
 
 
 # to ignore file changes
@@ -286,7 +286,7 @@ def test_get_random_sequences(small_genome):
     )
 
 
-# genome.seqdict.py
+# seq.py
 
 
 def test_as_seqdict():
