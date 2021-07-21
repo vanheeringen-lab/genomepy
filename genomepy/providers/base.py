@@ -13,7 +13,7 @@ from loguru import logger
 
 from genomepy.__about__ import __version__
 from genomepy.exceptions import GenomeDownloadError
-from genomepy.files import get_file_info, gunzip_and_name, update_readme
+from genomepy.files import extract_and_name, get_file_info, update_readme
 from genomepy.online import download_file
 from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf, safe
 
@@ -181,9 +181,11 @@ class BaseProvider:
         # unzip genome
         if link.endswith(".tar.gz"):
             tar_to_bigfile(fname, fname)
-        elif link.endswith(".gz"):
-            os.rename(fname, fname + ".gz")
-            gunzip_and_name(fname + ".gz")
+        else:
+            ext = os.path.splitext(link)[-1]
+            if ext in [".gz", ".zip"]:
+                shutil.move(fname, fname + ext)
+                extract_and_name(fname + ext)
 
         # process genome (e.g. masking)
         if hasattr(self, "_post_process_download"):
@@ -401,18 +403,19 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
     # download to tmp dir. Move genome on completion.
     # tmp dir is in genome_dir to prevent moving the genome between disks
     tmp_dir = mkdtemp(dir=out_dir)
-    ext, gz = get_file_info(annot_url)
+    ext, is_compressed = get_file_info(annot_url)
+    tmp_annot_file = os.path.join(tmp_dir, annot_url.split("/")[-1])
     annot_file = os.path.join(tmp_dir, localname + ".annotation" + ext)
     if n is None:
-        download_file(annot_url, annot_file)
+        download_file(annot_url, tmp_annot_file)
     else:
-        download_head(annot_url, annot_file, n)
-        gz = False
+        download_head(annot_url, tmp_annot_file, n)
+        is_compressed = False
 
     # unzip input file (if needed)
-    if gz:
-        cmd = "mv {0} {1} && gunzip -f {1}"
-        sp.check_call(cmd.format(annot_file, annot_file + ".gz"), shell=True)
+    if is_compressed:
+        tmp_annot_file, _ = extract_and_name(tmp_annot_file)
+    shutil.move(tmp_annot_file, annot_file)
 
     # generate intermediate file (GenePred)
     pred_file = annot_file.replace(ext, ".gp")

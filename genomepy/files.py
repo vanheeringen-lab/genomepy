@@ -5,8 +5,9 @@ import re
 import shutil
 import subprocess as sp
 from glob import glob
-from tempfile import mkdtemp
+from tempfile import TemporaryDirectory, mkdtemp
 from typing import Optional, Tuple
+from zipfile import ZipFile
 
 from tqdm.auto import tqdm
 
@@ -111,6 +112,31 @@ def update_readme(readme: str, updated_metadata: dict = None, extra_lines: list 
     write_readme(readme, metadata, lines)
 
 
+def extract_and_name(fname: str) -> Tuple[str, bool]:
+    """
+    Gunzips or unzips the file if (g)zipped.
+
+    Also works on bgzipped files.
+
+    Parameters
+    ----------
+    fname: str
+        path to file
+
+    Returns
+    -------
+    tuple
+        fname, str
+            up to date filename
+        compressed, bool
+            whether the file was (g)unzipped
+    """
+    if fname.endswith(".gz"):
+        return gunzip_and_name(fname)
+    elif fname.endswith(".zip"):
+        return unzip_and_name(fname)
+
+
 def gunzip_and_name(fname: str) -> Tuple[str, bool]:
     """
     Gunzips the file if gzipped.
@@ -137,6 +163,36 @@ def gunzip_and_name(fname: str) -> Tuple[str, bool]:
         os.unlink(fname)
         return fname[:-3], True
     return fname, False
+
+
+def unzip_and_name(fname: str) -> Tuple[str, bool]:
+    """
+    Unzips the file if zipped.
+
+    Parameters
+    ----------
+    fname: str
+        path to file
+
+    Returns
+    -------
+    tuple
+        fname, str
+            up to date filename
+        zip, bool
+            whether the file was unzipped
+    """
+    with ZipFile(fname, "r") as fzip:
+        with TemporaryDirectory() as tmpdir:
+            fzip.extractall(path=tmpdir)
+            fnames = glob(f"{tmpdir}/*")
+            if len(fnames) > 1:
+                raise ValueError("Downloaded zip file contains multiple files!")
+            unzip_fname = fnames[0]
+            shutil.move(unzip_fname, fname[:-4])
+    os.unlink(fname)
+    fname = fname[:-4]
+    return fname, True
 
 
 def gzip_and_name(fname, gzip_file=True) -> str:
@@ -214,7 +270,7 @@ def _open(fname: str, mode: Optional[str] = "r"):
 
 def get_file_info(fname) -> Tuple[str, bool]:
     """
-    Returns the lower case file type of a file, and if it is gzipped
+    Returns the lower case file type of a file, and if it is (g)zipped
 
     Parameters
     ----------
@@ -226,16 +282,19 @@ def get_file_info(fname) -> Tuple[str, bool]:
     tuple
         ext: str
             fname file type
-        gz: bool
-            whether fname was gzipped
+        is_compressed: bool
+            whether fname was (g)zipped
     """
     fname = fname.lower()
-    gz = False
+    is_compressed = False
     if fname.endswith(".gz"):
-        gz = True
+        is_compressed = True
         fname = fname[:-3]
+    elif fname.endswith(".zip"):
+        is_compressed = True
+        fname = fname[:-4]
     split = os.path.splitext(fname)
-    return split[1], gz
+    return split[1], is_compressed
 
 
 def glob_ext_files(dirname, ext="fa") -> list:
@@ -276,7 +335,7 @@ def _apply_fasta_regex_func(infa, regex_func, outfa=None):
     tmp_dir = mkdtemp(dir=out_dir)
     old_fname = os.path.join(tmp_dir, "original") if outfa is None else infa
     new_fname = os.path.join(tmp_dir, "filtered")
-    os.rename(infa, old_fname)
+    shutil.move(infa, old_fname)
 
     # perform the filtering
     excluded_contigs = []
@@ -291,7 +350,7 @@ def _apply_fasta_regex_func(infa, regex_func, outfa=None):
                 new.write(line)
 
     # move the filtered file to the original folder
-    os.rename(new_fname, outfa if outfa else infa)
+    shutil.move(new_fname, outfa if outfa else infa)
     rm_rf(tmp_dir)
 
     return excluded_contigs
