@@ -49,7 +49,7 @@ class UrlProvider(BaseProvider):
 
     def _check_name(self, name):
         """check if genome name can be found for provider"""
-        self.genomes[name] = {"annotation": []}
+        self.genomes[name] = {"annotation":[]}
         return name
 
     def get_genome_download_link(self, url, mask=None, **kwargs):
@@ -95,20 +95,20 @@ class UrlProvider(BaseProvider):
 
     def get_annotation_download_links(self, name: str, **kwargs) -> List[str]:
         """
-                Retrieve functioning gene annotation download link(s).
-        i
-                If provided, check if the annotation url links to a supported file type (gtf/gff3/bed).
-                Else try to find an annotation in the same location as the genome url.
+        Retrieve functioning gene annotation download link(s).
 
-                Parameters
-                ----------
-                name : str
-                    genome name
+        If provided, check if the annotation url links to a supported file type (gtf/gff3/bed).
+        Else try to find an annotation in the same location as the genome url.
 
-                Returns
-                -------
-                list
-                    http/ftp link(s)
+        Parameters
+        ----------
+        name : str
+            genome name
+
+        Returns
+        -------
+        list
+            http/ftp link(s)
         """
         # name = url to genome
         return search_url_for_annotations(name)
