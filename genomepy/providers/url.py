@@ -49,7 +49,6 @@ class UrlProvider(BaseProvider):
 
     def _check_name(self, name):
         """check if genome name can be found for provider"""
-        self.genomes[name] = {"annotation":[]}
         return name
 
     def get_genome_download_link(self, url, mask=None, **kwargs):
