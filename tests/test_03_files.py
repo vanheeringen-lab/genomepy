@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess as sp
 from tempfile import NamedTemporaryFile
 
@@ -6,6 +7,18 @@ import pytest
 from pyfaidx import Fasta
 
 import genomepy.files
+
+
+@pytest.fixture
+def zipped_genome():
+    tmp = NamedTemporaryFile(suffix=".fa.zip", delete=False)
+    shutil.copyfile("tests/data/zip_genome.fa.zip", tmp.name)
+    yield tmp.name
+    # Remove temp file if it's zipped or not
+    if os.path.exists(tmp.name):
+        os.unlink(tmp.name)
+    if os.path.exists(tmp.name[:-4]):
+        os.unlink(tmp.name[:-4])
 
 
 def test_read_readme():
@@ -63,6 +76,22 @@ def test_update_readme():
     assert metadata["key"] == updated_metadata["key"]
 
     os.unlink(readme)
+
+
+def test_extract_and_name(zipped_genome):
+    assert os.path.exists(zipped_genome)
+    fname, zip_file = genomepy.files.extract_and_name(zipped_genome)
+    assert zip_file and fname.endswith(".fa")
+    assert os.path.exists(fname)
+    assert not os.path.exists(fname + ".zip")
+
+
+def test_unzip_and_name(zipped_genome):
+    assert os.path.exists(zipped_genome)
+    fname, zip_file = genomepy.files.unzip_and_name(zipped_genome)
+    assert zip_file and fname.endswith(".fa")
+    assert os.path.exists(fname)
+    assert not os.path.exists(fname + ".zip")
 
 
 def test_gunzip_and_name(fname="tests/data/small_genome.fa.gz"):
