@@ -4,7 +4,7 @@ import os
 import shutil
 import subprocess as sp
 import time
-from tempfile import mkdtemp
+from tempfile import TemporaryDirectory, mkdtemp
 from typing import Iterator, List, Union
 from urllib.request import urlopen
 
@@ -171,27 +171,26 @@ class BaseProvider:
 
         # download to tmp dir. Move genome on completion.
         # tmp dir is in genome_dir to prevent moving the genome between disks
-        tmp_dir = mkdtemp(dir=out_dir)
-        tmp_fname = link.split("/")[-1]
-        fname = os.path.join(tmp_dir, f"{localname}.fa")
+        with TemporaryDirectory(dir=out_dir) as tmp_dir:
+            tmp_fname = link.split("/")[-1]
+            fname = os.path.join(tmp_dir, f"{localname}.fa")
 
-        download_file(link, tmp_fname)
-        logger.info("Genome download successful, starting post processing...")
+            download_file(link, tmp_fname)
+            logger.info("Genome download successful, starting post processing...")
 
-        # unzip genome
-        extract_archive(tmp_fname, outfile=fname, concat=True)
+            # unzip genome
+            extract_archive(tmp_fname, outfile=fname, concat=True)
 
-        # process genome (e.g. masking)
-        if hasattr(self, "_post_process_download"):
-            self._post_process_download(
-                name=name, fname=fname, out_dir=out_dir, mask=mask
-            )
+            # process genome (e.g. masking)
+            if hasattr(self, "_post_process_download"):
+                self._post_process_download(
+                    name=name, fname=fname, out_dir=out_dir, mask=mask
+                )
 
-        # transfer the genome from the tmpdir to the genome_dir
-        src = fname
-        dst = os.path.join(out_dir, f"{localname}.fa")
-        shutil.move(src, dst)
-        rm_rf(tmp_dir)
+            # transfer the genome from the tmpdir to the genome_dir
+            src = fname
+            dst = os.path.join(out_dir, f"{localname}.fa")
+            shutil.move(src, dst)
 
         logger.info("name: {}".format(name))
         logger.info("local name: {}".format(localname))

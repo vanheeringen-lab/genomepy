@@ -1,6 +1,7 @@
 """Utility functions with gene annotations"""
 import csv
 import os
+import shutil
 import subprocess as sp
 from tempfile import mkdtemp
 
@@ -141,7 +142,7 @@ def generate_annot(template, target, overwrite=False):
         # gzip if needed
         tmp_target = gzip_and_name(tmp_target, target.endswith(".gz"))
 
-    os.replace(tmp_target, target)
+    shutil.move(tmp_target, target)
     rm_rf(tmp_dir)
 
 

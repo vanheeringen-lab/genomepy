@@ -137,9 +137,11 @@ def extract_archive(
     fname: str, outfile: Optional[str] = None, concat: bool = False
 ) -> Union[str, None]:
     """
-    Gunzips or unzips the file if (g)zipped.
+    Extract files from an archive.
 
-    Also works on bgzipped files.
+    Archive may be a gzipped or bgzipped file (.gz), a zipped file (.zip)
+    or a tarball (.tar.gz). Optionally, if multiple files are present
+    they may be concatenated into one file.
 
     Parameters
     ----------
@@ -158,14 +160,14 @@ def extract_archive(
         fname, str
             up to date filename
     """
-    if fname.endswith(".gz"):
+    if fname.endswith((".tgz", ".tar.gz")):
+        return extract_tarball(fname, outfile=outfile)
+    elif fname.endswith(".gz"):
         return extract_gzip(fname, outfile=outfile)
     elif fname.endswith(
         ".zip",
     ):
         return extract_zip(fname, outfile=outfile, concat=concat)
-    elif fname.endswith(".tgz") or fname.endswith(".tar.gz"):
-        return extract_tarball(fname, outfile=outfile)
 
 
 def extract_tarball(fname, outfile=None, concat=True) -> Union[str, None]:
@@ -248,20 +250,20 @@ def extract_zip(
     if not outfile:
         outfile = fname[:-4]
 
-    with ZipFile(fname, "r") as fzip:
-        with TemporaryDirectory() as tmpdir:
-            fzip.extractall(path=tmpdir)
-            fnames = glob(f"{tmpdir}/*")
-            if len(fnames) > 1 and not concat:
-                raise ValueError(
-                    "Downloaded zip file contains multiple files, but concat is not specified!"
-                )
+    with ZipFile(fname, "r") as fzip, TemporaryDirectory() as tmpdir:
+        fzip.extractall(path=tmpdir)
+        fnames = glob(f"{tmpdir}/*")
 
-            # Concatenate (also works with one file)
-            with open(outfile, "w") as out:
-                for infile in fnames:
-                    for line in open(infile):
-                        out.write(line)
+        if len(fnames) > 1 and not concat:
+            raise ValueError(
+                "Downloaded zip file contains multiple files, but concat is not specified!"
+            )
+
+        # Concatenate (also works with one file)
+        with open(outfile, "w") as out:
+            for infile in fnames:
+                for line in open(infile):
+                    out.write(line)
 
     os.unlink(fname)
 
@@ -360,7 +362,10 @@ def get_file_info(fname) -> Tuple[str, bool]:
     """
     fname = fname.lower()
     is_compressed = False
-    if fname.endswith(".gz"):
+    if fname.endswith((".tgz", ".tar.gz")):
+        is_compressed = True
+        fname = re.sub("(tgz|tar.gz)$", "", fname)
+    elif fname.endswith(".gz"):
         is_compressed = True
         fname = fname[:-3]
     elif fname.endswith(".zip"):
