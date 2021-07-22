@@ -4,9 +4,11 @@ import os
 import re
 import shutil
 import subprocess as sp
+import tarfile
+from contextlib import contextmanager
 from glob import glob
 from tempfile import TemporaryDirectory, mkdtemp
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 from zipfile import ZipFile
 
 from tqdm.auto import tqdm
@@ -112,7 +114,28 @@ def update_readme(readme: str, updated_metadata: dict = None, extra_lines: list 
     write_readme(readme, metadata, lines)
 
 
-def extract_and_name(fname: str) -> Tuple[str, bool]:
+@contextmanager
+def extracted_file(fname: str):
+    """Context manager to work with (b)gzipped file."""
+    new_fname = extract_gzip(fname)
+    gzipped = True
+    if new_fname is None:
+        new_fname = fname
+        gzipped = False
+
+    try:
+        yield new_fname
+    finally:
+        if gzipped:
+            try:
+                bgzip_and_name(new_fname)
+            except Exception:
+                gzip_and_name(new_fname)
+
+
+def extract_archive(
+    fname: str, outfile: Optional[str] = None, concat: bool = False
+) -> Union[str, None]:
     """
     Gunzips or unzips the file if (g)zipped.
 
@@ -123,21 +146,53 @@ def extract_and_name(fname: str) -> Tuple[str, bool]:
     fname: str
         path to file
 
+    outfile : str, optional
+        Name of the output file.
+
+    concat : bool, optional
+        If zip or tar.gz contains multiple files, concatenate them.
+
     Returns
     -------
     tuple
         fname, str
             up to date filename
-        compressed, bool
-            whether the file was (g)unzipped
     """
     if fname.endswith(".gz"):
-        return gunzip_and_name(fname)
-    elif fname.endswith(".zip"):
-        return unzip_and_name(fname)
+        return extract_gzip(fname, outfile=outfile)
+    elif fname.endswith(
+        ".zip",
+    ):
+        return extract_zip(fname, outfile=outfile, concat=concat)
+    elif fname.endswith(".tgz") or fname.endswith(".tar.gz"):
+        return extract_tarball(fname, outfile=outfile)
 
 
-def gunzip_and_name(fname: str) -> Tuple[str, bool]:
+def extract_tarball(fname, outfile=None, concat=True) -> Union[str, None]:
+    """Convert tar of multiple FASTAs to one file."""
+    fnames = []
+    # Extract files to temporary directory
+    tmp_dir = mkdtemp(dir=os.path.dirname(outfile))
+    with tarfile.open(fname) as tar:
+        tar.extractall(path=tmp_dir)
+    for root, _, files in os.walk(tmp_dir):
+        fnames += [os.path.join(root, fname) for fname in files]
+
+    if len(fnames) > 1 and not concat:
+        raise ValueError("tarball contains multiple files, but concat not specified!")
+
+    # Concatenate (also works woth one file)
+    with open(outfile, "w") as out:
+        for infile in fnames:
+            for line in open(infile):
+                out.write(line)
+
+    rm_rf(tmp_dir)
+
+    return outfile
+
+
+def extract_gzip(fname: str, outfile: Optional[str] = None) -> Union[str, None]:
     """
     Gunzips the file if gzipped.
 
@@ -148,24 +203,29 @@ def gunzip_and_name(fname: str) -> Tuple[str, bool]:
     fname: str
         path to file
 
+    outfile : str, optional
+        Name of the output file.
+
     Returns
     -------
     tuple
         fname, str
-            up to date filename
-        gzip, bool
-            whether the file was gunzipped
+            up to date filename, or None if failed
     """
+    if not outfile:
+        outfile = fname[:-3]
+
     if fname.endswith(".gz"):
         with gzip.open(fname, "rb") as f_in:
-            with open(fname[:-3], "wb") as f_out:
+            with open(outfile, "wb") as f_out:
                 shutil.copyfileobj(f_in, f_out)
         os.unlink(fname)
-        return fname[:-3], True
-    return fname, False
+        return outfile
 
 
-def unzip_and_name(fname: str) -> Tuple[str, bool]:
+def extract_zip(
+    fname: str, outfile: Optional[str] = None, concat: bool = False
+) -> Union[str, None]:
     """
     Unzips the file if zipped.
 
@@ -174,25 +234,38 @@ def unzip_and_name(fname: str) -> Tuple[str, bool]:
     fname: str
         path to file
 
+    outfile : str, optional
+        Name of the output file.
+
+    concat : bool, optional
+        If zip or tar.gz contains multiple files, concatenate them.
     Returns
     -------
     tuple
         fname, str
             up to date filename
-        zip, bool
-            whether the file was unzipped
     """
+    if not outfile:
+        outfile = fname[:-4]
+
     with ZipFile(fname, "r") as fzip:
         with TemporaryDirectory() as tmpdir:
             fzip.extractall(path=tmpdir)
             fnames = glob(f"{tmpdir}/*")
-            if len(fnames) > 1:
-                raise ValueError("Downloaded zip file contains multiple files!")
-            unzip_fname = fnames[0]
-            shutil.move(unzip_fname, fname[:-4])
+            if len(fnames) > 1 and not concat:
+                raise ValueError(
+                    "Downloaded zip file contains multiple files, but concat is not specified!"
+                )
+
+            # Concatenate (also works with one file)
+            with open(outfile, "w") as out:
+                for infile in fnames:
+                    for line in open(infile):
+                        out.write(line)
+
     os.unlink(fname)
-    fname = fname[:-4]
-    return fname, True
+
+    return outfile
 
 
 def gzip_and_name(fname, gzip_file=True) -> str:

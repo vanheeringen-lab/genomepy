@@ -3,7 +3,6 @@ import gzip
 import os
 import shutil
 import subprocess as sp
-import tarfile
 import time
 from tempfile import mkdtemp
 from typing import Iterator, List, Union
@@ -13,7 +12,7 @@ from loguru import logger
 
 from genomepy.__about__ import __version__
 from genomepy.exceptions import GenomeDownloadError
-from genomepy.files import extract_and_name, get_file_info, update_readme
+from genomepy.files import extract_archive, get_file_info, update_readme
 from genomepy.online import download_file
 from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf, safe
 
@@ -173,19 +172,14 @@ class BaseProvider:
         # download to tmp dir. Move genome on completion.
         # tmp dir is in genome_dir to prevent moving the genome between disks
         tmp_dir = mkdtemp(dir=out_dir)
+        tmp_fname = link.split("/")[-1]
         fname = os.path.join(tmp_dir, f"{localname}.fa")
 
-        download_file(link, fname)
+        download_file(link, tmp_fname)
         logger.info("Genome download successful, starting post processing...")
 
         # unzip genome
-        if link.endswith(".tar.gz"):
-            tar_to_bigfile(fname, fname)
-        else:
-            ext = os.path.splitext(link)[-1]
-            if ext in [".gz", ".zip"]:
-                shutil.move(fname, fname + ext)
-                extract_and_name(fname + ext)
+        extract_archive(tmp_fname, outfile=fname, concat=True)
 
         # process genome (e.g. masking)
         if hasattr(self, "_post_process_download"):
@@ -404,8 +398,9 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
     # tmp dir is in genome_dir to prevent moving the genome between disks
     tmp_dir = mkdtemp(dir=out_dir)
     ext, is_compressed = get_file_info(annot_url)
-    tmp_annot_file = os.path.join(tmp_dir, annot_url.split("/")[-1])
+
     annot_file = os.path.join(tmp_dir, localname + ".annotation" + ext)
+    tmp_annot_file = os.path.join(tmp_dir, annot_url.split("/")[-1])
     if n is None:
         download_file(annot_url, tmp_annot_file)
     else:
@@ -414,8 +409,9 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
 
     # unzip input file (if needed)
     if is_compressed:
-        tmp_annot_file, _ = extract_and_name(tmp_annot_file)
-    shutil.move(tmp_annot_file, annot_file)
+        annot_file = extract_archive(tmp_annot_file, outfile=annot_file)
+    else:
+        shutil.move(tmp_annot_file, annot_file)
 
     # generate intermediate file (GenePred)
     pred_file = annot_file.replace(ext, ".gp")
@@ -464,25 +460,6 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
         src = f
         dst = os.path.join(out_dir, os.path.basename(f))
         shutil.move(src, dst)
-    rm_rf(tmp_dir)
-
-
-def tar_to_bigfile(fname, outfile):
-    """Convert tar of multiple FASTAs to one file."""
-    fnames = []
-    # Extract files to temporary directory
-    tmp_dir = mkdtemp(dir=os.path.dirname(outfile))
-    with tarfile.open(fname) as tar:
-        tar.extractall(path=tmp_dir)
-    for root, _, files in os.walk(tmp_dir):
-        fnames += [os.path.join(root, fname) for fname in files]
-
-    # Concatenate
-    with open(outfile, "w") as out:
-        for infile in fnames:
-            for line in open(infile):
-                out.write(line)
-
     rm_rf(tmp_dir)
 
 

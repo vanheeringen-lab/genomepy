@@ -1,4 +1,3 @@
-import filecmp
 import os
 from tempfile import TemporaryDirectory
 
@@ -182,14 +181,3 @@ def test_search(ucsc):
         genome = next(ucsc.search(method))
         assert genome[0] == "ailMel1"
         assert isinstance(genome, tuple)
-
-
-def test_tar_to_bigfile():
-    fname = "tests/data/tar2.fa.tar.gz"
-    outname = "tests/data/tar2.fa"
-    genomepy.providers.base.tar_to_bigfile(fname, outname)  # noqa
-
-    assert os.path.exists(outname)
-    # tar2.fa is a copy of tar1.fa. Check if they are identical after untarring.
-    assert filecmp.cmp(outname, "tests/data/tar1.fa")
-    os.unlink(outname)
