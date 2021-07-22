@@ -179,7 +179,11 @@ class BaseProvider:
             logger.info("Genome download successful, starting post processing...")
 
             # unzip genome
-            extract_archive(tmp_fname, outfile=fname, concat=True)
+            _, is_compressed = get_file_info(link)
+            if is_compressed:
+                extract_archive(tmp_fname, outfile=fname, concat=True)
+            else:
+                shutil.move(tmp_fname, fname)
 
             # process genome (e.g. masking)
             if hasattr(self, "_post_process_download"):
