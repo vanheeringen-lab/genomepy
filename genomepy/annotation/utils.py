@@ -79,7 +79,25 @@ def read_annot(fpath: str) -> pd.DataFrame:
         fpath,
         sep="\t",
         names=names,
-        dtype={"seqname": str, "chrom": str, "start": np.uint32, "end": np.uint32},
+        dtype={
+            "seqname": str,
+            "source": str,
+            "feature": str,
+            "start": np.uint32,
+            "end": np.uint32,
+            "score": str,  # int or .
+            "strand": str,  # +, - or .
+            "frame": str,  # int or .
+            "attribute": str,
+            "chrom": str,
+            "name": str,
+            # "thickStart",
+            # "thickEnd",
+            # "itemRrgb",
+            # "blockCount",
+            # "blockSizes",
+            # "blockStarts",
+        },
         comment="#",
     )
     return df
