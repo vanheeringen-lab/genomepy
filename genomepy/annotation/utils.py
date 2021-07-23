@@ -1,13 +1,14 @@
 """Utility functions with gene annotations"""
 import csv
 import os
+import shutil
 import subprocess as sp
 from tempfile import mkdtemp
 
 import numpy as np
 import pandas as pd
 
-from genomepy.files import _open, gunzip_and_name, gzip_and_name
+from genomepy.files import _open, extracted_file, gzip_and_name
 from genomepy.utils import rm_rf
 
 GTF_FORMAT = [
@@ -136,14 +137,12 @@ def generate_annot(template, target, overwrite=False):
         cmd = "gtfToGenePred -ignoreGroupsWithoutExons {0} /dev/stdout | genePredToBed /dev/stdin {1}"
 
     # unzip template if needed
-    template, is_unzipped = gunzip_and_name(template)
-    # create new file
-    sp.check_call(cmd.format(template, tmp_target), shell=True)
-    # gzip if needed
-    tmp_target = gzip_and_name(tmp_target, target.endswith(".gz"))
-    _ = gzip_and_name(template, is_unzipped)
+    with extracted_file(template) as _template:
+        sp.check_call(cmd.format(_template, tmp_target), shell=True)
+        # gzip if needed
+        tmp_target = gzip_and_name(tmp_target, target.endswith(".gz"))
 
-    os.replace(tmp_target, target)
+    shutil.move(tmp_target, target)
     rm_rf(tmp_dir)
 
 

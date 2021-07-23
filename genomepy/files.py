@@ -4,9 +4,12 @@ import os
 import re
 import shutil
 import subprocess as sp
+import tarfile
+from contextlib import contextmanager
 from glob import glob
-from tempfile import mkdtemp
-from typing import Optional, Tuple
+from tempfile import TemporaryDirectory, mkdtemp
+from typing import Optional, Tuple, Union
+from zipfile import ZipFile
 
 from tqdm.auto import tqdm
 
@@ -111,7 +114,87 @@ def update_readme(readme: str, updated_metadata: dict = None, extra_lines: list 
     write_readme(readme, metadata, lines)
 
 
-def gunzip_and_name(fname: str) -> Tuple[str, bool]:
+@contextmanager
+def extracted_file(fname: str):
+    """Context manager to work with (b)gzipped file."""
+    new_fname = extract_gzip(fname)
+    gzipped = True
+    if new_fname is None:
+        new_fname = fname
+        gzipped = False
+
+    try:
+        yield new_fname
+    finally:
+        if gzipped:
+            try:
+                bgzip_and_name(new_fname)
+            except Exception:
+                gzip_and_name(new_fname)
+
+
+def extract_archive(
+    fname: str, outfile: Optional[str] = None, concat: bool = False
+) -> Union[str, None]:
+    """
+    Extract files from an archive.
+
+    Archive may be a gzipped or bgzipped file (.gz), a zipped file (.zip)
+    or a tarball (.tar.gz). Optionally, if multiple files are present
+    they may be concatenated into one file.
+
+    Parameters
+    ----------
+    fname: str
+        path to file
+
+    outfile : str, optional
+        Name of the output file.
+
+    concat : bool, optional
+        If zip or tar.gz contains multiple files, concatenate them.
+
+    Returns
+    -------
+    tuple
+        fname, str
+            up to date filename
+    """
+    if fname.endswith((".tgz", ".tar.gz")):
+        return extract_tarball(fname, outfile=outfile)
+    elif fname.endswith(".gz"):
+        return extract_gzip(fname, outfile=outfile)
+    elif fname.endswith(
+        ".zip",
+    ):
+        return extract_zip(fname, outfile=outfile, concat=concat)
+
+
+def extract_tarball(fname, outfile=None, concat=True) -> Union[str, None]:
+    """Convert tar of multiple FASTAs to one file."""
+    fnames = []
+    # Extract files to temporary directory
+    tmp_dir = mkdtemp(dir=os.path.dirname(outfile))
+    with tarfile.open(fname) as tar:
+        tar.extractall(path=tmp_dir)
+    for root, _, files in os.walk(tmp_dir):
+        fnames += [os.path.join(root, fname) for fname in files]
+
+    if len(fnames) > 1 and not concat:
+        raise ValueError("tarball contains multiple files, but concat not specified!")
+
+    # Concatenate (also works woth one file)
+    with open(outfile, "w") as out:
+        for infile in fnames:
+            for line in open(infile):
+                out.write(line)
+
+    rm_rf(tmp_dir)
+
+    return outfile
+
+
+def extract_gzip(fname: str, outfile: Optional[str] = None) -> Union[str, None]:
     """
     Gunzips the file if gzipped.
 
@@ -122,21 +205,69 @@ def gunzip_and_name(fname: str) -> Tuple[str, bool]:
     fname: str
         path to file
 
+    outfile : str, optional
+        Name of the output file.
+
+    Returns
+    -------
+    tuple
+        fname, str
+            up to date filename, or None if failed
+    """
+    if not outfile:
+        outfile = fname[:-3]
+
+    if fname.endswith(".gz"):
+        with gzip.open(fname, "rb") as f_in:
+            with open(outfile, "wb") as f_out:
+                shutil.copyfileobj(f_in, f_out)
+        os.unlink(fname)
+        return outfile
+
+
+def extract_zip(
+    fname: str, outfile: Optional[str] = None, concat: bool = False
+) -> Union[str, None]:
+    """
+    Unzips the file if zipped.
+
+    Parameters
+    ----------
+    fname: str
+        path to file
+
+    outfile : str, optional
+        Name of the output file.
+
+    concat : bool, optional
+        If zip or tar.gz contains multiple files, concatenate them.
     Returns
     -------
     tuple
         fname, str
             up to date filename
-        gzip, bool
-            whether the file was gunzipped
     """
-    if fname.endswith(".gz"):
-        with gzip.open(fname, "rb") as f_in:
-            with open(fname[:-3], "wb") as f_out:
-                shutil.copyfileobj(f_in, f_out)
-        os.unlink(fname)
-        return fname[:-3], True
-    return fname, False
+    if not outfile:
+        outfile = fname[:-4]
+
+    with ZipFile(fname, "r") as fzip, TemporaryDirectory() as tmpdir:
+        fzip.extractall(path=tmpdir)
+        fnames = glob(f"{tmpdir}/*")
+
+        if len(fnames) > 1 and not concat:
+            raise ValueError(
+                "Downloaded zip file contains multiple files, but concat is not specified!"
+            )
+
+        # Concatenate (also works with one file)
+        with open(outfile, "w") as out:
+            for infile in fnames:
+                for line in open(infile):
+                    out.write(line)
+
+    os.unlink(fname)
+
+    return outfile
 
 
 def gzip_and_name(fname, gzip_file=True) -> str:
@@ -214,7 +345,7 @@ def _open(fname: str, mode: Optional[str] = "r"):
 
 def get_file_info(fname) -> Tuple[str, bool]:
     """
-    Returns the lower case file type of a file, and if it is gzipped
+    Returns the lower case file type of a file, and if it is (g)zipped
 
     Parameters
     ----------
@@ -226,16 +357,22 @@ def get_file_info(fname) -> Tuple[str, bool]:
     tuple
         ext: str
             fname file type
-        gz: bool
-            whether fname was gzipped
+        is_compressed: bool
+            whether fname was (g)zipped
     """
     fname = fname.lower()
-    gz = False
-    if fname.endswith(".gz"):
-        gz = True
+    is_compressed = False
+    if fname.endswith((".tgz", ".tar.gz")):
+        is_compressed = True
+        fname = re.sub(r"\.(tgz|tar\.gz)$", "", fname)
+    elif fname.endswith(".gz"):
+        is_compressed = True
         fname = fname[:-3]
+    elif fname.endswith(".zip"):
+        is_compressed = True
+        fname = fname[:-4]
     split = os.path.splitext(fname)
-    return split[1], gz
+    return split[1], is_compressed
 
 
 def glob_ext_files(dirname, ext="fa") -> list:
@@ -276,7 +413,7 @@ def _apply_fasta_regex_func(infa, regex_func, outfa=None):
     tmp_dir = mkdtemp(dir=out_dir)
     old_fname = os.path.join(tmp_dir, "original") if outfa is None else infa
     new_fname = os.path.join(tmp_dir, "filtered")
-    os.rename(infa, old_fname)
+    shutil.move(infa, old_fname)
 
     # perform the filtering
     excluded_contigs = []
@@ -291,7 +428,7 @@ def _apply_fasta_regex_func(infa, regex_func, outfa=None):
                 new.write(line)
 
     # move the filtered file to the original folder
-    os.rename(new_fname, outfa if outfa else infa)
+    shutil.move(new_fname, outfa if outfa else infa)
     rm_rf(tmp_dir)
 
     return excluded_contigs

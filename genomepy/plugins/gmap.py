@@ -2,7 +2,7 @@ import os.path
 from shutil import move
 from tempfile import mkdtemp
 
-from genomepy.files import bgzip_and_name, gunzip_and_name
+from genomepy.files import extracted_file
 from genomepy.plugins import Plugin
 from genomepy.utils import cmd_ok, rm_rf, run_index_cmd
 
@@ -20,22 +20,18 @@ class GmapPlugin(Plugin):
 
         if not os.path.exists(index_dir):
             # unzip genome if zipped and return up-to-date genome name
-            fname, bgzip = gunzip_and_name(genome.filename)
+            with extracted_file(genome.filename) as fname:
+                # gmap outputs a folder named genome.name
+                # its content is moved to index dir, consistent with other plugins
+                tmp_dir = mkdtemp(dir=".")
+                # Create index
+                cmd = f"gmap_build -D {tmp_dir} -d {genome.name} {fname}"
+                run_index_cmd("gmap", cmd)
 
-            # gmap outputs a folder named genome.name
-            # its content is moved to index dir, consistent with other plugins
-            tmp_dir = mkdtemp(dir=".")
-            # Create index
-            cmd = f"gmap_build -D {tmp_dir} -d {genome.name} {fname}"
-            run_index_cmd("gmap", cmd)
-
-            # Move files to index_dir
-            src = os.path.join(tmp_dir, genome.name)
-            move(src, index_dir)
-            rm_rf(tmp_dir)
-
-            # re-zip genome if unzipped
-            bgzip_and_name(fname, bgzip)
+                # Move files to index_dir
+                src = os.path.join(tmp_dir, genome.name)
+                move(src, index_dir)
+                rm_rf(tmp_dir)
 
     def get_properties(self, genome):
         props = {

@@ -1,4 +1,6 @@
+import filecmp
 import os
+import shutil
 import subprocess as sp
 from tempfile import NamedTemporaryFile
 
@@ -6,6 +8,18 @@ import pytest
 from pyfaidx import Fasta
 
 import genomepy.files
+
+
+@pytest.fixture
+def zipped_genome():
+    tmp = NamedTemporaryFile(suffix=".fa.zip", delete=False)
+    shutil.copyfile("tests/data/zip_genome.fa.zip", tmp.name)
+    yield tmp.name
+    # Remove temp file if it's zipped or not
+    if os.path.exists(tmp.name):
+        os.unlink(tmp.name)
+    if os.path.exists(tmp.name[:-4]):
+        os.unlink(tmp.name[:-4])
 
 
 def test_read_readme():
@@ -65,10 +79,26 @@ def test_update_readme():
     os.unlink(readme)
 
 
-def test_gunzip_and_name(fname="tests/data/small_genome.fa.gz"):
+def test_extract_archive(zipped_genome):
+    assert os.path.exists(zipped_genome)
+    fname = genomepy.files.extract_archive(zipped_genome)
+    assert fname.endswith(".fa")
     assert os.path.exists(fname)
-    fname, gzip_file = genomepy.files.gunzip_and_name(fname)
-    assert gzip_file and fname.endswith(".fa")
+    assert not os.path.exists(fname + ".zip")
+
+
+def test_extract_zip(zipped_genome):
+    assert os.path.exists(zipped_genome)
+    fname = genomepy.files.extract_zip(zipped_genome)
+    assert fname.endswith(".fa")
+    assert os.path.exists(fname)
+    assert not os.path.exists(fname + ".zip")
+
+
+def test_extract_gzip(fname="tests/data/small_genome.fa.gz"):
+    assert os.path.exists(fname)
+    fname = genomepy.files.extract_gzip(fname)
+    assert fname.endswith(".fa")
     assert os.path.exists(fname)
     assert not os.path.exists(fname + ".gz")
 
@@ -80,7 +110,7 @@ def test_gzip_and_name(fname="tests/data/small_genome.fa"):
     assert os.path.exists(fname)
     assert not os.path.exists(fname[:-3])
 
-    fname, _ = genomepy.files.gunzip_and_name(fname)
+    fname = genomepy.files.extract_gzip(fname)
     assert fname.endswith(".fa")
     assert os.path.exists(fname)
     assert not os.path.exists(fname + ".gz")
@@ -95,6 +125,17 @@ def test_bgzip_and_name(fname="tests/data/small_genome.fa"):
 
     with pytest.raises(sp.CalledProcessError):
         genomepy.files.bgzip_and_name("tests/data/nofile.fa")
+
+
+def test_extract_tarball():
+    fname = "tests/data/tar2.fa.tar.gz"
+    outname = "tests/data/tar2.fa"
+    genomepy.files.extract_tarball(fname, outfile=outname, concat=True)  # noqa
+
+    assert os.path.exists(outname)
+    # tar2.fa is a copy of tar1.fa. Check if they are identical after untarring.
+    assert filecmp.cmp(outname, "tests/data/tar1.fa")
+    os.unlink(outname)
 
 
 def test__open():

@@ -3,9 +3,8 @@ import gzip
 import os
 import shutil
 import subprocess as sp
-import tarfile
 import time
-from tempfile import mkdtemp
+from tempfile import TemporaryDirectory, mkdtemp
 from typing import Iterator, List, Union
 from urllib.request import urlopen
 
@@ -13,7 +12,7 @@ from loguru import logger
 
 from genomepy.__about__ import __version__
 from genomepy.exceptions import GenomeDownloadError
-from genomepy.files import get_file_info, gunzip_and_name, update_readme
+from genomepy.files import extract_archive, get_file_info, update_readme
 from genomepy.online import download_file
 from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf, safe
 
@@ -172,30 +171,30 @@ class BaseProvider:
 
         # download to tmp dir. Move genome on completion.
         # tmp dir is in genome_dir to prevent moving the genome between disks
-        tmp_dir = mkdtemp(dir=out_dir)
-        fname = os.path.join(tmp_dir, f"{localname}.fa")
+        with TemporaryDirectory(dir=out_dir) as tmp_dir:
+            tmp_fname = os.path.join(tmp_dir, link.split("/")[-1])
+            fname = os.path.join(tmp_dir, f"{localname}.fa")
 
-        download_file(link, fname)
-        logger.info("Genome download successful, starting post processing...")
+            download_file(link, tmp_fname)
+            logger.info("Genome download successful, starting post processing...")
 
-        # unzip genome
-        if link.endswith(".tar.gz"):
-            tar_to_bigfile(fname, fname)
-        elif link.endswith(".gz"):
-            os.rename(fname, fname + ".gz")
-            gunzip_and_name(fname + ".gz")
+            # unzip genome
+            _, is_compressed = get_file_info(link)
+            if is_compressed:
+                extract_archive(tmp_fname, outfile=fname, concat=True)
+            else:
+                shutil.move(tmp_fname, fname)
 
-        # process genome (e.g. masking)
-        if hasattr(self, "_post_process_download"):
-            self._post_process_download(
-                name=name, fname=fname, out_dir=out_dir, mask=mask
-            )
+            # process genome (e.g. masking)
+            if hasattr(self, "_post_process_download"):
+                self._post_process_download(
+                    name=name, fname=fname, out_dir=out_dir, mask=mask
+                )
 
-        # transfer the genome from the tmpdir to the genome_dir
-        src = fname
-        dst = os.path.join(out_dir, f"{localname}.fa")
-        shutil.move(src, dst)
-        rm_rf(tmp_dir)
+            # transfer the genome from the tmpdir to the genome_dir
+            src = fname
+            dst = os.path.join(out_dir, f"{localname}.fa")
+            shutil.move(src, dst)
 
         logger.info("name: {}".format(name))
         logger.info("local name: {}".format(localname))
@@ -401,18 +400,21 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
     # download to tmp dir. Move genome on completion.
     # tmp dir is in genome_dir to prevent moving the genome between disks
     tmp_dir = mkdtemp(dir=out_dir)
-    ext, gz = get_file_info(annot_url)
+    ext, is_compressed = get_file_info(annot_url)
+
     annot_file = os.path.join(tmp_dir, localname + ".annotation" + ext)
+    tmp_annot_file = os.path.join(tmp_dir, annot_url.split("/")[-1])
     if n is None:
-        download_file(annot_url, annot_file)
+        download_file(annot_url, tmp_annot_file)
     else:
-        download_head(annot_url, annot_file, n)
-        gz = False
+        download_head(annot_url, tmp_annot_file, n)
+        is_compressed = False
 
     # unzip input file (if needed)
-    if gz:
-        cmd = "mv {0} {1} && gunzip -f {1}"
-        sp.check_call(cmd.format(annot_file, annot_file + ".gz"), shell=True)
+    if is_compressed:
+        annot_file = extract_archive(tmp_annot_file, outfile=annot_file)
+    else:
+        shutil.move(tmp_annot_file, annot_file)
 
     # generate intermediate file (GenePred)
     pred_file = annot_file.replace(ext, ".gp")
@@ -461,25 +463,6 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
         src = f
         dst = os.path.join(out_dir, os.path.basename(f))
         shutil.move(src, dst)
-    rm_rf(tmp_dir)
-
-
-def tar_to_bigfile(fname, outfile):
-    """Convert tar of multiple FASTAs to one file."""
-    fnames = []
-    # Extract files to temporary directory
-    tmp_dir = mkdtemp(dir=os.path.dirname(outfile))
-    with tarfile.open(fname) as tar:
-        tar.extractall(path=tmp_dir)
-    for root, _, files in os.walk(tmp_dir):
-        fnames += [os.path.join(root, fname) for fname in files]
-
-    # Concatenate
-    with open(outfile, "w") as out:
-        for infile in fnames:
-            for line in open(infile):
-                out.write(line)
-
     rm_rf(tmp_dir)
 
 
