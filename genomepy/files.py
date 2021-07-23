@@ -364,7 +364,7 @@ def get_file_info(fname) -> Tuple[str, bool]:
     is_compressed = False
     if fname.endswith((".tgz", ".tar.gz")):
         is_compressed = True
-        fname = re.sub("\.(tgz|tar\.gz)$", "", fname)
+        fname = re.sub(r"\.(tgz|tar\.gz)$", "", fname)
     elif fname.endswith(".gz"):
         is_compressed = True
         fname = fname[:-3]
