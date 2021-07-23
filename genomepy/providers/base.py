@@ -172,7 +172,7 @@ class BaseProvider:
         # download to tmp dir. Move genome on completion.
         # tmp dir is in genome_dir to prevent moving the genome between disks
         with TemporaryDirectory(dir=out_dir) as tmp_dir:
-            tmp_fname = link.split("/")[-1]
+            tmp_fname = os.path.join(tmp_dir, link.split("/")[-1])
             fname = os.path.join(tmp_dir, f"{localname}.fa")
 
             download_file(link, tmp_fname)
