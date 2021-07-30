@@ -41,7 +41,7 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="genomepy.utils" href="genomepy.utils.html" />
+    <link rel="next" title="genomepy.seq" href="genomepy.seq.html" />
     <link rel="prev" title="genomepy.providers.url.search_url_for_annotations" href="genomepy.providers.url.search_url_for_annotations.html" /> 
 </head>
 
@@ -126,6 +126,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.seq.html">genomepy.seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="genomepy.utils.html">genomepy.utils</a></li>
 </ul>
 </li>
@@ -379,7 +380,10 @@
 <dd><p>Return a functional annotation download link.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – genome name</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – genome name</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional:</em>) – to_annotation : direct URL to the gene annotation</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>http/ftp link</p>
@@ -401,10 +405,7 @@
 Else try to find an annotation in the same location as the genome url.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – genome name</p></li>
-<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional:</em>) – to_annotation : direct URL to the gene annotation</p></li>
-</ul>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – genome name</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>http/ftp link(s)</p>
@@ -466,7 +467,7 @@ same as if no genomes were found at the other providers</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="genomepy.utils.html" class="btn btn-neutral float-right" title="genomepy.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="genomepy.seq.html" class="btn btn-neutral float-right" title="genomepy.seq" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="genomepy.providers.url.search_url_for_annotations.html" class="btn btn-neutral float-left" title="genomepy.providers.url.search_url_for_annotations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
@@ -476,7 +477,7 @@ same as if no genomes were found at the other providers</p>
     <p>
         &#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
       <span class="lastupdated">
-        Last updated on 2021-07-16, 16:25 (UTC).
+        Last updated on 2021-07-30, 12:48 (UTC).
       </span>
 
     </p>

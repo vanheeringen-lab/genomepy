@@ -101,10 +101,14 @@
 <li class="toctree-l2"><a class="reference internal" href="genomepy.exceptions.html">genomepy.exceptions</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">genomepy.files</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.files.bgzip_and_name.html">genomepy.files.bgzip_and_name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.files.extract_archive.html">genomepy.files.extract_archive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.files.extract_gzip.html">genomepy.files.extract_gzip</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.files.extract_tarball.html">genomepy.files.extract_tarball</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.files.extract_zip.html">genomepy.files.extract_zip</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.files.extracted_file.html">genomepy.files.extracted_file</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.files.filter_fasta.html">genomepy.files.filter_fasta</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.files.get_file_info.html">genomepy.files.get_file_info</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.files.glob_ext_files.html">genomepy.files.glob_ext_files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="genomepy.files.gunzip_and_name.html">genomepy.files.gunzip_and_name</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.files.gzip_and_name.html">genomepy.files.gzip_and_name</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.files.read_readme.html">genomepy.files.read_readme</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.files.update_readme.html">genomepy.files.update_readme</a></li>
@@ -116,6 +120,7 @@
 <li class="toctree-l2"><a class="reference internal" href="genomepy.online.html">genomepy.online</a></li>
 <li class="toctree-l2"><a class="reference internal" href="genomepy.plugins.html">genomepy.plugins</a></li>
 <li class="toctree-l2"><a class="reference internal" href="genomepy.providers.html">genomepy.providers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.seq.html">genomepy.seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="genomepy.utils.html">genomepy.utils</a></li>
 </ul>
 </li>
@@ -205,17 +210,29 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="genomepy.files.bgzip_and_name.html#genomepy.files.bgzip_and_name" title="genomepy.files.bgzip_and_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bgzip_and_name</span></code></a>(fname[, bgzip_file])</p></td>
 <td><p>Bgzip file if requested.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="genomepy.files.filter_fasta.html#genomepy.files.filter_fasta" title="genomepy.files.filter_fasta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_fasta</span></code></a>(infa[, outfa, regex, invert_match])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.files.extract_archive.html#genomepy.files.extract_archive" title="genomepy.files.extract_archive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_archive</span></code></a>(fname[, outfile, concat])</p></td>
+<td><p>Extract files from an archive.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.files.extract_gzip.html#genomepy.files.extract_gzip" title="genomepy.files.extract_gzip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_gzip</span></code></a>(fname[, outfile])</p></td>
+<td><p>Gunzips the file if gzipped.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.files.extract_tarball.html#genomepy.files.extract_tarball" title="genomepy.files.extract_tarball"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_tarball</span></code></a>(fname[, outfile, concat])</p></td>
+<td><p>Convert tar of multiple FASTAs to one file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.files.extract_zip.html#genomepy.files.extract_zip" title="genomepy.files.extract_zip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_zip</span></code></a>(fname[, outfile, concat])</p></td>
+<td><p>Unzips the file if zipped.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.files.extracted_file.html#genomepy.files.extracted_file" title="genomepy.files.extracted_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extracted_file</span></code></a>(fname)</p></td>
+<td><p>Context manager to work with (b)gzipped file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.files.filter_fasta.html#genomepy.files.filter_fasta" title="genomepy.files.filter_fasta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_fasta</span></code></a>(infa[, outfa, regex, invert_match])</p></td>
 <td><p>Filter fasta file based on regex.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.files.get_file_info.html#genomepy.files.get_file_info" title="genomepy.files.get_file_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_file_info</span></code></a>(fname)</p></td>
-<td><p>Returns the lower case file type of a file, and if it is gzipped</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.files.get_file_info.html#genomepy.files.get_file_info" title="genomepy.files.get_file_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_file_info</span></code></a>(fname)</p></td>
+<td><p>Returns the lower case file type of a file, and if it is (g)zipped</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="genomepy.files.glob_ext_files.html#genomepy.files.glob_ext_files" title="genomepy.files.glob_ext_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">glob_ext_files</span></code></a>(dirname[, ext])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.files.glob_ext_files.html#genomepy.files.glob_ext_files" title="genomepy.files.glob_ext_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">glob_ext_files</span></code></a>(dirname[, ext])</p></td>
 <td><p>Return (gzipped) file names in directory containing the given extension.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.files.gunzip_and_name.html#genomepy.files.gunzip_and_name" title="genomepy.files.gunzip_and_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gunzip_and_name</span></code></a>(fname)</p></td>
-<td><p>Gunzips the file if gzipped.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="genomepy.files.gzip_and_name.html#genomepy.files.gzip_and_name" title="genomepy.files.gzip_and_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gzip_and_name</span></code></a>(fname[, gzip_file])</p></td>
 <td><p>Gzip file if requested.</p></td>
@@ -249,7 +266,7 @@
     <p>
         &#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
       <span class="lastupdated">
-        Last updated on 2021-07-16, 16:25 (UTC).
+        Last updated on 2021-07-30, 12:48 (UTC).
       </span>
 
     </p>

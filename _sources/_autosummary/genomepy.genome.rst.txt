@@ -44,6 +44,5 @@ genomepy.genome
    :template: custom-module-template.rst
    :recursive:
 
-   genomepy.genome.seqdict
    genomepy.genome.sequences
 

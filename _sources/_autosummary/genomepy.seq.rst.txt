@@ -1,7 +1,7 @@
-genomepy.genome.seqdict
-=======================
+genomepy.seq
+============
 
-.. automodule:: genomepy.genome.seqdict
+.. automodule:: genomepy.seq
 
    
    

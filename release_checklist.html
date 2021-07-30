@@ -190,6 +190,8 @@ git flow release start ${new_version}
 <span class="c1"># twine must be up to date (3.3.0 works). System installed twine can interfere.</span>
 twine upload --repository-url https://test.pypi.org/legacy/ dist/genomepy-<span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>*
 
+python setup.py develop --uninstall
+
 <span class="c1"># the is to escape the ==, so the variable ${new_version} can be called</span>
 pip install --extra-index-url https://test.pypi.org/simple/ genomepy<span class="se">\=</span><span class="o">=</span><span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>
 
@@ -199,9 +201,10 @@ genomepy --help
 genomepy install --help
 genomepy clean
 genomepy search xenopus_tropicalis
-genomepy install TAIR10 -af -p ensembl
-genomepy install sacCer3 -af -p ucsc
-genomepy install ASM2732v1 -af -p ncbi
+genomepy install -af -p ensembl TAIR10
+genomepy install -af -p ucsc sacCer3
+genomepy install -af -p ncbi ASM2732v1
+genomepy install -af -p url  -l url_test  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.fna.gz --URL-to-annotation https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz
 </pre></div>
 </div>
 </li>
@@ -260,7 +263,7 @@ twine upload dist/genomepy-${new_version}*
     <p>
         &#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
       <span class="lastupdated">
-        Last updated on 2021-07-16, 16:25 (UTC).
+        Last updated on 2021-07-30, 12:48 (UTC).
       </span>
 
     </p>

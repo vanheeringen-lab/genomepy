@@ -1,0 +1,6 @@
+genomepy.files.extract\_tarball
+===============================
+
+.. currentmodule:: genomepy.files
+
+.. autofunction:: extract_tarball

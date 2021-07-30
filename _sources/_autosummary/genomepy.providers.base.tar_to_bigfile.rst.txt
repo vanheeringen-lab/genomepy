@@ -1,6 +1,0 @@
-genomepy.providers.base.tar\_to\_bigfile
-========================================
-
-.. currentmodule:: genomepy.providers.base
-
-.. autofunction:: tar_to_bigfile

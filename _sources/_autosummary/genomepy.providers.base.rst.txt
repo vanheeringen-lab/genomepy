@@ -16,7 +16,6 @@ genomepy.providers.base
    
       download_annotation
       download_head
-      tar_to_bigfile
    
    
 

@@ -40,5 +40,6 @@
    genomepy.online
    genomepy.plugins
    genomepy.providers
+   genomepy.seq
    genomepy.utils
 

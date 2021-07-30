@@ -15,10 +15,14 @@ genomepy.files
       :toctree:
    
       bgzip_and_name
+      extract_archive
+      extract_gzip
+      extract_tarball
+      extract_zip
+      extracted_file
       filter_fasta
       get_file_info
       glob_ext_files
-      gunzip_and_name
       gzip_and_name
       read_readme
       update_readme
