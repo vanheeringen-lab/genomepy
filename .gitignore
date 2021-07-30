@@ -8,14 +8,15 @@
 coverage.xml
 cc-test-reporter
 Log.out
-genomepy/cfg/default.yaml
+genomepy/config/default.yaml
 
 # Directories
+docs/_autosummary
+docs/_build
+tests/data
 .pytest_cache
 build
-docs/_build
 genomepy.egg-info
-tests/data
 dist
 eggs
 tmp

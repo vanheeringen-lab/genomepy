@@ -1,5 +1,6 @@
 import os
 import sys
+
 from setuptools import setup
 
 # https://packaging.python.org/single_source_version/
@@ -13,8 +14,15 @@ with open("README.md", encoding="utf-8") as f:
     long_description = f.read()
 
 # List of files and directories to include when packaging for release
-packages = ["genomepy", "genomepy/plugins"]
-package_data = {"genomepy": ["cfg/*.yaml"]}
+packages = [
+    "genomepy",
+    "genomepy.annotation",
+    "genomepy.config",
+    "genomepy.genome",
+    "genomepy.plugins",
+    "genomepy.providers",
+]
+package_data = {"genomepy": ["config/default.yaml"]}
 data_files = [("", ["LICENSE", "README.md", "CHANGELOG.md"])]
 
 entry_points = {"console_scripts": ["genomepy=genomepy.cli:cli"]}
@@ -25,7 +33,13 @@ requires = [
     "bucketcache",
     "click",
     "colorama",
+    "joblib",
+    "loguru",
+    "mygene",
+    "mysql-connector-python",
     "norns>=0.1.5",
+    "numpy",
+    "pandas",
     "pyfaidx>=0.5.7",
     "requests",
     "tqdm>=4.51",

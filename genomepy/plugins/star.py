@@ -1,14 +1,10 @@
 import os
-from genomepy.plugin import Plugin
-from genomepy.utils import (
-    mkdir_p,
-    rm_rf,
-    cmd_ok,
-    run_index_cmd,
-    gunzip_and_name,
-    bgzip_and_name,
-    gzip_and_name,
-)
+
+from loguru import logger
+
+from genomepy.files import extracted_file
+from genomepy.plugins import Plugin
+from genomepy.utils import cmd_ok, mkdir_p, rm_rf, run_index_cmd
 
 
 class StarPlugin(Plugin):
@@ -22,36 +18,27 @@ class StarPlugin(Plugin):
         mkdir_p(index_dir)
 
         # gunzip genome if bgzipped and return up-to-date genome name
-        fname, bgzip = gunzip_and_name(genome.filename)
+        with extracted_file(genome.filename) as fname:
+            # index command
+            cmd = (
+                f"STAR --runMode genomeGenerate --runThreadN {threads} "
+                + f"--genomeFastaFiles {fname} --genomeDir {index_dir} "
+                + f"--outFileNamePrefix {index_dir}"
+            )
 
-        # index command
-        cmd = (
-            f"STAR --runMode genomeGenerate --runThreadN {threads} "
-            + f"--genomeFastaFiles {fname} --genomeDir {index_dir} "
-            + f"--outFileNamePrefix {index_dir}"
-        )
+            # if an annotation is present, generate a splice-aware index
+            gtf_file = genome.annotation_gtf_file
+            if gtf_file:
+                with extracted_file(gtf_file) as _gtf_file:
+                    # update index command with annotation
+                    cmd += f" --sjdbGTFfile {_gtf_file}"
 
-        # if an annotation is present, generate a splice-aware index
-        gtf_file = genome.annotation_gtf_file
-        gzip_file = False
-        if gtf_file:
-            # gunzip if gzipped
-            gtf_file, gzip_file = gunzip_and_name(gtf_file)
-
-            # update index command with annotation
-            cmd += f" --sjdbGTFfile {gtf_file}"
-        else:
-            print("\nCreating STAR index without annotation file.")
-
-        # Create index
-        run_index_cmd("star", cmd)
-
-        # re-bgzip genome if gunzipped
-        bgzip_and_name(fname, bgzip)
-
-        # re-gzip annotation if gunzipped
-        if gtf_file:
-            gzip_and_name(gtf_file, gzip_file)
+                    # Create index
+                    run_index_cmd("star", cmd)
+            else:
+                logger.info("Creating STAR index without annotation file.")
+                # Create index
+                run_index_cmd("star", cmd)
 
     def get_properties(self, genome):
         props = {
