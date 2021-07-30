@@ -40,13 +40,14 @@ def test_assembly_accession(ncbi):
 
 
 def test_annotation_links(ncbi):
-    # most genomes: 1 annotations
+    # most genomes: 1 annotation
     links = ncbi.annotation_links("AilMel_1.0")
-    expected = [
-        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/004/335/"
+    expected = (
+        "ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/004/335/"
         "GCA_000004335.1_AilMel_1.0/GCA_000004335.1_AilMel_1.0_genomic.gff.gz"
-    ]
-    assert links == expected
+    )
+    assert len(links) == 1
+    assert links[0].endswith(expected)
 
     # some genomes: no annotation
     links = ncbi.annotation_links("Oryza_glaberrima_V1")
@@ -97,10 +98,10 @@ def test_get_annotation_download_links(base):
 def test_get_annotation_download_link(ncbi):
     link = ncbi.get_annotation_download_link("AilMel_1.0")
     expected = (
-        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/004/335/"
+        "ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/004/335/"
         "GCA_000004335.1_AilMel_1.0/GCA_000004335.1_AilMel_1.0_genomic.gff.gz"
     )
-    assert link == expected
+    assert link.endswith(expected)
 
 
 # @pytest.mark.skipif(not travis, reason="slow")
@@ -132,10 +133,10 @@ def test_download_annotation(ncbi):
     out_dir = os.getcwd()
     localname = "my_annot"
     name = "ASM14646v1"
-    annot_urls = [
-        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/146/465/"
+    link = (
+        "ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/146/465/"
         "GCF_000146465.1_ASM14646v1/GCF_000146465.1_ASM14646v1_genomic.gff.gz"
-    ]
+    )
     with TemporaryDirectory(dir=out_dir) as tmpdir:
         ncbi.download_annotation(name=name, genomes_dir=tmpdir, localname=localname)
 
@@ -149,7 +150,7 @@ def test_download_annotation(ncbi):
         # check attempt_download_and_report_back output
         readme = os.path.join(tmpdir, localname, "README.txt")
         metadata, lines = genomepy.files.read_readme(readme)
-        assert metadata["annotation url"] in annot_urls
+        assert metadata["annotation url"].endswith(link)
 
 
 def test_head_annotation(ncbi, caplog, capsys):
