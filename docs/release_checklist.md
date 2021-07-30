@@ -29,6 +29,8 @@
     # twine must be up to date (3.3.0 works). System installed twine can interfere.
     twine upload --repository-url https://test.pypi.org/legacy/ dist/genomepy-${new_version}*
 
+    python setup.py develop --uninstall
+   
     # the \ is to escape the ==, so the variable ${new_version} can be called
     pip install --extra-index-url https://test.pypi.org/simple/ genomepy\==${new_version}
 
@@ -38,9 +40,10 @@
     genomepy install --help
     genomepy clean
     genomepy search xenopus_tropicalis
-    genomepy install TAIR10 -af -p ensembl
-    genomepy install sacCer3 -af -p ucsc
-    genomepy install ASM2732v1 -af -p ncbi
+    genomepy install -af -p ensembl TAIR10
+    genomepy install -af -p ucsc sacCer3
+    genomepy install -af -p ncbi ASM2732v1
+    genomepy install -af -p url  -l url_test  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.fna.gz --URL-to-annotation https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz
     ```
 
 6. Finish the release:
