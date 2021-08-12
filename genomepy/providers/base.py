@@ -421,7 +421,8 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
     if "bed" in ext:
         cmd = "bedToGenePred {0} {1}"
     elif "gff" in ext:
-        cmd = "gff3ToGenePred -geneNameAttr=gene {0} {1}"
+        # example annotation: GRCh38.p12 from NCBI
+        cmd = "gff3ToGenePred -warnAndContinue geneNameAttr=gene {0} {1}"
     elif "gtf" in ext:
         cmd = "gtfToGenePred -ignoreGroupsWithoutExons {0} {1}"
     elif "txt" in ext:
