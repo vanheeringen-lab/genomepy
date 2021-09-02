@@ -5,7 +5,7 @@ from appdirs import user_config_dir
 
 import genomepy
 import genomepy.utils
-from tests import travis
+from tests import linux, travis
 
 
 def test_head_annotations(caplog, capsys):
@@ -48,15 +48,17 @@ def test__lazy_provider_selection():
     p = genomepy.functions._lazy_provider_selection(name, provider)
     assert "ncbi" in str(p)
 
-    # find the first provider (Ensembl)
-    provider = None
-    p = genomepy.functions._lazy_provider_selection(name, provider)
-    assert "ensembl" in str(p)
+    # GENCODE's FTP does not work on Travis-Linux
+    if not (travis and linux):
+        # find the first provider (Ensembl)
+        provider = None
+        p = genomepy.functions._lazy_provider_selection(name, provider)
+        assert "ensembl" in str(p)
 
-    # cant find genome anywhere
-    name = "not_a_genome"
-    with pytest.raises(genomepy.exceptions.GenomeDownloadError):
-        genomepy.functions._lazy_provider_selection(name, provider)
+        # cant find genome anywhere
+        name = "not_a_genome"
+        with pytest.raises(genomepy.exceptions.GenomeDownloadError):
+            genomepy.functions._lazy_provider_selection(name, provider)
 
 
 def test__provider_selection():
