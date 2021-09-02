@@ -11,6 +11,7 @@ from loguru import logger
 import genomepy.providers
 from genomepy.providers.base import BaseProvider
 from genomepy.providers.ensembl import EnsemblProvider
+from genomepy.providers.gencode import GencodeProvider
 from genomepy.providers.ncbi import NcbiProvider
 from genomepy.providers.ucsc import UcscProvider
 from genomepy.providers.url import UrlProvider
@@ -113,6 +114,11 @@ def ensembl():
 @pytest.fixture(scope="package")
 def ucsc():
     return UcscProvider()
+
+
+@pytest.fixture(scope="package")
+def gencode():
+    return GencodeProvider()
 
 
 @pytest.fixture(scope="package")

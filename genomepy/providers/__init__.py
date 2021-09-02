@@ -6,8 +6,8 @@ import pandas as pd
 from loguru import logger
 
 from genomepy.files import read_readme
-from genomepy.providers.gencode import GencodeProvider
 from genomepy.providers.ensembl import EnsemblProvider
+from genomepy.providers.gencode import GencodeProvider
 from genomepy.providers.ncbi import NcbiProvider
 from genomepy.providers.ucsc import UcscProvider
 from genomepy.providers.url import UrlProvider
