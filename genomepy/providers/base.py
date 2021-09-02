@@ -24,14 +24,17 @@ class BaseProvider:
 
     # class variables set by child classes:
     name = None
+    "Name of this provider."
     genomes = {}
+    "Dictionary with assembly names as key and assembly metadata dictionary as value."
     accession_fields = []
+    "Metadata fields that (can) contain the assembly's accession ID."
     taxid_fields = []
+    "Metadata fields that (can) contain the assembly's taxonomy ID."
     description_fields = []
+    "Metadata fields with assembly related info."
     _cli_install_options = {}
     _url = None
-
-    # TODO: attributes to this and other classes
 
     def __hash__(self):
         return hash(str(self.__class__))
@@ -422,9 +425,9 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
         cmd = "bedToGenePred {0} {1}"
     elif "gff" in ext:
         # example annotation: GRCh38.p12 from NCBI
-        cmd = "gff3ToGenePred -warnAndContinue geneNameAttr=gene {0} {1}"
+        cmd = "gff3ToGenePred -useName -warnAndContinue {0} {1}"
     elif "gtf" in ext:
-        cmd = "gtfToGenePred -ignoreGroupsWithoutExons {0} {1}"
+        cmd = "gtfToGenePred -genePredExt -allErrors -ignoreGroupsWithoutExons {0} {1}"
     elif "txt" in ext:
         # UCSC annotations only
         with open(annot_file) as f:
