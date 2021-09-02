@@ -152,7 +152,7 @@ def generate_annot(template, target, overwrite=False):
     if template_ext == "bed":
         cmd = "bedToGenePred {0} /dev/stdout | genePredToGtf -source=genomepy file /dev/stdin {1}"
     else:
-        cmd = "gtfToGenePred -ignoreGroupsWithoutExons {0} /dev/stdout | genePredToBed /dev/stdin {1}"
+        cmd = "gtfToGenePred -genePredExt -ignoreGroupsWithoutExons {0} /dev/stdout | genePredToBed /dev/stdin {1}"
 
     # unzip template if needed
     with extracted_file(template) as _template:
