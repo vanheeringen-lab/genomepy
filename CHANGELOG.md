@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - extened docstrings
+- GENCODE support (GENCODE gene annotations with UCSC genomes)
+  - only contains the main chromosomes, no scaffolds or alternate haplotypes.
+  - only contains 4 assemblies (2 mouse, 2 human)
+  - excellent annotations for these regions & species though!
 
 ### Changed
 - UCSC annotation conversion tool settings tweaked. Better results with source gff files.
