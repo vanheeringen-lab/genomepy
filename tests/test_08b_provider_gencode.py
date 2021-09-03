@@ -4,20 +4,20 @@ import genomepy
 from tests import linux, travis
 
 
-@pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
+# @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_gencodeprovider(gencode):
     assert gencode.name == "GENCODE"
     assert gencode.taxid_fields == ["taxonomy_id"]
 
 
-@pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
+# @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_genome_info_tuple(gencode):
     t = gencode._genome_info_tuple("GRCh37")
     assert isinstance(t, tuple)
     assert t[0:4] == ("GRCh37", "GCA_000001405.1", 9606, True)
 
 
-@pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
+# @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_genomes(gencode):
     assert (
         gencode.genomes["GRCh37"]["other_info"]
@@ -26,7 +26,7 @@ def test_genomes(gencode):
     assert gencode.genomes["GRCh38"]["assembly_accession"] == "GCA_000001405.15"
 
 
-@pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
+# @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_get_genome_download_link(gencode):
     link = gencode.get_genome_download_link("GRCh37", mask="soft")
     assert link in [
@@ -35,7 +35,7 @@ def test_get_genome_download_link(gencode):
     ]
 
 
-@pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
+# @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_get_annotation_download_links(gencode):
     # default annotation filing system
     genome = "GRCm39"
