@@ -158,7 +158,7 @@ def test_head_annotation(ncbi, caplog, capsys):
     captured = capsys.readouterr().out.strip()
 
     assert "NCBI" in caplog.text
-    assert 'gene_name "gene-Eint_010010";' in captured
+    assert 'gene_name "Eint_010010";' in captured
 
 
 def test__search_text(ucsc):
