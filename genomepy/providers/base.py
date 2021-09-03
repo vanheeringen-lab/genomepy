@@ -115,7 +115,7 @@ class BaseProvider:
             if accession.startswith(("GCA", "GCF")):
                 return accession
 
-    def annotation_links(self, name: str) -> List[str]:
+    def annotation_links(self, name: str, **kwargs) -> List[str]:
         """
         Return available gene annotation links (http/ftp) for a genome
 
@@ -130,7 +130,7 @@ class BaseProvider:
             Gene annotation links
         """
         if "annotations" not in self.genomes[safe(name)]:
-            links = self.get_annotation_download_links(name)
+            links = self.get_annotation_download_links(name, **kwargs)
             self.genomes[safe(name)]["annotations"] = links
         return self.genomes[safe(name)]["annotations"]
 
@@ -258,7 +258,7 @@ class BaseProvider:
         GenomeDownloadError
             if no functional link was found
         """
-        links = self.annotation_links(name)
+        links = self.annotation_links(name, **kwargs)
         if links:
             return links[0]
         raise GenomeDownloadError(

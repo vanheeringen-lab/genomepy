@@ -151,7 +151,7 @@ class UcscProvider(BaseProvider):
 
         return "na"
 
-    def annotation_links(self, name) -> List[str]:
+    def annotation_links(self, name, **kwargs) -> List[str]:
         """
         Return a sorted list of available gene annotation types for a genome
 
