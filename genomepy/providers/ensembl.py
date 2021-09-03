@@ -203,10 +203,10 @@ def add_grch37(genomes):
             "http://ftp.ensembl.org/pub/grch37/release-{}/gtf/"
             "homo_sapiens/Homo_sapiens.GRCh37.87.gtf.gz"
         ),
-        "assembly_accession": "GCA_000001405.1",
+        "assembly_accession": "GCA_000001405.14",
         "taxonomy_id": 9606,
         "name": "human",
-        "scientific_name": "Homo Sapiens",
+        "scientific_name": "Homo sapiens",
         "url_name": "Homo_sapiens",
         "assembly_name": "GRCh37",
         "division": "vertebrates",
