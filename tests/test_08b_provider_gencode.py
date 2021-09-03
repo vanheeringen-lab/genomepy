@@ -1,7 +1,8 @@
-import pytest
+# import pytest
 
 import genomepy
-from tests import linux, travis
+
+# from tests import linux, travis
 
 
 # @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
