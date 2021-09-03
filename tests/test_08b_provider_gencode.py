@@ -5,6 +5,10 @@ import genomepy
 # from tests import linux, travis
 
 
+def test_ftp0():
+    genomepy.clean()
+
+
 def test_ftp1(gencode):
     print(gencode.genomes)
 

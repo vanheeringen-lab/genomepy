@@ -3,6 +3,7 @@ from time import sleep
 from loguru import logger
 
 from genomepy.caching import cache
+from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, connect_ftp_link
 from genomepy.providers.base import BaseProvider
 from genomepy.providers.ucsc import UcscProvider
@@ -185,7 +186,8 @@ def add_grch37(genomes, ftp_link):
     release = [r for r in latest_annot.split("/") if "release_" in r][0][-2:]
     genomes["GRCh37"] = {
         "annotations": [
-            f"{ftp_link}/Gencode_human/release_{release}/GRCh37_mapping/gencode.v{release}lift37.annotation.gtf.gz"
+            f"{ftp_link}/Gencode_human/release_{release}/GRCh37_mapping/"
+            f"gencode.v{release}lift37.annotation.gtf.gz"
         ],
         "taxonomy_id": 9606,
         "species": "Homo sapiens",
@@ -194,8 +196,18 @@ def add_grch37(genomes, ftp_link):
     return genomes
 
 
-@cache
 def get_genomes(ftp_link):
+    try:
+        _get_genomes(ftp_link)
+    except (ConnectionRefusedError, TimeoutError):
+        raise GenomeDownloadError(
+            "GENCODE cannot be reached. "
+            "Is FTP working on this device?"
+        )
+
+
+@cache
+def _get_genomes(ftp_link):
     """genomes dict of the latest gencode release of each major assembly."""
     logger.info("Downloading assembly summaries from GENCODE")
 
