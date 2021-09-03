@@ -201,8 +201,7 @@ def get_genomes(ftp_link):
         _get_genomes(ftp_link)
     except (ConnectionRefusedError, TimeoutError):
         raise GenomeDownloadError(
-            "GENCODE cannot be reached. "
-            "Is FTP working on this device?"
+            "GENCODE cannot be reached. Is FTP working on this device?"
         )
 
 
