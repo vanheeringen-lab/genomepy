@@ -12,9 +12,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
   - only contains the main chromosomes, no scaffolds or alternate haplotypes.
   - only contains 4 assemblies (2 mouse, 2 human)
   - excellent annotations for these regions & species though!
+- Ensembl's GRCh37 can now be downloaded through genomepy
 
 ### Changed
 - UCSC annotation conversion tool settings tweaked. Better results with source gff files.
+- Ensembl now uses HTTP instead of FTP (in some cases). This improves stability on some servers.
+
+### Fixed
+- Ensembl annotations from previous releases can now be downloaded as intended.
 
 ## [0.10.0] - 2021-07-30
 
