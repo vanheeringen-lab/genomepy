@@ -94,10 +94,14 @@ def connect_ftp_link(link, timeout=None) -> Tuple[FTP, str]:
 
     try:
         ftp = FTP(host, timeout=timeout)
+        ftp.login()
     except socket.gaierror:
-        raise GenomeDownloadError(f"FTP host not found: {host}")
+        raise GenomeDownloadError(f"FTP host '{host}' not recognized.")
+    except ConnectionRefusedError:
+        raise GenomeDownloadError(f"FTP host '{host}' cannot be reached.")
+    except TimeoutError:
+        raise GenomeDownloadError(f"FTP host '{host}' appears to be offline.")
 
-    ftp.login()
     return ftp, target
 
 
