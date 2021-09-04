@@ -132,9 +132,9 @@ def check_url(url, max_tries=1, timeout=15) -> bool:
     def _check_url(_url, _timeout):
         if _url.startswith("ftp"):
             ftp, target = connect_ftp_link(_url, timeout=_timeout)
-            ret = ftp.voidcmd("NOOP")  # check connection
+            listing = retry(ftp.nlst, 1, target)
             ftp.quit()  # logout
-            if "200" in ret:
+            if listing:
                 return True
         else:
             ret = urlopen(_url, timeout=_timeout)
