@@ -89,19 +89,12 @@ def connect_ftp_link(link, timeout=None) -> Tuple[FTP, str]:
             target file
     """
     link = link.replace("ftp://", "")
-    host = link.split("/")[0]
-    target = link.split(host)[1]
-
+    host, target = link.split("/", 1)
     try:
         ftp = FTP(host, timeout=timeout)
         ftp.login()
     except socket.gaierror:
-        raise GenomeDownloadError(f"FTP host '{host}' not recognized.")
-    except ConnectionRefusedError:
-        raise GenomeDownloadError(f"FTP host '{host}' cannot be reached.")
-    except TimeoutError:
-        raise GenomeDownloadError(f"FTP host '{host}' appears to be offline.")
-
+        raise GenomeDownloadError(f"FTP host not found: {host}")
     return ftp, target
 
 
@@ -139,10 +132,14 @@ def check_url(url, max_tries=1, timeout=15) -> bool:
     def _check_url(_url, _timeout):
         if _url.startswith("ftp"):
             ftp, target = connect_ftp_link(_url, timeout=_timeout)
-            listing = retry(ftp.nlst, 1, target)
+            ret = ftp.voidcmd("NOOP")  # check connection
             ftp.quit()  # logout
-            if listing:
+            if "200" in ret:
                 return True
+            # listing = retry(ftp.nlst, 1, target)
+            # ftp.quit()  # logout
+            # if listing:
+            #     return True
         else:
             ret = urlopen(_url, timeout=_timeout)
             if ret.getcode() == 200:

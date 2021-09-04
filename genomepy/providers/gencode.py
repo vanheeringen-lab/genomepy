@@ -3,7 +3,6 @@ from time import sleep
 from loguru import logger
 
 from genomepy.caching import cache
-from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, connect_ftp_link
 from genomepy.providers.base import BaseProvider
 from genomepy.providers.ucsc import UcscProvider
@@ -196,17 +195,8 @@ def add_grch37(genomes, ftp_link):
     return genomes
 
 
-def get_genomes(ftp_link):
-    try:
-        _get_genomes(ftp_link)
-    except (ConnectionRefusedError, TimeoutError):
-        raise GenomeDownloadError(
-            "GENCODE cannot be reached. Is FTP working on this device?"
-        )
-
-
 @cache
-def _get_genomes(ftp_link):
+def get_genomes(ftp_link):
     """genomes dict of the latest gencode release of each major assembly."""
     logger.info("Downloading assembly summaries from GENCODE")
 
