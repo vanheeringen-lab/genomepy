@@ -33,7 +33,7 @@ class GencodeProvider(BaseProvider):
     def __init__(self):
         self._provider_status()
         # Populate on init, so that methods can be cached
-        self.genomes = get_genomes(self._ftp_link)
+        self.genomes = _get_genomes(self._ftp_link)
         self.ucsc = UcscProvider()
         self.gencode2ucsc = get_gencode2ucsc(self.genomes)
         self._update_genomes()
@@ -195,17 +195,21 @@ def add_grch37(genomes, ftp_link):
     return genomes
 
 
-def get_genomes(ftp_link):
+def _get_genomes(ftp_link):
+    """Wrapper to catch FTP issues."""
     try:
-        genomes = _get_genomes(ftp_link)
+        genomes = get_genomes(ftp_link)
     except (TimeoutError, ConnectionRefusedError):
-        logger.warning("GENCODE cannot be reached. Is FTP working on this device?")
+        logger.warning(
+            "GENCODE is online, but cannot be reached. "
+            "Is FTP working on this device?"
+        )
         genomes = {}
     return genomes
 
 
 @cache
-def _get_genomes(ftp_link):
+def get_genomes(ftp_link):
     """genomes dict of the latest gencode release of each major assembly."""
     logger.info("Downloading assembly summaries from GENCODE")
 
@@ -213,7 +217,7 @@ def _get_genomes(ftp_link):
     species = {"human": "Homo sapiens", "mouse": "Mus musculus"}
     taxid = {"human": 9606, "mouse": 10090}
     sleep(1)  # we just closed a connection with ping()
-    ftp, ftp_path = connect_ftp_link(ftp_link, timeout=10)
+    ftp, ftp_path = connect_ftp_link(ftp_link, timeout=7)
     for specie in ["human", "mouse"]:
         listing = ftp.nlst(f"{ftp_path}/Gencode_{specie}")
         releases = get_releases(listing, specie)
