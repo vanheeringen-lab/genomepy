@@ -8,8 +8,8 @@ branches:
 language: minimal
 
 os:
-  - osx
   - linux
+#  - osx
 
 env:
   global:
