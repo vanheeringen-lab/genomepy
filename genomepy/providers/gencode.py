@@ -195,8 +195,17 @@ def add_grch37(genomes, ftp_link):
     return genomes
 
 
-@cache
 def get_genomes(ftp_link):
+    try:
+        genomes = _get_genomes(ftp_link)
+    except:  # TODO: timeouterror, connection refused error, all_error
+        logger.warning("GENCODE cannot be reached. Is FTP working on this device?")
+        genomes = {}
+    return genomes
+
+
+@cache
+def _get_genomes(ftp_link):
     """genomes dict of the latest gencode release of each major assembly."""
     logger.info("Downloading assembly summaries from GENCODE")
 
@@ -204,7 +213,7 @@ def get_genomes(ftp_link):
     species = {"human": "Homo sapiens", "mouse": "Mus musculus"}
     taxid = {"human": 9606, "mouse": 10090}
     sleep(1)  # we just closed a connection with ping()
-    ftp, ftp_path = connect_ftp_link(ftp_link)
+    ftp, ftp_path = connect_ftp_link(ftp_link, timeout=15)
     for specie in ["human", "mouse"]:
         listing = ftp.nlst(f"{ftp_path}/Gencode_{specie}")
         releases = get_releases(listing, specie)

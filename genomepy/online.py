@@ -92,9 +92,9 @@ def connect_ftp_link(link, timeout=None) -> Tuple[FTP, str]:
     host, target = link.split("/", 1)
     try:
         ftp = FTP(host, timeout=timeout)
-        ftp.login()
     except socket.gaierror:
         raise GenomeDownloadError(f"FTP host not found: {host}")
+    ftp.login()
     return ftp, target
 
 
@@ -136,10 +136,6 @@ def check_url(url, max_tries=1, timeout=15) -> bool:
             ftp.quit()  # logout
             if "200" in ret:
                 return True
-            # listing = retry(ftp.nlst, 1, target)
-            # ftp.quit()  # logout
-            # if listing:
-            #     return True
         else:
             ret = urlopen(_url, timeout=_timeout)
             if ret.getcode() == 200:

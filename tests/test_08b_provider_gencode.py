@@ -1,27 +1,10 @@
-# import pytest
+import pytest
 
 import genomepy
-
-# from tests import linux, travis
-
-
-def test_ftp0():
-    genomepy.clean()
+from tests import linux, travis
 
 
-def test_ftp1(gencode):
-    print(gencode.genomes)
-
-
-def test_ftp2():
-    genomepy.providers.gencode.get_genomes("ftp://ftp.ebi.ac.uk/pub/databases/gencode")
-
-
-def test_ftp3():
-    genomepy.providers.gencode.GencodeProvider()
-
-
-# @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
+@pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_gencodeprovider(gencode):
     assert gencode.name == "GENCODE"
     assert gencode.taxid_fields == ["taxonomy_id"]
