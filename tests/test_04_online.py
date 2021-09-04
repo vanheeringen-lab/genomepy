@@ -31,7 +31,7 @@ def test_connect_ftp_link():
         # good FTP host
         ftp_link = "ftp://ftp.ncbi.nlm.nih.gov/genomes/README.txt"
         ftp, target = genomepy.online.connect_ftp_link(ftp_link)
-        assert target == "/genomes/README.txt"
+        assert target == "genomes/README.txt"
         result = ftp.nlst(target)
         ftp.quit()  # logout
         assert result == [target]
