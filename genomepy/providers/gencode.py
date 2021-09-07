@@ -60,7 +60,7 @@ class GencodeProvider(BaseProvider):
     def _update_genomes(self):
         """add assembly accession and other information to the genomes dict"""
         for name in self.genomes:
-            self.genomes[name]["other_info"] = "Chromosome annotation (no scaffolds)"
+            self.genomes[name]["other_info"] = "GENCODE annotation + UCSC genome"
             # makes the genome findable with UCSC names
             ucsc_name = self.gencode2ucsc[name]
             self.genomes[name]["text_search"] += f" {ucsc_name}"
