@@ -8,7 +8,7 @@ from genomepy.caching import cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import update_readme
 from genomepy.online import check_url, connect_ftp_link
-from genomepy.providers.base import BaseProvider, ASM_FORMAT, download_annotation
+from genomepy.providers.base import ASM_FORMAT, BaseProvider, download_annotation
 from genomepy.providers.ucsc import UcscProvider
 from genomepy.utils import get_genomes_dir, get_localname
 

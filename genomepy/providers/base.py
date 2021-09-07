@@ -3,20 +3,20 @@ import gzip
 import os
 import shutil
 import subprocess as sp
-import pandas as pd
 import time
 from tempfile import TemporaryDirectory, mkdtemp
 from typing import Iterator, List, Union
 from urllib.request import urlopen
 
+import pandas as pd
 from loguru import logger
 
 from genomepy.__about__ import __version__
+from genomepy.annotation.utils import read_annot, write_annot
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import extract_archive, get_file_info, update_readme
 from genomepy.online import download_file
 from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf, safe
-from genomepy.annotation.utils import read_annot, write_annot
 
 ASM_FORMAT = [
     "Sequence-Name",
@@ -520,13 +520,17 @@ def download_head(annot_url, annot_file, n: int = 5):
 def rename_contigs(annot_file):
     genome_dir = os.path.dirname(os.path.dirname(annot_file))
     asm_report = os.path.join(genome_dir, "assembly_report.txt")
-    gencode2ucsc = pd.read_csv(asm_report, sep="\t", comment="#", usecols=['GenBank-Accn', 'UCSC-style-name'])
+    gencode2ucsc = pd.read_csv(
+        asm_report, sep="\t", comment="#", usecols=["GenBank-Accn", "UCSC-style-name"]
+    )
     gtf = read_annot(annot_file)
 
     # use the UCSC names for the scaffolds
-    newgtf = gtf.merge(gencode2ucsc, left_on="seqname", right_on="GenBank-Accn", how="left")
+    newgtf = gtf.merge(
+        gencode2ucsc, left_on="seqname", right_on="GenBank-Accn", how="left"
+    )
     newgtf["seqname"] = newgtf["UCSC-style-name"].mask(pd.isnull, newgtf["seqname"])
-    newgtf.drop(columns=['GenBank-Accn', 'UCSC-style-name'], inplace=True)
+    newgtf.drop(columns=["GenBank-Accn", "UCSC-style-name"], inplace=True)
 
     # overwrite the raw GTF
     write_annot(newgtf, annot_file)
