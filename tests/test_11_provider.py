@@ -3,6 +3,7 @@ import pytest
 
 import genomepy.files
 import genomepy.utils
+from tests import linux, travis
 
 
 def test_create():
@@ -21,7 +22,10 @@ def test_list_providers():
 def test_list_online_providers():
     _all = genomepy.providers.list_providers()
     online = genomepy.providers.list_online_providers()
-    assert online == _all
+    if linux and travis:
+        assert online == _all[1:]  # GENCODE is on FTP
+    else:
+        assert online == _all
 
 
 def test_online_providers():
@@ -32,7 +36,10 @@ def test_online_providers():
 
     # not given
     providers = list(genomepy.providers.online_providers())
-    assert len(providers) == 4
+    if linux and travis:
+        assert len(providers) == 4  # GENCODE is on FTP
+    else:
+        assert len(providers) == 5
 
 
 def test_search():
