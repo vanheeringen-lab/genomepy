@@ -59,9 +59,10 @@ class GencodeProvider(BaseProvider):
             ucsc_name = self.gencode2ucsc[name]
             self.genomes[name][
                 "other_info"
-            ] = f"GENCODE annotation + UCSC {ucsc_name} genome"
+            ] = "Chromosome annotation (no scaffolds)"
             # add the UCSC accession ID
             ucsc_acc = self.ucsc.genomes[ucsc_name]["assembly_accession"]
+            self.genomes[name]["text_search"] += f" {ucsc_name}"
             self.genomes[name]["assembly_accession"] = ucsc_acc
 
     def get_genome_download_link(self, name: str, mask: str = "soft", **kwargs) -> str:
@@ -100,8 +101,6 @@ class GencodeProvider(BaseProvider):
         self.ucsc.name = "GENCODE"  # for logging & readme
         self.ucsc.download_genome(ucsc_name, genomes_dir, localname, mask, **kwargs)
         self.ucsc.name = "UCSC"
-        # TODO: filter out contigs not present in the annotation?
-        # regex = "chr(\d+|X|Y|M)"
 
     def get_annotation_download_links(self, name, **kwargs):
         """
