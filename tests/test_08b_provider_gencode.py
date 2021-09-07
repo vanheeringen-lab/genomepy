@@ -19,10 +19,7 @@ def test_genome_info_tuple(gencode):
 
 @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_genomes(gencode):
-    assert (
-        gencode.genomes["GRCh37"]["other_info"]
-        == "GENCODE annotation + UCSC genome"
-    )
+    assert gencode.genomes["GRCh37"]["other_info"] == "GENCODE annotation + UCSC genome"
     assert gencode.genomes["GRCh38"]["assembly_accession"] == "GCA_000001405.15"
 
 
