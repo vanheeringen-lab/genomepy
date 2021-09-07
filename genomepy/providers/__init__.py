@@ -11,6 +11,7 @@ from genomepy.providers.gencode import GencodeProvider
 from genomepy.providers.ncbi import NcbiProvider
 from genomepy.providers.ucsc import UcscProvider
 from genomepy.providers.url import UrlProvider
+from genomepy.providers.base import ASM_FORMAT
 from genomepy.utils import get_genomes_dir, safe
 
 __all__ = [
@@ -22,19 +23,6 @@ __all__ = [
     "download_assembly_report",
     "nearest_assembly",
     "online_providers",
-]
-
-ASM_FORMAT = [
-    "Sequence-Name",
-    "Sequence-Role",
-    "Assigned-Molecule",
-    "Assigned-Molecule-Location/Type",
-    "GenBank-Accn",
-    "Relationship",
-    "RefSeq-Accn",
-    "Assembly-Unit",
-    "Sequence-Length",
-    "UCSC-style-name",
 ]
 
 PROVIDERS = {

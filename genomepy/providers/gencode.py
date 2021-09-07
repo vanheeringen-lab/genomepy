@@ -1,11 +1,16 @@
+import os
 from time import sleep
 
+import pandas as pd
 from loguru import logger
 
 from genomepy.caching import cache
+from genomepy.exceptions import GenomeDownloadError
+from genomepy.files import update_readme
 from genomepy.online import check_url, connect_ftp_link
-from genomepy.providers.base import BaseProvider
+from genomepy.providers.base import BaseProvider, ASM_FORMAT, download_annotation
 from genomepy.providers.ucsc import UcscProvider
+from genomepy.utils import get_genomes_dir, get_localname
 
 
 class GencodeProvider(BaseProvider):
@@ -100,8 +105,6 @@ class GencodeProvider(BaseProvider):
         self.ucsc.name = "GENCODE"  # for logging & readme
         self.ucsc.download_genome(ucsc_name, genomes_dir, localname, mask, **kwargs)
         self.ucsc.name = "UCSC"
-        # TODO: filter out contigs not present in the annotation?
-        # regex = "chr(\d+|X|Y|M)"
 
     def get_annotation_download_links(self, name, **kwargs):
         """
@@ -118,6 +121,48 @@ class GencodeProvider(BaseProvider):
             http/ftp link(s)
         """
         return self.genomes[name]["annotations"]
+
+    def download_annotation(self, name, genomes_dir=None, localname=None, **kwargs):
+        """
+        Download annotation file to to a specific directory
+
+        Parameters
+        ----------
+        name : str
+            Genome / species name
+
+        genomes_dir : str , optional
+            Directory to install annotation
+
+        localname : str , optional
+            Custom name for your genome
+        """
+        name = self._check_name(name)
+        link = self.get_annotation_download_link(name, **kwargs)
+
+        localname = get_localname(name, localname)
+        genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
+
+        logger.info(f"Downloading annotation from {self.name}. Target URL: {link}...")
+        try:
+            # download exact assembly report to rename the scaffolds
+            acc = self.assembly_accession(name)
+            fname = os.path.join(genomes_dir, localname, "assembly_report.txt")
+            exact_assembly_report(name, acc, fname)
+
+            download_annotation(genomes_dir, link, localname)
+            logger.info("Annotation download successful")
+        except Exception as e:
+            raise GenomeDownloadError(
+                f"An error occured while installing the gene annotation for {name} from {self.name}.\n"
+                "If you think the annotation should be there, please file a bug report at: "
+                "https://github.com/vanheeringen-lab/genomepy/issues\n\n"
+                f"Error: {e.args[0]}"
+            )
+
+        # Add annotation URL to readme
+        readme = os.path.join(genomes_dir, localname, "README.txt")
+        update_readme(readme, updated_metadata={"annotation url": link})
 
 
 def get_gencode2ucsc(genomes):
@@ -229,7 +274,8 @@ def get_genomes(ftp_link):
             if assembly not in genomes:
                 genomes[assembly] = {
                     "annotations": [
-                        f"{ftp_link}/Gencode_{specie}/release_{release}/gencode.v{release}.annotation.gtf.gz"
+                        f"{ftp_link}/Gencode_{specie}/release_{release}/"
+                        f"gencode.v{release}.primary_assembly.annotation.gtf.gz"
                     ],
                     "taxonomy_id": taxid[specie],
                     "species": species[specie],
@@ -241,3 +287,13 @@ def get_genomes(ftp_link):
 
     ftp.quit()
     return genomes
+
+
+def exact_assembly_report(name, acc, fname):
+    assembly_report = (
+        f"https://ftp.ncbi.nlm.nih.gov/genomes/all/{acc[0:3]}/"
+        + f"{acc[4:7]}/{acc[7:10]}/{acc[10:13]}/"
+        + f"{acc}_{name}/{acc}_{name}_assembly_report.txt"
+    )
+    asm_report = pd.read_csv(assembly_report, sep="\t", comment="#", names=ASM_FORMAT)
+    asm_report.to_csv(fname, sep="\t", index=False)
