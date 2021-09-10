@@ -2,6 +2,8 @@
 import os
 from typing import List, Optional
 
+from genomepy.caching import hybcache
+
 import pandas as pd
 from loguru import logger
 
@@ -43,7 +45,7 @@ PROVIDERS = {
     "url": UrlProvider,
 }
 
-
+@hybcache(exp_short=3600, exp_long=3600)
 def create(name: str):
     """
     Create a provider based on the provider name.

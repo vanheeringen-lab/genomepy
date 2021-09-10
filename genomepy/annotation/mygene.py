@@ -7,13 +7,13 @@ from loguru import logger
 from tqdm import tqdm
 
 from genomepy.annotation.utils import _check_property, _parse_annot
-from genomepy.caching import memory, disk_cache, hybcache
+from genomepy.caching import memory, hybcache
 from genomepy.files import read_readme
 from genomepy.providers import nearest_assembly
 from genomepy.utils import safe
 
 
-@hybcache
+@hybcache()
 def map_genes(
     self,  # noqa
     gene_field: str,
