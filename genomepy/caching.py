@@ -33,10 +33,9 @@ def hybcache(exp_short=3600, exp_long=3600, cache=disk_cache, lock=Lock()):
         @wraps(func)
         def wrapper(*args, **kwargs):
             # Generate the cache key from the function's arguments.
-            kwd_mark = object()
-            key = args + (kwd_mark,) + tuple(sorted(kwargs.items()))
-            print(key)
-            key = hash(key)
+            print(args[0].__dict__)
+            key = [func.__name__] + list(args) + list(sorted(kwargs.items()))
+            #key = hash(key)
             # Pickle object
             ext = ".joblib"
             pickle_obj = os.path.join(disk_cache.directory,f"{key}{ext}") #Check if value exists in the short term cache
@@ -71,7 +70,7 @@ def hybcache(exp_short=3600, exp_long=3600, cache=disk_cache, lock=Lock()):
                             value = cache.get(key)
                     else:
                         # Run the function and cache the result for next time.
-                        print(f"computing {key} and storing value inner")
+                        print(f"computing {key} and storing value")
                         value = func(*args, **kwargs)
                         print(value)
                         cache.close()

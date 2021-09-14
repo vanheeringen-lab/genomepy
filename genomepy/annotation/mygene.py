@@ -11,7 +11,7 @@ from genomepy.caching import memory, hybcache
 from genomepy.files import read_readme
 from genomepy.providers import nearest_assembly
 from genomepy.utils import safe
-
+from genomepy.caching import hybcache, disk_cache
 
 @hybcache()
 def map_genes(
