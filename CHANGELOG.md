@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Changed
 - UCSC annotation conversion tool settings tweaked. Better results with source gff files.
 - Ensembl now uses HTTP instead of FTP (in some cases). This improves stability on some servers.
+- tweaked search result alignment for clarity
+- explained UCSC annotations in the README
 
 ### Fixed
 - Ensembl annotations from previous releases can now be downloaded as intended.

@@ -205,18 +205,18 @@ Find the name of your desired genome:
 
 ```
 $ genomepy search xenopus tropicalis
-name                       provider    accession           tax_id     annotation    species               other_info
+name                       provider    accession           tax_id    annotation     species               other_info
                                                                       n r e k
-Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3     8364       ✓             Xenopus tropicalis    2019-04-Ensembl/2019-12
-xenTro1                    UCSC        na                  8364       ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. 2004 (JGI 3.0/xenTro1)
-xenTro2                    UCSC        na                  8364       ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. 2005 (JGI 4.1/xenTro2)
-xenTro3                    UCSC        GCA_000004195.1     8364       ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. 2009 (JGI 4.2/xenTro3)
-xenTro7                    UCSC        GCA_000004195.2     8364       ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. 2012 (JGI 7.0/xenTro7)
-xenTro9                    UCSC        GCA_000004195.3     8364       ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
-Xtropicalis_v7             NCBI        GCF_000004195.2     8364       ✓             Xenopus tropicalis    DOE Joint Genome Institute
-Xenopus_tropicalis_v9.1    NCBI        GCF_000004195.3     8364       ✓             Xenopus tropicalis    DOE Joint Genome Institute
-UCB_Xtro_10.0              NCBI        GCF_000004195.4     8364       ✓             Xenopus tropicalis    University of California, Berkeley
-ASM1336827v1               NCBI        GCA_013368275.1     8364       ✗             Xenopus tropicalis    Southern University of Science and Technology
+Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3       8364        ✓          Xenopus tropicalis    2019-04-Ensembl/2019-12
+xenTro1                    UCSC        na                    8364     ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. 2004 (JGI 3.0/xenTro1)
+xenTro2                    UCSC        na                    8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. 2005 (JGI 4.1/xenTro2)
+xenTro3                    UCSC        GCA_000004195.1       8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. 2009 (JGI 4.2/xenTro3)
+xenTro7                    UCSC        GCA_000004195.2       8364     ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. 2012 (JGI 7.0/xenTro7)
+xenTro9                    UCSC        GCA_000004195.3       8364     ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
+Xtropicalis_v7             NCBI        GCF_000004195.2       8364        ✓          Xenopus tropicalis    DOE Joint Genome Institute
+Xenopus_tropicalis_v9.1    NCBI        GCF_000004195.3       8364        ✓          Xenopus tropicalis    DOE Joint Genome Institute
+UCB_Xtro_10.0              NCBI        GCF_000004195.4       8364        ✓          Xenopus tropicalis    University of California, Berkeley
+ASM1336827v1               NCBI        GCA_013368275.1       8364        ✗          Xenopus tropicalis    Southern University of Science and Technology
  ^
  Use name for genomepy install
 ```
@@ -226,13 +226,13 @@ Additionally, you can limit the search result to one provider with `-p`/`--provi
 
 ```
 $ genomepy search 8364 -p ucsc
-name                    provider    accession           tax_id     annotation    species               other_info
+name                    provider    accession           tax_id    annotation     species               other_info
                                                                    n r e k
-xenTro1                 UCSC        na                  8364       ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. 2004 (JGI 3.0/xenTro1)
-xenTro2                 UCSC        na                  8364       ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. 2005 (JGI 4.1/xenTro2)
-xenTro3                 UCSC        GCA_000004195.1     8364       ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. 2009 (JGI 4.2/xenTro3)
-xenTro7                 UCSC        GCA_000004195.2     8364       ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. 2012 (JGI 7.0/xenTro7)
-xenTro9                 UCSC        GCA_000004195.3     8364       ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
+xenTro1                 UCSC        na                    8364     ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. 2004 (JGI 3.0/xenTro1)
+xenTro2                 UCSC        na                    8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. 2005 (JGI 4.1/xenTro2)
+xenTro3                 UCSC        GCA_000004195.1       8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. 2009 (JGI 4.2/xenTro3)
+xenTro7                 UCSC        GCA_000004195.2       8364     ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. 2012 (JGI 7.0/xenTro7)
+xenTro9                 UCSC        GCA_000004195.3       8364     ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
  ^
  Use name for genomepy install
 ```
@@ -240,7 +240,11 @@ xenTro9                 UCSC        GCA_000004195.3     8364       ✓ ✓ ✓ �
 Lets say we want to download the latest *Xenopus tropicalis* genome from UCSC.
 
 If you are interested in the gene annotation as well, you might want to check which gene annotation suits your needs.
-Because we're looking at UCSC, there's actually several options for us to choose from.
+Because we're looking at UCSC there are several options for us to choose from.
+In the search results, `n r e k ` denotes which UCSC annotations are available. 
+These stand for **n**cbiRefSeq, **r**efGene, **e**nsGene and **k**nownGene, respectively.
+
+We can quickly inspect these with the `genomepy annotation` command:
 
 ```
 $ genomepy annotation xenTro9 -p ucsc
@@ -392,18 +396,18 @@ Additionally, you can limit the search result to one provider with `-p`/`--provi
 
 ```
 $ genomepy search xenopus tropicalis
-name                       provider    accession           tax_id     annotation    species               other_info
+name                       provider    accession           tax_id    annotation     species               other_info
                                                                       n r e k
-Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3     8364       ✓             Xenopus tropicalis    2019-04-Ensembl/2019-12
-xenTro1                    UCSC        na                  8364       ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. 2004 (JGI 3.0/xenTro1)
-xenTro2                    UCSC        na                  8364       ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. 2005 (JGI 4.1/xenTro2)
-xenTro3                    UCSC        GCA_000004195.1     8364       ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. 2009 (JGI 4.2/xenTro3)
-xenTro7                    UCSC        GCA_000004195.2     8364       ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. 2012 (JGI 7.0/xenTro7)
-xenTro9                    UCSC        GCA_000004195.3     8364       ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
-Xtropicalis_v7             NCBI        GCF_000004195.2     8364       ✓             Xenopus tropicalis    DOE Joint Genome Institute
-Xenopus_tropicalis_v9.1    NCBI        GCF_000004195.3     8364       ✓             Xenopus tropicalis    DOE Joint Genome Institute
-UCB_Xtro_10.0              NCBI        GCF_000004195.4     8364       ✓             Xenopus tropicalis    University of California, Berkeley
-ASM1336827v1               NCBI        GCA_013368275.1     8364       ✗             Xenopus tropicalis    Southern University of Science and Technology
+Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3       8364        ✓          Xenopus tropicalis    2019-04-Ensembl/2019-12
+xenTro1                    UCSC        na                    8364     ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. 2004 (JGI 3.0/xenTro1)
+xenTro2                    UCSC        na                    8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. 2005 (JGI 4.1/xenTro2)
+xenTro3                    UCSC        GCA_000004195.1       8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. 2009 (JGI 4.2/xenTro3)
+xenTro7                    UCSC        GCA_000004195.2       8364     ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. 2012 (JGI 7.0/xenTro7)
+xenTro9                    UCSC        GCA_000004195.3       8364     ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
+Xtropicalis_v7             NCBI        GCF_000004195.2       8364        ✓          Xenopus tropicalis    DOE Joint Genome Institute
+Xenopus_tropicalis_v9.1    NCBI        GCF_000004195.3       8364        ✓          Xenopus tropicalis    DOE Joint Genome Institute
+UCB_Xtro_10.0              NCBI        GCF_000004195.4       8364        ✓          Xenopus tropicalis    University of California, Berkeley
+ASM1336827v1               NCBI        GCA_013368275.1       8364        ✗          Xenopus tropicalis    Southern University of Science and Technology
  ^
  Use name for genomepy install
 ```
@@ -412,13 +416,13 @@ Only search a specific provider:
 
 ```
 $ genomepy search tropicalis -p ucsc
-name                    provider    accession           tax_id     annotation    species               other_info
+name                    provider    accession           tax_id    annotation     species               other_info
                                                                    n r e k
-xenTro1                 UCSC        na                  8364       ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. 2004 (JGI 3.0/xenTro1)
-xenTro2                 UCSC        na                  8364       ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. 2005 (JGI 4.1/xenTro2)
-xenTro3                 UCSC        GCA_000004195.1     8364       ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. 2009 (JGI 4.2/xenTro3)
-xenTro7                 UCSC        GCA_000004195.2     8364       ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. 2012 (JGI 7.0/xenTro7)
-xenTro9                 UCSC        GCA_000004195.3     8364       ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
+xenTro1                 UCSC        na                    8364     ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. 2004 (JGI 3.0/xenTro1)
+xenTro2                 UCSC        na                    8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. 2005 (JGI 4.1/xenTro2)
+xenTro3                 UCSC        GCA_000004195.1       8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. 2009 (JGI 4.2/xenTro3)
+xenTro7                 UCSC        GCA_000004195.2       8364     ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. 2012 (JGI 7.0/xenTro7)
+xenTro9                 UCSC        GCA_000004195.3       8364     ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
  ^
  Use name for genomepy install
 ```
@@ -442,10 +446,10 @@ specific provider.
 
 ```
 $ genomepy genomes -p UCSC
-name                    provider    accession           tax_id     annotation    species                                     other_info
+name                    provider    accession          tax_id     annotation     species                                     other_info
                                                                    n r e k
-ailMel1                 UCSC        GCF_000004335.2     9646       ✓ ✗ ✓ ✗       Ailuropoda melanoleuca                      Dec. 2009 (BGI-Shenzhen 1.0/ailMel1)
-allMis1                 UCSC        GCA_000281125.1     8496       ✗ ✓ ✗ ✗       Alligator mississippiensis                  Aug. 2012 (allMis0.2/allMis1)
+ailMel1                 UCSC        GCF_000004335.2      9646      ✓ ✗ ✓ ✗       Ailuropoda melanoleuca                      Dec. 2009 (BGI-Shenzhen 1.0/ailMel1)
+allMis1                 UCSC        GCA_000281125.1      8496      ✗ ✓ ✗ ✗       Alligator mississippiensis                  Aug. 2012 (allMis0.2/allMis1)
 anoCar1                 UCSC        na                  28377      ✗ ✗ ✓ ✗       Anolis carolinensis                         Feb. 2007 (Broad/anoCar1)
 ```
 
