@@ -89,14 +89,11 @@ def connect_ftp_link(link, timeout=None) -> Tuple[FTP, str]:
             target file
     """
     link = link.replace("ftp://", "")
-    host = link.split("/")[0]
-    target = link.split(host)[1]
-
+    host, target = link.split("/", 1)
     try:
         ftp = FTP(host, timeout=timeout)
     except socket.gaierror:
         raise GenomeDownloadError(f"FTP host not found: {host}")
-
     ftp.login()
     return ftp, target
 
