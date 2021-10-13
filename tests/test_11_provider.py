@@ -37,9 +37,9 @@ def test_online_providers():
     # not given
     providers = list(genomepy.providers.online_providers())
     if linux and travis:
-        assert len(providers) == 4  # GENCODE is on FTP
+        assert len(providers) == 5  # GENCODE is on FTP
     else:
-        assert len(providers) == 5
+        assert len(providers) == 6
 
 
 def test_search():

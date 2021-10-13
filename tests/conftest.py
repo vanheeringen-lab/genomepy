@@ -12,6 +12,7 @@ import genomepy.providers
 from genomepy.providers.base import BaseProvider
 from genomepy.providers.ensembl import EnsemblProvider
 from genomepy.providers.gencode import GencodeProvider
+from genomepy.providers.local import LocalProvider
 from genomepy.providers.ncbi import NcbiProvider
 from genomepy.providers.ucsc import UcscProvider
 from genomepy.providers.url import UrlProvider
@@ -124,6 +125,11 @@ def gencode():
 @pytest.fixture(scope="package")
 def ncbi():
     return NcbiProvider()
+
+
+@pytest.fixture(scope="package")
+def local():
+    return LocalProvider()
 
 
 @pytest.fixture(scope="package")

@@ -4,7 +4,7 @@ import genomepy.providers.url
 import genomepy.utils
 
 
-def test_ncbiprovider(url):
+def test_urlprovider(url):
     assert url.name == "URL"
     assert url.genomes == {}
 
@@ -38,8 +38,8 @@ def test_get_genome_download_link(url):
 
 def test_get_annotation_download_link(url):
     target = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_Xenbase.gtf"
-    links = url.get_annotation_download_link(None, **{"to_annotation": target})
-    assert links == target
+    link = url.get_annotation_download_link(None, **{"to_annotation": target})
+    assert link == target
 
     with pytest.raises(TypeError):
         bad_url = "bad_url"

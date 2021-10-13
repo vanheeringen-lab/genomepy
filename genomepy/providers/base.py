@@ -174,11 +174,12 @@ class BaseProvider:
 
         # download to tmp dir. Move genome on completion.
         # tmp dir is in genome_dir to prevent moving the genome between disks
+        func = shutil.copyfile if os.path.exists(link) else download_file
         with TemporaryDirectory(dir=out_dir) as tmp_dir:
             tmp_fname = os.path.join(tmp_dir, link.split("/")[-1])
             fname = os.path.join(tmp_dir, f"{localname}.fa")
 
-            download_file(link, tmp_fname)
+            func(link, tmp_fname)
             logger.info("Genome download successful, starting post processing...")
 
             # unzip genome
@@ -294,7 +295,7 @@ class BaseProvider:
             logger.info("Annotation download successful")
         except Exception as e:
             raise GenomeDownloadError(
-                f"An error occured while installing the gene annotation for {name} from {self.name}.\n"
+                f"An error occurred while installing the gene annotation for {name} from {self.name}.\n"
                 "If you think the annotation should be there, please file a bug report at: "
                 "https://github.com/vanheeringen-lab/genomepy/issues\n\n"
                 f"Error: {e.args[0]}"
@@ -407,8 +408,9 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
 
     annot_file = os.path.join(tmp_dir, localname + ".annotation" + ext)
     tmp_annot_file = os.path.join(tmp_dir, annot_url.split("/")[-1])
+    func = shutil.copyfile if os.path.exists(annot_url) else download_file
     if n is None:
-        download_file(annot_url, tmp_annot_file)
+        func(annot_url, tmp_annot_file)
     else:
         download_head(annot_url, tmp_annot_file, n)
         is_compressed = False

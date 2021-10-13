@@ -16,13 +16,13 @@ from genomepy.config import config
 
 def mkdir_p(path):
     """'mkdir -p' in Python"""
-    path = os.path.expanduser(path)
+    path = cleanpath(path)
     os.makedirs(path, exist_ok=True)
 
 
 def rm_rf(path):
     """'rm -rf' in Python"""
-    path = os.path.expanduser(path)
+    path = cleanpath(path)
     if os.path.isfile(path):
         try:
             os.unlink(path)
@@ -40,7 +40,7 @@ def get_genomes_dir(genomes_dir: str = None, check_exist: Optional[bool] = True)
     if not genomes_dir:
         raise FileNotFoundError("Please provide or configure a genomes_dir")
 
-    genomes_dir = os.path.abspath(os.path.expanduser(genomes_dir))
+    genomes_dir = cleanpath(genomes_dir)
     if not os.path.exists(genomes_dir) and check_exist:
         raise FileNotFoundError(f"Genomes_dir {genomes_dir} does not exist!")
 
@@ -82,6 +82,22 @@ def run_index_cmd(name, cmd):
         )
 
 
+def get_genomename(name):
+    """return the name of the genome without path or extensions"""
+    name = os.path.basename(name)  # remove path
+    name = re.split(r"\.fa|\.fna|\.annot", name)[0]  # remove extensions
+    return name
+
+
+def cleanpath(path):
+    """Expand any path input to a literal path output"""
+    return os.path.abspath(  # expand relative paths ('./' and '../')
+        os.path.expanduser(  # expand '~'
+            os.path.expandvars(path)  # expand '$VARIABLES'
+        )
+    )
+
+
 def safe(name: Any) -> str:
     """Replace spaces with undescores."""
     return str(name).strip().replace(" ", "_")
@@ -101,16 +117,13 @@ def get_localname(name: Any, localname=None) -> str:
     """
     if localname:
         return safe(localname)
-    try:
-        urlopen(name)
-    except (IOError, ValueError):
-        return safe(name)
-    else:
+
+    # Remote file
+    if try_except_pass((IOError, ValueError), urlopen, name):
         # try to get the name from the url
         name = name.split("/")[-1]  # remove path
         name = name.replace(".gz", "")  # remove .gz
         name = os.path.splitext(name)[0]  # remove .fa/.fna/.fasta etc
-        name = safe(name)  # remove spaces
         # remove unwanted substrings from the name (ex: _genomes or .est_)
         unwanted = [
             "genome",
@@ -125,12 +138,17 @@ def get_localname(name: Any, localname=None) -> str:
             "primary",
             "assembly",
         ]
-        spacers = "(-?_?\.?)"  # noqa: W605
+        spacers = "( ?-?_?\.?)"  # noqa: W605
         for substring in unwanted:
             name = re.sub(
                 f"{spacers}{substring}(s?){spacers}", "", name, flags=re.IGNORECASE
             )
-        return name
+
+    # Local file
+    elif os.path.exists(name):
+        name = get_genomename(name)
+
+    return safe(name)
 
 
 def try_except_pass(errors, func, *args, **kwargs):
