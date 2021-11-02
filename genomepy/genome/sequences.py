@@ -1,4 +1,5 @@
 """Functions to extract or convert genomic sequences"""
+import os
 import re
 from bisect import bisect
 from random import random
@@ -74,6 +75,18 @@ def get_track_type(track):
     return "bed"
 
 
+def bad_coords(region, track):
+    chrom, coords = region.split(":")
+    start, end = [int(c) for c in coords.split("-")]
+    if end <= start:
+        msg = f"Skipping region that ends before it starts: '{region}'"
+        if isinstance(track, str):
+            msg = f"Skipping region from '{os.path.basename(track)}' that ends before it starts: '{region}'"
+        logger.warning(msg)
+        return True
+    return False
+
+
 def region_to_seq(self, region, extend_up=0, extend_down=0):
     chrom, coords = region.strip().split(":")
     start, end = [int(c) for c in coords.split("-")]
@@ -85,21 +98,24 @@ def region_to_seq(self, region, extend_up=0, extend_down=0):
 
 
 def regions_to_seqs(self, track, extend_up=0, extend_down=0):
-    if isinstance(track, list):
-        for region in track:
-            name = region.strip()
-            seq = region_to_seq(self, name, extend_up, extend_down)
-            yield Sequence(name, seq)
-    else:
-        for line in parse_file(track):
-            name = line.split()[0]
-            try:
-                seq = region_to_seq(self, name, extend_up, extend_down)
-            except ValueError:
-                # a file with a header will fail line 1
-                logger.warning(f"Skipping '{name}'.")
+    # if track is a file, loop over its lines
+    lines = track
+    if isinstance(track, str):
+        lines = parse_file(track)
+
+    for line in lines:
+        name = line.split()[0]
+        try:
+            if bad_coords(name, track):
                 continue
-            yield Sequence(name, seq)
+            seq = region_to_seq(self, name, extend_up, extend_down)
+        except (ValueError, IndexError):
+            msg = f"Skipping region that cannot be parsed: '{name}'"
+            if isinstance(track, str):
+                msg = f"Skipping region from '{os.path.basename(track)}' that cannot be parsed: '{name}'"
+            logger.warning(msg)
+            continue
+        yield Sequence(name, seq)
 
 
 def bed_to_seq(self, vals, stranded=False, extend_up=0, extend_down=0):
@@ -141,18 +157,21 @@ def bed_to_seq(self, vals, stranded=False, extend_up=0, extend_down=0):
             ends[-1] += extend_down
 
     intervals = zip(starts, ends)
-    seq = self.get_spliced_seq(chrom, intervals, rc)
-    return Sequence(name, seq.seq)
+    seq = self.get_spliced_seq(chrom, intervals, rc).seq
+    return Sequence(name, seq)
 
 
 def bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
     for line in parse_file(track, skip=("#", "track")):
-        vals = line.split("\t")
+        vals = [val.strip() for val in line.split("\t")]
         try:
+            name = f"{vals[0]}:{vals[1]}-{vals[2]}"
+            if bad_coords(name, track):
+                continue
             yield bed_to_seq(self, vals, stranded, extend_up, extend_down)
         except (ValueError, IndexError):
-            # a file with a header will fail line 1
-            logger.warning(f"Skipping '{line}'.")
+            msg = f"Skipping region from '{os.path.basename(track)}' that cannot be parsed: '{line}'"
+            logger.warning(msg)
             continue
 
 
