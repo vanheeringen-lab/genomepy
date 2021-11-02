@@ -2,10 +2,11 @@
 import re
 from bisect import bisect
 from random import random
-from typing import Union
 
 from loguru import logger
 from pyfaidx import Sequence
+
+from genomepy.files import parse_file
 
 
 def track2fasta(
@@ -49,15 +50,6 @@ def track2fasta(
                 fout.write(f"{seq.__repr__()}\n")
     else:
         return [seq for seq in seqqer]
-
-
-def parse_file(fpath, skip: Union[tuple, str] = "#"):
-    with open(fpath) as lines:
-        for line in lines:
-            line = line.strip()
-            if line.startswith(skip):
-                continue
-            yield line
 
 
 def get_track_type(track):
