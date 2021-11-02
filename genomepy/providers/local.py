@@ -9,9 +9,9 @@ from genomepy.utils import cleanpath, get_genomename
 
 class LocalProvider(BaseProvider):
     """
-    URL genome provider.
+    Local genome provider.
 
-    Simply download a genome directly through a url.
+    Give a local genome the genomepy treatment.
     """
 
     name = "Local"
@@ -56,7 +56,7 @@ class LocalProvider(BaseProvider):
 
     def get_annotation_download_link(self, name: str, **kwargs) -> str:
         """
-        Return a functional annotation download link.
+        Return a filepath to a matching annotation.
 
         Parameters
         ----------

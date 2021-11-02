@@ -14,6 +14,15 @@ from loguru import logger
 from genomepy.config import config
 
 
+def cleanpath(path):
+    """Expand any path input to a literal path output"""
+    return os.path.abspath(  # expand relative paths ('./' and '../')
+        os.path.expanduser(  # expand '~'
+            os.path.expandvars(path)  # expand '$VARIABLES'
+        )
+    )
+
+
 def mkdir_p(path):
     """'mkdir -p' in Python"""
     path = cleanpath(path)
@@ -89,13 +98,31 @@ def get_genomename(name):
     return name
 
 
-def cleanpath(path):
-    """Expand any path input to a literal path output"""
-    return os.path.abspath(  # expand relative paths ('./' and '../')
-        os.path.expanduser(  # expand '~'
-            os.path.expandvars(path)  # expand '$VARIABLES'
+def get_remotename(name):
+    # try to get the name from the url
+    name = name.split("/")[-1]  # remove path
+    name = name.replace(".gz", "")  # remove .gz
+    name = os.path.splitext(name)[0]  # remove .fa/.fna/.fasta etc
+    # remove unwanted substrings from the name (ex: _genomes or .est_)
+    unwanted = [
+        "genome",
+        "genomic",
+        "sequence",
+        "dna",
+        "cds",
+        "pep",
+        "transcript",
+        "EST",
+        "toplevel",
+        "primary",
+        "assembly",
+    ]
+    spacers = "( ?-?_?\.?)"  # noqa: W605
+    for substring in unwanted:
+        name = re.sub(
+            f"{spacers}{substring}(s?){spacers}", "", name, flags=re.IGNORECASE
         )
-    )
+    return name
 
 
 def safe(name: Any) -> str:
@@ -120,29 +147,7 @@ def get_localname(name: Any, localname=None) -> str:
 
     # Remote file
     if try_except_pass((IOError, ValueError), urlopen, name):
-        # try to get the name from the url
-        name = name.split("/")[-1]  # remove path
-        name = name.replace(".gz", "")  # remove .gz
-        name = os.path.splitext(name)[0]  # remove .fa/.fna/.fasta etc
-        # remove unwanted substrings from the name (ex: _genomes or .est_)
-        unwanted = [
-            "genome",
-            "genomic",
-            "sequence",
-            "dna",
-            "cds",
-            "pep",
-            "transcript",
-            "EST",
-            "toplevel",
-            "primary",
-            "assembly",
-        ]
-        spacers = "( ?-?_?\.?)"  # noqa: W605
-        for substring in unwanted:
-            name = re.sub(
-                f"{spacers}{substring}(s?){spacers}", "", name, flags=re.IGNORECASE
-            )
+        name = get_remotename(name)
 
     # Local file
     elif os.path.exists(name):
