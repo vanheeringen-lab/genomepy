@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Ensembl's GRCh37 can now be downloaded through genomepy
 
 ### Changed
+- Genome.track2fasta can now ignore comment lines (starting with `#`)
+- Genome.track2fasta will skip header lines (a warning will be printed)
+- Genome.track2fasta will ignore regions that cannot be parsed (a warning will be printed)
+  - these fixes should improve `gimme scan` performance and feedback
 - UCSC annotation conversion tool settings tweaked. Better results with source gff files.
 - Ensembl now uses HTTP instead of FTP (in some cases). This improves stability on some servers.
 - tweaked search result alignment for clarity

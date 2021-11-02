@@ -2,7 +2,9 @@
 import re
 from bisect import bisect
 from random import random
+from typing import Union
 
+from loguru import logger
 from pyfaidx import Sequence
 
 
@@ -49,16 +51,34 @@ def track2fasta(
         return [seq for seq in seqqer]
 
 
+def parse_file(fpath, skip: Union[tuple, str] = "#"):
+    with open(fpath) as lines:
+        for line in lines:
+            line = line.strip()
+            if line.startswith(skip):
+                continue
+            yield line
+
+
 def get_track_type(track):
-    # region_p example: "chr1:123-456"
-    region_p = re.compile(r"^([^\s]+):(\d+)-(\d+)$")
+    # region_p examples: ["chr1:123-456", "M:1-2"]
+    region_p = re.compile(r"^([^\s]+):(\d+)-(\d+)")
+
+    # check if track is a list (like), and if the first entry is an interval
     if not isinstance(track, (str, bytes)) and isinstance(track, (list, tuple)):
         if isinstance(track[0], (str, bytes)) and region_p.search(track[0]):
             return "interval"
-    with open(track) as fin:
-        line = fin.readline().strip()
-    if region_p.search(line):
-        return "interval"
+
+    # check up to two (non-comment) lines for intervals (at the start)
+    give_up = False
+    for line in parse_file(track):
+        if region_p.search(line):
+            return "interval"
+        if give_up:
+            break
+        give_up = True
+
+    # default to BED format
     return "bed"
 
 
@@ -79,16 +99,15 @@ def regions_to_seqs(self, track, extend_up=0, extend_down=0):
             seq = region_to_seq(self, name, extend_up, extend_down)
             yield Sequence(name, seq)
     else:
-        with open(track) as fin:
-            bufsize = 10000
-            lines = fin.readlines(bufsize)
-            for region in lines:
-                name = region.strip()
+        for line in parse_file(track):
+            name = line.split()[0]
+            try:
                 seq = region_to_seq(self, name, extend_up, extend_down)
-                yield Sequence(name, seq)
-
-                # load more lines if needed
-                lines += fin.readlines()
+            except ValueError:
+                # a file with a header will fail line 1
+                logger.warning(f"Skipping '{name}'.")
+                continue
+            yield Sequence(name, seq)
 
 
 def bed_to_seq(self, vals, stranded=False, extend_up=0, extend_down=0):
@@ -135,18 +154,14 @@ def bed_to_seq(self, vals, stranded=False, extend_up=0, extend_down=0):
 
 
 def bed_to_seqs(self, track, stranded=False, extend_up=0, extend_down=0):
-    bufsize = 10000
-    with open(track) as fin:
-        lines = fin.readlines(bufsize)
-        for line in lines:
-            if line.startswith(("#", "track")):
-                continue
-
-            vals = line.strip().split("\t")
+    for line in parse_file(track, skip=("#", "track")):
+        vals = line.split("\t")
+        try:
             yield bed_to_seq(self, vals, stranded, extend_up, extend_down)
-
-            # load more lines if needed
-            lines += fin.readlines(1)
+        except (ValueError, IndexError):
+            # a file with a header will fail line 1
+            logger.warning(f"Skipping '{line}'.")
+            continue
 
 
 def get_random_sequences(
