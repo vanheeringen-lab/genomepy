@@ -1,0 +1,5 @@
+# this is a comment line
+# this file is meant to reflect a tsv with regions as index
+region  sample1    sample2
+chrI:10-20  high_expression low_expression
+chrII:20-30 high_expression high_expression
