@@ -1,3 +1,5 @@
-#chrom	start	end	name	score	strand
+# this is a comment line
+# this file is meant to reflect a bed file with a header
+chrom	start	end	name	score	strand
 chrI	10	20	gene_a	score	+	0	0	0	2	10,0	0,0
 chrII	20	30	gene_b	score	-

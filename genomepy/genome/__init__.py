@@ -9,7 +9,7 @@ from genomepy.files import glob_ext_files, read_readme
 from genomepy.genome.sequences import get_random_sequences as _get_random_sequences
 from genomepy.genome.sequences import track2fasta as _track2fasta
 from genomepy.plugins import get_active_plugins
-from genomepy.utils import get_genomes_dir, safe
+from genomepy.utils import cleanpath, get_genomes_dir, safe
 
 __all__ = ["Genome", "generate_fa_sizes", "generate_gap_bed"]
 
@@ -124,7 +124,7 @@ class Genome(Fasta):
 
         returns the abspath to the fasta file
         """
-        path_name = os.path.abspath(os.path.expanduser(name))
+        path_name = cleanpath(name)
         if os.path.isfile(path_name):
             return path_name
 

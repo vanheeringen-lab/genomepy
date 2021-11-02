@@ -9,6 +9,7 @@ from genomepy.files import read_readme
 from genomepy.providers.base import ASM_FORMAT
 from genomepy.providers.ensembl import EnsemblProvider
 from genomepy.providers.gencode import GencodeProvider
+from genomepy.providers.local import LocalProvider
 from genomepy.providers.ncbi import NcbiProvider
 from genomepy.providers.ucsc import UcscProvider
 from genomepy.providers.url import UrlProvider
@@ -30,6 +31,7 @@ PROVIDERS = {
     "ensembl": EnsemblProvider,
     "ucsc": UcscProvider,
     "ncbi": NcbiProvider,
+    "local": LocalProvider,
     "url": UrlProvider,
 }
 

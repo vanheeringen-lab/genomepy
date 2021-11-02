@@ -158,6 +158,7 @@ def test_get_track_type():
         (("chr1:10-20", "chr2:10-20"), "interval"),
         (["chr1:10-20", "chr2:10-20"], "interval"),
         ("tests/data/regions.txt", "interval"),
+        ("tests/data/regions2.txt", "interval"),
         ("tests/data/regions.bed", "bed"),
         ("tests/data/regions2.bed", "bed"),
     ]
@@ -181,7 +182,7 @@ def test_region_to_seq(small_genome, region="chrI:10-20"):
     assert seq == "ACCCACACACCCA"
 
 
-def test__regions_to_seqs(small_genome, track="tests/data/regions.txt"):
+def test__regions_to_seqs(small_genome, track="tests/data/regions2.txt"):
     # extract sequences marked in regions.bed from small_genome.fa.gz
     seqs = genomepy.genome.sequences.regions_to_seqs(
         small_genome, track=track, extend_up=0, extend_down=0
@@ -207,6 +208,18 @@ def test_bed_to_seqs(small_genome, track="tests/data/regions.bed"):
     )
     for i, seq in enumerate(seqs):
         assert seq.name == ["chrI:10-20 gene_a", "chrII:20-30 gene_b"][i]
+        assert seq.seq == ["CCCACACACC", "TCCTCCAAGC"][i]
+
+    # BED3 (no gene names)
+    seqs = genomepy.genome.sequences.bed_to_seqs(
+        small_genome,
+        track="tests/data/regions2.bed",
+        stranded=False,
+        extend_up=0,
+        extend_down=0,
+    )
+    for i, seq in enumerate(seqs):
+        assert seq.name == ["chrI:10-20", "chrII:20-30"][i]
         assert seq.seq == ["CCCACACACC", "TCCTCCAAGC"][i]
 
     # second sequence is on the negative strand
