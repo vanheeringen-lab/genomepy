@@ -82,7 +82,7 @@ def test_lower(unsafe_name="A nAme ", safe_name="a_name"):
 
 
 def test_get_localname(name="XENTR_9.1", localname="my genome"):
-    # name + localname input
+    # localname input
     result = genomepy.utils.get_localname(name=name, localname=localname)
     assert result == genomepy.utils.safe(localname)
 
@@ -102,6 +102,11 @@ def test_get_localname(name="XENTR_9.1", localname="my genome"):
     )
     result = genomepy.utils.get_localname(name=url2)
     assert result == "GCF_000027325.1_ASM2732v1"
+
+    # Local path input
+    path = "tests/data/sacCer3/sacCer3.fa"
+    result = genomepy.utils.get_localname(name=path)
+    assert result == "sacCer3"
 
 
 def test_try_except_pass():

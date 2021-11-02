@@ -347,7 +347,11 @@ if sys.stdout.isatty():
     def terminal_subheader():
         """Subheader for search output."""
         # annotations: ncbiRefSeq, refGene, ensGene & knownGene
-        print(SEARCH_STRING.format(*["", "", "", "", "n r e k", "<- UCSC options (see help)", ""]))
+        print(
+            SEARCH_STRING.format(
+                *["", "", "", "", "n r e k", "<- UCSC options (see help)", ""]
+            )
+        )
 
 
 else:

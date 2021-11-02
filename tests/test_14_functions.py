@@ -117,15 +117,14 @@ def test__get_fasta_regex_func():
     assert func("something_else") is True
 
 
-@pytest.mark.skipif(not travis, reason="slow")
 def test_install_genome():
     localname = "my_genome"
     genomepy.functions.install_genome(
-        name="dm3",
-        provider="UCSC",
+        name="tests/data/sacCer3/sacCer3.fa",
+        provider="Local",
         genomes_dir=None,
         localname=localname,
-        regex="R",
+        regex="chrIV",
         annotation=True,
         force=True,
     )
@@ -144,12 +143,10 @@ def test_install_genome():
 
     # regex test:
     sizes = genomepy.Genome(localname).sizes.keys()
-    assert "chr2R" in sizes
-    assert "chr2L" not in sizes
+    assert "chrIV" in sizes
 
 
 # already used, but we had to install a genome first to test it
-@pytest.mark.skipif(not travis, reason="a genome must be installed")
 def test_generate_exports():
     exports = genomepy.functions._generate_exports()
     assert isinstance(exports, list)
@@ -177,7 +174,6 @@ def test_generate_exports():
 
 
 # already used, but we had to install a genome first to test it
-@pytest.mark.skipif(not travis, reason="a genome must be installed")
 def test_generate_env():
     config_dir = str(user_config_dir("genomepy"))
     path = os.path.join(config_dir, "exports.txt")
