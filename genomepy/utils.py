@@ -99,7 +99,7 @@ def get_genomename(name):
 
 
 def get_remotename(name):
-    # try to get the name from the url
+    """try to get the name from the url"""
     name = name.split("/")[-1]  # remove path
     name = name.replace(".gz", "")  # remove .gz
     name = os.path.splitext(name)[0]  # remove .fa/.fna/.fasta etc
