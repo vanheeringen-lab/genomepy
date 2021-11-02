@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
   - only contains 4 assemblies (2 mouse, 2 human)
   - excellent annotations for these regions & species though!
 - Ensembl's GRCh37 can now be downloaded through genomepy
+- Local fasta/gtf/gff(3)/bed file support
+  - you can install a local genome and/or annotation by providing local path(s) to `genomepy install`
+    - if annotation downloading is requested, but not annotation path is provided,
+    a gtf/gff(3) annotation will be sought in the genome's source directory.
 
 ### Changed
 - Genome.track2fasta can now ignore comment lines (starting with `#`)
@@ -23,6 +27,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Ensembl now uses HTTP instead of FTP (in some cases). This improves stability on some servers.
 - tweaked search result alignment for clarity
 - explained UCSC annotations in the README
+- better file path handling (relative paths, user home and variables are expanded)
 
 ### Fixed
 - Ensembl annotations from previous releases can now be downloaded as intended.
