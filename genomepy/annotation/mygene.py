@@ -120,7 +120,7 @@ def query_mygene(
         mg = mygene.MyGeneInfo()
         _result = mg.querymany(
             query[i : i + batch_size],  # noqa
-            scopes="symbol,name,ensembl.gene,entrezgene,ensembl.transcript,ensembl,accession.protein,accession.rna",
+            scopes="symbol,name,ensembl.gene,entrezgene,ensembl.transcript,ensembl,accession.protein,accession.rna,other_names,alias",
             fields=field,
             species=tax_id,
             as_dataframe=True,
