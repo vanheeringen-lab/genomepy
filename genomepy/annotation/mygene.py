@@ -192,7 +192,6 @@ def _query_mygene(
     self,
     query: Iterable[str],
     field: str = "genomic_pos",
-    batch_size: int = 5000,
 ) -> pd.DataFrame:
     # mygene.info only queries the most recent version of the Ensembl database
     # We can only safely continue if the local genome matched the Ensembl genome.
@@ -206,7 +205,7 @@ def _query_mygene(
     if not str(tax_id).isdigit():
         raise ValueError("No taxomoy ID found")
 
-    return query_mygene(query, tax_id, field, batch_size)
+    return query_mygene(query, tax_id, field)
 
 
 def _filter_query(query: pd.DataFrame) -> pd.DataFrame:
