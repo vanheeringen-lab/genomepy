@@ -19,10 +19,7 @@ def test_genome_info_tuple(gencode):
 
 @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_genomes(gencode):
-    assert (
-        gencode.genomes["GRCh37"]["other_info"]
-        == "Chromosome annotation (no scaffolds)"
-    )
+    assert gencode.genomes["GRCh37"]["other_info"] == "GENCODE annotation + UCSC genome"
     assert gencode.genomes["GRCh38"]["assembly_accession"] == "GCA_000001405.15"
 
 
@@ -56,6 +53,11 @@ def test_get_annotation_download_links(gencode):
         "lift37.annotation.gtf.gz",
     ]
     assert all([exp in annots[0] for exp in expected])
+
+
+@pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
+def test_download_annotation(gencode):
+    gencode.download_annotation("GRCm39")  # smallest gencode annotation (0.8 GB)
 
 
 def test_get_gencode2ucsc():
