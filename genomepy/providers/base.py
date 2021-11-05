@@ -465,7 +465,7 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
     else:
         raise TypeError(f"file type extension {ext} not recognized!")
 
-    if "gencode" in annot_url:
+    if n is None and "gencode" in annot_url:
         rename_contigs(annot_file)
 
     sp.check_call(cmd.format(annot_file, pred_file), shell=True)

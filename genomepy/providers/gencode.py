@@ -10,7 +10,7 @@ from genomepy.files import update_readme
 from genomepy.online import check_url, connect_ftp_link
 from genomepy.providers.base import ASM_FORMAT, BaseProvider, download_annotation
 from genomepy.providers.ucsc import UcscProvider
-from genomepy.utils import get_genomes_dir, get_localname
+from genomepy.utils import get_genomes_dir, get_localname, mkdir_p
 
 
 class GencodeProvider(BaseProvider):
@@ -295,4 +295,5 @@ def exact_assembly_report(name, acc, fname):
         + f"{acc}_{name}/{acc}_{name}_assembly_report.txt"
     )
     asm_report = pd.read_csv(assembly_report, sep="\t", comment="#", names=ASM_FORMAT)
+    mkdir_p(os.path.dirname(fname))
     asm_report.to_csv(fname, sep="\t", index=False)
