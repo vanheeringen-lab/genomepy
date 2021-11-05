@@ -80,7 +80,7 @@ def query_mygene(
     query: Iterable[str],
     tax_id: Union[str, int],
     field: str = "genomic_pos",
-    batch_size: int = 10000,
+    verbose=True,
 ) -> pd.DataFrame:
     """
     Use mygene.info to map gene identifiers to another type.
@@ -97,8 +97,6 @@ def query_mygene(
         refseq will return the protein refseq_id by default, use `refseq.translation.rna` to
         return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
         not supported.
-    batch_size: int, optional
-        Controls batch size for the REST API.
 
     Returns
     -------
@@ -111,9 +109,9 @@ def query_mygene(
     logger.info("Querying mygene.info...")
     query = list(set(query))
     query_len = len(query)
+    batch_size = 1000  # same as mygene.info internal batch size
     it = range(0, query_len, batch_size)
     if query_len > batch_size:
-        logger.info("Large query, running in batches...")
         it = tqdm(it, unit=f"{batch_size} queries")
 
     result = pd.DataFrame()
