@@ -6,6 +6,7 @@ import pandas as pd
 from loguru import logger
 
 from genomepy.files import read_readme
+from genomepy.providers.base import ASM_FORMAT
 from genomepy.providers.ensembl import EnsemblProvider
 from genomepy.providers.gencode import GencodeProvider
 from genomepy.providers.local import LocalProvider
@@ -23,19 +24,6 @@ __all__ = [
     "download_assembly_report",
     "nearest_assembly",
     "online_providers",
-]
-
-ASM_FORMAT = [
-    "Sequence-Name",
-    "Sequence-Role",
-    "Assigned-Molecule",
-    "Assigned-Molecule-Location/Type",
-    "GenBank-Accn",
-    "Relationship",
-    "RefSeq-Accn",
-    "Assembly-Unit",
-    "Sequence-Length",
-    "UCSC-style-name",
 ]
 
 PROVIDERS = {

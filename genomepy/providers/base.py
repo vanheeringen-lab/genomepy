@@ -8,13 +8,28 @@ from tempfile import TemporaryDirectory, mkdtemp
 from typing import Iterator, List, Union
 from urllib.request import urlopen
 
+import pandas as pd
 from loguru import logger
 
 from genomepy.__about__ import __version__
+from genomepy.annotation.utils import read_annot, write_annot
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import extract_archive, get_file_info, update_readme
 from genomepy.online import download_file
 from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf, safe
+
+ASM_FORMAT = [
+    "Sequence-Name",
+    "Sequence-Role",
+    "Assigned-Molecule",
+    "Assigned-Molecule-Location/Type",
+    "GenBank-Accn",
+    "Relationship",
+    "RefSeq-Accn",
+    "Assembly-Unit",
+    "Sequence-Length",
+    "UCSC-style-name",
+]
 
 
 class BaseProvider:
@@ -450,6 +465,9 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
     else:
         raise TypeError(f"file type extension {ext} not recognized!")
 
+    if n is None and "gencode" in annot_url:
+        rename_contigs(annot_file)
+
     sp.check_call(cmd.format(annot_file, pred_file), shell=True)
 
     # generate gzipped gtf file (if required)
@@ -499,3 +517,22 @@ def download_head(annot_url, annot_file, n: int = 5):
             # add a few extra lines to the intermediate file
             if m == n + 2:
                 break
+
+
+def rename_contigs(annot_file):
+    genome_dir = os.path.dirname(os.path.dirname(annot_file))
+    asm_report = os.path.join(genome_dir, "assembly_report.txt")
+    gencode2ucsc = pd.read_csv(
+        asm_report, sep="\t", comment="#", usecols=["GenBank-Accn", "UCSC-style-name"]
+    )
+    gtf = read_annot(annot_file)
+
+    # use the UCSC names for the scaffolds
+    newgtf = gtf.merge(
+        gencode2ucsc, left_on="seqname", right_on="GenBank-Accn", how="left"
+    )
+    newgtf["seqname"] = newgtf["UCSC-style-name"].mask(pd.isnull, newgtf["seqname"])
+    newgtf.drop(columns=["GenBank-Accn", "UCSC-style-name"], inplace=True)
+
+    # overwrite the raw GTF
+    write_annot(newgtf, annot_file)
