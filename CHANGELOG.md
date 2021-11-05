@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 - Ensembl annotations from previous releases can now be downloaded as intended.
+- Genome.track2fasta will skip regions that clearly dont make sense (start>end, and start<0)
 
 ## [0.10.0] - 2021-07-30
 
