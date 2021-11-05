@@ -319,19 +319,19 @@ def test_map_genes():
     assert transcript_ids[0] == "ENSDART00000159919"
 
     # transcript to gene
-    res = a.map_genes(gene_field="ensembl.gene", annot=bed)
+    res = a.map_genes(field="ensembl.gene", annot=bed)
     genes = res.name.to_list()
     assert genes[0] == "ENSDARG00000103202"
 
     # # transcript to symbol
-    # res = a.map_genes(gene_field="symbol", df=bed)
+    # res = a.map_genes(field="symbol", df=bed)
     # symbol = res.name.to_list()
     # assert symbol[0] == "CR383668.1"
 
     # refseq hits & subtypes
-    protein = a.map_genes(gene_field="refseq", product="protein", annot=bed)
+    protein = a.map_genes(field="refseq", product="protein", annot=bed)
     assert protein.name.to_list()[0].startswith("NP_")
-    # rna = a.map_genes(gene_field="refseq", product="rna", df=bed)
+    # rna = a.map_genes(field="refseq", product="rna", df=bed)
     # assert rna.name.to_list()[0].startswith("NM_")
     # assert rna.shape == protein.shape
 

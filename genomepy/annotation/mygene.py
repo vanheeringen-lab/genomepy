@@ -15,12 +15,12 @@ from genomepy.utils import safe
 
 def map_genes(
     self,  # noqa
-    gene_field: str,
+    field: str,
     product: str = "protein",
     annot: Union[str, pd.DataFrame] = "bed",
 ) -> pd.DataFrame:
     """
-    Use mygene.info to map gene identifiers to any specified `gene_field`.
+    Use mygene.info to map gene identifiers to any specified `field`.
 
     Returns the dataframe with remapped "name" column.
     Drops missing identifiers.
@@ -30,21 +30,21 @@ def map_genes(
     annot: str or pd.Dataframe
         Annotation dataframe to map (a pandas dataframe or "bed").
         Is mapped to a column named "name" (required).
-    gene_field : str, optional
+    field : str, optional
         Identifier for gene annotation. Uses mygene.info to map ids. Valid fields
         are: ensembl.gene, entrezgene, symbol, name, refseq, entrezgene. Note that
         refseq will return the protein refseq_id by default, use `product="rna"` to
         return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
         not supported.
     product : str, optional
-        Either "protein" or "rna". Only used when `gene_field="refseq"`
+        Either "protein" or "rna". Only used when `field="refseq"`
 
     Returns
     -------
     pandas.DataFrame
         remapped gene annotation
     """
-    to, product = parse_mygene_input(gene_field, product)
+    to, product = parse_mygene_input(field, product)
     df = _parse_annot(self, annot)
     if df is None:
         raise ValueError("Argument 'annot' must be 'bed' or a pandas dataframe.")
@@ -58,7 +58,7 @@ def map_genes(
     df = df.assign(split_id=split_id.values)
     genes = set(split_id)
 
-    result = _query_mygene(self, genes, fields=to)
+    result = _query_mygene(self, genes, field=to)
     result = _filter_query(result)
     if len(result) == 0:
         logger.warning("Could not map using mygene.info")
@@ -105,6 +105,7 @@ def query_mygene(
     pandas.DataFrame
         mapped gene annotation.
     """
+    mg = mygene.MyGeneInfo()
     field, _ = parse_mygene_input(field)
 
     logger.info("Querying mygene.info...")
@@ -113,15 +114,15 @@ def query_mygene(
     it = range(0, query_len, batch_size)
     if query_len > batch_size:
         logger.info("Large query, running in batches...")
-        it = tqdm(it)
+        it = tqdm(it, unit=f"{batch_size} queries")
 
     result = pd.DataFrame()
     for i in it:
-        mg = mygene.MyGeneInfo()
         _result = mg.querymany(
             query[i : i + batch_size],  # noqa
-            scopes="symbol,name,ensembl.gene,entrezgene,ensembl.transcript,ensembl,accession.protein,accession.rna,other_names,alias",
-            fields=field,
+            scopes="symbol,name,ensembl.gene,entrezgene,ensembl.transcript,"
+            "ensembl,accession.protein,accession.rna,other_names,alias",
+            field=field,
             species=tax_id,
             as_dataframe=True,
             verbose=False,
@@ -134,30 +135,31 @@ def query_mygene(
     return result
 
 
-def parse_mygene_input(gene_field, product=None):
+def parse_mygene_input(field, product=None):
     if product:
+        print(product)
         product = product.lower()
         if product not in ["rna", "protein"]:
-            raise ValueError("Argument product should be either 'rna' or 'protein'.")
+            raise ValueError("Argument 'product' should be either 'rna' or 'protein'.")
 
-    gene_field = gene_field.lower()
+    field = field.lower()
+    # see mg.MyGeneInfo().get_fields()
     allowed_fields = [
         "ensembl.gene",
         "entrezgene",
         "symbol",
         "name",
         "refseq",
-        "entrezgene",
+        "genomic_pos",
     ]
     if product is None:
         allowed_fields.append("refseq.translation.rna")
-    if gene_field not in allowed_fields:
+    if field not in allowed_fields:
         raise ValueError(
-            "Argument product should be either 'ensembl.gene', "
-            "'entrezgene,' 'symbol', 'name', 'refseq' or 'entrezgene'."
+            f"Argument 'field' should be either in {', '.join(allowed_fields)}"
         )
 
-    return gene_field, product
+    return field, product
 
 
 def ensembl_genome_info(self) -> Optional[Tuple[str, str, str]]:
@@ -192,7 +194,7 @@ def ensembl_genome_info(self) -> Optional[Tuple[str, str, str]]:
 def _query_mygene(
     self,
     query: Iterable[str],
-    fields: str = "genomic_pos",
+    field: str = "genomic_pos",
     batch_size: int = 5000,
 ) -> pd.DataFrame:
     # mygene.info only queries the most recent version of the Ensembl database
@@ -207,7 +209,7 @@ def _query_mygene(
     if not str(tax_id).isdigit():
         raise ValueError("No taxomoy ID found")
 
-    return query_mygene(query, tax_id, fields, batch_size)
+    return query_mygene(query, tax_id, field, batch_size)
 
 
 def _filter_query(query: pd.DataFrame) -> pd.DataFrame:
