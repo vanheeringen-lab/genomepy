@@ -80,7 +80,6 @@ def query_mygene(
     query: Iterable[str],
     tax_id: Union[str, int],
     field: str = "genomic_pos",
-    verbose=True,
 ) -> pd.DataFrame:
     """
     Use mygene.info to map gene identifiers to another type.
@@ -103,7 +102,6 @@ def query_mygene(
     pandas.DataFrame
         mapped gene annotation.
     """
-    mg = mygene.MyGeneInfo()
     field, _ = parse_mygene_input(field)
 
     logger.info("Querying mygene.info...")
@@ -115,6 +113,7 @@ def query_mygene(
         it = tqdm(it, unit=f"{batch_size} queries")
 
     result = pd.DataFrame()
+    mg = mygene.MyGeneInfo()
     for i in it:
         _result = mg.querymany(
             query[i : i + batch_size],  # noqa
