@@ -182,6 +182,20 @@ def test_filter_regex():
     genomepy.utils.rm_rf(gtf_file)
 
 
+def test_gtf_dict():
+    a = genomepy.annotation.Annotation("GRCz11", genomes_dir="tests/data")
+    gid2gname = a.gtf_dict("gene_id", "gene_name")
+    assert gid2gname["ENSDARG00000103202"] == "CR383668.1"
+    gid2gname = a.gtf_dict("gene_id", "gene_name", False)
+    assert gid2gname["ENSDARG00000103202"] == ["CR383668.1"]
+
+    seq2tid = a.gtf_dict("seqname", "transcript_id")
+    assert seq2tid["1"] == ["ENSDART00000171868"]
+
+    with pytest.raises(IndexError):
+        a.gtf_dict("gene_name", "transcript_id", annot="bed")
+
+
 # annotation.utils.py
 
 

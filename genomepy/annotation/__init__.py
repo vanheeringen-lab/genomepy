@@ -293,6 +293,67 @@ class Annotation:
         df = _parse_annot(self, annot)
         return filter_regex(df, regex, invert_match, column)
 
+    def gtf_dict(
+        self, key, value, string_values=True, annot: Union[str, pd.DataFrame] = "gtf"
+    ):
+        """
+        Create a dictionary based on the columns or attribute fields in a GTF.
+
+        Parameters
+        ----------
+        key : str
+            column name or attribute fields (e.g. "seqname", "gene_name")
+        value : str
+            column name or attribute fields (e.g. "gene_id", "transcript_name")
+        string_values : bool, optional
+            attempt to format the dict values as strings
+            (only happens if all value lists are length 1)
+        annot : str or pd.Dataframe, optional
+            annotation to filter: "gtf" or a pandas dataframe
+
+        Returns
+        -------
+        dict
+            with values as lists. If string_values is True
+            and all lists are length 1, values will be strings.
+        """
+        df = _parse_annot(self, annot)
+        k_in_columns = key in df.columns
+        v_in_columns = value in df.columns
+        if "attribute" not in df.columns and not (k_in_columns and v_in_columns):
+            raise IndexError("annotation does not contain the 'attribute' column!")
+
+        a_dict = dict()
+        for _, row in df.iterrows():
+            if k_in_columns:
+                k = row[key]
+            else:
+                split = row.attribute.split(key)
+                if len(split) != 2:
+                    continue
+                k = split[1].split('"')[1]
+
+            if v_in_columns:
+                v = row[value]
+            else:
+                split = row.attribute.split(value)
+                if len(split) != 2:
+                    continue
+                v = split[1].split('"')[1]
+
+            if k in a_dict:
+                a_dict[k].update({v})
+            else:
+                a_dict[k] = {v}
+
+        # return str if all values are length 1 and string_values is True
+        # else return a list with unique values
+        all_len_1 = all(len(v) == 1 for v in a_dict.values()) and string_values
+        for k, v in a_dict.items():
+            a_dict[k] = list(v)[0] if all_len_1 else list(v)
+
+        return a_dict
+
 
 def _get_name_and_dir(name, genomes_dir=None):
     """
