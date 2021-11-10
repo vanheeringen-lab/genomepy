@@ -318,37 +318,44 @@ class Annotation:
             and all lists are length 1, values will be strings.
         """
         df = _parse_annot(self, annot)
-        k_in_columns = key in df.columns
-        v_in_columns = value in df.columns
-        if "attribute" not in df.columns and not (k_in_columns and v_in_columns):
-            raise IndexError("annotation does not contain the 'attribute' column!")
+        k = key in df.columns
+        v = value in df.columns
+        # pd.DataFrame.iterrows() is slow. this is not.
+        attributes = zip(
+            df[key] if k else df.attribute,
+            df[value] if v else df.attribute,
+        )
 
+        def _get_attr_item(series, item):
+            """
+            example series.attribute: "...; gene_name: "TP53"; ..."
+            item="gene_name" would return "TP53"
+            """
+            split = series.split(item)
+            return split[1].split('"')[1]  # item might not exist
+
+        def _get_col_item(series, _):
+            return series
+
+        get_key = _get_col_item if k else _get_attr_item
+        get_val = _get_col_item if v else _get_attr_item
         a_dict = dict()
-        for _, row in df.iterrows():
-            if k_in_columns:
-                k = row[key]
-            else:
-                split = row.attribute.split(key)
-                if len(split) != 2:
-                    continue
-                k = split[1].split('"')[1]
+        for row in attributes:
+            try:
+                k = get_key(row[0], key)
+                v = get_val(row[1], value)
+            except IndexError:
+                continue
 
-            if v_in_columns:
-                v = row[value]
-            else:
-                split = row.attribute.split(value)
-                if len(split) != 2:
-                    continue
-                v = split[1].split('"')[1]
-
+            # unique values per key
             if k in a_dict:
                 a_dict[k].update({v})
             else:
                 a_dict[k] = {v}
 
-        # return str if all values are length 1 and string_values is True
-        # else return a list with unique values
-        all_len_1 = all(len(v) == 1 for v in a_dict.values()) and string_values
+        # return values as str if all values are length 1
+        # and string_values is True, else return values as list
+        all_len_1 = string_values and all(len(v) == 1 for v in a_dict.values())
         for k, v in a_dict.items():
             a_dict[k] = list(v)[0] if all_len_1 else list(v)
 

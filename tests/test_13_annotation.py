@@ -191,9 +191,9 @@ def test_gtf_dict():
 
     seq2tid = a.gtf_dict("seqname", "transcript_id")
     assert seq2tid["1"] == ["ENSDART00000171868"]
-
-    with pytest.raises(IndexError):
-        a.gtf_dict("gene_name", "transcript_id", annot="bed")
+    #
+    # with pytest.raises(IndexError):
+    #     a.gtf_dict("gene_name", "transcript_id", annot="bed")
 
 
 # annotation.utils.py
