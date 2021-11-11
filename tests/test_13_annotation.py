@@ -48,7 +48,7 @@ def test__get_name_and_dir():
 
     # does not exist
     with pytest.raises(ValueError):
-        genomepy.annotation._get_name_and_dir("tests/data/GRCz11/GRCz11.annotation.BED")
+        genomepy.annotation._get_name_and_dir("tests/data/GRCz11/what.who")
     # no bed/gtf/fa
     with pytest.raises(NotImplementedError):
         genomepy.annotation._get_name_and_dir("tests/data/GRCz11/README.txt")
