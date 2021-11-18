@@ -1,73 +1,34 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>genomepy.genome.sequences &mdash; genomepy  documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="genomepy.genome.sequences.bed_to_seq" href="genomepy.genome.sequences.bed_to_seq.html" />
+    <link rel="next" title="genomepy.genome.sequences.bad_coords" href="genomepy.genome.sequences.bad_coords.html" />
     <link rel="prev" title="genomepy.genome.Genome" href="genomepy.genome.Genome.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../index.html" class="icon icon-home"> genomepy
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -75,18 +36,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../content/installation.html">Installation</a></li>
@@ -106,6 +56,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genomepy.genome.generate_gap_bed.html">genomepy.genome.generate_gap_bed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.genome.Genome.html">genomepy.genome.Genome</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">genomepy.genome.sequences</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="genomepy.genome.sequences.bad_coords.html">genomepy.genome.sequences.bad_coords</a></li>
 <li class="toctree-l4"><a class="reference internal" href="genomepy.genome.sequences.bed_to_seq.html">genomepy.genome.sequences.bed_to_seq</a></li>
 <li class="toctree-l4"><a class="reference internal" href="genomepy.genome.sequences.bed_to_seqs.html">genomepy.genome.sequences.bed_to_seqs</a></li>
 <li class="toctree-l4"><a class="reference internal" href="genomepy.genome.sequences.get_random_sequences.html">genomepy.genome.sequences.get_random_sequences</a></li>
@@ -129,79 +80,34 @@
 <li class="toctree-l1"><a class="reference internal" href="../content/about.html">About</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">genomepy</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
           <li><a href="genomepy.html">genomepy</a> &raquo;</li>
-        
           <li><a href="genomepy.genome.html">genomepy.genome</a> &raquo;</li>
-        
       <li>genomepy.genome.sequences</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
-            
               <a href="https://github.com/vanheeringen-lab/genomepy/blob/develop/docs/_autosummary/genomepy.genome.sequences.rst" class="fa fa-github"> Edit on GitHub</a>
-            
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="module-genomepy.genome.sequences">
-<span id="genomepy-genome-sequences"></span><h1>genomepy.genome.sequences<a class="headerlink" href="#module-genomepy.genome.sequences" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="module-genomepy.genome.sequences">
+<span id="genomepy-genome-sequences"></span><h1>genomepy.genome.sequences<a class="headerlink" href="#module-genomepy.genome.sequences" title="Permalink to this headline"></a></h1>
 <p>Functions to extract or convert genomic sequences</p>
 <p class="rubric">Functions</p>
 <table class="longtable docutils align-default">
@@ -210,83 +116,68 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.genome.sequences.bed_to_seq.html#genomepy.genome.sequences.bed_to_seq" title="genomepy.genome.sequences.bed_to_seq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bed_to_seq</span></code></a>(self, vals[, stranded, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.genome.sequences.bad_coords.html#genomepy.genome.sequences.bad_coords" title="genomepy.genome.sequences.bad_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bad_coords</span></code></a>(region, track)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="genomepy.genome.sequences.bed_to_seqs.html#genomepy.genome.sequences.bed_to_seqs" title="genomepy.genome.sequences.bed_to_seqs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bed_to_seqs</span></code></a>(self, track[, stranded, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.genome.sequences.bed_to_seq.html#genomepy.genome.sequences.bed_to_seq" title="genomepy.genome.sequences.bed_to_seq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bed_to_seq</span></code></a>(self, vals[, stranded, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.genome.sequences.get_random_sequences.html#genomepy.genome.sequences.get_random_sequences" title="genomepy.genome.sequences.get_random_sequences"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_random_sequences</span></code></a>(self[, n, length, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.genome.sequences.bed_to_seqs.html#genomepy.genome.sequences.bed_to_seqs" title="genomepy.genome.sequences.bed_to_seqs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bed_to_seqs</span></code></a>(self, track[, stranded, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.genome.sequences.get_random_sequences.html#genomepy.genome.sequences.get_random_sequences" title="genomepy.genome.sequences.get_random_sequences"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_random_sequences</span></code></a>(self[, n, length, ...])</p></td>
 <td><p>Return random genomic sequences.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="genomepy.genome.sequences.get_track_type.html#genomepy.genome.sequences.get_track_type" title="genomepy.genome.sequences.get_track_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_track_type</span></code></a>(track)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.genome.sequences.get_track_type.html#genomepy.genome.sequences.get_track_type" title="genomepy.genome.sequences.get_track_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_track_type</span></code></a>(track)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.genome.sequences.region_to_seq.html#genomepy.genome.sequences.region_to_seq" title="genomepy.genome.sequences.region_to_seq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">region_to_seq</span></code></a>(self, region[, extend_up, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.genome.sequences.region_to_seq.html#genomepy.genome.sequences.region_to_seq" title="genomepy.genome.sequences.region_to_seq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">region_to_seq</span></code></a>(self, region[, extend_up, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="genomepy.genome.sequences.regions_to_seqs.html#genomepy.genome.sequences.regions_to_seqs" title="genomepy.genome.sequences.regions_to_seqs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regions_to_seqs</span></code></a>(self, track[, extend_up, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.genome.sequences.regions_to_seqs.html#genomepy.genome.sequences.regions_to_seqs" title="genomepy.genome.sequences.regions_to_seqs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regions_to_seqs</span></code></a>(self, track[, extend_up, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.genome.sequences.track2fasta.html#genomepy.genome.sequences.track2fasta" title="genomepy.genome.sequences.track2fasta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">track2fasta</span></code></a>(self, track[, fastafile, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.genome.sequences.track2fasta.html#genomepy.genome.sequences.track2fasta" title="genomepy.genome.sequences.track2fasta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">track2fasta</span></code></a>(self, track[, fastafile, ...])</p></td>
 <td><p>Return a list of fasta sequences as Sequence objects as directed from the track(s).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="genomepy.genome.sequences.weighted_selection.html#genomepy.genome.sequences.weighted_selection" title="genomepy.genome.sequences.weighted_selection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weighted_selection</span></code></a>(list_of_tuples, n)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.genome.sequences.weighted_selection.html#genomepy.genome.sequences.weighted_selection" title="genomepy.genome.sequences.weighted_selection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weighted_selection</span></code></a>(list_of_tuples, n)</p></td>
 <td><p>Selects n random elements from a list of (weight, item) tuples.</p></td>
 </tr>
 </tbody>
 </table>
-</div>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="genomepy.genome.sequences.bed_to_seq.html" class="btn btn-neutral float-right" title="genomepy.genome.sequences.bed_to_seq" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="genomepy.genome.Genome.html" class="btn btn-neutral float-left" title="genomepy.genome.Genome" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="genomepy.genome.sequences.bad_coords.html" class="btn btn-neutral float-right" title="genomepy.genome.sequences.bad_coords" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">
-        Last updated on 2021-07-30, 12:48 (UTC).
-      </span>
-
-    </p>
+    <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
+      <span class="lastupdated">Last updated on 2021-11-18, 10:10 (UTC).
+      </span></p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

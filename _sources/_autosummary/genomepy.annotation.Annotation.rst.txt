@@ -20,6 +20,7 @@ genomepy.annotation.Annotation
       ~Annotation.filter_regex
       ~Annotation.gene_coords
       ~Annotation.genes
+      ~Annotation.gtf_dict
       ~Annotation.map_genes
       ~Annotation.map_locations
       ~Annotation.sanitize
@@ -37,5 +38,14 @@ genomepy.annotation.Annotation
       ~Annotation.genome_contigs
       ~Annotation.gtf
       ~Annotation.named_gtf
+      ~Annotation.name
+      ~Annotation.genome_dir
+      ~Annotation.annotation_bed_file
+      ~Annotation.annotation_gtf_file
+      ~Annotation.genome_file
+      ~Annotation.readme_file
+      ~Annotation.index_file
+      ~Annotation.sizes_file
+      ~Annotation.tax_id
    
    

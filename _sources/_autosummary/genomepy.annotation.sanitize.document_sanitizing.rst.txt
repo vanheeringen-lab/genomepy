@@ -1,6 +1,0 @@
-genomepy.annotation.sanitize.document\_sanitizing
-=================================================
-
-.. currentmodule:: genomepy.annotation.sanitize
-
-.. autofunction:: document_sanitizing

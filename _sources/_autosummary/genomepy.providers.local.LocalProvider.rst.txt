@@ -1,0 +1,47 @@
+genomepy.providers.local.LocalProvider
+======================================
+
+.. currentmodule:: genomepy.providers.local
+
+.. autoclass:: LocalProvider
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~LocalProvider.__init__
+      ~LocalProvider.annotation_links
+      ~LocalProvider.assembly_accession
+      ~LocalProvider.download_annotation
+      ~LocalProvider.download_genome
+      ~LocalProvider.genome_taxid
+      ~LocalProvider.get_annotation_download_link
+      ~LocalProvider.get_annotation_download_links
+      ~LocalProvider.get_genome_download_link
+      ~LocalProvider.head_annotation
+      ~LocalProvider.list_available_genomes
+      ~LocalProvider.ping
+      ~LocalProvider.search
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~LocalProvider.accession_fields
+      ~LocalProvider.description_fields
+      ~LocalProvider.genomes
+      ~LocalProvider.name
+      ~LocalProvider.taxid_fields
+   
+   

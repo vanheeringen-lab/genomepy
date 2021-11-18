@@ -4,12 +4,16 @@
 
 1. Make sure all tests pass.
 
-    `pytest -vv --disable-pytest-warnings`
+   ```shell
+   pytest -vv --disable-pytest-warnings
+   ```
 
 2. Create release candidate with `git flow`:
 
-    ```
+    ```shell
     new_version=0.0.0
+    echo ${new_version}
+    
     git flow release start ${new_version}
     ```
 
@@ -40,25 +44,33 @@
     genomepy install --help
     genomepy clean
     genomepy search xenopus_tropicalis
+    genomepy annotation hg38
+    genomepy annotation GRCh38.p13
+    genomepy install -af -p gencode GRCm39
     genomepy install -af -p ensembl TAIR10
-    genomepy install -af -p ucsc sacCer3
+    genomepy install -af -p ucsc sacCer3 --UCSC-annotation ensGene
     genomepy install -af -p ncbi ASM2732v1
-    genomepy install -af -p url  -l url_test  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.fna.gz --URL-to-annotation https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz
+    genomepy install -af -p url -l url_test https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.fna.gz --URL-to-annotation https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz
+    genomepy install -af -p local -l local_test ~/.local/share/genomes/TAIR10/TAIR10.fa --Local-path-to-annotation ~/.local/share/genomes/TAIR10/TAIR10.annotation.gtf
     ```
 
 6. Finish the release:
 
-    `git flow release finish ${new_version}`
+    ```shell
+    git flow release finish ${new_version}
+   ```
 
 7. Push everything to github, including tags:
 
-    `git push --follow-tags origin develop`
+   ```shell
+   git push --follow-tags origin develop
+   ```
 
 8. Pull into master
   
 9. Upload to pypi:
 
-    ```
+    ```shell
     python setup.py sdist bdist_wheel
     twine upload dist/genomepy-${new_version}*
     ```

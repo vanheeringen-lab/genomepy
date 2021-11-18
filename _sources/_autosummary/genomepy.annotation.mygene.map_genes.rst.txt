@@ -1,6 +1,0 @@
-genomepy.annotation.mygene.map\_genes
-=====================================
-
-.. currentmodule:: genomepy.annotation.mygene
-
-.. autofunction:: map_genes

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>genomepy.providers.gencode.GencodeProvider &mdash; genomepy  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="genomepy.providers.local" href="genomepy.providers.local.html" />
+    <link rel="prev" title="genomepy.providers.gencode.get_releases" href="genomepy.providers.gencode.get_releases.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> genomepy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../content/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../content/command_line.html">Command line documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../content/api_core.html">Python API documentation (core)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="genomepy.html">Python API documentation (full)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="genomepy.annotation.html">genomepy.annotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.argparse_support.html">genomepy.argparse_support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.caching.html">genomepy.caching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.cli.html">genomepy.cli</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.config.html">genomepy.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.exceptions.html">genomepy.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.files.html">genomepy.files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.functions.html">genomepy.functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.genome.html">genomepy.genome</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.online.html">genomepy.online</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.plugins.html">genomepy.plugins</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="genomepy.providers.html">genomepy.providers</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.create.html">genomepy.providers.create</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.download_assembly_report.html">genomepy.providers.download_assembly_report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.list_online_providers.html">genomepy.providers.list_online_providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.list_providers.html">genomepy.providers.list_providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.map_locations.html">genomepy.providers.map_locations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.nearest_assembly.html">genomepy.providers.nearest_assembly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.online_providers.html">genomepy.providers.online_providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.search.html">genomepy.providers.search</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.Provider.html">genomepy.providers.Provider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.base.html">genomepy.providers.base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.ensembl.html">genomepy.providers.ensembl</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="genomepy.providers.gencode.html">genomepy.providers.gencode</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="genomepy.providers.gencode.add_grch37.html">genomepy.providers.gencode.add_grch37</a></li>
+<li class="toctree-l4"><a class="reference internal" href="genomepy.providers.gencode.exact_assembly_report.html">genomepy.providers.gencode.exact_assembly_report</a></li>
+<li class="toctree-l4"><a class="reference internal" href="genomepy.providers.gencode.get_gencode2ucsc.html">genomepy.providers.gencode.get_gencode2ucsc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="genomepy.providers.gencode.get_genomes.html">genomepy.providers.gencode.get_genomes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="genomepy.providers.gencode.get_releases.html">genomepy.providers.gencode.get_releases</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">genomepy.providers.gencode.GencodeProvider</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.local.html">genomepy.providers.local</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.ncbi.html">genomepy.providers.ncbi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.ucsc.html">genomepy.providers.ucsc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.url.html">genomepy.providers.url</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.seq.html">genomepy.seq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.utils.html">genomepy.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../content/help_faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../content/about.html">About</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">genomepy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="genomepy.html">genomepy</a> &raquo;</li>
+          <li><a href="genomepy.providers.html">genomepy.providers</a> &raquo;</li>
+          <li><a href="genomepy.providers.gencode.html">genomepy.providers.gencode</a> &raquo;</li>
+      <li>genomepy.providers.gencode.GencodeProvider</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/vanheeringen-lab/genomepy/blob/develop/docs/_autosummary/genomepy.providers.gencode.GencodeProvider.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="genomepy-providers-gencode-gencodeprovider">
+<h1>genomepy.providers.gencode.GencodeProvider<a class="headerlink" href="#genomepy-providers-gencode-gencodeprovider" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genomepy.providers.gencode.</span></span><span class="sig-name descname"><span class="pre">GencodeProvider</span></span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="genomepy.providers.base.BaseProvider.html#genomepy.providers.base.BaseProvider" title="genomepy.providers.base.BaseProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">genomepy.providers.base.BaseProvider</span></code></a></p>
+<p>GENCODE genome provider.</p>
+<p>GENCODE sports superb annotations for human and mouse with UCSC-style chromosome names.
+Genomes on this provider are unmasked, so we use the UCSC genomes instead.</p>
+<p>Note: this combination lacks scaffolds and alternate haplotype sequences
+(their names don’t match between GENCODE and UCSC).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.__init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.__init__" title="genomepy.providers.gencode.GencodeProvider.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.annotation_links" title="genomepy.providers.gencode.GencodeProvider.annotation_links"><code class="xref py py-obj docutils literal notranslate"><span class="pre">annotation_links</span></code></a>(name, **kwargs)</p></td>
+<td><p>Return available gene annotation links (http/ftp) for a genome</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.assembly_accession" title="genomepy.providers.gencode.GencodeProvider.assembly_accession"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assembly_accession</span></code></a>(name)</p></td>
+<td><p>Return the assembly accession number (GCA* or GCF*) for a genome.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.download_annotation" title="genomepy.providers.gencode.GencodeProvider.download_annotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_annotation</span></code></a>(name[, genomes_dir, ...])</p></td>
+<td><p>Download annotation file to to a specific directory</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.download_genome" title="genomepy.providers.gencode.GencodeProvider.download_genome"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_genome</span></code></a>(name[, genomes_dir, ...])</p></td>
+<td><p>Download genomes from UCSC, as the GENCODE genomes aren't masked.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.genome_taxid" title="genomepy.providers.gencode.GencodeProvider.genome_taxid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">genome_taxid</span></code></a>(name)</p></td>
+<td><p>Return the genome taxonomy ID for a genome.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.get_annotation_download_link" title="genomepy.providers.gencode.GencodeProvider.get_annotation_download_link"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_annotation_download_link</span></code></a>(name, **kwargs)</p></td>
+<td><p>Return a functional annotation download link.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.get_annotation_download_links" title="genomepy.providers.gencode.GencodeProvider.get_annotation_download_links"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_annotation_download_links</span></code></a>(name, **kwargs)</p></td>
+<td><p>Retrieve functioning gene annotation download link(s).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.get_genome_download_link" title="genomepy.providers.gencode.GencodeProvider.get_genome_download_link"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_genome_download_link</span></code></a>(name[, mask])</p></td>
+<td><p>Return UCSC http link to genome sequence</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.head_annotation" title="genomepy.providers.gencode.GencodeProvider.head_annotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">head_annotation</span></code></a>(name[, genomes_dir, n])</p></td>
+<td><p>Download the first n lines of the annotation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.list_available_genomes" title="genomepy.providers.gencode.GencodeProvider.list_available_genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_available_genomes</span></code></a>()</p></td>
+<td><p>List all available genomes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.ping" title="genomepy.providers.gencode.GencodeProvider.ping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ping</span></code></a>()</p></td>
+<td><p>Can the provider be reached?</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.search" title="genomepy.providers.gencode.GencodeProvider.search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></a>(term)</p></td>
+<td><p>Search for term in genome names, descriptions and taxonomy ID.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">accession_fields</span></code></p></td>
+<td><p>Metadata fields that (can) contain the assembly's accession ID.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">description_fields</span></code></p></td>
+<td><p>Metadata fields with assembly related info.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">genomes</span></code></p></td>
+<td><p>Dictionary with assembly names as key and assembly metadata dictionary as value.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></p></td>
+<td><p>Name of this provider.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">taxid_fields</span></code></p></td>
+<td><p>Metadata fields that (can) contain the assembly's taxonomy ID.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.annotation_links">
+<span class="sig-name descname"><span class="pre">annotation_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.annotation_links" title="Permalink to this definition"></a></dt>
+<dd><p>Return available gene annotation links (http/ftp) for a genome</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – genome name</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Gene annotation links</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.assembly_accession">
+<span class="sig-name descname"><span class="pre">assembly_accession</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.assembly_accession" title="Permalink to this definition"></a></dt>
+<dd><p>Return the assembly accession number (GCA* or GCF*) for a genome.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – genome name</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Assembly accession number</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.download_annotation">
+<span class="sig-name descname"><span class="pre">download_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genomes_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">localname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.download_annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Download annotation file to to a specific directory</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Genome / species name</p></li>
+<li><p><strong>genomes_dir</strong> (<em>str</em><em> , </em><em>optional</em>) – Directory to install annotation</p></li>
+<li><p><strong>localname</strong> (<em>str</em><em> , </em><em>optional</em>) – Custom name for your genome</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.download_genome">
+<span class="sig-name descname"><span class="pre">download_genome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genomes_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">localname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'soft'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.download_genome" title="Permalink to this definition"></a></dt>
+<dd><p>Download genomes from UCSC, as the GENCODE genomes aren’t masked.
+Contigs between the UCSC genome and GENCODE annotations match.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.genome_taxid">
+<span class="sig-name descname"><span class="pre">genome_taxid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.genome_taxid" title="Permalink to this definition"></a></dt>
+<dd><p>Return the genome taxonomy ID for a genome.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – genome name</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Genome Taxonomy identifier</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.get_annotation_download_link">
+<span class="sig-name descname"><span class="pre">get_annotation_download_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.get_annotation_download_link" title="Permalink to this definition"></a></dt>
+<dd><p>Return a functional annotation download link.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – genome name</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>http/ftp link</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="genomepy.exceptions.GenomeDownloadError.html#genomepy.exceptions.GenomeDownloadError" title="genomepy.exceptions.GenomeDownloadError"><strong>GenomeDownloadError</strong></a> – if no functional link was found</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.get_annotation_download_links">
+<span class="sig-name descname"><span class="pre">get_annotation_download_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.get_annotation_download_links" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve functioning gene annotation download link(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – genome name</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>http/ftp link(s)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.get_genome_download_link">
+<span class="sig-name descname"><span class="pre">get_genome_download_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'soft'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.get_genome_download_link" title="Permalink to this definition"></a></dt>
+<dd><p>Return UCSC http link to genome sequence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Genome name.</p></li>
+<li><p><strong>mask</strong> (<em>str</em><em> , </em><em>optional</em>) – Masking level. Options: soft, hard or none. Default is soft.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>http/ftp link tp genome.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.head_annotation">
+<span class="sig-name descname"><span class="pre">head_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genomes_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.head_annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Download the first n lines of the annotation.</p>
+<p>The first line of the GTF is printed for review
+(of the gene_name field, for instance).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – genome name</p></li>
+<li><p><strong>genomes_dir</strong> (<em>str</em><em>, </em><em>optional</em>) – genomes directory to install the annotation in.</p></li>
+<li><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – download the annotation for n genes.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.list_available_genomes">
+<span class="sig-name descname"><span class="pre">list_available_genomes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.list_available_genomes" title="Permalink to this definition"></a></dt>
+<dd><p>List all available genomes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields</dt>
+<dd class="field-odd"><p><strong>genomes</strong> (<em>list of tuples</em>) – tuples with assembly name, accession, scientific_name, taxonomy id and description</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.ping">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ping</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.ping" title="Permalink to this definition"></a></dt>
+<dd><p>Can the provider be reached?</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.search">
+<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.search" title="Permalink to this definition"></a></dt>
+<dd><p>Search for term in genome names, descriptions and taxonomy ID.</p>
+<p>The search is case-insensitive.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>term</strong> (<em>str</em><em>, </em><em>int</em>) – Search term, case-insensitive.
+Can be (part of) an assembly name (e.g. hg38),
+scientific name (Danio rerio) or assembly
+accession (<cite>GCA_000146045</cite>/<cite>GCF_</cite>),
+or an exact taxonomy id (7227).</p>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><p><em>tuples with name and metadata</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="genomepy.providers.gencode.get_releases.html" class="btn btn-neutral float-left" title="genomepy.providers.gencode.get_releases" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="genomepy.providers.local.html" class="btn btn-neutral float-right" title="genomepy.providers.local" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
+      <span class="lastupdated">Last updated on 2021-11-18, 10:10 (UTC).
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

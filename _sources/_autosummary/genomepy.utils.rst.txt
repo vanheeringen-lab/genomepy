@@ -14,9 +14,12 @@ genomepy.utils
    .. autosummary::
       :toctree:
    
+      cleanpath
       cmd_ok
+      get_genomename
       get_genomes_dir
       get_localname
+      get_remotename
       lower
       mkdir_p
       rm_rf

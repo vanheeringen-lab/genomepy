@@ -24,6 +24,7 @@ genomepy.files
       get_file_info
       glob_ext_files
       gzip_and_name
+      parse_file
       read_readme
       update_readme
       write_readme

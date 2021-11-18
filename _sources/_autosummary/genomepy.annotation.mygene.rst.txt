@@ -9,15 +9,6 @@ genomepy.annotation.mygene
 
    
    
-   .. rubric:: Functions
-
-   .. autosummary::
-      :toctree:
-   
-      ensembl_genome_info
-      map_genes
-      parse_mygene_input
-   
    
 
    

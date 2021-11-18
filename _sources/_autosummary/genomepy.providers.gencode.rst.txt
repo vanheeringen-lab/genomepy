@@ -1,0 +1,42 @@
+genomepy.providers.gencode
+==========================
+
+.. automodule:: genomepy.providers.gencode
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      add_grch37
+      exact_assembly_report
+      get_gencode2ucsc
+      get_genomes
+      get_releases
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      GencodeProvider
+   
+   
+
+   
+   
+   
+
+
+

@@ -16,6 +16,7 @@ genomepy.providers.base
    
       download_annotation
       download_head
+      rename_contigs
    
    
 

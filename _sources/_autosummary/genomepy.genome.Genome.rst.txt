@@ -37,8 +37,8 @@ genomepy.genome.Genome
       ~Genome.gaps
       ~Genome.plugin
       ~Genome.sizes
-      ~Genome.genomes_dir
       ~Genome.name
+      ~Genome.genomes_dir
       ~Genome.genome_file
       ~Genome.genome_dir
       ~Genome.index_file
@@ -47,5 +47,7 @@ genomepy.genome.Genome
       ~Genome.annotation_gtf_file
       ~Genome.annotation_bed_file
       ~Genome.readme_file
+      ~Genome.tax_id
+      ~Genome.assembly_accession
    
    

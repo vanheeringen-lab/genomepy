@@ -1,0 +1,6 @@
+genomepy.providers.ensembl.add\_grch37
+======================================
+
+.. currentmodule:: genomepy.providers.ensembl
+
+.. autofunction:: add_grch37

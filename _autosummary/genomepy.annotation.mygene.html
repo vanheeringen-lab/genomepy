@@ -1,73 +1,34 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>genomepy.annotation.mygene &mdash; genomepy  documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="genomepy.annotation.mygene.ensembl_genome_info" href="genomepy.annotation.mygene.ensembl_genome_info.html" />
+    <link rel="next" title="genomepy.annotation.sanitize" href="genomepy.annotation.sanitize.html" />
     <link rel="prev" title="genomepy.annotation.Annotation" href="genomepy.annotation.Annotation.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../index.html" class="icon icon-home"> genomepy
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -75,18 +36,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../content/installation.html">Installation</a></li>
@@ -96,12 +46,7 @@
 <li class="toctree-l2 current"><a class="reference internal" href="genomepy.annotation.html">genomepy.annotation</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="genomepy.annotation.filter_regex.html">genomepy.annotation.filter_regex</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.annotation.Annotation.html">genomepy.annotation.Annotation</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">genomepy.annotation.mygene</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="genomepy.annotation.mygene.ensembl_genome_info.html">genomepy.annotation.mygene.ensembl_genome_info</a></li>
-<li class="toctree-l4"><a class="reference internal" href="genomepy.annotation.mygene.map_genes.html">genomepy.annotation.mygene.map_genes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="genomepy.annotation.mygene.parse_mygene_input.html">genomepy.annotation.mygene.parse_mygene_input</a></li>
-</ul>
-</li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">genomepy.annotation.mygene</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.annotation.sanitize.html">genomepy.annotation.sanitize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.annotation.utils.html">genomepy.annotation.utils</a></li>
 </ul>
@@ -125,149 +70,68 @@
 <li class="toctree-l1"><a class="reference internal" href="../content/about.html">About</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">genomepy</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
           <li><a href="genomepy.html">genomepy</a> &raquo;</li>
-        
           <li><a href="genomepy.annotation.html">genomepy.annotation</a> &raquo;</li>
-        
       <li>genomepy.annotation.mygene</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
-            
               <a href="https://github.com/vanheeringen-lab/genomepy/blob/develop/docs/_autosummary/genomepy.annotation.mygene.rst" class="fa fa-github"> Edit on GitHub</a>
-            
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="module-genomepy.annotation.mygene">
-<span id="genomepy-annotation-mygene"></span><h1>genomepy.annotation.mygene<a class="headerlink" href="#module-genomepy.annotation.mygene" title="Permalink to this headline">¶</a></h1>
-<p>Mygene.info functions</p>
-<p class="rubric">Functions</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.annotation.mygene.ensembl_genome_info.html#genomepy.annotation.mygene.ensembl_genome_info" title="genomepy.annotation.mygene.ensembl_genome_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensembl_genome_info</span></code></a>(self)</p></td>
-<td><p>Return Ensembl genome information for this genome.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="genomepy.annotation.mygene.map_genes.html#genomepy.annotation.mygene.map_genes" title="genomepy.annotation.mygene.map_genes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_genes</span></code></a>(self, gene_field[, product, annot])</p></td>
-<td><p>Use mygene.info to map gene identifiers to any specified <cite>gene_field</cite>.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.annotation.mygene.parse_mygene_input.html#genomepy.annotation.mygene.parse_mygene_input" title="genomepy.annotation.mygene.parse_mygene_input"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_mygene_input</span></code></a>(gene_field[, product])</p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
-</div>
+             
+  <section id="module-genomepy.annotation.mygene">
+<span id="genomepy-annotation-mygene"></span><h1>genomepy.annotation.mygene<a class="headerlink" href="#module-genomepy.annotation.mygene" title="Permalink to this headline"></a></h1>
+<p>Mygene.info functions and methods</p>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="genomepy.annotation.mygene.ensembl_genome_info.html" class="btn btn-neutral float-right" title="genomepy.annotation.mygene.ensembl_genome_info" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="genomepy.annotation.Annotation.html" class="btn btn-neutral float-left" title="genomepy.annotation.Annotation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="genomepy.annotation.sanitize.html" class="btn btn-neutral float-right" title="genomepy.annotation.sanitize" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">
-        Last updated on 2021-07-30, 12:48 (UTC).
-      </span>
-
-    </p>
+    <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
+      <span class="lastupdated">Last updated on 2021-11-18, 10:10 (UTC).
+      </span></p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

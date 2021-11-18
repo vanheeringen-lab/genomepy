@@ -9,18 +9,6 @@ genomepy.annotation.sanitize
 
    
    
-   .. rubric:: Functions
-
-   .. autosummary::
-      :toctree:
-   
-      contig_conversion_dict
-      document_sanitizing
-      filter_contigs
-      full_genome_headers
-      match_contigs
-      sanitize
-   
    
 
    
