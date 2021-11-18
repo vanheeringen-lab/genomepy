@@ -5,7 +5,7 @@ from appdirs import user_config_dir
 
 import genomepy
 import genomepy.utils
-from tests import travis
+from tests import linux, travis
 
 
 def test_head_annotations(caplog, capsys):
@@ -13,7 +13,7 @@ def test_head_annotations(caplog, capsys):
     captured = capsys.readouterr().out.strip()
 
     assert "NCBI" in caplog.text
-    assert 'gene_name "gene-Eint_010010";' in captured
+    assert 'gene_name "Eint_010010";' in captured
 
 
 def test_list_available_genomes():
@@ -48,15 +48,17 @@ def test__lazy_provider_selection():
     p = genomepy.functions._lazy_provider_selection(name, provider)
     assert "ncbi" in str(p)
 
-    # find the first provider (Ensembl)
-    provider = None
-    p = genomepy.functions._lazy_provider_selection(name, provider)
-    assert "ensembl" in str(p)
+    # GENCODE's FTP does not work on Travis-Linux
+    if not (travis and linux):
+        # find the first provider (Ensembl)
+        provider = None
+        p = genomepy.functions._lazy_provider_selection(name, provider)
+        assert "ensembl" in str(p)
 
-    # cant find genome anywhere
-    name = "not_a_genome"
-    with pytest.raises(genomepy.exceptions.GenomeDownloadError):
-        genomepy.functions._lazy_provider_selection(name, provider)
+        # cant find genome anywhere
+        name = "not_a_genome"
+        with pytest.raises(genomepy.exceptions.GenomeDownloadError):
+            genomepy.functions._lazy_provider_selection(name, provider)
 
 
 def test__provider_selection():
@@ -115,15 +117,14 @@ def test__get_fasta_regex_func():
     assert func("something_else") is True
 
 
-@pytest.mark.skipif(not travis, reason="slow")
 def test_install_genome():
     localname = "my_genome"
     genomepy.functions.install_genome(
-        name="dm3",
-        provider="UCSC",
+        name="tests/data/sacCer3/sacCer3.fa",
+        provider="Local",
         genomes_dir=None,
         localname=localname,
-        regex="R",
+        regex="chrIV",
         annotation=True,
         force=True,
     )
@@ -142,12 +143,10 @@ def test_install_genome():
 
     # regex test:
     sizes = genomepy.Genome(localname).sizes.keys()
-    assert "chr2R" in sizes
-    assert "chr2L" not in sizes
+    assert "chrIV" in sizes
 
 
 # already used, but we had to install a genome first to test it
-@pytest.mark.skipif(not travis, reason="a genome must be installed")
 def test_generate_exports():
     exports = genomepy.functions._generate_exports()
     assert isinstance(exports, list)
@@ -175,7 +174,6 @@ def test_generate_exports():
 
 
 # already used, but we had to install a genome first to test it
-@pytest.mark.skipif(not travis, reason="a genome must be installed")
 def test_generate_env():
     config_dir = str(user_config_dir("genomepy"))
     path = os.path.join(config_dir, "exports.txt")

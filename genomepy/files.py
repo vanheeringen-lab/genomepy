@@ -13,7 +13,18 @@ from zipfile import ZipFile
 
 from tqdm.auto import tqdm
 
-from genomepy.utils import rm_rf
+from genomepy.utils import cleanpath, rm_rf
+
+
+def parse_file(fpath, skip: Union[tuple, str] = "#"):
+    """basic file parsing"""
+    fpath = cleanpath(fpath)
+    with open(fpath) as lines:
+        for line in lines:
+            line = line.strip()
+            if line.startswith(skip):
+                continue
+            yield line
 
 
 def read_readme(readme: str) -> Tuple[dict, list]:

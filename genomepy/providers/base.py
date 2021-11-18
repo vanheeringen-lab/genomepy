@@ -8,13 +8,28 @@ from tempfile import TemporaryDirectory, mkdtemp
 from typing import Iterator, List, Union
 from urllib.request import urlopen
 
+import pandas as pd
 from loguru import logger
 
 from genomepy.__about__ import __version__
+from genomepy.annotation.utils import read_annot, write_annot
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import extract_archive, get_file_info, update_readme
 from genomepy.online import download_file
 from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf, safe
+
+ASM_FORMAT = [
+    "Sequence-Name",
+    "Sequence-Role",
+    "Assigned-Molecule",
+    "Assigned-Molecule-Location/Type",
+    "GenBank-Accn",
+    "Relationship",
+    "RefSeq-Accn",
+    "Assembly-Unit",
+    "Sequence-Length",
+    "UCSC-style-name",
+]
 
 
 class BaseProvider:
@@ -24,14 +39,17 @@ class BaseProvider:
 
     # class variables set by child classes:
     name = None
+    "Name of this provider."
     genomes = {}
+    "Dictionary with assembly names as key and assembly metadata dictionary as value."
     accession_fields = []
+    "Metadata fields that (can) contain the assembly's accession ID."
     taxid_fields = []
+    "Metadata fields that (can) contain the assembly's taxonomy ID."
     description_fields = []
+    "Metadata fields with assembly related info."
     _cli_install_options = {}
     _url = None
-
-    # TODO: attributes to this and other classes
 
     def __hash__(self):
         return hash(str(self.__class__))
@@ -112,7 +130,7 @@ class BaseProvider:
             if accession.startswith(("GCA", "GCF")):
                 return accession
 
-    def annotation_links(self, name: str) -> List[str]:
+    def annotation_links(self, name: str, **kwargs) -> List[str]:
         """
         Return available gene annotation links (http/ftp) for a genome
 
@@ -127,7 +145,7 @@ class BaseProvider:
             Gene annotation links
         """
         if "annotations" not in self.genomes[safe(name)]:
-            links = self.get_annotation_download_links(name)
+            links = self.get_annotation_download_links(name, **kwargs)
             self.genomes[safe(name)]["annotations"] = links
         return self.genomes[safe(name)]["annotations"]
 
@@ -171,11 +189,12 @@ class BaseProvider:
 
         # download to tmp dir. Move genome on completion.
         # tmp dir is in genome_dir to prevent moving the genome between disks
+        get_file = shutil.copyfile if os.path.exists(link) else download_file
         with TemporaryDirectory(dir=out_dir) as tmp_dir:
             tmp_fname = os.path.join(tmp_dir, link.split("/")[-1])
             fname = os.path.join(tmp_dir, f"{localname}.fa")
 
-            download_file(link, tmp_fname)
+            get_file(link, tmp_fname)
             logger.info("Genome download successful, starting post processing...")
 
             # unzip genome
@@ -255,7 +274,7 @@ class BaseProvider:
         GenomeDownloadError
             if no functional link was found
         """
-        links = self.annotation_links(name)
+        links = self.annotation_links(name, **kwargs)
         if links:
             return links[0]
         raise GenomeDownloadError(
@@ -291,7 +310,7 @@ class BaseProvider:
             logger.info("Annotation download successful")
         except Exception as e:
             raise GenomeDownloadError(
-                f"An error occured while installing the gene annotation for {name} from {self.name}.\n"
+                f"An error occurred while installing the gene annotation for {name} from {self.name}.\n"
                 "If you think the annotation should be there, please file a bug report at: "
                 "https://github.com/vanheeringen-lab/genomepy/issues\n\n"
                 f"Error: {e.args[0]}"
@@ -404,8 +423,9 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
 
     annot_file = os.path.join(tmp_dir, localname + ".annotation" + ext)
     tmp_annot_file = os.path.join(tmp_dir, annot_url.split("/")[-1])
+    get_file = shutil.copyfile if os.path.exists(annot_url) else download_file
     if n is None:
-        download_file(annot_url, tmp_annot_file)
+        get_file(annot_url, tmp_annot_file)
     else:
         download_head(annot_url, tmp_annot_file, n)
         is_compressed = False
@@ -421,9 +441,10 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
     if "bed" in ext:
         cmd = "bedToGenePred {0} {1}"
     elif "gff" in ext:
-        cmd = "gff3ToGenePred -geneNameAttr=gene {0} {1}"
+        # example annotation: GRCh38.p12 from NCBI
+        cmd = "gff3ToGenePred -useName -warnAndContinue {0} {1}"
     elif "gtf" in ext:
-        cmd = "gtfToGenePred -ignoreGroupsWithoutExons {0} {1}"
+        cmd = "gtfToGenePred -genePredExt -allErrors -ignoreGroupsWithoutExons {0} {1}"
     elif "txt" in ext:
         # UCSC annotations only
         with open(annot_file) as f:
@@ -443,6 +464,9 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
         )
     else:
         raise TypeError(f"file type extension {ext} not recognized!")
+
+    if n is None and "gencode" in annot_url:
+        rename_contigs(annot_file)
 
     sp.check_call(cmd.format(annot_file, pred_file), shell=True)
 
@@ -493,3 +517,22 @@ def download_head(annot_url, annot_file, n: int = 5):
             # add a few extra lines to the intermediate file
             if m == n + 2:
                 break
+
+
+def rename_contigs(annot_file):
+    genome_dir = os.path.dirname(os.path.dirname(annot_file))
+    asm_report = os.path.join(genome_dir, "assembly_report.txt")
+    gencode2ucsc = pd.read_csv(
+        asm_report, sep="\t", comment="#", usecols=["GenBank-Accn", "UCSC-style-name"]
+    )
+    gtf = read_annot(annot_file)
+
+    # use the UCSC names for the scaffolds
+    newgtf = gtf.merge(
+        gencode2ucsc, left_on="seqname", right_on="GenBank-Accn", how="left"
+    )
+    newgtf["seqname"] = newgtf["UCSC-style-name"].mask(pd.isnull, newgtf["seqname"])
+    newgtf.drop(columns=["GenBank-Accn", "UCSC-style-name"], inplace=True)
+
+    # overwrite the raw GTF
+    write_annot(newgtf, annot_file)

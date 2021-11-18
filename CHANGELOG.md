@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.11.0] - 2021-11-18
+
+### Added
+- extened docstrings
+- GENCODE support (GENCODE gene annotations with UCSC genomes)
+  - only contains the main chromosomes, no scaffolds or alternate haplotypes.
+  - only contains 4 assemblies (2 mouse, 2 human)
+  - excellent annotations for these regions & species though!
+- Ensembl's GRCh37 can now be downloaded through genomepy
+- Local fasta/gtf/gff(3)/bed file support
+  - you can install a local genome and/or annotation by providing local path(s) to `genomepy install`
+    - if annotation downloading is requested, but not annotation path is provided,
+    a gtf/gff(3) annotation will be sought in the genome's source directory.
+- `Annotation.gtf_dict` creates a dictionary for any key-value pair in the GTF columns or attribute fields!
+  - e.g. `Annotation.gtf_dict("seqname", "gene_name")`
+
+### Changed
+- Genome.track2fasta can now ignore comment lines (starting with `#`)
+- Genome.track2fasta will skip header lines (a warning will be printed)
+- Genome.track2fasta will ignore regions that cannot be parsed (a warning will be printed)
+  - these fixes should improve `gimme scan` performance and feedback
+- UCSC annotation conversion tool settings tweaked. Better results with source gff files.
+- Ensembl now uses HTTP instead of FTP (in some cases). This improves stability on some servers.
+- tweaked search result alignment for clarity
+- explained UCSC annotations in the README
+- better file path handling (relative paths, user home and variables are expanded)
+- `Annotation` now accepts a file/directory/genomepy name as first argument.
+  - this merges 2 arguments into one.
+- `Annotation.map_genes` now works without a README file
+  - you can now set Annotation.tax_id manually.
+
+### Fixed
+- Ensembl annotations from previous releases can now be downloaded as intended.
+- Genome.track2fasta will skip regions that clearly dont make sense (start>end, and start<0)
+
 ## [0.10.0] - 2021-07-30
 
 ### Added
@@ -333,6 +368,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.11.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.10.0...0.11.0
 [0.10.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.3...0.10.0
 [0.9.3]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.2...0.9.3
 [0.9.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.1...0.9.2

@@ -23,6 +23,7 @@ from genomepy.online import check_url
 from genomepy.plugins import get_active_plugins
 from genomepy.providers import download_assembly_report, online_providers
 from genomepy.utils import (
+    cleanpath,
     get_genomes_dir,
     get_localname,
     mkdir_p,
@@ -293,7 +294,7 @@ def generate_env(fname: str = "exports.txt", genomes_dir: str = None):
     genomes_dir: str, optional
         Directory with installed genomes to export.
     """
-    fname1 = os.path.expanduser(fname)
+    fname1 = os.path.expanduser(os.path.expandvars(fname))
     fname2 = os.path.join(user_config_dir("genomepy"), fname)
     fname = fname1 if os.path.isabs(fname1) else fname2
     mkdir_p(os.path.dirname(fname))
@@ -324,9 +325,11 @@ def _lazy_provider_selection(name, provider=None):
     providers = []
     for p in online_providers(provider):
         providers.append(p.name)
-        if name in p.genomes or (
-            p.name == "URL" and try_except_pass(ValueError, check_url, name)
-        ):
+        if name in p.genomes:
+            return p
+        if p.name == "URL" and try_except_pass(ValueError, check_url, name):
+            return p
+        if p.name == "Local" and os.path.exists(cleanpath(name)):
             return p
 
     raise GenomeDownloadError(f"{name} not found on {', '.join(providers)}.")

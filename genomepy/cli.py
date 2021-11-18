@@ -304,15 +304,15 @@ def providers():
 
 # names and sizes for the search output columns (when connected to a terminal)
 SEARCH_FORMAT = {
-    "name": 20,
-    "provider": 8,  # fixed width
-    "accession": 16,  # fixed width
-    "tax_id": 7,  # fixed width
-    "annotation": 10,  # fixed width
-    "species": 40,
-    "other_info": 40,
+    "name": "<20",
+    "provider": "<8",  # fixed width
+    "accession": "<16",  # fixed width
+    "tax_id": ">7",  # fixed width
+    "annotation": "^10",  # fixed width
+    "species": "<40",
+    "other_info": "<40",
 }
-SEARCH_STRING = "    ".join([f"{{: <{size}}}" for size in SEARCH_FORMAT.values()])
+SEARCH_STRING = "    ".join([f"{{:{size}}}" for size in SEARCH_FORMAT.values()])
 if sys.stdout.isatty():
 
     def bool_to_unicode(boolean: bool) -> str:
@@ -346,7 +346,12 @@ if sys.stdout.isatty():
 
     def terminal_subheader():
         """Subheader for search output."""
-        print(SEARCH_STRING.format(*["", "", "", "", "n r e k", "", ""]))
+        # annotations: ncbiRefSeq, refGene, ensGene & knownGene
+        print(
+            SEARCH_STRING.format(
+                *["", "", "", "", "n r e k", "<- UCSC options (see help)", ""]
+            )
+        )
 
 
 else:

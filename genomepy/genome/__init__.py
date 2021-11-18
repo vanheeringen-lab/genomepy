@@ -9,7 +9,7 @@ from genomepy.files import glob_ext_files, read_readme
 from genomepy.genome.sequences import get_random_sequences as _get_random_sequences
 from genomepy.genome.sequences import track2fasta as _track2fasta
 from genomepy.plugins import get_active_plugins
-from genomepy.utils import get_genomes_dir, safe
+from genomepy.utils import cleanpath, get_genomes_dir, safe
 
 __all__ = ["Genome", "generate_fa_sizes", "generate_gap_bed"]
 
@@ -46,10 +46,10 @@ class Genome(Fasta):
     "contents of the gaps file: contigs and the number of Ns contained"
 
     def __init__(self, name, genomes_dir=None, *args, **kwargs):
+        self.name = safe(os.path.basename(re.sub(r"\.fa(\.gz)?$", "", name)))
+        "genome name"
         self.genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
         "path to the genomepy genomes directory"
-        self.name = os.path.basename(re.sub(".fa(.gz)?$", "", safe(name)))
-        "genome name"
         self.filename = self._parse_filename(name)
         super(Genome, self).__init__(self.filename, *args, **kwargs)
 
@@ -74,7 +74,9 @@ class Genome(Fasta):
         # genome attributes
         metadata, _ = read_readme(self.readme_file)
         self.tax_id = metadata["tax_id"]
+        "genome taxonomy identifier"
         self.assembly_accession = metadata["assembly_accession"]
+        "genome assembly accession"
 
     # lazy attributes
     def __getattribute__(self, name):
@@ -124,7 +126,7 @@ class Genome(Fasta):
 
         returns the abspath to the fasta file
         """
-        path_name = os.path.abspath(os.path.expanduser(name))
+        path_name = cleanpath(name)
         if os.path.isfile(path_name):
             return path_name
 
