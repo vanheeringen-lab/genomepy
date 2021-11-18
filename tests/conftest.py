@@ -82,7 +82,7 @@ def annot():
         f.write(
             """chrM\t15307\t16448\tNP_059343.1\t42\t+\t15307\t16448\t0\t1\t1141,\t0,"""
         )
-    yield genomepy.Annotation(genome="regexp", genomes_dir="tests/data")
+    yield genomepy.Annotation("regexp", genomes_dir="tests/data")
 
     teardown("tests/data/regexp/regexp.")
 

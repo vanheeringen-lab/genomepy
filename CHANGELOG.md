@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
   - you can install a local genome and/or annotation by providing local path(s) to `genomepy install`
     - if annotation downloading is requested, but not annotation path is provided,
     a gtf/gff(3) annotation will be sought in the genome's source directory.
+- `Annotation.gtf_dict` creates a dictionary for any key-value pair in the GTF columns or attribute fields!
+  - e.g. `Annotation.gtf_dict("seqname", "gene_name")`
 
 ### Changed
 - Genome.track2fasta can now ignore comment lines (starting with `#`)
@@ -28,6 +30,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - tweaked search result alignment for clarity
 - explained UCSC annotations in the README
 - better file path handling (relative paths, user home and variables are expanded)
+- `Annotation` now accepts a file/directory/genomepy name as first argument.
+  - this merges 2 arguments into one.
+- `Annotation.map_genes` now works without a README file
+  - you can now set Annotation.tax_id manually.
 
 ### Fixed
 - Ensembl annotations from previous releases can now be downloaded as intended.
