@@ -11,6 +11,8 @@ from loguru import logger
 import genomepy.providers
 from genomepy.providers.base import BaseProvider
 from genomepy.providers.ensembl import EnsemblProvider
+from genomepy.providers.gencode import GencodeProvider
+from genomepy.providers.local import LocalProvider
 from genomepy.providers.ncbi import NcbiProvider
 from genomepy.providers.ucsc import UcscProvider
 from genomepy.providers.url import UrlProvider
@@ -80,7 +82,7 @@ def annot():
         f.write(
             """chrM\t15307\t16448\tNP_059343.1\t42\t+\t15307\t16448\t0\t1\t1141,\t0,"""
         )
-    yield genomepy.Annotation(genome="regexp", genomes_dir="tests/data")
+    yield genomepy.Annotation("regexp", genomes_dir="tests/data")
 
     teardown("tests/data/regexp/regexp.")
 
@@ -116,8 +118,18 @@ def ucsc():
 
 
 @pytest.fixture(scope="package")
+def gencode():
+    return GencodeProvider()
+
+
+@pytest.fixture(scope="package")
 def ncbi():
     return NcbiProvider()
+
+
+@pytest.fixture(scope="package")
+def local():
+    return LocalProvider()
 
 
 @pytest.fixture(scope="package")

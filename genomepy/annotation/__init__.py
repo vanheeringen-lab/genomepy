@@ -8,12 +8,12 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
-from genomepy.annotation.mygene import map_genes as _map_genes
-from genomepy.annotation.mygene import query_mygene
-from genomepy.annotation.sanitize import sanitize as _sanitize
+from genomepy.annotation.mygene import _map_genes, query_mygene
+from genomepy.annotation.sanitize import _sanitize
 from genomepy.annotation.utils import _check_property, _parse_annot, read_annot
+from genomepy.files import read_readme
 from genomepy.providers import map_locations
-from genomepy.utils import get_genomes_dir
+from genomepy.utils import cleanpath, get_genomes_dir, safe
 
 __all__ = ["Annotation", "query_mygene", "filter_regex"]
 
@@ -24,11 +24,8 @@ class Annotation:
 
     Parameters
     ----------
-    genome : str
-        Genome name.
-    name : str, optional
-        Name of annotation file.
-        If name is not specified the default annotation for the genome is used.
+    name : str
+        Genome name/directory/fasta or gene annotation BED/GTF file.
     genomes_dir : str, optional
         Genomes installation directory.
 
@@ -55,37 +52,45 @@ class Annotation:
     annotation_contigs: list = None
     "Contigs found in the gene annotation BED"
 
-    def __init__(self, genome: str, name: str = None, genomes_dir: str = None):
-        self.genome = genome
-        self.genome_dir = os.path.join(get_genomes_dir(genomes_dir), genome)
-        if not os.path.exists(self.genome_dir):
-            raise ValueError(f"Genome {self.genome} not found!")
+    def __init__(self, name: str, genomes_dir: str = None):
+        # name and directory
+        n, g = _get_name_and_dir(name, genomes_dir)
+        self.name = n
+        "genome name"
+        self.genome_dir = g
+        "path to the genome directory"
 
-        # annotation file provided
-        if name:
-            suffixes = Path(name).suffixes[-2:]
-            if ".bed" in suffixes or ".BED" in suffixes:
-                self.annotation_bed_file = name
-            elif ".gtf" in suffixes or ".GTF" in suffixes:
-                self.annotation_gtf_file = name
-            else:
-                raise NotImplementedError(
-                    "Only (gzipped) bed and gtf files are supported at the moment!"
-                )
-        else:
-            # annotation files
-            self.annotation_gtf_file = _get_file(
-                self.genome_dir, f"{self.genome}.annotation.gtf"
-            )
-            self.annotation_bed_file = _get_file(
-                self.genome_dir, f"{self.genome}.annotation.bed"
-            )
+        # annotation files
+        fname = cleanpath(name)
+        suffixes = Path(fname).suffixes[-2:]
+        b = fname
+        if not (".bed" in suffixes or ".BED" in suffixes):
+            b = _get_file(self.genome_dir, f"{self.name}.annotation.bed")
+        self.annotation_bed_file = b
+        "path to the gene annotation BED file"
+        g = fname
+        if not (".gtf" in suffixes or ".GTF" in suffixes):
+            g = _get_file(self.genome_dir, f"{self.name}.annotation.gtf")
+        self.annotation_gtf_file = g
+        "path to the gene annotation GTF file"
 
         # genome files
+        g = fname
+        if ".fa" not in suffixes:
+            g = _get_file(self.genome_dir, f"{self.name}.fa", False)
+        self.genome_file = g
+        "path to the genome fasta"
         self.readme_file = _get_file(self.genome_dir, "README.txt", False)
-        self.genome_file = _get_file(self.genome_dir, f"{self.genome}.fa", False)
-        self.index_file = _get_file(self.genome_dir, f"{self.genome}.fa.fai", False)
-        self.sizes_file = _get_file(self.genome_dir, f"{self.genome}.fa.sizes", False)
+        "path to the README file"
+        self.index_file = _get_file(self.genome_dir, f"{self.name}.fa.fai", False)
+        "path to the genome index"
+        self.sizes_file = _get_file(self.genome_dir, f"{self.name}.fa.sizes", False)
+        "path to the chromosome sizes file"
+
+        # genome attributes
+        t = read_readme(str(self.readme_file))[0]["tax_id"]
+        self.tax_id = None if t == "na" else int(t)
+        "genome taxonomy identifier"
 
     # lazy attributes
     def __getattribute__(self, name):
@@ -95,12 +100,12 @@ class Annotation:
 
         # if the attribute is None/empty, check if it is a lazy attribute
         if name == "bed":
-            _check_property(self.annotation_bed_file, f"{self.genome}.annotation.bed")
+            _check_property(self.annotation_bed_file, f"{self.name}.annotation.bed")
             val = read_annot(self.annotation_bed_file)
             setattr(self, name, val)
 
         elif name == "gtf":
-            _check_property(self.annotation_gtf_file, f"{self.genome}.annotation.gtf")
+            _check_property(self.annotation_gtf_file, f"{self.name}.annotation.gtf")
             val = read_annot(self.annotation_gtf_file)
             setattr(self, name, val)
 
@@ -115,7 +120,7 @@ class Annotation:
             setattr(self, name, val)
 
         elif name == "genome_contigs":
-            _check_property(self.sizes_file, f"{self.genome}.fa.sizes")
+            _check_property(self.sizes_file, f"{self.name}.fa.sizes")
             val = list(
                 set(pd.read_csv(self.sizes_file, sep="\t", header=None, dtype=str)[0])
             )
@@ -229,8 +234,12 @@ class Annotation:
         pandas.DataFrame
             chromosome mapping.
         """
+        if self.readme_file is None:
+            raise AttributeError(
+                "Can only map genomepy annotations (a readme file is required)"
+            )
         genomes_dir = os.path.dirname(self.genome_dir)
-        mapping = map_locations(self.genome, to, genomes_dir)
+        mapping = map_locations(self.name, to, genomes_dir)
         if mapping is None:
             return
 
@@ -283,6 +292,101 @@ class Annotation:
         """
         df = _parse_annot(self, annot)
         return filter_regex(df, regex, invert_match, column)
+
+    def gtf_dict(
+        self, key, value, string_values=True, annot: Union[str, pd.DataFrame] = "gtf"
+    ):
+        """
+        Create a dictionary based on the columns or attribute fields in a GTF.
+
+        Parameters
+        ----------
+        key : str
+            column name or attribute fields (e.g. "seqname", "gene_name")
+        value : str
+            column name or attribute fields (e.g. "gene_id", "transcript_name")
+        string_values : bool, optional
+            attempt to format the dict values as strings
+            (only happens if all value lists are length 1)
+        annot : str or pd.Dataframe, optional
+            annotation to filter: "gtf" or a pandas dataframe
+
+        Returns
+        -------
+        dict
+            with values as lists. If string_values is True
+            and all lists are length 1, values will be strings.
+        """
+        df = _parse_annot(self, annot)
+        k = key in df.columns
+        v = value in df.columns
+        # pd.DataFrame.iterrows() is slow. this is not.
+        attributes = zip(
+            df[key] if k else df.attribute,
+            df[value] if v else df.attribute,
+        )
+
+        def _get_attr_item(series, item):
+            """
+            example series.attribute: "...; gene_name: "TP53"; ..."
+            item="gene_name" would return "TP53"
+            """
+            split = series.split(item)
+            return split[1].split('"')[1]  # item might not exist
+
+        def _get_col_item(series, _):
+            return series
+
+        get_key = _get_col_item if k else _get_attr_item
+        get_val = _get_col_item if v else _get_attr_item
+        a_dict = dict()
+        for row in attributes:
+            try:
+                k = get_key(row[0], key)
+                v = get_val(row[1], value)
+            except IndexError:
+                continue
+
+            # unique values per key
+            if k in a_dict:
+                a_dict[k].update({v})
+            else:
+                a_dict[k] = {v}
+
+        # return values as str if all values are length 1
+        # and string_values is True, else return values as list
+        all_len_1 = string_values and all(len(v) == 1 for v in a_dict.values())
+        for k, v in a_dict.items():
+            a_dict[k] = list(v)[0] if all_len_1 else list(v)
+
+        return a_dict
+
+
+def _get_name_and_dir(name, genomes_dir=None):
+    """
+    Returns the name and directory of the genome.
+    """
+    fname = cleanpath(name)
+    genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
+    if os.path.isfile(fname):
+        exts = ["gtf", "GTF", "bed", "BED", "fa"]
+        if not any(ext in fname for ext in exts):
+            raise NotImplementedError(
+                "Only (gzipped) bed, gtf or fasta files are supported!"
+            )
+        genome_dir = os.path.dirname(fname)
+        name = safe(os.path.basename(fname))
+        # remove suffices
+        any_ext = "(" + ")|(".join(exts) + ")"
+        name = re.sub(fr"(\.annotation)?\.({any_ext})(\.gz)?$", "", name)
+    elif os.path.isdir(fname):
+        genome_dir = fname
+        name = safe(os.path.basename(fname))
+    elif name in os.listdir(genomes_dir):
+        genome_dir = os.path.join(genomes_dir, name)
+    else:
+        raise ValueError(f"Could not find {name}")
+    return name, genome_dir
 
 
 def _get_file(genome_dir: str, fname: str, warn_missing: Optional[bool] = True):

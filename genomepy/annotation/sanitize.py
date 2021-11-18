@@ -1,11 +1,11 @@
-"""Functions to match gene annotations to genomes"""
+"""Annotation.sanitize method"""
 from itertools import compress
 
 from genomepy.annotation.utils import _check_property, write_annot
 from genomepy.files import _open, update_readme
 
 
-def sanitize(self, match=True, filter=True, overwrite=False):  # noqa
+def _sanitize(self, match=True, filter=True, overwrite=False):  # noqa
     """
     Match the contigs names of the gene annotations to the genome's.
 
@@ -27,23 +27,23 @@ def sanitize(self, match=True, filter=True, overwrite=False):  # noqa
     Annotation class
         updated attributes
     """
-    _check_property(self.genome_file, f"{self.genome}.fa")
+    _check_property(self.genome_file, f"{self.name}.fa")
 
     cd = {}
     if match:
-        cd = match_contigs(self)
+        cd = _match_contigs(self)
 
     mc = []
     if filter:
-        mc = filter_contigs(self)
+        mc = _filter_contigs(self)
 
     if overwrite:
         write_annot(self.gtf, self.annotation_gtf_file)
         write_annot(self.bed, self.annotation_bed_file)
-        document_sanitizing(self, cd, mc)
+        _document_sanitizing(self, cd, mc)
 
 
-def match_contigs(self):
+def _match_contigs(self):
     """
     Sometimes, the gene annotation contig names are different from the genome contig names.
     If the genome contains multiple headers, these may contain the annotation contig names.
@@ -57,7 +57,7 @@ def match_contigs(self):
         return  # nothing to do
 
     # get the full headers from the fasta (e.g. '>chr1 chromosome1 note1 note2')
-    headers = full_genome_headers(self.genome_file)
+    headers = _full_genome_headers(self.genome_file)
 
     # filter for multi-head headers (whitespace delimited)
     multi_headed_contigs = [" " in h or "\t" in h for h in headers]
@@ -66,14 +66,14 @@ def match_contigs(self):
         return  # nothing to work with
 
     headers = [h.split() for h in compress(headers, multi_headed_contigs)]
-    conversion_dict = contig_conversion_dict(headers, self.annotation_contigs)
+    conversion_dict = _contig_conversion_dict(headers, self.annotation_contigs)
 
     self.gtf = self.gtf.replace({"seqname": conversion_dict})
     self.bed = self.bed.replace({"chrom": conversion_dict})
     return conversion_dict
 
 
-def filter_contigs(self):
+def _filter_contigs(self):
     """
     Some tools throw a fit when the gene annotation contains
     contigs that are missing from the genome.
@@ -88,7 +88,7 @@ def filter_contigs(self):
     return missing_contigs
 
 
-def document_sanitizing(self, cd, mc):
+def _document_sanitizing(self, cd, mc):
     _check_property(self.readme_file, "README.txt")
     status = ""
     extra_lines = []
@@ -112,7 +112,7 @@ def document_sanitizing(self, cd, mc):
     update_readme(self.readme_file, {"sanitized annotation": status}, extra_lines)
 
 
-def full_genome_headers(genome_file):
+def _full_genome_headers(genome_file):
     headers = []
     with _open(genome_file) as fa:
         for line in fa:
@@ -121,7 +121,7 @@ def full_genome_headers(genome_file):
     return headers
 
 
-def contig_conversion_dict(genome_headers, annotation_contigs):
+def _contig_conversion_dict(genome_headers, annotation_contigs):
     conversion_table = {}
     for header in genome_headers:
         for contig in annotation_contigs:

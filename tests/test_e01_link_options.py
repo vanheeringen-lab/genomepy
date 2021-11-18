@@ -1,7 +1,5 @@
 import pytest
 
-from tests import linux, travis
-
 skip = False
 if not skip:
 
@@ -17,7 +15,6 @@ if not skip:
     def masking(request):
         return request.param
 
-    @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
     def test_ensembl_genome_download_links(assembly, masking, release_version, ensembl):
         """Test Ensembl links with various options
 
@@ -32,7 +29,6 @@ if not skip:
             "GRCh38.p13", mask=mask, toplevel=toplevel, version=version
         )
 
-    @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
     def test_ensemblgenomes_genome_download_links(masking, ensembl):
         """Test Ensembl FTP links for various genomes
 
