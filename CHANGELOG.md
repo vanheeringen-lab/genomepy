@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.11.0] - 2021-11-18
+
 ### Added
 - extened docstrings
 - GENCODE support (GENCODE gene annotations with UCSC genomes)
@@ -366,6 +368,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.11.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.10.0...0.11.0
 [0.10.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.3...0.10.0
 [0.9.3]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.2...0.9.3
 [0.9.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.1...0.9.2
