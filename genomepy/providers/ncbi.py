@@ -12,7 +12,7 @@ from genomepy.caching import cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, read_url
 from genomepy.providers.base import BaseProvider
-from genomepy.utils import safe, mkdir_p
+from genomepy.utils import mkdir_p, safe
 
 ASM_FORMAT = [
     "Sequence-Name",
