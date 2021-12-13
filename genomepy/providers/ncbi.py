@@ -10,7 +10,7 @@ from tqdm.auto import tqdm
 from genomepy.caching import cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url
-from genomepy.providers.base import BaseProvider
+from genomepy.providers.base import BaseProvider, ASM_FORMAT
 from genomepy.utils import safe
 
 
@@ -108,9 +108,9 @@ class NcbiProvider(BaseProvider):
             asm_report = pd.read_csv(asm_fname, sep="\t", comment="#", header=None)
         else:
             url = self._ftp_or_html_link(name, "_assembly_report.txt", True)
-            asm_report = pd.read_csv(url, sep="\t", comment="#", header=None)
+            asm_report = pd.read_csv(url, sep="\t", comment="#", header=ASM_FORMAT)
             # save assembly report
-            asm_report.to_csv(asm_fname, sep="\t", index=False, header=False)
+            asm_report.to_csv(asm_fname, sep="\t", index=False)
 
         # create mapping of chromosome accessions to chromosome names
         tr = asm_report.set_index(6)[0].to_dict()
