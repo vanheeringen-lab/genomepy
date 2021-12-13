@@ -1,5 +1,6 @@
 import os
 import re
+import urllib.error
 from typing import List
 from urllib.request import urlopen
 
@@ -9,9 +10,22 @@ from tqdm.auto import tqdm
 
 from genomepy.caching import cache
 from genomepy.exceptions import GenomeDownloadError
-from genomepy.online import check_url
-from genomepy.providers.base import BaseProvider, ASM_FORMAT
+from genomepy.online import check_url, read_url
+from genomepy.providers.base import BaseProvider
 from genomepy.utils import safe
+
+ASM_FORMAT = [
+    "Sequence-Name",
+    "Sequence-Role",
+    "Assigned-Molecule",
+    "Assigned-Molecule-Location/Type",
+    "GenBank-Accn",
+    "Relationship",
+    "RefSeq-Accn",
+    "Assembly-Unit",
+    "Sequence-Length",
+    "UCSC-style-name",
+]
 
 
 class NcbiProvider(BaseProvider):
@@ -104,13 +118,10 @@ class NcbiProvider(BaseProvider):
         """
         # (down)load the assembly report
         asm_fname = os.path.join(out_dir, "assembly_report.txt")
-        if os.path.exists(asm_fname):
-            asm_report = pd.read_csv(asm_fname, sep="\t", comment="#", header=None)
-        else:
-            url = self._ftp_or_html_link(name, "_assembly_report.txt", True)
-            asm_report = pd.read_csv(url, sep="\t", comment="#", header=ASM_FORMAT)
+        if not os.path.exists(asm_fname):
             # save assembly report
-            asm_report.to_csv(asm_fname, sep="\t", index=False)
+            download_assembly_report(self.assembly_accession(name), asm_fname)
+        asm_report = pd.read_csv(asm_fname, sep="\t", comment="#", header=None)
 
         # create mapping of chromosome accessions to chromosome names
         tr = asm_report.set_index(6)[0].to_dict()
@@ -216,3 +227,79 @@ def get_genomes(assembly_url):
                 name = safe(line[15])  # overwrites older asm_names
                 genomes[name] = dict(zip(header, line))
     return genomes
+
+
+def download_assembly_report(acc: str, fname: str = None):
+    """
+    Retrieve the NCBI assembly report.
+
+    Returns the assembly_report as a pandas DataFrame if fname is not specified.
+
+    Parameters
+    ----------
+    acc : str
+        Assembly accession (GCA or GCF)
+    fname : str, optional
+        Save assembly_report to this filename.
+
+    Returns
+    -------
+    pandas.DataFrame
+        NCBI assembly report.
+    """
+    msg = "Could not download the assembly report from NCBI. "
+    if not isinstance(acc, str) or not acc.startswith(("GCA", "GCF")):
+        logger.warning(msg)
+        return None
+    assembly_report = _assembly_report_url(acc)
+    if assembly_report is None:
+        logger.warning(msg + f"Assembly accession '{acc}' not found.")
+        return None
+    asm_report = pd.read_csv(assembly_report, sep="\t", comment="#", names=ASM_FORMAT)
+
+    if fname:
+        asm_report.to_csv(fname, sep="\t", index=False)
+    else:
+        return asm_report
+
+
+def _assembly_report_url(acc: str) -> str or None:
+    ftp_basedir = "https://ftp.ncbi.nlm.nih.gov/genomes/all"
+    asm_dir = f"{ftp_basedir}/{acc[0:3]}/{acc[4:7]}/{acc[7:10]}/{acc[10:13]}/"
+    try:
+        text = read_url(asm_dir)
+    except urllib.error.HTTPError:
+        return None
+
+    # try to find exact accession patch level
+    hits = re.findall(acc + '_.*/"', text)  # len 0-1
+    if len(hits) == 0:
+        # patch level not found, pick the closest instead
+        hits = re.findall(acc + '.*/"', text)
+        available_accessions = ["_".join(h.split("_")[0:2]) for h in hits]
+        closest = _closest_patch_lvl(acc, available_accessions)
+        hits = [h for h in hits if closest + "_" in h]  # len 0-1
+    if len(hits) == 0:
+        return None
+
+    name = hits[0][:-2]
+    assembly_report = asm_dir + name + "/" + name + "_assembly_report.txt"
+    return assembly_report
+
+
+def _closest_patch_lvl(reference: str, targets: list) -> str:
+    ref_patch = _patch_lvl(reference)
+    closest = ""
+    closest_dist = 999
+    for target in targets:
+        tgt_patch = _patch_lvl(target)
+        dist = abs(tgt_patch - 0.1 - ref_patch)  # tiebreaker: newer > older patches
+        if dist < closest_dist:
+            closest = target
+            closest_dist = dist
+    return closest
+
+
+def _patch_lvl(acc: str) -> int:
+    """str(GCA_000000000.6) -> int(6)"""
+    return int(acc.split(".")[1]) if "." in acc else 0
