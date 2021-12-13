@@ -12,7 +12,7 @@ from genomepy.caching import cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, read_url
 from genomepy.providers.base import BaseProvider
-from genomepy.utils import safe
+from genomepy.utils import safe, mkdir_p
 
 ASM_FORMAT = [
     "Sequence-Name",
@@ -258,6 +258,7 @@ def download_assembly_report(acc: str, fname: str = None):
     asm_report = pd.read_csv(assembly_report, sep="\t", comment="#", names=ASM_FORMAT)
 
     if fname:
+        mkdir_p(os.path.dirname(fname))
         asm_report.to_csv(fname, sep="\t", index=False)
     else:
         return asm_report
