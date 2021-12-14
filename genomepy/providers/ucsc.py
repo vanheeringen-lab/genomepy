@@ -576,7 +576,7 @@ def download_annotation(name, annot, genomes_dir, localname, n=None):
 
 
 @cache
-def scrape_accession(htmlpath: str) -> str:
+def scrape_accession(htmlpath: str) -> str or None:
     """
     Attempt to scrape the assembly accession (`GCA_`/`GCF_`) from a genome's readme.html,
     or any linked NCBI assembly pages can also be scraped.
@@ -595,7 +595,7 @@ def scrape_accession(htmlpath: str) -> str:
     try:
         text = read_url(ucsc_url)
     except (UnicodeDecodeError, urllib.error.URLError):
-        return "na"
+        return None
 
     # example accessions: GCA_000004335.1 (ailMel1)
     # regex: GC[AF]_ = GCA_ or GCF_, \d = digit, \. = period
@@ -611,7 +611,7 @@ def scrape_accession(htmlpath: str) -> str:
         try:
             text = read_url(ncbi_url)
         except (UnicodeDecodeError, urllib.error.URLError):
-            return "na"
+            return None
 
         # retrieve valid assembly accessions.
         # contains additional info, such as '(latest)' or '(suppressed)'. Unused for now.

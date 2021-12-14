@@ -30,7 +30,7 @@ def test_assembly_accession(ucsc):
 
     # not in UCSC, not in NCBI
     accession = ucsc.assembly_accession("sacCer1")
-    assert accession == "na"
+    assert accession is None
 
     # not in UCSC, in NCBI
     accession = ucsc.assembly_accession("xenTro7")
