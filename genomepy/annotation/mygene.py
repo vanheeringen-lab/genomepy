@@ -161,55 +161,6 @@ def _parse_mygene_input(field, product=None):
     return field, product
 
 
-# def ensembl_genome_info(self) -> Optional[Tuple[str, str, str]]:
-#     """
-#     Return Ensembl genome information for this genome.
-#
-#     Requires accession numbers to match (excluding patch numbers)
-#
-#     Returns
-#     -------
-#     (str, str, str)
-#         Ensembl name, accession, taxonomy_id
-#     """
-#     _check_property(self.readme_file, "README.txt")
-#
-#     metadata, _ = read_readme(self.readme_file)
-#     if metadata.get("provider") == "Ensembl":
-#         return metadata["name"], metadata["assembly_accession"], metadata["tax_id"]
-#
-#     if metadata.get("assembly_accession", "na") == "na":
-#         logger.warning("Cannot find a matching genome without an assembly accession.")
-#         return
-#
-#     asm_acc = metadata["assembly_accession"]
-#     search_result = nearest_assembly(asm_acc, "Ensembl")
-#     if search_result is None:
-#         return
-#
-#     return safe(search_result[0]), search_result[2], search_result[3]
-#
-#
-# def _query_mygene(
-#     self,
-#     query: Iterable[str],
-#     field: str = "genomic_pos",
-# ) -> pd.DataFrame:
-#     # mygene.info only queries the most recent version of the Ensembl database
-#     # We can only safely continue if the local genome matched the Ensembl genome.
-#     # Even if the local genome was installed via Ensembl, we still need to check
-#     # if it is the same version
-#     ensembl_info = ensembl_genome_info(self)
-#     if ensembl_info is None:
-#         return pd.DataFrame()
-#
-#     tax_id = ensembl_info[2]
-#     if not str(tax_id).isdigit():
-#         raise ValueError("No taxomoy ID found")
-#
-#     return query_mygene(query, tax_id, field)
-
-
 def _filter_query(query: pd.DataFrame) -> pd.DataFrame:
     """per queried gene, keep the best matching, non-NaN, mapping"""
     if "notfound" in query:

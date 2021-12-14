@@ -123,7 +123,7 @@ class UcscProvider(BaseProvider):
                     yield name
                     break  # max one hit per genome
 
-    def assembly_accession(self, name: str) -> str:
+    def assembly_accession(self, name: str) -> str or None:
         """
         Return the assembly accession (`GCA_`/`GCF_`) for a genome.
 
@@ -148,8 +148,6 @@ class UcscProvider(BaseProvider):
         acc = scrape_accession(self.genomes[name]["htmlPath"])
         if acc:
             return acc
-
-        return "na"
 
     def annotation_links(self, name, **kwargs) -> List[str]:
         """
@@ -619,6 +617,7 @@ def scrape_accession(htmlpath: str) -> str:
         # contains additional info, such as '(latest)' or '(suppressed)'. Unused for now.
         valid_accessions = re.findall(r"assembly accession:.*?GC[AF]_.*?<", text)
         text = " ".join(valid_accessions)
+        # this selects GCA > GCF if both are found
         match = accession_regex.search(text)
         if match:
             return match.group(0)
