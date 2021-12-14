@@ -17,10 +17,24 @@ def test__search_accession(ucsc):
     assert next(ucsc._search_accession("GCA_000004335.1")) == "ailMel1"
 
 
-def test_assembly_accession(ucsc):
-    accession = ucsc.assembly_accession("sacCer3")
+def test__search_accession_ncbi(ucsc):
+    ret = list(ucsc._search_accession_ncbi("GCF_000004195.2"))
+    expected = ["xenTro1", "xenTro10", "xenTro2", "xenTro3", "xenTro7", "xenTro9"]
+    assert ret == expected
 
-    assert accession.startswith("GCA_000146045")
+
+def test_assembly_accession(ucsc):
+    # in UCSC(, not in NCBI)
+    accession = ucsc.assembly_accession("sacCer3")
+    assert accession == "GCA_000146045.2"
+
+    # not in UCSC, not in NCBI
+    accession = ucsc.assembly_accession("sacCer1")
+    assert accession == "na"
+
+    # not in UCSC, in NCBI
+    accession = ucsc.assembly_accession("xenTro7")
+    assert accession == "GCA_000004195.2"
 
 
 def test_annotation_links(ucsc):
@@ -105,6 +119,10 @@ def test_get_annotation_download_link(ucsc):
     # annotation type non-existing
     with pytest.raises(FileNotFoundError):
         ucsc.get_annotation_download_link(genome, **{"ucsc_annotation_type": "what?"})
+
+
+def test_download_annotation(ucsc):
+    ucsc.download_annotation("sacCer1")
 
 
 def test_get_genomes(ucsc):
