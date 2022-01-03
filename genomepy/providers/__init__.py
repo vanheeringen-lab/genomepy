@@ -177,7 +177,7 @@ def map_locations(
         logger.warning("Cannot map without an assembly report.")
         return
 
-    asm_report = pd.read_csv(frm_asm_report, sep="\t", comment="#")
+    asm_report = pd.read_csv(frm_asm_report, sep="\t", comment="#", dtype=str)
     asm_report["ensembl_name"] = asm_report["Sequence-Name"]
     asm_report["ncbi_name"] = asm_report["Sequence-Name"]
     asm_report["ucsc_name"] = asm_report["UCSC-style-name"]

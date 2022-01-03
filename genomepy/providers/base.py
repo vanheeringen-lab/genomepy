@@ -510,7 +510,11 @@ def rename_contigs(annot_file):
     genome_dir = os.path.dirname(os.path.dirname(annot_file))
     asm_report = os.path.join(genome_dir, "assembly_report.txt")
     gencode2ucsc = pd.read_csv(
-        asm_report, sep="\t", comment="#", usecols=["GenBank-Accn", "UCSC-style-name"]
+        asm_report,
+        sep="\t",
+        comment="#",
+        usecols=["GenBank-Accn", "UCSC-style-name"],
+        dtype=str,
     )
     gtf = read_annot(annot_file)
 

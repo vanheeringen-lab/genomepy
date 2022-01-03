@@ -121,7 +121,9 @@ class NcbiProvider(BaseProvider):
         if not os.path.exists(asm_fname):
             # save assembly report
             download_assembly_report(self.assembly_accession(name), asm_fname)
-        asm_report = pd.read_csv(asm_fname, sep="\t", comment="#", header=None)
+        asm_report = pd.read_csv(
+            asm_fname, sep="\t", comment="#", header=None, dtype=str
+        )
 
         # create mapping of chromosome accessions to chromosome names
         tr = asm_report.set_index(6)[0].to_dict()
@@ -255,7 +257,9 @@ def download_assembly_report(acc: str, fname: str = None):
     if assembly_report is None:
         logger.warning(msg + f"Assembly accession '{acc}' not found.")
         return None
-    asm_report = pd.read_csv(assembly_report, sep="\t", comment="#", names=ASM_FORMAT)
+    asm_report = pd.read_csv(
+        assembly_report, sep="\t", comment="#", names=ASM_FORMAT, dtype=str
+    )
 
     if fname:
         mkdir_p(os.path.dirname(fname))
