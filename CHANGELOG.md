@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.11.1] - 2022-01-06
+
 ### Added
 - `quiet` flag for `genomepy.Annotation`
 - `genomepy -v` flag
@@ -381,6 +383,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.11.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.11.0...0.11.1
 [0.11.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.10.0...0.11.0
 [0.10.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.3...0.10.0
 [0.9.3]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.2...0.9.3
