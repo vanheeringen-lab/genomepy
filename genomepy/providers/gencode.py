@@ -1,16 +1,16 @@
 import os
 from time import sleep
 
-import pandas as pd
 from loguru import logger
 
 from genomepy.caching import cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import update_readme
 from genomepy.online import check_url, connect_ftp_link
-from genomepy.providers.base import ASM_FORMAT, BaseProvider, download_annotation
+from genomepy.providers.base import BaseProvider, download_annotation
+from genomepy.providers.ncbi import download_assembly_report
 from genomepy.providers.ucsc import UcscProvider
-from genomepy.utils import get_genomes_dir, get_localname, mkdir_p
+from genomepy.utils import get_genomes_dir, get_localname
 
 
 class GencodeProvider(BaseProvider):
@@ -147,7 +147,7 @@ class GencodeProvider(BaseProvider):
             # download exact assembly report to rename the scaffolds
             acc = self.assembly_accession(name)
             fname = os.path.join(genomes_dir, localname, "assembly_report.txt")
-            exact_assembly_report(name, acc, fname)
+            download_assembly_report(acc, fname)
 
             download_annotation(genomes_dir, link, localname)
             logger.info("Annotation download successful")
@@ -286,14 +286,3 @@ def get_genomes(ftp_link):
 
     ftp.quit()
     return genomes
-
-
-def exact_assembly_report(name, acc, fname):
-    assembly_report = (
-        f"https://ftp.ncbi.nlm.nih.gov/genomes/all/{acc[0:3]}/"
-        + f"{acc[4:7]}/{acc[7:10]}/{acc[10:13]}/"
-        + f"{acc}_{name}/{acc}_{name}_assembly_report.txt"
-    )
-    asm_report = pd.read_csv(assembly_report, sep="\t", comment="#", names=ASM_FORMAT)
-    mkdir_p(os.path.dirname(fname))
-    asm_report.to_csv(fname, sep="\t", index=False)

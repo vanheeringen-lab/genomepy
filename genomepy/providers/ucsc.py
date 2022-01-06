@@ -123,7 +123,7 @@ class UcscProvider(BaseProvider):
                     yield name
                     break  # max one hit per genome
 
-    def assembly_accession(self, name: str) -> str:
+    def assembly_accession(self, name: str) -> str or None:
         """
         Return the assembly accession (`GCA_`/`GCF_`) for a genome.
 
@@ -148,8 +148,6 @@ class UcscProvider(BaseProvider):
         acc = scrape_accession(self.genomes[name]["htmlPath"])
         if acc:
             return acc
-
-        return "na"
 
     def annotation_links(self, name, **kwargs) -> List[str]:
         """
@@ -578,7 +576,7 @@ def download_annotation(name, annot, genomes_dir, localname, n=None):
 
 
 @cache
-def scrape_accession(htmlpath: str) -> str:
+def scrape_accession(htmlpath: str) -> str or None:
     """
     Attempt to scrape the assembly accession (`GCA_`/`GCF_`) from a genome's readme.html,
     or any linked NCBI assembly pages can also be scraped.
@@ -597,7 +595,7 @@ def scrape_accession(htmlpath: str) -> str:
     try:
         text = read_url(ucsc_url)
     except (UnicodeDecodeError, urllib.error.URLError):
-        return "na"
+        return None
 
     # example accessions: GCA_000004335.1 (ailMel1)
     # regex: GC[AF]_ = GCA_ or GCF_, \d = digit, \. = period
@@ -613,12 +611,13 @@ def scrape_accession(htmlpath: str) -> str:
         try:
             text = read_url(ncbi_url)
         except (UnicodeDecodeError, urllib.error.URLError):
-            return "na"
+            return None
 
         # retrieve valid assembly accessions.
         # contains additional info, such as '(latest)' or '(suppressed)'. Unused for now.
         valid_accessions = re.findall(r"assembly accession:.*?GC[AF]_.*?<", text)
         text = " ".join(valid_accessions)
+        # this selects GCA > GCF if both are found
         match = accession_regex.search(text)
         if match:
             return match.group(0)

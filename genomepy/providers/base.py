@@ -18,19 +18,6 @@ from genomepy.files import extract_archive, get_file_info, update_readme
 from genomepy.online import download_file
 from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf, safe
 
-ASM_FORMAT = [
-    "Sequence-Name",
-    "Sequence-Role",
-    "Assigned-Molecule",
-    "Assigned-Molecule-Location/Type",
-    "GenBank-Accn",
-    "Relationship",
-    "RefSeq-Accn",
-    "Assembly-Unit",
-    "Sequence-Length",
-    "UCSC-style-name",
-]
-
 
 class BaseProvider:
     """
@@ -111,7 +98,7 @@ class BaseProvider:
             if tid.isdigit():
                 return int(tid)
 
-    def assembly_accession(self, name: str) -> str:
+    def assembly_accession(self, name: str) -> str or None:
         """
         Return the assembly accession number (GCA* or GCF*) for a genome.
 
@@ -523,7 +510,11 @@ def rename_contigs(annot_file):
     genome_dir = os.path.dirname(os.path.dirname(annot_file))
     asm_report = os.path.join(genome_dir, "assembly_report.txt")
     gencode2ucsc = pd.read_csv(
-        asm_report, sep="\t", comment="#", usecols=["GenBank-Accn", "UCSC-style-name"]
+        asm_report,
+        sep="\t",
+        comment="#",
+        usecols=["GenBank-Accn", "UCSC-style-name"],
+        dtype=str,
     )
     gtf = read_annot(annot_file)
 
