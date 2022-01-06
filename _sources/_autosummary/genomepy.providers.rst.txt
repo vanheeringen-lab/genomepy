@@ -15,11 +15,9 @@ genomepy.providers
       :toctree:
    
       create
-      download_assembly_report
       list_online_providers
       list_providers
       map_locations
-      nearest_assembly
       online_providers
       search
    

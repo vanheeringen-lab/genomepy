@@ -1,6 +1,0 @@
-genomepy.providers.gencode.exact\_assembly\_report
-==================================================
-
-.. currentmodule:: genomepy.providers.gencode
-
-.. autofunction:: exact_assembly_report

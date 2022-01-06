@@ -18,7 +18,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="genomepy.providers.ncbi.get_genomes" href="genomepy.providers.ncbi.get_genomes.html" />
+    <link rel="next" title="genomepy.providers.ncbi.download_assembly_report" href="genomepy.providers.ncbi.download_assembly_report.html" />
     <link rel="prev" title="genomepy.providers.local.LocalProvider" href="genomepy.providers.local.LocalProvider.html" /> 
 </head>
 
@@ -56,11 +56,9 @@
 <li class="toctree-l2"><a class="reference internal" href="genomepy.plugins.html">genomepy.plugins</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="genomepy.providers.html">genomepy.providers</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="genomepy.providers.create.html">genomepy.providers.create</a></li>
-<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.download_assembly_report.html">genomepy.providers.download_assembly_report</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.providers.list_online_providers.html">genomepy.providers.list_online_providers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.providers.list_providers.html">genomepy.providers.list_providers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.providers.map_locations.html">genomepy.providers.map_locations</a></li>
-<li class="toctree-l3"><a class="reference internal" href="genomepy.providers.nearest_assembly.html">genomepy.providers.nearest_assembly</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.providers.online_providers.html">genomepy.providers.online_providers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.providers.search.html">genomepy.providers.search</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.providers.Provider.html">genomepy.providers.Provider</a></li>
@@ -69,6 +67,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genomepy.providers.gencode.html">genomepy.providers.gencode</a></li>
 <li class="toctree-l3"><a class="reference internal" href="genomepy.providers.local.html">genomepy.providers.local</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">genomepy.providers.ncbi</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="genomepy.providers.ncbi.download_assembly_report.html">genomepy.providers.ncbi.download_assembly_report</a></li>
 <li class="toctree-l4"><a class="reference internal" href="genomepy.providers.ncbi.get_genomes.html">genomepy.providers.ncbi.get_genomes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="genomepy.providers.ncbi.NcbiProvider.html">genomepy.providers.ncbi.NcbiProvider</a></li>
 </ul>
@@ -120,7 +119,10 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.providers.ncbi.get_genomes.html#genomepy.providers.ncbi.get_genomes" title="genomepy.providers.ncbi.get_genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_genomes</span></code></a>(assembly_url)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.providers.ncbi.download_assembly_report.html#genomepy.providers.ncbi.download_assembly_report" title="genomepy.providers.ncbi.download_assembly_report"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_assembly_report</span></code></a>(acc[, fname])</p></td>
+<td><p>Retrieve the NCBI assembly report.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.providers.ncbi.get_genomes.html#genomepy.providers.ncbi.get_genomes" title="genomepy.providers.ncbi.get_genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_genomes</span></code></a>(assembly_url)</p></td>
 <td><p>Parse genomes from assembly summary txt files.</p></td>
 </tr>
 </tbody>
@@ -144,14 +146,14 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="genomepy.providers.local.LocalProvider.html" class="btn btn-neutral float-left" title="genomepy.providers.local.LocalProvider" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="genomepy.providers.ncbi.get_genomes.html" class="btn btn-neutral float-right" title="genomepy.providers.ncbi.get_genomes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="genomepy.providers.ncbi.download_assembly_report.html" class="btn btn-neutral float-right" title="genomepy.providers.ncbi.download_assembly_report" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
     <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2021-11-18, 10:16 (UTC).
+      <span class="lastupdated">Last updated on 2022-01-06, 11:54 (UTC).
       </span></p>
   </div>
 

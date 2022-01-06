@@ -15,7 +15,6 @@ genomepy.providers.gencode
       :toctree:
    
       add_grch37
-      exact_assembly_report
       get_gencode2ucsc
       get_genomes
       get_releases

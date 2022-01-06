@@ -14,6 +14,7 @@ genomepy.providers.ncbi
    .. autosummary::
       :toctree:
    
+      download_assembly_report
       get_genomes
    
    

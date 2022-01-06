@@ -1,6 +1,0 @@
-genomepy.providers.download\_assembly\_report
-=============================================
-
-.. currentmodule:: genomepy.providers
-
-.. autofunction:: download_assembly_report
