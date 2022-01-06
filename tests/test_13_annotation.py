@@ -47,7 +47,7 @@ def test__get_name_and_dir():
         assert genome_dir == genomepy.utils.cleanpath(td["expected_dir"]), td
 
     # does not exist
-    with pytest.raises(ValueError):
+    with pytest.raises(FileNotFoundError):
         genomepy.annotation._get_name_and_dir("tests/data/GRCz11/what.who")
     # no bed/gtf/fa
     with pytest.raises(NotImplementedError):
@@ -83,7 +83,7 @@ def test_annotation_init(caplog, annot):
     assert "Could not find 'empty.annotation.gtf" in caplog.text
 
     # Genome doesn't exist
-    with pytest.raises(ValueError):
+    with pytest.raises(FileNotFoundError):
         genomepy.Annotation("never_existed", genomes_dir="tests/data")
 
 

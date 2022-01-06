@@ -28,6 +28,8 @@ class Annotation:
         Genome name/directory/fasta or gene annotation BED/GTF file.
     genomes_dir : str, optional
         Genomes installation directory.
+    quiet : bool, optional
+        Silence init warnings
 
     Returns
     -------
@@ -52,7 +54,7 @@ class Annotation:
     annotation_contigs: list = None
     "Contigs found in the gene annotation BED"
 
-    def __init__(self, name: str, genomes_dir: str = None):
+    def __init__(self, name: str, genomes_dir: str = None, quiet: bool = False):
         # name and directory
         n, g = _get_name_and_dir(name, genomes_dir)
         self.name = n
@@ -65,12 +67,12 @@ class Annotation:
         suffixes = Path(fname).suffixes[-2:]
         b = fname
         if not (".bed" in suffixes or ".BED" in suffixes):
-            b = _get_file(self.genome_dir, f"{self.name}.annotation.bed")
+            b = _get_file(self.genome_dir, f"{self.name}.annotation.bed", not quiet)
         self.annotation_bed_file = b
         "path to the gene annotation BED file"
         g = fname
         if not (".gtf" in suffixes or ".GTF" in suffixes):
-            g = _get_file(self.genome_dir, f"{self.name}.annotation.gtf")
+            g = _get_file(self.genome_dir, f"{self.name}.annotation.gtf", not quiet)
         self.annotation_gtf_file = g
         "path to the gene annotation GTF file"
 
@@ -385,7 +387,7 @@ def _get_name_and_dir(name, genomes_dir=None):
     elif name in os.listdir(genomes_dir):
         genome_dir = os.path.join(genomes_dir, name)
     else:
-        raise ValueError(f"Could not find {name}")
+        raise FileNotFoundError(f"Could not find {name}")
     return name, genome_dir
 
 

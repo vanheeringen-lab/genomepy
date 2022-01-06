@@ -2,6 +2,10 @@ import os
 from shutil import copyfile
 from tempfile import TemporaryDirectory
 
+import pandas as pd
+
+import genomepy
+
 
 def test_ncbiprovider(ncbi):
     assert ncbi.name == "NCBI"
@@ -64,3 +68,12 @@ def test__get_genomes(ncbi):
         assert field in genome
     assert genome["species_taxid"] == "2097"
     assert genome["taxid"] == "243273"
+
+
+def test_download_assembly_report():
+    assembly_report = "tests/data/sacCer3/assembly_report.txt"
+    genomepy.providers.download_assembly_report("GCA_000146045", assembly_report)
+    report = pd.read_csv(assembly_report, sep="\t", comment="#")
+
+    assert isinstance(report, pd.DataFrame)
+    assert list(report.columns) == genomepy.providers.ncbi.ASM_FORMAT

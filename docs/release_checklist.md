@@ -4,9 +4,9 @@
 
 1. Make sure all tests pass.
 
-   ```shell
-   pytest -vv --disable-pytest-warnings
-   ```
+    ```shell
+    pytest -vv --disable-pytest-warnings
+    ```
 
 2. Create release candidate with `git flow`:
 
@@ -58,13 +58,13 @@
 
     ```shell
     git flow release finish ${new_version}
-   ```
+    ```
 
 7. Push everything to github, including tags:
 
-   ```shell
-   git push --follow-tags origin develop
-   ```
+    ```shell
+    git push --follow-tags origin develop
+    ```
 
 8. Pull into master
   
