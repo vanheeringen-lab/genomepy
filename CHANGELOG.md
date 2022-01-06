@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `quiet` flag for `genomepy.Annotation`
+- `genomepy -v` flag
+
+### Changed
+- `genomepy.Annotation` returns a `FileNotFoundError` instead of a `ValueError` where appropriate.
+- `download_assembly_report` refactored. Now downloads the report for the exact same assembly accession (and not the nearest NCBI assembly).
+- broader unit tests for UCSC assembly accession scraping
+
+
+### Fixed
+- inconsistent behaviour with assembly reports (#193 + #194)
+
 ## [0.11.0] - 2021-11-18
 
 ### Added
