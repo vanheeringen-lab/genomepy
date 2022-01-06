@@ -6,3 +6,4 @@ dependencies:
   - sphinx
   - sphinx_rtd_theme  # read the docs theme
   - m2r2              # include markdown files
+  - mistune==0.8.4    # tmp until m2r2 0.3.2 is on conda
