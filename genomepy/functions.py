@@ -214,6 +214,7 @@ def install_genome(
             skip_matching,
             skip_filter,
             kwargs.get("to_annotation"),
+            kwargs.get("path_to_annotation"),
             kwargs.get("ucsc_annotation_type"),
         ]
     )
