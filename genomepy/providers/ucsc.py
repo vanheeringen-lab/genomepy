@@ -10,7 +10,7 @@ import pandas as pd
 import requests
 from loguru import logger
 
-from genomepy.caching import cache
+from genomepy.caching import disk_cache, cache_exp_long
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import update_readme
 from genomepy.online import check_url, read_url
@@ -387,7 +387,7 @@ class UcscProvider(BaseProvider):
                             break
 
 
-@cache
+@disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ucsc")
 def get_genomes(rest_url):
     logger.info("Downloading assembly summaries from UCSC")
 

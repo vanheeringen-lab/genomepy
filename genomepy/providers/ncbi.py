@@ -197,7 +197,7 @@ class NcbiProvider(BaseProvider):
                 return link
 
 
-@disk_cache.memoize(expire=cache_exp_long, tag="get_genomes")
+@disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ncbi")
 def get_genomes(assembly_url):
     """Parse genomes from assembly summary txt files."""
     logger.info("Downloading assembly summaries from NCBI, this will take a while...")
