@@ -575,7 +575,7 @@ def download_annotation(name, annot, genomes_dir, localname, n=None):
     rm_rf(tmp_dir)
 
 
-@cache
+@disk_cache.memoize(expire=cache_exp_long, tag="scrape_accession-ucsc")
 def scrape_accession(htmlpath: str) -> str or None:
     """
     Attempt to scrape the assembly accession (`GCA_`/`GCF_`) from a genome's readme.html,

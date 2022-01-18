@@ -3,7 +3,7 @@ import re
 import requests
 from loguru import logger
 
-from genomepy.caching import disk_cache, cache_exp_short
+from genomepy.caching import disk_cache, cache_exp_long, cache_exp_short
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, retry
 from genomepy.providers.base import BaseProvider
