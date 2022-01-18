@@ -25,4 +25,4 @@ def test_caching_query_mygene():
     # Check that results before/after caching are identical
     assert (
         x.equals(y[x.columns]) == True
-    ), "Cached query_mygene output does not match query"
+    ), "Cached query_mygene output does not match query output"
