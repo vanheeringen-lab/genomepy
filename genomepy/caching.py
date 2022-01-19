@@ -14,6 +14,7 @@ genomepy_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
 os.makedirs(genomepy_cache_dir, exist_ok=True)
 
 # Store the output of slow commands (marked with @disk_cache.memoize) for fast reuse.
+# diskcache uses the LRU eviction policy by default
 disk_cache = Cache(directory=genomepy_cache_dir)
 
 
