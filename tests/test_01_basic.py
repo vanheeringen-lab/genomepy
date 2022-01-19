@@ -41,7 +41,7 @@ def test_clean():
     genomepy.clean()  # no errors when cache dir is empty
 
 
-# @pytest.mark.skipif(not travis, reason="it works locally all right")
+@pytest.mark.skipif(not travis, reason="it works locally all right")
 def test_cache():
     # test caching of complex data types
     my_cache_dir = os.path.join(user_cache_dir("genomepy"), str(linux))
