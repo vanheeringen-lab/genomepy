@@ -43,11 +43,10 @@ def test_clean():
 
 # @pytest.mark.skipif(not travis, reason="it works locally all right")
 def test_cache():
-    # Test caching of complex data types
+    # test caching of complex data types
     my_cache_dir = os.path.join(user_cache_dir("genomepy"), str(linux))
     os.makedirs(my_cache_dir, exist_ok=True)
     cache = Cache(directory=my_cache_dir)
-    # Expected caching key for GRCz11 annotation
     test = ["a", "b", "c"]
     # cache key
     cache_key = (
@@ -55,12 +54,12 @@ def test_cache():
         test,
         None,
     )
-    # Create a simple data frame
+    # cache data frame output
     @cache.memoize(expire=10, tag="expensive_function")
     def expensive_function(data):
         return pd.DataFrame(data)
 
-    # Check that results before/after caching are identical
+    # check that results before/after caching are identical
     expected = expensive_function(test)
     cached_data = cache.get(cache_key)
     assert cached_data.equals(expected), "Cached data does not match expected data"
