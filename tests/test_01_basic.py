@@ -5,7 +5,7 @@ from shutil import rmtree
 import norns
 import pytest
 from appdirs import user_cache_dir
-from bucketcache import Bucket
+from diskcache import Cache
 
 import genomepy
 
@@ -43,9 +43,9 @@ def test_clean():
 def test_cache(capsys):
     my_cache_dir = os.path.join(user_cache_dir("genomepy"), str(linux))
     os.makedirs(my_cache_dir, exist_ok=True)
-    cache = Bucket(my_cache_dir, days=7)
+    cache = Cache(directory=my_cache_dir)
 
-    @cache
+    @cache.memoize(expire=7, tag="expensive_method")
     def expensive_method():
         print("Method called.")
 
