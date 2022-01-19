@@ -61,7 +61,6 @@ def _map_genes(
     genes = sorted(set(split_id))
 
     result = query_mygene(genes, self.tax_id, field)
-
     # result = _query_mygene(self, genes, field=to)
     result = _filter_query(result)
     if len(result) == 0:
