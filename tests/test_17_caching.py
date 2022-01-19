@@ -1,4 +1,3 @@
-from time import sleep
 import pytest
 
 import genomepy
@@ -27,5 +26,5 @@ def test_caching_query_mygene():
     assert (
         x.equals(y[x.columns]) == True
     ), "Cached query_mygene output does not match query output"
-    # Delete key from cache object
-    disk_cache.delete(caching_key)
+    # Clean cache
+    genomepy.clean()
