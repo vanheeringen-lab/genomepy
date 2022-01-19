@@ -6,22 +6,6 @@ from genomepy.caching import disk_cache, clean
 from genomepy.annotation import query_mygene
 
 
-def test_caching_key():
-    a = genomepy.Annotation("GRCz11", genomes_dir="tests/data")
-    # Store output for comparision with cached data
-    caching_key = (
-        "genomepy.annotation.mygene.query_mygene",
-        a.genes(),
-        7955,
-        "symbol",
-        None,
-    )
-    x = query_mygene(a.genes(), 7955, "symbol")
-    sleep(5)
-    assert caching_key in disk_cache.iterkeys()
-    disk_cache.delete(caching_key)
-
-
 def test_caching_query_mygene():
     # Create test annotation
     a = genomepy.Annotation("GRCz11", genomes_dir="tests/data")
