@@ -58,7 +58,7 @@ def test_cache():
         """Return full name of `func` by adding the module and function name."""
         return func.__module__ + "." + func.__qualname__
 
-    # cache key
+    # cache key tuple
     cache_key = (
         full_name(expensive_function),
         test,
