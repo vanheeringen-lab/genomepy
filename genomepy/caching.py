@@ -7,15 +7,17 @@ from diskcache import Cache
 from genomepy.__about__ import __version__
 
 # Cache expiration times (in seconds)
-cache_exp_short = 3600
-cache_exp_long = 3600 * 24
+cache_exp_short = 3.6e3
+cache_exp_long = 8.64e4
+# Max size for cache (in bytes)
+cache_size_limit = 4e09
 
 genomepy_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
 os.makedirs(genomepy_cache_dir, exist_ok=True)
 
 # Store the output of slow commands (marked with @disk_cache.memoize) for fast reuse.
-# diskcache uses the LRU eviction policy by default
-disk_cache = Cache(directory=genomepy_cache_dir)
+# diskcache uses the LRU (least-recently-stored) eviction policy by default
+disk_cache = Cache(directory=genomepy_cache_dir, size_limit=cache_size_limit)
 
 
 def clean():
