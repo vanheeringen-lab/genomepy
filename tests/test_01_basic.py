@@ -48,16 +48,22 @@ def test_cache():
     os.makedirs(my_cache_dir, exist_ok=True)
     cache = Cache(directory=my_cache_dir)
     test = ["a", "b", "c"]
-    # cache key
-    cache_key = (
-        "tests.test_01_basic.test_cache.<locals>.expensive_function",
-        test,
-        None,
-    )
-    # cache data frame output
+
     @cache.memoize(expire=10, tag="expensive_function")
     def expensive_function(data):
         return pd.DataFrame(data)
+
+    # Get full function name https://github.com/grantjenks/python-diskcache/blob/master/diskcache/core.py
+    def full_name(func):
+        """Return full name of `func` by adding the module and function name."""
+        return func.__module__ + "." + func.__qualname__
+
+    # cache key
+    cache_key = (
+        full_name(expensive_function),
+        test,
+        None,
+    )
 
     # check that results before/after caching are identical
     expected = expensive_function(test)
