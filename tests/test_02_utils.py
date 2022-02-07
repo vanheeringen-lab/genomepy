@@ -91,9 +91,12 @@ def test_get_localname(name="XENTR_9.1", localname="my genome"):
     assert result == genomepy.utils.safe(name)
 
     # URL input (simple)
-    url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_genome.fa.gz"
+    url = "https://mbdata.science.ru.nl/siebrenf/GRCh37/GRCh37/GRCh37.fa"
+    # TODO: uncomment when xenbase's FTP is up again
+    # url = "http://ftp.xenbase.org/pub/Genomics/JGI/Xentr9.1/XENTR_9.1_genome.fa.gz"
     result = genomepy.utils.get_localname(name=url)
-    assert result == name
+    assert result == "GRCh37"
+    # assert result ==  name
 
     # URL input (complex)
     url2 = (
