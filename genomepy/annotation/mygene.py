@@ -7,7 +7,7 @@ from loguru import logger
 from tqdm import tqdm
 
 from genomepy.annotation.utils import _parse_annot
-from genomepy.caching import disk_cache, cache_exp_short
+from genomepy.caching import cache_exp_short, disk_cache
 
 
 def _map_genes(

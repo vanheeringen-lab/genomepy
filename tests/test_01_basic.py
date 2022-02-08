@@ -3,11 +3,10 @@ import subprocess as sp
 from shutil import rmtree
 
 import norns
+import pandas as pd
 import pytest
 from appdirs import user_cache_dir
 from diskcache import Cache
-
-import pandas as pd
 
 import genomepy
 

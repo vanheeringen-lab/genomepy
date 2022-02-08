@@ -8,7 +8,7 @@ import pandas as pd
 from loguru import logger
 from tqdm.auto import tqdm
 
-from genomepy.caching import disk_cache, cache_exp_long
+from genomepy.caching import cache_exp_long, disk_cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, read_url
 from genomepy.providers.base import BaseProvider
