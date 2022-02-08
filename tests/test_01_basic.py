@@ -1,6 +1,5 @@
 import os
 import subprocess as sp
-from shutil import rmtree
 
 import norns
 import pandas as pd
@@ -11,6 +10,8 @@ from diskcache import Cache
 import genomepy
 
 from . import linux, travis
+
+# from shutil import rmtree
 
 
 def test_linting():
