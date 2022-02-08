@@ -33,7 +33,6 @@ requires = [
     "diskcache",
     "click",
     "colorama",
-    "joblib",
     "loguru",
     "mygene",
     "mysql-connector-python",
