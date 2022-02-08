@@ -8,12 +8,12 @@ import genomepy.utils
 from tests import linux, travis
 
 
-def test_head_annotations(caplog):
+def test_head_annotations(caplog, capsys):
     genomepy.functions.head_annotations("ASM14646v1", provider="ncbi", n=1)
-    # captured = capsys.readouterr().out.strip()
+    captured = capsys.readouterr().out.strip()
 
     assert "NCBI" in caplog.text
-    # assert 'gene_name "Eint_010010";' in captured
+    assert 'gene_name "Eint_010010";' in captured
 
 
 def test_list_available_genomes():
