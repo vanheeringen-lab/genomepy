@@ -68,7 +68,7 @@ def test_cache():
     expected = expensive_function(test)
     cached_data = cache.get(cache_key)
     assert cached_data.equals(expected), "Cached data does not match expected data"
-    rmtree(my_cache_dir, ignore_errors=True)
+    # rmtree(my_cache_dir, ignore_errors=True)
 
 
 # exceptions.py
