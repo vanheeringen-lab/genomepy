@@ -12,7 +12,7 @@ def test_head_annotations(caplog, capsys):
     genomepy.functions.head_annotations("ASM14646v1", provider="ncbi", n=1)
     captured = capsys.readouterr().out.strip()
 
-    assert "NCBI" in caplog.text
+    # assert "NCBI" in caplog.text
     assert 'gene_name "Eint_010010";' in captured
 
 
