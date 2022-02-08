@@ -61,9 +61,9 @@ class EnsemblProvider(BaseProvider):
         other = self.genomes[name].get("genebuild")
         return name, accession, taxid, annotations, species, other
 
-    @disk_cache.memoize(
-        expire=cache_exp_short, tag="get_version-ensembl", ignore=("self")
-    )
+    # @disk_cache.memoize(
+    #    expire=cache_exp_short, tag="get_version-ensembl", ignore=("self")
+    # )
     def get_version(self, vertebrates=False, set_version=None):
         """Retrieve current version from Ensembl FTP."""
         if set_version:
