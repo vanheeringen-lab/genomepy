@@ -1,4 +1,5 @@
 import os
+import time
 
 import pytest
 from appdirs import user_config_dir
@@ -10,6 +11,7 @@ from tests import linux, travis
 
 def test_head_annotations(caplog, capsys):
     genomepy.functions.head_annotations("ASM14646v1", provider="ncbi", n=1)
+    time.sleep(60)
     captured = capsys.readouterr().out.strip()
 
     assert "NCBI" in caplog.text
