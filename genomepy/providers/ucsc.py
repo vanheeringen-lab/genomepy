@@ -10,7 +10,6 @@ import pandas as pd
 import requests
 from loguru import logger
 
-from genomepy.caching import cache_exp_long, disk_cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import update_readme
 from genomepy.online import check_url, read_url
@@ -387,7 +386,7 @@ class UcscProvider(BaseProvider):
                             break
 
 
-@disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ucsc")
+# @disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ucsc")
 def get_genomes(rest_url):
     logger.info("Downloading assembly summaries from UCSC")
 
@@ -575,7 +574,7 @@ def download_annotation(name, annot, genomes_dir, localname, n=None):
     rm_rf(tmp_dir)
 
 
-@disk_cache.memoize(expire=cache_exp_long, tag="scrape_accession-ucsc")
+# @disk_cache.memoize(expire=cache_exp_long, tag="scrape_accession-ucsc")
 def scrape_accession(htmlpath: str) -> str or None:
     """
     Attempt to scrape the assembly accession (`GCA_`/`GCF_`) from a genome's readme.html,

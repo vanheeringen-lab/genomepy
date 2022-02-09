@@ -3,7 +3,6 @@ import re
 import requests
 from loguru import logger
 
-from genomepy.caching import cache_exp_long, disk_cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, retry
 from genomepy.providers.base import BaseProvider
@@ -217,7 +216,7 @@ def add_grch37(genomes):
     return genomes
 
 
-@disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ensembl")
+# @disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ensembl")
 def get_genomes(rest_url):
     logger.info("Downloading assembly summaries from Ensembl")
 
