@@ -8,9 +8,6 @@ import genomepy.utils
 from tests import linux, travis
 
 
-@pytest.mark.skipif(
-    travis, reason="currently not working when also building for OSX, works locally"
-)
 def test_head_annotations(caplog, capsys):
     genomepy.functions.head_annotations("ASM14646v1", provider="ncbi", n=1)
     captured = capsys.readouterr().out.strip()
