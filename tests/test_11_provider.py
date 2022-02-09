@@ -13,6 +13,8 @@ def test_create():
 
     with pytest.raises(ValueError):
         genomepy.providers.create("error")
+    # Clear cached providers
+    genomepy.clean()
 
 
 def test_list_providers():
