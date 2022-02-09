@@ -3,7 +3,7 @@ import re
 import requests
 from loguru import logger
 
-from genomepy.caching import cache_exp_long, disk_cache
+from genomepy.caching import cache_exp_long, cache_exp_short, disk_cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, retry
 from genomepy.providers.base import BaseProvider
@@ -62,7 +62,7 @@ class EnsemblProvider(BaseProvider):
         return name, accession, taxid, annotations, species, other
 
     @staticmethod
-    # @disk_cache.memoize(expire=cache_exp_short, tag="get_version-ensembl")
+    @disk_cache.memoize(expire=cache_exp_short, tag="get_version-ensembl")
     def get_version(vertebrates=False, set_version=None, url=_url):
         """Retrieve current version from Ensembl FTP."""
         if set_version:
