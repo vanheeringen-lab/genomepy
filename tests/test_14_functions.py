@@ -9,7 +9,6 @@ from tests import linux, travis
 
 
 def test_head_annotations(caplog, capsys):
-    genomepy.clean()
     genomepy.functions.head_annotations("ASM14646v1", provider="ncbi", n=1)
     captured = capsys.readouterr().out.strip()
 
