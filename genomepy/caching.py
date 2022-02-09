@@ -5,12 +5,13 @@ from appdirs import user_cache_dir
 from diskcache import Cache
 
 from genomepy.__about__ import __version__
+from genomepy.config import config
 
 # Cache expiration times (in seconds)
 cache_exp_short = 3.6e3
 cache_exp_long = 8.64e4
 # Max size for cache (in bytes)
-cache_size_limit = 6e8
+cache_size_limit = int(config.get("cache_size_limit"))
 
 genomepy_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
 os.makedirs(genomepy_cache_dir, exist_ok=True)
