@@ -45,7 +45,7 @@ def test_cache():
     # test caching of complex data types
     my_cache_dir = os.path.join(user_cache_dir("genomepy"), str(linux))
     os.makedirs(my_cache_dir, exist_ok=True)
-    cache = Cache(directory=my_cache_dir)
+    cache = Cache(directory=my_cache_dir, size_limit=1000000)
     test = ["a", "b", "c"]
 
     @cache.memoize(expire=10, tag="expensive_function")
