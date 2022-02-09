@@ -7,6 +7,7 @@ from loguru import logger
 from tqdm import tqdm
 
 from genomepy.annotation.utils import _parse_annot
+from genomepy.caching import cache_exp_short, disk_cache
 
 
 def _map_genes(
@@ -77,7 +78,7 @@ def _map_genes(
     return df
 
 
-# @disk_cache.memoize(expire=cache_exp_short, tag="query_mygene")
+@disk_cache.memoize(expire=cache_exp_short, tag="query_mygene")
 def query_mygene(
     query: Iterable[str],
     tax_id: Union[str, int],
