@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- `query_mygene` no longer filters input.
+
 ## [0.11.1] - 2022-01-06
 
 ### Added
@@ -16,7 +20,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `genomepy.Annotation` returns a `FileNotFoundError` instead of a `ValueError` where appropriate.
 - `download_assembly_report` refactored. Now downloads the report for the exact same assembly accession (and not the nearest NCBI assembly).
 - broader unit tests for UCSC assembly accession scraping
-
 
 ### Fixed
 - inconsistent behaviour with assembly reports (#193 + #194)
