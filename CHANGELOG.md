@@ -6,8 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-### Fixed
+### Changed
+- updated Boyle-lab blacklists 
 
+### Fixed
+- blacklists now work with GENCODE 
 - `query_mygene` no longer filters input.
 
 ## [0.11.1] - 2022-01-06

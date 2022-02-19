@@ -9,17 +9,21 @@ from genomepy.plugins import Plugin
 
 
 class BlacklistPlugin(Plugin):
-    stanford_url = "http://mitra.stanford.edu/kundaje/akundaje/release/blacklists/"
-    encode_url = "https://www.encodeproject.org/files/"
+    # stanford_url = "http://mitra.stanford.edu/kundaje/akundaje/release/blacklists/"
+    # encode_url = "https://www.encodeproject.org/files/"
+    github_url = "https://github.com/Boyle-Lab/Blacklist/raw/master/lists/"
     http_dict = {
-        "ce10": stanford_url + "ce10-C.elegans/ce10-blacklist.bed.gz",
-        "dm3": stanford_url + "dm3-D.melanogaster/dm3-blacklist.bed.gz",
-        "hg19": stanford_url
-        + "hg19-human/wgEncodeHg19ConsensusSignalArtifactRegions.bed.gz",
-        "hg38": encode_url + "ENCFF356LFX/@@download/ENCFF356LFX.bed.gz",
-        "GRCh38": encode_url + "ENCFF356LFX/@@download/ENCFF356LFX.bed.gz",
-        "mm9": stanford_url + "mm9-mouse/mm9-blacklist.bed.gz",
-        "mm10": stanford_url + "mm10-mouse/mm10.blacklist.bed.gz",
+        "ce10": github_url + "ce10-blacklist.v2.bed.gz",
+        "ce11": github_url + "ce11-blacklist.v2.bed.gz",
+        "dm3": github_url + "dm3-blacklist.v2.bed.gz",
+        "dm6": github_url + "dm6-blacklist.v2.bed.gz",
+        "hg19": github_url + "hg19-blacklist.v2.bed.gz",
+        "GRCh37": github_url + "hg19-blacklist.v2.bed.gz",
+        "hg38": github_url + "hg38-blacklist.v2.bed.gz",
+        "GRCh38": github_url + "hg38-blacklist.v2.bed.gz",
+        "mm9": github_url + "Blacklist_v1/mm9-blacklist.bed.gz",  # no v2
+        "mm10": github_url + "mm10-blacklist.v2.bed.gz",
+        "GRCm38": github_url + "mm10-blacklist.v2.bed.gz",
         # for testing purposes
         "this was a triumph": "I'm making a note here: 'Huge success'",
     }
@@ -46,7 +50,7 @@ class BlacklistPlugin(Plugin):
             logger.error(f"Could not download blacklist file from {link}")
 
         # convert UCSC format to Ensembl/NCBI format
-        if genome.name.split(".")[0] == "GRCh38":
+        if "1" in genome.sizes:
             os.rename(fname, fname + ".tmp")
             with open(fname + ".tmp") as old_bed, open(fname, "w") as new_bed:
                 for line in old_bed:
