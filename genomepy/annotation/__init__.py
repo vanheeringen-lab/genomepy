@@ -112,12 +112,8 @@ class Annotation:
             setattr(self, name, val)
 
         elif name == "named_gtf":
-            df = self.gtf[self.gtf.attribute.str.contains("gene_name")]
-            names = []
-            for row in df.attribute:
-                name = str(row).split("gene_name")[1].split(";")[0]
-                names.append(name.replace('"', "").replace(" ", ""))
-            df = df.assign(gene_name=names)
+            df = self.gtf.copy()
+            df["gene_name"] = from_attributes(df, "gene_name")
             val = df.set_index("gene_name")
             setattr(self, name, val)
 
@@ -363,6 +359,30 @@ class Annotation:
 
         return a_dict
 
+    def lengths(self, gene_level=True):
+        """
+        Return a dataframe with gene names (or transcript ids) as index,
+        and their lengths as column.
+        """
+        exons = self.named_gtf[self.named_gtf["feature"] == "exon"].copy()
+        if len(exons) == 0:
+            raise ValueError("no exon data in GTF!")
+
+        # add length of each exon
+        exons["length"] = abs(exons["end"] - exons["start"])
+
+        # sum exon lengths per transcript
+        exons["transcript_id"] = from_attributes(exons, "transcript_id")
+        lens = exons.groupby("transcript_id")[["length"]].sum()
+        if not gene_level:
+            return lens
+
+        # select longest transcript per gene
+        exons = exons.reset_index().set_index("transcript_id")[["gene_name"]]
+        exons = exons.drop_duplicates().join(lens)
+        lens = exons.groupby("gene_name")[["length"]].max()
+        return lens
+
 
 def _get_name_and_dir(name, genomes_dir=None):
     """
@@ -444,3 +464,14 @@ def filter_regex(
     pattern = re.compile(regex)
     filter_func = df[column].map(lambda x: bool(pattern.match(x)) is not invert_match)
     return df[filter_func]
+
+
+def from_attributes(df, field):
+    """Convert the specified GTF attribute field to a pandas series"""
+    df = df[df["attribute"].str.contains(field)]
+    if len(df) == 0:
+        raise ValueError(f"{field} not in GTF attributes!")
+    series = (
+        df["attribute"].str.split(f'{field} "', n=1).str[1].str.split('"', n=1).str[0]
+    )
+    return series
