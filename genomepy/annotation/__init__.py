@@ -112,9 +112,9 @@ class Annotation:
             setattr(self, name, val)
 
         elif name == "named_gtf":
-            df = self.gtf.copy()
-            df["gene_name"] = from_attributes(df, "gene_name")
-            val = df.set_index("gene_name")
+            val = self.gtf[self.gtf["attribute"].str.contains("gene_name")].copy()
+            val["gene_name"] = self.from_attributes("gene_name", check=False)
+            val.set_index("gene_name", inplace=True)
             setattr(self, name, val)
 
         elif name == "genome_contigs":
@@ -139,6 +139,18 @@ class Annotation:
         elif name == "sizes_file":
             self.genome_contigs = None  # noqa
         super(Annotation, self).__setattr__(name, value)
+
+    def from_attributes(self, field, annot="gtf", check=True):
+        """Convert the specified GTF attribute field to a pandas series"""
+        df = _parse_annot(self, annot)
+        if check:
+            df = self.gtf[self.gtf["attribute"].str.contains(field)]
+            if len(df) == 0:
+                raise ValueError(f"{field} not in GTF attributes!")
+
+        # extract the text between the quotes
+        series = df["attribute"].str.extract(fr'{field} "(.*?)"', expand=False)
+        return series
 
     def genes(self, annot: str = "bed") -> list:
         """
@@ -365,21 +377,24 @@ class Annotation:
         and their lengths as column.
         """
         exons = self.named_gtf[self.named_gtf["feature"] == "exon"].copy()
+        exons = exons[exons["attribute"].str.contains("transcript_id")]
         if len(exons) == 0:
-            raise ValueError("no exon data in GTF!")
+            raise ValueError("no exon or transcript data in GTF!")
 
         # add length of each exon
         exons["length"] = abs(exons["end"] - exons["start"])
 
         # sum exon lengths per transcript
-        exons["transcript_id"] = from_attributes(exons, "transcript_id")
+        exons["transcript_id"] = self.from_attributes(
+            "transcript_id", annot=exons, check=False
+        )
         lens = exons.groupby("transcript_id")[["length"]].sum()
         if not gene_level:
             return lens
 
         # select longest transcript per gene
-        exons = exons.reset_index().set_index("transcript_id")[["gene_name"]]
-        exons = exons.drop_duplicates().join(lens)
+        exons = exons.reset_index()[["transcript_id", "gene_name"]].drop_duplicates()
+        exons = exons.set_index("transcript_id").join(lens)
         lens = exons.groupby("gene_name")[["length"]].max()
         return lens
 
@@ -464,14 +479,3 @@ def filter_regex(
     pattern = re.compile(regex)
     filter_func = df[column].map(lambda x: bool(pattern.match(x)) is not invert_match)
     return df[filter_func]
-
-
-def from_attributes(df, field):
-    """Convert the specified GTF attribute field to a pandas series"""
-    df = df[df["attribute"].str.contains(field)]
-    if len(df) == 0:
-        raise ValueError(f"{field} not in GTF attributes!")
-    series = (
-        df["attribute"].str.split(f'{field} "', n=1).str[1].str.split('"', n=1).str[0]
-    )
-    return series

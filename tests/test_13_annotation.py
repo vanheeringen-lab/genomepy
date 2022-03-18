@@ -196,6 +196,18 @@ def test_gtf_dict():
     #     a.gtf_dict("gene_name", "transcript_id", annot="bed")
 
 
+def test_lengths():
+    a = genomepy.annotation.Annotation("GRCz11", genomes_dir="tests/data")
+
+    gene_lengths = a.lengths()
+    assert str(gene_lengths["length"].dtype) == "uint32"
+    expected_genes = a.named_gtf[a.named_gtf.feature == "exon"].index.unique()
+    assert sorted(expected_genes) == sorted(gene_lengths.index)
+
+    transcript_lengths = a.lengths(False)
+    assert transcript_lengths.index[0].startswith("ENSDART")
+
+
 # annotation.utils.py
 
 
