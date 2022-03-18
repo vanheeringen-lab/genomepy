@@ -204,7 +204,7 @@ def test_lengths():
     expected_genes = a.named_gtf[a.named_gtf.feature == "exon"].index.unique()
     assert sorted(expected_genes) == sorted(gene_lengths.index)
 
-    transcript_lengths = a.lengths(False)
+    transcript_lengths = a.lengths(gene_level=False)
     assert transcript_lengths.index[0].startswith("ENSDART")
 
 

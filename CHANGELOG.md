@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - `quiet` flag for `genomepy.Annotation`
+- `genomepy.Annotation.lengths()` to retrieve the gene/transcript lengths.
 - `genomepy -v` flag
 
 ### Changed
