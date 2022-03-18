@@ -140,16 +140,35 @@ class Annotation:
             self.genome_contigs = None  # noqa
         super(Annotation, self).__setattr__(name, value)
 
-    def from_attributes(self, field, annot="gtf", check=True):
-        """Convert the specified GTF attribute field to a pandas series"""
+    def from_attributes(
+        self, field, annot: Union[str, pd.DataFrame] = "gtf", check=True
+    ):
+        """
+        Convert the specified GTF attribute field to a pandas series
+
+        Parameters
+        ----------
+        field : str
+            field from the GTF's attribute column.
+        annot : str or pd.Dataframe, optional
+            any GTF in dataframe format, or the default GTF.
+        check : bool, optional
+            filter the GTF for rows containing field?
+
+        Returns
+        -------
+        pd.Dataframe
+            with the same index as the input GTF and the field column
+        """
         df = _parse_annot(self, annot)
         if check:
-            df = self.gtf[self.gtf["attribute"].str.contains(field)]
+            df = df[df["attribute"].str.contains(field)]
             if len(df) == 0:
                 raise ValueError(f"{field} not in GTF attributes!")
 
         # extract the text between the quotes
         series = df["attribute"].str.extract(fr'{field} "(.*?)"', expand=False)
+        series.name = field
         return series
 
     def genes(self, annot: str = "bed") -> list:
