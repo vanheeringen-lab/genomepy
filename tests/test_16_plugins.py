@@ -92,31 +92,31 @@ def test_blacklist(caplog, genome):
     link = "I'm making a note here: 'Huge success'"
     assert f"Could not download blacklist file from {link}" in caplog.text
 
-    # download UCSC blacklist
+    # download blacklist
     genome.name = "ce10"
     p.after_genome_download(genome, force=True)
-    assert "ce10-C.elegans/ce10-blacklist.bed.gz" in caplog.text
+    assert "ce10-blacklist" in caplog.text
     assert os.path.exists(fname)
     with open(fname) as blacklist:
         for line in blacklist:
             assert line.startswith("chr")
             break
-    os.unlink(fname)
+    # os.unlink(fname)
 
-    # download Ensembl/NCBI blacklist
-    genome.name = "GRCh38"
-    p.after_genome_download(genome, force=True)
-    assert "ENCFF356LFX/@@download/ENCFF356LFX.bed.gz" in caplog.text
-    with open(fname) as blacklist:
-        for line in blacklist:
-            assert not line.startswith("chr")
-            break
+    # # download Ensembl/NCBI blacklist
+    # genome.name = "GRCh38"
+    # p.after_genome_download(genome, force=True)
+    # assert "ENCFF356LFX/@@download/ENCFF356LFX.bed.gz" in caplog.text
+    # with open(fname) as blacklist:
+    #     for line in blacklist:
+    #         assert not line.startswith("chr")
+    #         break
 
     # don't overwrite
     dont_overwrite(p, genome, fname)
     os.unlink(fname)
 
-    genome.name = "ce10"
+    # genome.name = "ce10"
 
 
 def test_bowtie2(genome, threads=2):

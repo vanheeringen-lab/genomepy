@@ -6,9 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-### Fixed
+### Added
+- `genomepy.Annotation.lengths()` to retrieve the gene/transcript lengths.
+- `genomepy.Annotation.from_attributes()` can extract any sub-column that pesky attributes column
 
+### Changed
+- updated Boyle-lab blacklists 
+
+### Fixed
+- blacklists now work with GENCODE 
 - `query_mygene` no longer filters input.
+- `genomepy install` with local provider now understands you want the annotation if you pass a path to an annotation
 
 ## [0.11.1] - 2022-01-06
 
