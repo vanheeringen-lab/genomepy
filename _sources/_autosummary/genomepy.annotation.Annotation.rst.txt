@@ -18,9 +18,11 @@ genomepy.annotation.Annotation
    
       ~Annotation.__init__
       ~Annotation.filter_regex
+      ~Annotation.from_attributes
       ~Annotation.gene_coords
       ~Annotation.genes
       ~Annotation.gtf_dict
+      ~Annotation.lengths
       ~Annotation.map_genes
       ~Annotation.map_locations
       ~Annotation.sanitize

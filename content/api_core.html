@@ -747,6 +747,27 @@ but also separately with <code class="code docutils literal notranslate"><span c
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">from_attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gtf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Convert the specified GTF attribute field to a pandas series</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>str</em>) – field from the GTF’s attribute column.</p></li>
+<li><p><strong>annot</strong> (<em>str</em><em> or </em><em>pd.Dataframe</em><em>, </em><em>optional</em>) – any GTF in dataframe format, or the default GTF.</p></li>
+<li><p><strong>check</strong> (<em>bool</em><em>, </em><em>optional</em>) – filter the GTF for rows containing field?</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>with the same index as the input GTF and the field column</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">gene_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">genes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bed'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span></dt>
 <dd><p>Retrieve gene locations.</p>
 <dl class="field-list simple">
@@ -767,14 +788,14 @@ but also separately with <code class="code docutils literal notranslate"><span c
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">genes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bed'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span></dt>
+<span class="sig-name descname"><span class="pre">genes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gtf'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span></dt>
 <dd><p>Retrieve gene names from an annotation.</p>
 <p>For BED files, names are taken from the ‘name’ columns.</p>
 <p>For GTF files, names are taken from the ‘gene_name’ field
 in the attribute column, if available.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>annot</strong> (<em>str</em><em>, </em><em>optional</em>) – Annotation file type: ‘bed’ or ‘gtf’ (default: “bed”)</p>
+<dd class="field-odd"><p><strong>annot</strong> (<em>str</em><em>, </em><em>optional</em>) – Annotation file type: ‘bed’ or ‘gtf’ (default: “gtf”)</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>gene names</p>
@@ -837,6 +858,25 @@ and all lists are length 1, values will be strings.</p>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">index_file</span></span></dt>
 <dd><p>path to the genome index</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">lengths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gene_name'</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Return a series with the selected GTF attribute as index,
+and its lengths as values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>attribute</strong> (<em>str</em>) – attribute to provide lengths of. Options: gene_name, gene_id,
+transcript_name, transcript_id. Attribute must be present in the GTF file.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>attribute indexed series named ‘length’</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.Series</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1014,7 +1054,7 @@ which allows you to filter a dataframe by any columns using regex.</p>
 
   <div role="contentinfo">
     <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-01-06, 11:54 (UTC).
+      <span class="lastupdated">Last updated on 2022-03-28, 15:36 (UTC).
       </span></p>
   </div>
 

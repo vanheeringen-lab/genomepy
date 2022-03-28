@@ -30,8 +30,7 @@ genomepy.plugins.blacklist.BlacklistPlugin
 
    .. autosummary::
    
-      ~BlacklistPlugin.encode_url
+      ~BlacklistPlugin.github_url
       ~BlacklistPlugin.http_dict
-      ~BlacklistPlugin.stanford_url
    
    
