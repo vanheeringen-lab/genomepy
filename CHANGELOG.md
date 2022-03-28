@@ -11,7 +11,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `genomepy.Annotation.from_attributes()` can extract any sub-column that pesky attributes column
 
 ### Changed
-- updated Boyle-lab blacklists 
+- updated Boyle-lab blacklists
+- `genomepy.Annotation.genes()` default changed from bed (commonly containing transcript names) to gtf (gene names)
 
 ### Fixed
 - blacklists now work with GENCODE 
