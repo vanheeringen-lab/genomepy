@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.12.0] - 2022-03-28
+
+### Added
+- `genomepy.Annotation.lengths()` to retrieve the gene/transcript lengths.
+- `genomepy.Annotation.from_attributes()` can extract any sub-column that pesky attributes column
+
+### Changed
+- updated Boyle-lab blacklists
+- `genomepy.Annotation.genes()` default changed from bed (commonly containing transcript names) to gtf (gene names)
+
+### Fixed
+- blacklists now work with GENCODE 
+- `query_mygene` no longer filters input.
+- `genomepy install` with local provider now understands you want the annotation if you pass a path to an annotation
+
 ## [0.11.1] - 2022-01-06
 
 ### Added
@@ -16,7 +31,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `genomepy.Annotation` returns a `FileNotFoundError` instead of a `ValueError` where appropriate.
 - `download_assembly_report` refactored. Now downloads the report for the exact same assembly accession (and not the nearest NCBI assembly).
 - broader unit tests for UCSC assembly accession scraping
-
 
 ### Fixed
 - inconsistent behaviour with assembly reports (#193 + #194)
@@ -383,6 +397,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.12.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.11.1...0.12.0
 [0.11.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.11.0...0.11.1
 [0.11.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.10.0...0.11.0
 [0.10.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.9.3...0.10.0

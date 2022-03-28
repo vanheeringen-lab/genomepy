@@ -108,7 +108,7 @@ def query_mygene(
     field, _ = _parse_mygene_input(field)
 
     logger.info("Querying mygene.info...")
-    query = list(set(query))
+    query = list(query)
     query_len = len(query)
     batch_size = 1000  # same as mygene.info internal batch size
     it = range(0, query_len, batch_size)

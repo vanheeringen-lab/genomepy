@@ -112,13 +112,9 @@ class Annotation:
             setattr(self, name, val)
 
         elif name == "named_gtf":
-            df = self.gtf[self.gtf.attribute.str.contains("gene_name")]
-            names = []
-            for row in df.attribute:
-                name = str(row).split("gene_name")[1].split(";")[0]
-                names.append(name.replace('"', "").replace(" ", ""))
-            df = df.assign(gene_name=names)
-            val = df.set_index("gene_name")
+            val = self.gtf.join(
+                self.from_attributes("gene_name"), how="inner"
+            ).set_index("gene_name")
             setattr(self, name, val)
 
         elif name == "genome_contigs":
@@ -144,7 +140,38 @@ class Annotation:
             self.genome_contigs = None  # noqa
         super(Annotation, self).__setattr__(name, value)
 
-    def genes(self, annot: str = "bed") -> list:
+    def from_attributes(
+        self, field, annot: Union[str, pd.DataFrame] = "gtf", check=True
+    ):
+        """
+        Convert the specified GTF attribute field to a pandas series
+
+        Parameters
+        ----------
+        field : str
+            field from the GTF's attribute column.
+        annot : str or pd.Dataframe, optional
+            any GTF in dataframe format, or the default GTF.
+        check : bool, optional
+            filter the GTF for rows containing field?
+
+        Returns
+        -------
+        pd.Series
+            with the same index as the input GTF and the field column
+        """
+        df = _parse_annot(self, annot)
+        if check:
+            df = df[df["attribute"].str.contains(field)]
+            if len(df) == 0:
+                raise ValueError(f"{field} not in GTF attributes!")
+
+        # extract the text between the quotes
+        series = df["attribute"].str.extract(fr'{field} "(.*?)"', expand=False)
+        series.name = field
+        return series
+
+    def genes(self, annot: str = "gtf") -> list:
         """
         Retrieve gene names from an annotation.
 
@@ -156,7 +183,7 @@ class Annotation:
         Parameters
         ----------
         annot : str, optional
-            Annotation file type: 'bed' or 'gtf' (default: "bed")
+            Annotation file type: 'bed' or 'gtf' (default: "gtf")
 
         Returns
         -------
@@ -362,6 +389,43 @@ class Annotation:
             a_dict[k] = list(v)[0] if all_len_1 else list(v)
 
         return a_dict
+
+    def lengths(self, attribute="gene_name"):
+        """
+        Return a series with the selected GTF attribute as index,
+        and its lengths as values.
+
+        Parameters
+        ----------
+        attribute : str
+            attribute to provide lengths of. Options: gene_name, gene_id,
+            transcript_name, transcript_id. Attribute must be present in the GTF file.
+
+        Returns
+        -------
+        pd.Series
+            attribute indexed series named 'length'
+        """
+        exons = self.gtf[self.gtf["feature"] == "exon"].copy()
+        if len(exons) == 0:
+            raise ValueError("no exon details in GTF!")
+        exons = exons.join(self.from_attributes("transcript_id", exons), how="inner")
+
+        # add exon lengths
+        exons["length"] = abs(exons["end"] - exons["start"])
+        # sum exon lengths per transcript
+        lens = exons.groupby("transcript_id")["length"].sum()
+        if attribute == "transcript_id":
+            return lens
+
+        # add the attribute
+        exons = exons.join(self.from_attributes(attribute, exons), how="inner")
+        exons = exons[["transcript_id", attribute]].drop_duplicates()
+        exons = exons.set_index("transcript_id").join(lens, how="inner")
+
+        # select longest transcript
+        lens = exons.groupby(attribute)["length"].max()
+        return lens
 
 
 def _get_name_and_dir(name, genomes_dir=None):
