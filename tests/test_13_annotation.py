@@ -63,7 +63,7 @@ def test_annotation_init(caplog, annot):
     assert len(annot.genome_contigs) == 17  # from sizes
     assert isinstance(annot.bed, pd.DataFrame)
     assert isinstance(annot.gtf, pd.DataFrame)
-    assert annot.genes() == ["NP_059343.1"]
+    assert annot.genes("bed") == ["NP_059343.1"]
 
     # >1 GTF files: take unzipped
     g1 = "tests/data/data.annotation.gtf"
@@ -115,17 +115,18 @@ def test_named_gtf():
     assert set(df.at["YDL248W", "seqname"]) == {"chrIV"}
 
 
-def test_genes(annot):
-    g = annot.genes()
+def test_genes():
+    a = genomepy.Annotation("GRCz11", genomes_dir="tests/data")
+    g = a.genes("bed")
     assert isinstance(g, list)
-    g = annot.genes("gtf")
+    g = a.genes("gtf")
     assert isinstance(g, list)
 
 
 def test_gene_coords(caplog):
     a = genomepy.Annotation("sacCer3", genomes_dir="tests/data")
 
-    bed_genes = a.genes()[0:10]
+    bed_genes = a.genes("bed")[0:10]
     c = a.gene_coords(bed_genes, "bed")
     assert list(c.shape) == [10, 5]
     assert c.columns.to_list() == ["chrom", "start", "end", "name", "strand"]
@@ -199,13 +200,22 @@ def test_gtf_dict():
 def test_lengths():
     a = genomepy.annotation.Annotation("GRCz11", genomes_dir="tests/data")
 
-    gene_lengths = a.lengths()
-    assert str(gene_lengths["length"].dtype) == "uint32"
+    lengths = a.lengths("gene_name")
+    assert str(lengths.dtype) == "uint32"
     expected_genes = a.named_gtf[a.named_gtf.feature == "exon"].index.unique()
-    assert sorted(expected_genes) == sorted(gene_lengths.index)
+    assert sorted(expected_genes) == sorted(lengths.index)
+    assert lengths.loc["CR383668.1"] == 420
 
-    transcript_lengths = a.lengths(gene_level=False)
-    assert transcript_lengths.index[0].startswith("ENSDART")
+    lengths = a.lengths("gene_id")
+    assert lengths.index[0].startswith("ENSDARG")
+    assert lengths.loc["ENSDARG00000103202"] == 420
+
+    lengths = a.lengths("transcript_name")
+    assert lengths.loc["CR383668.1-201"] == 420
+
+    lengths = a.lengths("transcript_id")
+    assert lengths.index[0].startswith("ENSDART")
+    assert lengths.loc["ENSDART00000159919"] == 420
 
 
 # annotation.utils.py
