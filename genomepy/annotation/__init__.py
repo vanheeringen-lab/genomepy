@@ -112,9 +112,9 @@ class Annotation:
             setattr(self, name, val)
 
         elif name == "named_gtf":
-            val = self.gtf[self.gtf["attribute"].str.contains("gene_name")].copy()
-            val["gene_name"] = self.from_attributes("gene_name", check=False)
-            val.set_index("gene_name", inplace=True)
+            val = self.gtf.join(
+                self.from_attributes("gene_name"), how="inner"
+            ).set_index("gene_name")
             setattr(self, name, val)
 
         elif name == "genome_contigs":
@@ -157,7 +157,7 @@ class Annotation:
 
         Returns
         -------
-        pd.Dataframe
+        pd.Series
             with the same index as the input GTF and the field column
         """
         df = _parse_annot(self, annot)
@@ -171,7 +171,7 @@ class Annotation:
         series.name = field
         return series
 
-    def genes(self, annot: str = "bed") -> list:
+    def genes(self, annot: str = "gtf") -> list:
         """
         Retrieve gene names from an annotation.
 
@@ -183,7 +183,7 @@ class Annotation:
         Parameters
         ----------
         annot : str, optional
-            Annotation file type: 'bed' or 'gtf' (default: "bed")
+            Annotation file type: 'bed' or 'gtf' (default: "gtf")
 
         Returns
         -------
@@ -390,31 +390,41 @@ class Annotation:
 
         return a_dict
 
-    def lengths(self, gene_level=True):
+    def lengths(self, attribute="gene_name"):
         """
-        Return a dataframe with gene names (or transcript ids) as index,
-        and their lengths as column.
+        Return a series with the selected GTF attribute as index,
+        and its lengths as values.
+
+        Parameters
+        ----------
+        attribute : str
+            attribute to provide lengths of. Options: gene_name, gene_id,
+            transcript_name, transcript_id. Attribute must be present in the GTF file.
+
+        Returns
+        -------
+        pd.Series
+            attribute indexed series named 'length'
         """
-        exons = self.named_gtf[self.named_gtf["feature"] == "exon"].copy()
-        exons = exons[exons["attribute"].str.contains("transcript_id")]
+        exons = self.gtf[self.gtf["feature"] == "exon"].copy()
         if len(exons) == 0:
-            raise ValueError("no exon or transcript data in GTF!")
+            raise ValueError("no exon details in GTF!")
+        exons = exons.join(self.from_attributes("transcript_id", exons), how="inner")
 
-        # add length of each exon
+        # add exon lengths
         exons["length"] = abs(exons["end"] - exons["start"])
-
         # sum exon lengths per transcript
-        exons["transcript_id"] = self.from_attributes(
-            "transcript_id", annot=exons, check=False
-        )
-        lens = exons.groupby("transcript_id")[["length"]].sum()
-        if not gene_level:
+        lens = exons.groupby("transcript_id")["length"].sum()
+        if attribute == "transcript_id":
             return lens
 
-        # select longest transcript per gene
-        exons = exons.reset_index()[["transcript_id", "gene_name"]].drop_duplicates()
-        exons = exons.set_index("transcript_id").join(lens)
-        lens = exons.groupby("gene_name")[["length"]].max()
+        # add the attribute
+        exons = exons.join(self.from_attributes(attribute, exons), how="inner")
+        exons = exons[["transcript_id", attribute]].drop_duplicates()
+        exons = exons.set_index("transcript_id").join(lens, how="inner")
+
+        # select longest transcript
+        lens = exons.groupby(attribute)["length"].max()
         return lens
 
 
