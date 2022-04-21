@@ -2,5 +2,5 @@ bgzip: false
 genomes_dir: ~/.local/share/genomes/
 plugin: []
 cache_size_limit: 600000000
-cache_exp_short: 3.6e3 
-cache_exp_long: 8.64e4 
+cache_exp_short: 0 
+cache_exp_long: 0
