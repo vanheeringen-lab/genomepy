@@ -8,8 +8,8 @@ from genomepy.__about__ import __version__
 from genomepy.config import config
 
 # Cache expiration times (in seconds)
-cache_exp_short = 3.6e3
-cache_exp_long = 8.64e4
+cache_exp_short = config.get("cache_exp_short", 3.6e3)
+cache_exp_long = config.get("cache_exp_long", 8.64e4)
 # Set max size for cache (in bytes) from config
 cache_size_limit = config.get("cache_size_limit", 600000000)
 
