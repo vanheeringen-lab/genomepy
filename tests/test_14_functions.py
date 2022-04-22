@@ -20,7 +20,7 @@ def test_list_available_genomes():
     g = genomepy.functions.list_available_genomes("Ensembl")
     metadata = next(g)
     assert isinstance(metadata, list)
-    assert metadata[0:2] == ["mCalJac1.pat.X", "Ensembl"]
+    assert metadata[0:2] == ["ASM394721v1", "Ensembl"] 
 
 
 def test_list_installed_genomes():
