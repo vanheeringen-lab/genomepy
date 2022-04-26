@@ -35,7 +35,7 @@ if not skip:
         These genomes are hosted on ftp.ensemblgenomes.org.
         """
         mask = masking if masking != "unmasked" else "none"
-        for genome in ["Amel_HAv3.1", "WBcel235"]:
+        for genome in ["Amel_HAv3.1", "ASM23943v1"]:
             assert ensembl.get_genome_download_link(genome, mask=mask)
 
     def test_ucsc_genome_download_links(masking, ucsc):
