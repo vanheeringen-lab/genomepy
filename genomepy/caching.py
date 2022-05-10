@@ -7,7 +7,7 @@ from diskcache import Cache
 from genomepy.__about__ import __version__
 from genomepy.config import config
 
-# Cache expiration times (in seconds)
+# Set cache expiration times (in seconds)
 cache_exp_short = 3.6e3
 cache_exp_long = 8.64e4
 # Set max size for cache (in bytes) from yml config
