@@ -7,6 +7,9 @@ branches:
 # use the minimal travis environment since we test in conda
 language: minimal
 
+#dist
+dist: focal
+
 os:
   - osx
   - linux
