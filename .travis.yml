@@ -13,6 +13,9 @@ dist: focal
 os:
   - osx
   - linux
+  
+vm:
+  size: x-large
 
 env:
   global:
