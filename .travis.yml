@@ -15,7 +15,7 @@ os:
   - linux
   
 vm:
-  size: x-large
+  size: large
 
 env:
   global:
