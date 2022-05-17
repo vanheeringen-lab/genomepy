@@ -58,8 +58,9 @@ class EnsemblProvider(BaseProvider):
         taxid = self.genome_taxid(name)
         annotations = bool(self.annotation_links(name))
         species = self.genomes[name].get("scientific_name")
+        length = self.genomes[name].get("base_count", "-1")
         other = self.genomes[name].get("genebuild")
-        return name, accession, taxid, annotations, species, other
+        return name, accession, taxid, annotations, species, length, other
 
     @goldfish_cache(ignore=["self"])
     def get_version(self, vertebrates=False, set_version=None):
@@ -210,6 +211,7 @@ def add_grch37(genomes):
         "url_name": "Homo_sapiens",
         "assembly_name": "GRCh37",
         "division": "vertebrates",
+        "base_count": "3137144693",
         "display_name": "",
         "genebuild": "",
     }

@@ -8,7 +8,7 @@ from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import update_readme
 from genomepy.online import check_url, connect_ftp_link
 from genomepy.providers.base import BaseProvider, download_annotation
-from genomepy.providers.ncbi import download_assembly_report
+from genomepy.providers.ncbi import download_assembly_report, get_genome_size
 from genomepy.providers.ucsc import UcscProvider
 from genomepy.utils import get_genomes_dir, get_localname
 
@@ -54,8 +54,9 @@ class GencodeProvider(BaseProvider):
         taxid = self.genomes[name]["taxonomy_id"]
         annotations = True
         species = self.genomes[name]["species"]
+        length = get_genome_size(accession)
         other = self.genomes[name]["other_info"]
-        return name, accession, taxid, annotations, species, other
+        return name, accession, taxid, annotations, species, length, other
 
     def _update_genomes(self):
         """add assembly accession and other information to the genomes dict"""

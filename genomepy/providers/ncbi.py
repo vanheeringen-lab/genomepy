@@ -64,8 +64,9 @@ class NcbiProvider(BaseProvider):
         taxid = self.genome_taxid(name)
         annotations = bool(self.annotation_links(name))
         species = self.genomes[name].get("organism_name")
+        length = get_genome_size(accession)
         other = self.genomes[name].get("submitter")
-        return name, accession, taxid, annotations, species, other
+        return name, accession, taxid, annotations, species, length, other
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
@@ -231,7 +232,7 @@ def get_genomes(assembly_url):
     return genomes
 
 
-def download_assembly_report(acc: str, fname: str = None):
+def download_assembly_report(acc: str, fname: str = None, quiet=False):
     """
     Retrieve the NCBI assembly report.
 
@@ -251,11 +252,13 @@ def download_assembly_report(acc: str, fname: str = None):
     """
     msg = "Could not download the assembly report from NCBI. "
     if not isinstance(acc, str) or not acc.startswith(("GCA", "GCF")):
-        logger.warning(msg)
+        if not quiet:
+            logger.warning(msg)
         return None
     assembly_report = _assembly_report_url(acc)
     if assembly_report is None:
-        logger.warning(msg + f"Assembly accession '{acc}' not found.")
+        if not quiet:
+            logger.warning(msg + f"Assembly accession '{acc}' not found.")
         return None
     asm_report = pd.read_csv(
         assembly_report, sep="\t", comment="#", names=ASM_FORMAT, dtype=str
@@ -308,3 +311,13 @@ def _closest_patch_lvl(reference: str, targets: list) -> str:
 def _patch_lvl(acc: str) -> int:
     """str(GCA_000000000.6) -> int(6)"""
     return int(acc.split(".")[1]) if "." in acc else 0
+
+
+def get_genome_size(acc):
+    length = "-1"
+    df = download_assembly_report(acc, quiet=True)
+    if df is not None:
+        length = df["Sequence-Length"].astype(int).sum()
+        # add a thousands separator
+        length = f'{length:,}'
+    return length

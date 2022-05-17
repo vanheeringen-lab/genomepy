@@ -15,7 +15,7 @@ from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import update_readme
 from genomepy.online import check_url, read_url
 from genomepy.providers.base import BaseProvider
-from genomepy.providers.ncbi import NcbiProvider
+from genomepy.providers.ncbi import NcbiProvider, get_genome_size
 from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf
 
 # order determines which annotation genomepy will attempt to install
@@ -173,8 +173,9 @@ class UcscProvider(BaseProvider):
         taxid = self.genome_taxid(name)
         annotations = [a in self.annotation_links(name) for a in ANNOTATIONS]
         species = self.genomes[name].get("scientificName")
+        length = get_genome_size(accession)
         other = self.genomes[name].get("description")
-        return name, accession, taxid, annotations, species, other
+        return name, accession, taxid, annotations, species, length, other
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
