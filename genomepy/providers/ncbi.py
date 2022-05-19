@@ -58,15 +58,17 @@ class NcbiProvider(BaseProvider):
         """Can the provider be reached?"""
         return bool(check_url("https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"))
 
-    def _genome_info_tuple(self, name):
+    def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""
         accession = self.assembly_accession(name)
         taxid = self.genome_taxid(name)
         annotations = bool(self.annotation_links(name))
         species = self.genomes[name].get("organism_name")
-        length = get_genome_size(accession)
         other = self.genomes[name].get("submitter")
-        return name, accession, taxid, annotations, species, length, other
+        if size:
+            length = get_genome_size(accession)
+            return name, accession, taxid, annotations, species, length, other
+        return name, accession, taxid, annotations, species, other
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
@@ -244,6 +246,8 @@ def download_assembly_report(acc: str, fname: str = None, quiet=False):
         Assembly accession (GCA or GCF)
     fname : str, optional
         Save assembly_report to this filename.
+    quiet : bool, optional
+        Silence warnings.
 
     Returns
     -------
@@ -314,10 +318,8 @@ def _patch_lvl(acc: str) -> int:
 
 
 def get_genome_size(acc):
-    length = "-1"
+    length = -1
     df = download_assembly_report(acc, quiet=True)
     if df is not None:
         length = df["Sequence-Length"].astype(int).sum()
-        # add a thousands separator
-        length = f'{length:,}'
     return length

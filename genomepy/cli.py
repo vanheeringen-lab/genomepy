@@ -11,7 +11,6 @@ from loguru import logger
 import genomepy
 
 init(autoreset=True)
-
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
@@ -63,7 +62,8 @@ def config(command):
 
 @click.command("genomes", short_help="list available genomes")
 @click.option("-p", "--provider", help="provider")
-def genomes(provider=None):
+@click.option("-s", "--size", is_flag=True, help="show absolute genome size")
+def genomes(provider=None, size=False):
     """
     List all available genomes.
 
@@ -72,13 +72,13 @@ def genomes(provider=None):
     "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
     """
     provider_init = True
-    for row in genomepy.list_available_genomes(provider):
+    for row in genomepy.list_available_genomes(provider, size):
         if provider_init:
             provider_init = False
-            terminal_header()
+            terminal_header(size)
             if str(provider).lower() in ["none", "ucsc"]:
-                terminal_subheader()
-        terminal_formatting(row)
+                terminal_subheader(size)
+        terminal_formatting(row, size)
 
 
 # extended options for genomepy install
@@ -310,9 +310,19 @@ SEARCH_FORMAT = {
     "tax_id": ">7",  # fixed width
     "annotation": "^10",  # fixed width
     "species": "<40",
+    "genome_size": "<13",
     "other_info": "<40",
 }
-SEARCH_STRING = "    ".join([f"{{:{size}}}" for size in SEARCH_FORMAT.values()])
+
+
+@genomepy.caching.goldfish_cache
+def search_string(size=False):
+    fmt = SEARCH_FORMAT.copy()
+    if size is False:
+        del fmt["genome_size"]
+    return "    ".join([f"{{:{size}}}" for size in fmt.values()])
+
+
 if sys.stdout.isatty():
 
     def bool_to_unicode(boolean: bool) -> str:
@@ -325,7 +335,7 @@ if sys.stdout.isatty():
         sting = sting.replace("\u2717", Fore.RED + "\u2717" + Fore.RESET)
         return sting
 
-    def terminal_formatting(row: list):
+    def terminal_formatting(row: list, size=False):
         """
         In case we print to a terminal, the output is aligned.
         Otherwise (file, pipe) we use tab-separated columns.
@@ -334,29 +344,32 @@ if sys.stdout.isatty():
             row[4] = " ".join([bool_to_unicode(b) for b in row[4]])
         else:
             row[4] = bool_to_unicode(row[4])
+        if size:
+            row[6] = f'{int(row[6]):,}'
         for n, ele in enumerate(row):
             if ele is None:
                 row[n] = "na"
-        row = SEARCH_STRING.format(*row)
+        row = search_string(size).format(*row)
         print(color_unicode(row))
 
-    def terminal_header():
+    def terminal_header(size=False):
         """Header for search output."""
-        print(Style.BRIGHT + SEARCH_STRING.format(*SEARCH_FORMAT))
+        fmt = SEARCH_FORMAT.copy()
+        if size is False:
+            del fmt["genome_size"]
+        print(Style.BRIGHT + search_string(size).format(*fmt))
 
-    def terminal_subheader():
+    def terminal_subheader(size=False):
         """Subheader for search output."""
         # annotations: ncbiRefSeq, refGene, ensGene & knownGene
-        print(
-            SEARCH_STRING.format(
-                *["", "", "", "", "n r e k", "<- UCSC options (see help)", ""]
-            )
-        )
+        subheader = [""] * (7+size)
+        subheader[4:6] = ["n r e k", "<- UCSC options (see help)"]
+        print(search_string(size).format(*subheader))
 
 
 else:
 
-    def terminal_formatting(row: list):
+    def terminal_formatting(row: list, size=False):
         """
         In case we print to a terminal, the output is aligned.
         Otherwise (file, pipe) we use tab-separated columns.
@@ -365,15 +378,22 @@ else:
             row[4] = str(row[4])
         print("\t".join([str(element) for element in row]))
 
-    def terminal_header():
+    def terminal_header(size=False):
         """Header for search output."""
-        print("\t".join(SEARCH_FORMAT))
+        fmt = SEARCH_FORMAT.copy()
+        if size is False:
+            del fmt["genome_size"]
+        print("\t".join(fmt))
+
+    def terminal_subheader(size=False):
+        pass
 
 
 @click.command(short_help="search for genomes")
 @click.argument("term", nargs=-1)
 @click.option("-p", "--provider", help="only search this provider")
-def search(term, provider=None):
+@click.option("-s", "--size", is_flag=True, help="show absolute genome size")
+def search(term, provider=None, size=False):
     """
     Search for genomes that contain TERM in their name, description
     accession (must start with GCA_ or GCF_) or (matching) taxonomy.
@@ -386,13 +406,13 @@ def search(term, provider=None):
     """
     term = "_".join(term)
     no_genomes = True
-    for row in genomepy.search(term, provider):
+    for row in genomepy.search(term, provider, size):
         if no_genomes:
             no_genomes = False
-            terminal_header()
-            if sys.stdout.isatty() and str(provider).lower() in ["none", "ucsc"]:
-                terminal_subheader()
-        terminal_formatting(row)
+            terminal_header(size)
+            if str(provider).lower() in ["none", "ucsc"]:
+                terminal_subheader(size)
+        terminal_formatting(row, size)
 
     if sys.stdout.isatty():
         if no_genomes:

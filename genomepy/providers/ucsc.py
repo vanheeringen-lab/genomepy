@@ -167,15 +167,17 @@ class UcscProvider(BaseProvider):
         annotations_found = [a for a in ANNOTATIONS if a in available]
         return annotations_found
 
-    def _genome_info_tuple(self, name):
+    def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""
         accession = self.assembly_accession(name)
         taxid = self.genome_taxid(name)
         annotations = [a in self.annotation_links(name) for a in ANNOTATIONS]
         species = self.genomes[name].get("scientificName")
-        length = get_genome_size(accession)
         other = self.genomes[name].get("description")
-        return name, accession, taxid, annotations, species, length, other
+        if size:
+            length = get_genome_size(accession)
+            return name, accession, taxid, annotations, species, length, other
+        return name, accession, taxid, annotations, species, other
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """

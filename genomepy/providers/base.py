@@ -63,11 +63,11 @@ class BaseProvider:
             f"  genomepy search {name} -p {self.name}"
         )
 
-    def _genome_info_tuple(self, name):
+    def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""
         raise NotImplementedError()
 
-    def list_available_genomes(self):
+    def list_available_genomes(self, size=False):
         """
         List all available genomes.
 
@@ -75,9 +75,11 @@ class BaseProvider:
         ------
         genomes : list of tuples
             tuples with assembly name, accession, scientific_name, taxonomy id and description
+        size : bool, optional
+            Show absolute genome size.
         """
         for name in self.genomes.keys():
-            yield self._genome_info_tuple(name)
+            yield self._genome_info_tuple(name, size)
 
     def genome_taxid(self, name: str) -> int:
         """
@@ -329,7 +331,7 @@ class BaseProvider:
             if any([term == lower(metadata[f]) for f in self.taxid_fields]):
                 yield name
 
-    def search(self, term: Union[str, int]):
+    def search(self, term: Union[str, int], size=False):
         """
         Search for term in genome names, descriptions and taxonomy ID.
 
@@ -343,6 +345,8 @@ class BaseProvider:
             scientific name (Danio rerio) or assembly
             accession (`GCA_000146045`/`GCF_`),
             or an exact taxonomy id (7227).
+        size : bool, optional
+            Show absolute genome size.
 
         Yields
         ------
@@ -357,7 +361,7 @@ class BaseProvider:
             search_function = self._search_taxonomy
 
         for name in search_function(term):
-            yield self._genome_info_tuple(name)
+            yield self._genome_info_tuple(name, size)
 
     def head_annotation(self, name: str, genomes_dir=None, n: int = 5, **kwargs):
         """

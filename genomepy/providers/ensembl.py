@@ -52,15 +52,17 @@ class EnsemblProvider(BaseProvider):
         """Can the provider be reached?"""
         return bool(check_url("https://rest.ensembl.org/info/ping?"))
 
-    def _genome_info_tuple(self, name):
+    def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""
         accession = self.assembly_accession(name)
         taxid = self.genome_taxid(name)
         annotations = bool(self.annotation_links(name))
         species = self.genomes[name].get("scientific_name")
-        length = self.genomes[name].get("base_count", "-1")
         other = self.genomes[name].get("genebuild")
-        return name, accession, taxid, annotations, species, length, other
+        if size:
+            length = self.genomes[name]["base_count"]
+            return name, accession, taxid, annotations, species, length, other
+        return name, accession, taxid, annotations, species, other
 
     @goldfish_cache(ignore=["self"])
     def get_version(self, vertebrates=False, set_version=None):

@@ -39,12 +39,12 @@ class UrlProvider(BaseProvider):
     def assembly_accession(self, name):
         return
 
-    def search(self, term):
+    def search(self, term, size=False):
         """return an empty generator,
         same as if no genomes were found at the other providers"""
         yield from ()
 
-    def _genome_info_tuple(self, name):
+    def _genome_info_tuple(self, name, size=False):
         return tuple()
 
     def _check_name(self, name):

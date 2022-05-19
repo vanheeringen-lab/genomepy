@@ -48,15 +48,17 @@ class GencodeProvider(BaseProvider):
         """Can the provider be reached?"""
         return bool(check_url("ftp.ebi.ac.uk/pub/databases/gencode"))
 
-    def _genome_info_tuple(self, name):
+    def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""
         accession = self.genomes[name]["assembly_accession"]
         taxid = self.genomes[name]["taxonomy_id"]
         annotations = True
         species = self.genomes[name]["species"]
-        length = get_genome_size(accession)
         other = self.genomes[name]["other_info"]
-        return name, accession, taxid, annotations, species, length, other
+        if size:
+            length = get_genome_size(accession)
+            return name, accession, taxid, annotations, species, length, other
+        return name, accession, taxid, annotations, species, other
 
     def _update_genomes(self):
         """add assembly accession and other information to the genomes dict"""
