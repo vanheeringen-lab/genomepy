@@ -79,6 +79,7 @@ def test__provider_selection():
     p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
     assert "ncbi" in str(p)
     genomepy.utils.rm_rf(os.path.dirname(readme))
+    genomepy.clean()
 
     # lazy provider
     p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
