@@ -71,7 +71,7 @@ def test__provider_selection():
     assert "ncbi" in str(p)
 
     # lazy provider
-    p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
+    p = genomepy.functions._provider_selection(name, localname, genomes_dir)
     assert "ensembl" in str(p)
 
     # provider from readme
