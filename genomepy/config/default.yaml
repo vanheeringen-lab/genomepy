@@ -1,4 +1,3 @@
 bgzip: false
 genomes_dir: ~/.local/share/genomes/
 plugin: []
-cache_size_limit: 600000000
