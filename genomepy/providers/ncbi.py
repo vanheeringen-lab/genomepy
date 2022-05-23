@@ -217,16 +217,29 @@ def get_genomes(assembly_url):
         "assembly_summary_genbank.txt",
         "assembly_summary_refseq.txt",
     ]
+    # filter summaries to these keys (to reduce the size of the cached data)
+    summary_keys_to_keep = [
+        0,  # 'assembly_accession',
+        5,  # 'taxid',
+        6,  # 'species_taxid',
+        7,  # 'organism_name',
+        16,  # 'submitter',
+        17,  # 'gbrs_paired_asm',
+        18,  # 'paired_asm_comp',
+        19,  # 'ftp_path',
+    ]
     for fname in names:
         lines = load_summary(f"{assembly_url}/{fname}")
-        _ = next(lines)  # line 0 = comment
-        header = (
-            next(lines).decode("utf-8").strip("# ").strip("\n").split("\t")
-        )  # line 1 = header
+        # line 0 = comment
+        _ = next(lines)
+        # line 1 = header
+        header = next(lines).decode("utf-8").strip("# ").strip("\n").split("\t")
+        header = [header[n] for n in summary_keys_to_keep]
         for line in tqdm(lines, desc=fname[17:-4], unit_scale=1, unit=" genomes"):
             line = line.decode("utf-8").strip("\n").split("\t")
+            name = safe(line[15])  # overwrites older asm_names
             if line[19] != "na":  # ftp_path must exist
-                name = safe(line[15])  # overwrites older asm_names
+                line = [line[n] for n in summary_keys_to_keep]
                 genomes[name] = dict(zip(header, line))
     return genomes
 

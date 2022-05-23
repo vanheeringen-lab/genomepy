@@ -102,41 +102,41 @@ def validate_annot(fname, ftype):
             break
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="function")
 def base():
     return BaseProvider()
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="function")
 def ensembl():
     return EnsemblProvider()
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="function")
 def ucsc():
     return UcscProvider()
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="function")
 def gencode():
     return GencodeProvider()
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="function")
 def ncbi():
     return NcbiProvider()
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="function")
 def local():
     return LocalProvider()
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="function")
 def url():
     return UrlProvider()
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="function")
 def provider():
     return genomepy.Provider()
