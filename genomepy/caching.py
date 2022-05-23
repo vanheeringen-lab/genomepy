@@ -6,7 +6,7 @@ from diskcache import Cache
 
 from genomepy.__about__ import __version__
 
-# Set cache expiration times (in seconds)
+# Set short/long cache expiration times (in seconds)
 cache_exp_short = 3.6e3
 cache_exp_long = 8.64e4
 
