@@ -61,7 +61,6 @@ def test__lazy_provider_selection():
             genomepy.functions._lazy_provider_selection(name, provider)
 
 
-@pytest.mark.skipif(travis, reason="memory problems")
 def test__provider_selection():
     # specified provider
     name = "Xenopus_tropicalis_v9.1"
@@ -76,15 +75,15 @@ def test__provider_selection():
     assert "ensembl" in str(p)
 
     # provider from readme
-    genomepy.clean()
-    readme = os.path.join(genomes_dir, localname, "README.txt")
-    os.makedirs(os.path.dirname(readme), exist_ok=True)
-    with open(readme, "w") as r:
-        r.write("provider: NCBI")
-    provider = None
-    p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
-    assert "ncbi" in str(p)
-    genomepy.utils.rm_rf(os.path.dirname(readme))
+    # genomepy.clean()
+    # readme = os.path.join(genomes_dir, localname, "README.txt")
+    # os.makedirs(os.path.dirname(readme), exist_ok=True)
+    # with open(readme, "w") as r:
+    #     r.write("provider: NCBI")
+    # provider = None
+    # p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
+    # assert "ncbi" in str(p)
+    # genomepy.utils.rm_rf(os.path.dirname(readme))
 
 
 def test__get_fasta_regex_func():
