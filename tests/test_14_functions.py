@@ -70,6 +70,16 @@ def test__provider_selection():
     p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
     assert "ncbi" in str(p)
 
+    # lazy provider
+    p = genomepy.functions._provider_selection(name, localname, genomes_dir)
+    assert "ensembl" in str(p)
+
+
+def test__provider_selection_readme():
+    name = "Xenopus_tropicalis_v9.1"
+    localname = "test_genome"
+    genomes_dir = os.getcwd()
+    provider = "NCBI"
     # provider from readme
     readme = os.path.join(genomes_dir, localname, "README.txt")
     os.makedirs(os.path.dirname(readme), exist_ok=True)
@@ -79,10 +89,6 @@ def test__provider_selection():
     p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
     assert "ncbi" in str(p)
     genomepy.utils.rm_rf(os.path.dirname(readme))
-
-    # lazy provider
-    p = genomepy.functions._provider_selection(name, localname, genomes_dir, provider)
-    assert "ensembl" in str(p)
 
 
 def test__get_fasta_regex_func():

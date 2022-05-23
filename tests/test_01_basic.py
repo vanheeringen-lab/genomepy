@@ -3,9 +3,10 @@ import subprocess as sp
 from shutil import rmtree
 
 import norns
+import pandas as pd
 import pytest
 from appdirs import user_cache_dir
-from bucketcache import Bucket
+from diskcache import Cache
 
 import genomepy
 
@@ -40,25 +41,34 @@ def test_clean():
 
 
 @pytest.mark.skipif(not travis, reason="it works locally all right")
-def test_cache(capsys):
+def test_cache():
+    # test caching of complex data types
     my_cache_dir = os.path.join(user_cache_dir("genomepy"), str(linux))
     os.makedirs(my_cache_dir, exist_ok=True)
-    cache = Bucket(my_cache_dir, days=7)
+    cache = Cache(directory=my_cache_dir, size_limit=1000000)
+    test = ["a", "b", "c"]
 
-    @cache
-    def expensive_method():
-        print("Method called.")
+    @cache.memoize(expire=10, tag="expensive_function")
+    def expensive_function(data):
+        return pd.DataFrame(data)
 
-    @expensive_method.callback
-    def expensive_method(_):
-        print("Cache used.")
+    # Get full function name https://github.com/grantjenks/python-diskcache/blob/master/diskcache/core.py
+    def full_name(func):
+        """Return full name of `func` by adding the module and function name."""
+        return func.__module__ + "." + func.__qualname__
 
-    expensive_method()
-    expensive_method()
+    # cache key tuple
+    cache_key = (
+        full_name(expensive_function),
+        test,
+        None,
+    )
 
-    captured = capsys.readouterr().out.strip().split("\n")
+    # check that results before/after caching are identical
+    expected = expensive_function(test)
+    cached_data = cache.get(cache_key)
+    assert cached_data.equals(expected), "Cached data does not match expected data"
     rmtree(my_cache_dir, ignore_errors=True)
-    assert captured == ["Method called.", "Cache used."]
 
 
 # exceptions.py
