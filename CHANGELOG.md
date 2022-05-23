@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- changed caching backend to `diskcache` (thread safe)
+- reduced the local cache size of NCBI (by about half)
+  - by only storing assembly summary columns actually used by genomepy
+
 ## [0.12.0] - 2022-03-28
 
 ### Added
