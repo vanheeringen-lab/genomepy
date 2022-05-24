@@ -13,9 +13,9 @@ def test_ncbiprovider(ncbi):
 
 
 def test_genome_info_tuple(ncbi):
-    t = ncbi._genome_info_tuple("ASM2732v1")
+    t = ncbi._genome_info_tuple("ASM2732v1", size=True)
     assert isinstance(t, tuple)
-    assert t[0:4] == ("ASM2732v1", "GCF_000027325.1", 2097, True)
+    assert t[:-1] == ("ASM2732v1", "GCF_000027325.1", 2097, True, 'Mycoplasma genitalium G37', 580076)
 
 
 def test_get_genome_download_link(ncbi):

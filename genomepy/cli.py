@@ -313,34 +313,8 @@ SEARCH_FORMAT = {
     "genome_size": "<13",
     "other_info": "<40",
 }
-
 FULL_SEARCH_STRING = " ".join([f"{{:{size}}}" for size in SEARCH_FORMAT.values()])
 SEARCH_STRING = " ".join([f"{{:{size}}}" for size in SEARCH_FORMAT.values() if size != "<13"])
-
-
-def terminal_formatting(row: list):
-    """
-    In case we print to a terminal, the output is aligned.
-    Otherwise, (file, pipe) we use tab-separated columns.
-    """
-    if isinstance(row[4], list):
-        row[4] = str(row[4])
-    print("\t".join([str(element) for element in row]))
-
-
-def terminal_header(size):
-    """Header for search output."""
-    if size:
-        print("\t".join(SEARCH_FORMAT))
-    else:
-        fmt = [k for k in SEARCH_FORMAT if k != "genome_size"]
-        print("\t".join(fmt))
-
-
-def terminal_subheader(_):
-    pass
-
-
 if sys.stdout.isatty():
 
     def bool_to_unicode(boolean: bool) -> str:
@@ -390,6 +364,27 @@ if sys.stdout.isatty():
             print(FULL_SEARCH_STRING.format(*subheader))
         else:
             print(SEARCH_STRING.format(*subheader[:-1]))
+else:
+
+    def terminal_formatting(row: list):
+        """
+        In case we print to a terminal, the output is aligned.
+        Otherwise, (file, pipe) we use tab-separated columns.
+        """
+        if isinstance(row[4], list):
+            row[4] = str(row[4])
+        print("\t".join([str(element) for element in row]))
+
+    def terminal_header(size):
+        """Header for search output."""
+        if size:
+            print("\t".join(SEARCH_FORMAT))
+        else:
+            fmt = [k for k in SEARCH_FORMAT if k != "genome_size"]
+            print("\t".join(fmt))
+
+    def terminal_subheader(_):
+        pass
 
 
 @click.command(short_help="search for genomes")
