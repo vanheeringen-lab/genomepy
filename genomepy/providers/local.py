@@ -107,7 +107,7 @@ class LocalProvider(BaseProvider):
         hits = []
         for ext in ["gtf", "gff", "gff3"]:
             # .*? = non greedy filler. (\.gz)? = optional .gz
-            expr = f"{search_name}.*?\.{ext}(\.gz)?"  # noqa: W605
+            expr = fr"{search_name}.*?\.{ext}(\.gz)?"  # noqa: W605
             for line in search_list:
                 hit = re.search(expr, line, flags=re.IGNORECASE)
                 if hit:
