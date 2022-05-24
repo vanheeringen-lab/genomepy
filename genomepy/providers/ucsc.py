@@ -445,7 +445,7 @@ def add_accessions1(genomes: dict) -> dict:
     unique_df = df[~duplicates]
     dup_df = df[duplicates]
     filtered_dup_df = dup_df[dup_df[0].str[2] == "A"]
-    df = unique_df.append(filtered_dup_df)
+    df = pd.concat([unique_df, filtered_dup_df])
 
     # During testing, 93/217 genomes we assigned an accession ID
     accession_series = df[0]

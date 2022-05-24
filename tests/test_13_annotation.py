@@ -336,9 +336,7 @@ def test_filter_contigs():
     assert "chrV" not in a.bed.chrom.unique()
 
     # add a chromosome to the BED not present in the genome
-    row = a.bed.loc[0].copy()
-    row.chrom = "chrV"
-    a.bed = a.bed.append(row, ignore_index=True)
+    a.bed.at[0, "chrom"] = "chrV"
     assert "chrV" in a.bed.chrom.unique()
 
     missing_contigs = genomepy.annotation.sanitize._filter_contigs(a)
