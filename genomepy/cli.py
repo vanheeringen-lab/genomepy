@@ -78,7 +78,7 @@ def genomes(provider=None, size=False):
             terminal_header(size)
             if str(provider).lower() in ["none", "ucsc"]:
                 terminal_subheader(size)
-        terminal_formatting(row, size)
+        terminal_formatting(row)
 
 
 # extended options for genomepy install
@@ -314,13 +314,31 @@ SEARCH_FORMAT = {
     "other_info": "<40",
 }
 
+FULL_SEARCH_STRING = " ".join([f"{{:{size}}}" for size in SEARCH_FORMAT.values()])
+SEARCH_STRING = " ".join([f"{{:{size}}}" for size in SEARCH_FORMAT.values() if size != "<13"])
 
-@genomepy.caching.goldfish_cache
-def search_string(size=False):
-    fmt = SEARCH_FORMAT.copy()
-    if size is False:
-        del fmt["genome_size"]
-    return "    ".join([f"{{:{size}}}" for size in fmt.values()])
+
+def terminal_formatting(row: list):
+    """
+    In case we print to a terminal, the output is aligned.
+    Otherwise, (file, pipe) we use tab-separated columns.
+    """
+    if isinstance(row[4], list):
+        row[4] = str(row[4])
+    print("\t".join([str(element) for element in row]))
+
+
+def terminal_header(size):
+    """Header for search output."""
+    if size:
+        print("\t".join(SEARCH_FORMAT))
+    else:
+        fmt = [k for k in SEARCH_FORMAT if k != "genome_size"]
+        print("\t".join(fmt))
+
+
+def terminal_subheader(_):
+    pass
 
 
 if sys.stdout.isatty():
@@ -335,58 +353,43 @@ if sys.stdout.isatty():
         sting = sting.replace("\u2717", Fore.RED + "\u2717" + Fore.RESET)
         return sting
 
-    def terminal_formatting(row: list, size=False):
+    def terminal_formatting(row: list):
         """
         In case we print to a terminal, the output is aligned.
-        Otherwise (file, pipe) we use tab-separated columns.
+        Otherwise, (file, pipe) we use tab-separated columns.
         """
         if isinstance(row[4], list):
+            # UCSC annotations
             row[4] = " ".join([bool_to_unicode(b) for b in row[4]])
         else:
             row[4] = bool_to_unicode(row[4])
-        if size:
-            row[6] = f'{int(row[6]):,}'
         for n, ele in enumerate(row):
             if ele is None:
                 row[n] = "na"
-        row = search_string(size).format(*row)
+        if len(row) == 8:
+            # genome_size
+            row[6] = f'{int(row[6]):,}'
+            row = FULL_SEARCH_STRING.format(*row)
+        else:
+            row = SEARCH_STRING.format(*row)
         print(color_unicode(row))
 
-    def terminal_header(size=False):
+    def terminal_header(size):
         """Header for search output."""
-        fmt = SEARCH_FORMAT.copy()
-        if size is False:
-            del fmt["genome_size"]
-        print(Style.BRIGHT + search_string(size).format(*fmt))
+        if size:
+            print(Style.BRIGHT + FULL_SEARCH_STRING.format(*SEARCH_FORMAT))
+        else:
+            fmt = [k for k in SEARCH_FORMAT if k != "genome_size"]
+            print(Style.BRIGHT + SEARCH_STRING.format(*fmt))
 
-    def terminal_subheader(size=False):
+    def terminal_subheader(size):
         """Subheader for search output."""
         # annotations: ncbiRefSeq, refGene, ensGene & knownGene
-        subheader = [""] * (7+size)
-        subheader[4:6] = ["n r e k", "<- UCSC options (see help)"]
-        print(search_string(size).format(*subheader))
-
-
-else:
-
-    def terminal_formatting(row: list, size=False):
-        """
-        In case we print to a terminal, the output is aligned.
-        Otherwise (file, pipe) we use tab-separated columns.
-        """
-        if isinstance(row[4], list):
-            row[4] = str(row[4])
-        print("\t".join([str(element) for element in row]))
-
-    def terminal_header(size=False):
-        """Header for search output."""
-        fmt = SEARCH_FORMAT.copy()
-        if size is False:
-            del fmt["genome_size"]
-        print("\t".join(fmt))
-
-    def terminal_subheader(size=False):
-        pass
+        subheader = ["", "", "", "", "n r e k", "<- UCSC options (see help)", "", ""]
+        if size:
+            print(FULL_SEARCH_STRING.format(*subheader))
+        else:
+            print(SEARCH_STRING.format(*subheader[:-1]))
 
 
 @click.command(short_help="search for genomes")
@@ -412,7 +415,7 @@ def search(term, provider=None, size=False):
             terminal_header(size)
             if str(provider).lower() in ["none", "ucsc"]:
                 terminal_subheader(size)
-        terminal_formatting(row, size)
+        terminal_formatting(row)
 
     if sys.stdout.isatty():
         if no_genomes:
