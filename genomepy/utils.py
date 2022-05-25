@@ -117,7 +117,7 @@ def get_remotename(name):
         "primary",
         "assembly",
     ]
-    spacers = "( ?-?_?\.?)"  # noqa: W605
+    spacers = r"( ?-?_?\.?)"
     for substring in unwanted:
         name = re.sub(
             f"{spacers}{substring}(s?){spacers}", "", name, flags=re.IGNORECASE
