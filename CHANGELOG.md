@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `genomepy search` and `genomepy genomes` can now return the (unfiltered) absolute genome size with argument `--size`
+
 ### Changed
 - changed caching backend to `diskcache` (thread safe)
 - reduced the local cache size of NCBI (by about half)

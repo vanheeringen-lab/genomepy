@@ -52,13 +52,16 @@ class EnsemblProvider(BaseProvider):
         """Can the provider be reached?"""
         return bool(check_url("https://rest.ensembl.org/info/ping?"))
 
-    def _genome_info_tuple(self, name):
+    def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""
         accession = self.assembly_accession(name)
         taxid = self.genome_taxid(name)
         annotations = bool(self.annotation_links(name))
         species = self.genomes[name].get("scientific_name")
         other = self.genomes[name].get("genebuild")
+        if size:
+            length = self.genomes[name]["base_count"]
+            return name, accession, taxid, annotations, species, length, other
         return name, accession, taxid, annotations, species, other
 
     @staticmethod
@@ -211,6 +214,7 @@ def add_grch37(genomes):
         "url_name": "Homo_sapiens",
         "assembly_name": "GRCh37",
         "division": "vertebrates",
+        "base_count": "3137144693",
         "display_name": "",
         "genebuild": "",
     }

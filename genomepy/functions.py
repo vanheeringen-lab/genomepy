@@ -58,7 +58,7 @@ def head_annotations(name: str, provider=None, n: int = 2):
             rm_rf(tmp_dir)
 
 
-def list_available_genomes(provider=None) -> list:
+def list_available_genomes(provider=None, size=False) -> list:
     """
     List all available genomes.
 
@@ -67,6 +67,8 @@ def list_available_genomes(provider=None) -> list:
     provider : str, optional
         List genomes from specific provider. Genomes from all
         providers will be returned if not specified.
+    size : bool, optional
+        Show absolute genome size.
 
     Yields
     ------
@@ -74,7 +76,7 @@ def list_available_genomes(provider=None) -> list:
         tuples with genome name, provider and metadata
     """
     for p in online_providers(provider):
-        for row in p.list_available_genomes():
+        for row in p.list_available_genomes(size):
             yield list(row[:1]) + [p.name] + list(row[1:])
 
 
