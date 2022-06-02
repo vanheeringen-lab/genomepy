@@ -5,7 +5,7 @@
 1. Make sure all tests pass.
 
     ```shell
-    pytest -vv --disable-pytest-warnings
+    pytest -vvv
     ```
 
 2. Create release candidate with `git flow`:
