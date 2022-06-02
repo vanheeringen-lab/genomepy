@@ -3,7 +3,7 @@ import re
 import requests
 from loguru import logger
 
-from genomepy.caching import cache, goldfish_cache
+from genomepy.caching import cache_exp_long, cache_exp_short, disk_cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, retry
 from genomepy.providers.base import BaseProvider
@@ -52,22 +52,26 @@ class EnsemblProvider(BaseProvider):
         """Can the provider be reached?"""
         return bool(check_url("https://rest.ensembl.org/info/ping?"))
 
-    def _genome_info_tuple(self, name):
+    def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""
         accession = self.assembly_accession(name)
         taxid = self.genome_taxid(name)
         annotations = bool(self.annotation_links(name))
         species = self.genomes[name].get("scientific_name")
         other = self.genomes[name].get("genebuild")
+        if size:
+            length = self.genomes[name]["base_count"]
+            return name, accession, taxid, annotations, species, length, other
         return name, accession, taxid, annotations, species, other
 
-    @goldfish_cache(ignore=["self"])
-    def get_version(self, vertebrates=False, set_version=None):
+    @staticmethod
+    @disk_cache.memoize(expire=cache_exp_short, tag="get_version-ensembl")
+    def get_version(vertebrates=False, set_version=None, url=_url):
         """Retrieve current version from Ensembl FTP."""
         if set_version:
             return str(set_version)
         ext = "/info/data/?" if vertebrates else "/info/eg_version?"
-        ret = retry(request_json, 3, self._url, ext)
+        ret = retry(request_json, 3, url, ext)
         releases = ret["releases"] if vertebrates else [ret["version"]]
         return str(max(releases))
 
@@ -210,13 +214,14 @@ def add_grch37(genomes):
         "url_name": "Homo_sapiens",
         "assembly_name": "GRCh37",
         "division": "vertebrates",
+        "base_count": "3137144693",
         "display_name": "",
         "genebuild": "",
     }
     return genomes
 
 
-@cache
+@disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ensembl")
 def get_genomes(rest_url):
     logger.info("Downloading assembly summaries from Ensembl")
 

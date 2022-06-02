@@ -7,10 +7,13 @@ branches:
 # use the minimal travis environment since we test in conda
 language: minimal
 
+#dist
+dist: focal
+
 os:
   - osx
   - linux
-
+  
 env:
   global:
     - CC_TEST_REPORTER_ID=951f438ac8a0fa93801ff0bf69922df59fe03800bf7ea8ab77a3c26cda444979
@@ -58,7 +61,7 @@ before_script:
     fi
 
 script:
-  - pytest -vv --disable-pytest-warnings
+  - pytest -vvv
     --reruns 1 --reruns-delay 10
     --cov=genomepy --cov-config=tests/.coveragerc --cov-report=xml
 

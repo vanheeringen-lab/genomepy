@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.13.0] - 2022-06-02
+
+### Added
+- `genomepy search` and `genomepy genomes` can now return the (unfiltered) absolute genome size with argument `--size`
+
+### Changed
+- changed caching backend to `diskcache` (thread safe)
+- reduced the local cache size of NCBI (by about half)
+  - by only storing assembly summary columns actually used by genomepy
+
 ## [0.12.0] - 2022-03-28
 
 ### Added
@@ -397,6 +407,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.13.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.12.0...0.13.0
 [0.12.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.11.1...0.12.0
 [0.11.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.11.0...0.11.1
 [0.11.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.10.0...0.11.0

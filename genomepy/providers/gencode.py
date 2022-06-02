@@ -3,12 +3,12 @@ from time import sleep
 
 from loguru import logger
 
-from genomepy.caching import cache
+from genomepy.caching import cache_exp_long, disk_cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import update_readme
 from genomepy.online import check_url, connect_ftp_link
 from genomepy.providers.base import BaseProvider, download_annotation
-from genomepy.providers.ncbi import download_assembly_report
+from genomepy.providers.ncbi import download_assembly_report, get_genome_size
 from genomepy.providers.ucsc import UcscProvider
 from genomepy.utils import get_genomes_dir, get_localname
 
@@ -48,13 +48,16 @@ class GencodeProvider(BaseProvider):
         """Can the provider be reached?"""
         return bool(check_url("ftp.ebi.ac.uk/pub/databases/gencode"))
 
-    def _genome_info_tuple(self, name):
+    def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""
         accession = self.genomes[name]["assembly_accession"]
         taxid = self.genomes[name]["taxonomy_id"]
         annotations = True
         species = self.genomes[name]["species"]
         other = self.genomes[name]["other_info"]
+        if size:
+            length = get_genome_size(accession)
+            return name, accession, taxid, annotations, species, length, other
         return name, accession, taxid, annotations, species, other
 
     def _update_genomes(self):
@@ -252,7 +255,7 @@ def _get_genomes(ftp_link):
     return genomes
 
 
-@cache
+@disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-gencode")
 def get_genomes(ftp_link):
     """genomes dict of the latest gencode release of each major assembly."""
     logger.info("Downloading assembly summaries from GENCODE")

@@ -39,12 +39,12 @@ class UrlProvider(BaseProvider):
     def assembly_accession(self, name):
         return
 
-    def search(self, term):
+    def search(self, term, size=False):
         """return an empty generator,
         same as if no genomes were found at the other providers"""
         yield from ()
 
-    def _genome_info_tuple(self, name):
+    def _genome_info_tuple(self, name, size=False):
         return tuple()
 
     def _check_name(self, name):
@@ -141,7 +141,7 @@ def fuzzy_annotation_search(search_name, search_list):
     hits = []
     for ext in ["gtf", "gff"]:
         # .*? = non greedy filler. 3? = optional 3 (for gff3). (\.gz)? = optional .gz
-        expr = f"{search_name}.*?\.{ext}3?(\.gz)?"  # noqa: W605
+        expr = fr"{search_name}.*?\.{ext}3?(\.gz)?"  # noqa: W605
         for line in search_list:
             hit = re.search(expr, line, flags=re.IGNORECASE)
             if hit:

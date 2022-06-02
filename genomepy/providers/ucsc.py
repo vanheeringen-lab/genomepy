@@ -10,12 +10,12 @@ import pandas as pd
 import requests
 from loguru import logger
 
-from genomepy.caching import cache
+from genomepy.caching import cache_exp_long, disk_cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import update_readme
 from genomepy.online import check_url, read_url
 from genomepy.providers.base import BaseProvider
-from genomepy.providers.ncbi import NcbiProvider
+from genomepy.providers.ncbi import NcbiProvider, get_genome_size
 from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf
 
 # order determines which annotation genomepy will attempt to install
@@ -167,13 +167,16 @@ class UcscProvider(BaseProvider):
         annotations_found = [a for a in ANNOTATIONS if a in available]
         return annotations_found
 
-    def _genome_info_tuple(self, name):
+    def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""
         accession = self.assembly_accession(name)
         taxid = self.genome_taxid(name)
         annotations = [a in self.annotation_links(name) for a in ANNOTATIONS]
         species = self.genomes[name].get("scientificName")
         other = self.genomes[name].get("description")
+        if size:
+            length = get_genome_size(accession)
+            return name, accession, taxid, annotations, species, length, other
         return name, accession, taxid, annotations, species, other
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
@@ -387,7 +390,7 @@ class UcscProvider(BaseProvider):
                             break
 
 
-@cache
+@disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ucsc")
 def get_genomes(rest_url):
     logger.info("Downloading assembly summaries from UCSC")
 
@@ -445,7 +448,7 @@ def add_accessions1(genomes: dict) -> dict:
     unique_df = df[~duplicates]
     dup_df = df[duplicates]
     filtered_dup_df = dup_df[dup_df[0].str[2] == "A"]
-    df = unique_df.append(filtered_dup_df)
+    df = pd.concat([unique_df, filtered_dup_df])
 
     # During testing, 93/217 genomes we assigned an accession ID
     accession_series = df[0]
@@ -575,7 +578,7 @@ def download_annotation(name, annot, genomes_dir, localname, n=None):
     rm_rf(tmp_dir)
 
 
-@cache
+@disk_cache.memoize(expire=cache_exp_long, tag="scrape_accession-ucsc")
 def scrape_accession(htmlpath: str) -> str or None:
     """
     Attempt to scrape the assembly accession (`GCA_`/`GCF_`) from a genome's readme.html,

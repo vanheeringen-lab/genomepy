@@ -8,7 +8,7 @@ import pandas as pd
 from loguru import logger
 from tqdm.auto import tqdm
 
-from genomepy.caching import cache
+from genomepy.caching import cache_exp_long, disk_cache
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, read_url
 from genomepy.providers.base import BaseProvider
@@ -58,13 +58,16 @@ class NcbiProvider(BaseProvider):
         """Can the provider be reached?"""
         return bool(check_url("https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"))
 
-    def _genome_info_tuple(self, name):
+    def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""
         accession = self.assembly_accession(name)
         taxid = self.genome_taxid(name)
         annotations = bool(self.annotation_links(name))
         species = self.genomes[name].get("organism_name")
         other = self.genomes[name].get("submitter")
+        if size:
+            length = get_genome_size(accession)
+            return name, accession, taxid, annotations, species, length, other
         return name, accession, taxid, annotations, species, other
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
@@ -197,7 +200,7 @@ class NcbiProvider(BaseProvider):
                 return link
 
 
-@cache
+@disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ncbi")
 def get_genomes(assembly_url):
     """Parse genomes from assembly summary txt files."""
     logger.info("Downloading assembly summaries from NCBI, this will take a while...")
@@ -217,21 +220,34 @@ def get_genomes(assembly_url):
         "assembly_summary_genbank.txt",
         "assembly_summary_refseq.txt",
     ]
+    # filter summaries to these keys (to reduce the size of the cached data)
+    summary_keys_to_keep = [
+        0,  # 'assembly_accession',
+        5,  # 'taxid',
+        6,  # 'species_taxid',
+        7,  # 'organism_name',
+        16,  # 'submitter',
+        17,  # 'gbrs_paired_asm',
+        18,  # 'paired_asm_comp',
+        19,  # 'ftp_path',
+    ]
     for fname in names:
         lines = load_summary(f"{assembly_url}/{fname}")
-        _ = next(lines)  # line 0 = comment
-        header = (
-            next(lines).decode("utf-8").strip("# ").strip("\n").split("\t")
-        )  # line 1 = header
+        # line 0 = comment
+        _ = next(lines)
+        # line 1 = header
+        header = next(lines).decode("utf-8").strip("# ").strip("\n").split("\t")
+        header = [header[n] for n in summary_keys_to_keep]
         for line in tqdm(lines, desc=fname[17:-4], unit_scale=1, unit=" genomes"):
             line = line.decode("utf-8").strip("\n").split("\t")
+            name = safe(line[15])  # overwrites older asm_names
             if line[19] != "na":  # ftp_path must exist
-                name = safe(line[15])  # overwrites older asm_names
+                line = [line[n] for n in summary_keys_to_keep]
                 genomes[name] = dict(zip(header, line))
     return genomes
 
 
-def download_assembly_report(acc: str, fname: str = None):
+def download_assembly_report(acc: str, fname: str = None, quiet=False):
     """
     Retrieve the NCBI assembly report.
 
@@ -243,6 +259,8 @@ def download_assembly_report(acc: str, fname: str = None):
         Assembly accession (GCA or GCF)
     fname : str, optional
         Save assembly_report to this filename.
+    quiet : bool, optional
+        Silence warnings.
 
     Returns
     -------
@@ -251,11 +269,13 @@ def download_assembly_report(acc: str, fname: str = None):
     """
     msg = "Could not download the assembly report from NCBI. "
     if not isinstance(acc, str) or not acc.startswith(("GCA", "GCF")):
-        logger.warning(msg)
+        if not quiet:
+            logger.warning(msg)
         return None
     assembly_report = _assembly_report_url(acc)
     if assembly_report is None:
-        logger.warning(msg + f"Assembly accession '{acc}' not found.")
+        if not quiet:
+            logger.warning(msg + f"Assembly accession '{acc}' not found.")
         return None
     asm_report = pd.read_csv(
         assembly_report, sep="\t", comment="#", names=ASM_FORMAT, dtype=str
@@ -308,3 +328,11 @@ def _closest_patch_lvl(reference: str, targets: list) -> str:
 def _patch_lvl(acc: str) -> int:
     """str(GCA_000000000.6) -> int(6)"""
     return int(acc.split(".")[1]) if "." in acc else 0
+
+
+def get_genome_size(acc):
+    length = -1
+    df = download_assembly_report(acc, quiet=True)
+    if df is not None:
+        length = df["Sequence-Length"].astype(int).sum()
+    return length
