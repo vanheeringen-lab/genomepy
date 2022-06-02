@@ -1,0 +1,6 @@
+genomepy.providers.ncbi.get\_genome\_size
+=========================================
+
+.. currentmodule:: genomepy.providers.ncbi
+
+.. autofunction:: get_genome_size

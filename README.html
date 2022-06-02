@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -70,9 +71,9 @@
            <div itemprop="articleBody">
              
   <section id="generating-the-docs">
-<h1>Generating the docs<a class="headerlink" href="#generating-the-docs" title="Permalink to this headline"></a></h1>
+<h1>Generating the docs<a class="headerlink" href="#generating-the-docs" title="Permalink to this heading"></a></h1>
 <section id="run">
-<h2>Run<a class="headerlink" href="#run" title="Permalink to this headline"></a></h2>
+<h2>Run<a class="headerlink" href="#run" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>install genomepy (once) with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">develop</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">sphinx-build</span> <span class="pre">docs</span> <span class="pre">build</span></code></p></li>
@@ -82,16 +83,16 @@ check that the lines still match in the various content pages.</p></li>
 </ul>
 </section>
 <section id="sphinx-setup">
-<h2>Sphinx setup<a class="headerlink" href="#sphinx-setup" title="Permalink to this headline"></a></h2>
+<h2>Sphinx setup<a class="headerlink" href="#sphinx-setup" title="Permalink to this heading"></a></h2>
 <section id="install-dependencies">
-<h3>install dependencies<a class="headerlink" href="#install-dependencies" title="Permalink to this headline"></a></h3>
+<h3>install dependencies<a class="headerlink" href="#install-dependencies" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">env</span> <span class="pre">update</span> <span class="pre">--file</span> <span class="pre">environment.yml</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">env</span> <span class="pre">update</span> <span class="pre">--file</span> <span class="pre">docs/requirements.yaml</span></code></p></li>
 </ul>
 </section>
 <section id="follow-guides">
-<h3>follow guides:<a class="headerlink" href="#follow-guides" title="Permalink to this headline"></a></h3>
+<h3>follow guides:<a class="headerlink" href="#follow-guides" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p><a class="reference external" href="https://eikonomega.medium.com/getting-started-with-sphinx-autodoc-part-1-2cebbbca5365">https://eikonomega.medium.com/getting-started-with-sphinx-autodoc-part-1-2cebbbca5365</a>
 (I manually moved all created files to ./docs)</p></li>
@@ -100,7 +101,7 @@ check that the lines still match in the various content pages.</p></li>
 </ul>
 </section>
 <section id="changes-to-conf-py">
-<h3>changes to conf.py<a class="headerlink" href="#changes-to-conf-py" title="Permalink to this headline"></a></h3>
+<h3>changes to conf.py<a class="headerlink" href="#changes-to-conf-py" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p>line 12: uncomment path setup</p></li>
 <li><p>line 15: <code class="docutils literal notranslate"><span class="pre">sys.path.insert(0,</span> <span class="pre">os.path.abspath('..'))</span></code></p></li>
@@ -112,17 +113,17 @@ check that the lines still match in the various content pages.</p></li>
 </ul>
 </section>
 <section id="entry-point-index-rst">
-<h3>entry point: <code class="docutils literal notranslate"><span class="pre">index.rst</span></code><a class="headerlink" href="#entry-point-index-rst" title="Permalink to this headline"></a></h3>
+<h3>entry point: <code class="docutils literal notranslate"><span class="pre">index.rst</span></code><a class="headerlink" href="#entry-point-index-rst" title="Permalink to this heading"></a></h3>
 <p>create the welcome page &amp; Table of Content</p>
 </section>
 <section id="populate-docs">
-<h3>populate docs<a class="headerlink" href="#populate-docs" title="Permalink to this headline"></a></h3>
+<h3>populate docs<a class="headerlink" href="#populate-docs" title="Permalink to this heading"></a></h3>
 <p>add files to <code class="docutils literal notranslate"><span class="pre">content</span></code>
 add figures to <code class="docutils literal notranslate"><span class="pre">images</span></code></p>
 </section>
 </section>
 <section id="github-pages-setup">
-<h2>Github-pages setup<a class="headerlink" href="#github-pages-setup" title="Permalink to this headline"></a></h2>
+<h2>Github-pages setup<a class="headerlink" href="#github-pages-setup" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>added the docs.yml to .github/workflows</p></li>
 <li><p>pushed to branch that triggers the workflow</p></li>
@@ -145,7 +146,7 @@ add figures to <code class="docutils literal notranslate"><span class="pre">imag
 
   <div role="contentinfo">
     <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-03-28, 15:36 (UTC).
+      <span class="lastupdated">Last updated on 2022-06-02, 14:58 (UTC).
       </span></p>
   </div>
 

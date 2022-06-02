@@ -15,6 +15,7 @@ genomepy.providers.ncbi
       :toctree:
    
       download_assembly_report
+      get_genome_size
       get_genomes
    
    

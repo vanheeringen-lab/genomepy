@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -68,6 +69,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genomepy.providers.local.html">genomepy.providers.local</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">genomepy.providers.ncbi</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="genomepy.providers.ncbi.download_assembly_report.html">genomepy.providers.ncbi.download_assembly_report</a></li>
+<li class="toctree-l4"><a class="reference internal" href="genomepy.providers.ncbi.get_genome_size.html">genomepy.providers.ncbi.get_genome_size</a></li>
 <li class="toctree-l4"><a class="reference internal" href="genomepy.providers.ncbi.get_genomes.html">genomepy.providers.ncbi.get_genomes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="genomepy.providers.ncbi.NcbiProvider.html">genomepy.providers.ncbi.NcbiProvider</a></li>
 </ul>
@@ -111,24 +113,27 @@
            <div itemprop="articleBody">
              
   <section id="module-genomepy.providers.ncbi">
-<span id="genomepy-providers-ncbi"></span><h1>genomepy.providers.ncbi<a class="headerlink" href="#module-genomepy.providers.ncbi" title="Permalink to this headline"></a></h1>
+<span id="genomepy-providers-ncbi"></span><h1>genomepy.providers.ncbi<a class="headerlink" href="#module-genomepy.providers.ncbi" title="Permalink to this heading"></a></h1>
 <p class="rubric">Functions</p>
-<table class="longtable docutils align-default">
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.providers.ncbi.download_assembly_report.html#genomepy.providers.ncbi.download_assembly_report" title="genomepy.providers.ncbi.download_assembly_report"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_assembly_report</span></code></a>(acc[, fname])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.providers.ncbi.download_assembly_report.html#genomepy.providers.ncbi.download_assembly_report" title="genomepy.providers.ncbi.download_assembly_report"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_assembly_report</span></code></a>(acc[, fname, quiet])</p></td>
 <td><p>Retrieve the NCBI assembly report.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="genomepy.providers.ncbi.get_genomes.html#genomepy.providers.ncbi.get_genomes" title="genomepy.providers.ncbi.get_genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_genomes</span></code></a>(assembly_url)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="genomepy.providers.ncbi.get_genome_size.html#genomepy.providers.ncbi.get_genome_size" title="genomepy.providers.ncbi.get_genome_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_genome_size</span></code></a>(acc)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="genomepy.providers.ncbi.get_genomes.html#genomepy.providers.ncbi.get_genomes" title="genomepy.providers.ncbi.get_genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_genomes</span></code></a>(assembly_url)</p></td>
 <td><p>Parse genomes from assembly summary txt files.</p></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Classes</p>
-<table class="longtable docutils align-default">
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -153,7 +158,7 @@
 
   <div role="contentinfo">
     <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-03-28, 15:36 (UTC).
+      <span class="lastupdated">Last updated on 2022-06-02, 14:58 (UTC).
       </span></p>
   </div>
 

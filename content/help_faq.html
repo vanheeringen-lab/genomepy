@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -81,30 +82,30 @@
            <div itemprop="articleBody">
              
   <section id="frequently-asked-questions">
-<h1>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline"></a></h1>
+<h1>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this heading"></a></h1>
 <p>functionality of a <code class="docutils literal notranslate"><span class="pre">pyfaidx.Fasta</span></code> object,
 see the <a class="reference external" href="https://github.com/mdshw5/pyfaidx">documentation</a> for more examples on how to use this.</p>
 <section id="known-issues">
-<h2>Known issues<a class="headerlink" href="#known-issues" title="Permalink to this headline"></a></h2>
+<h2>Known issues<a class="headerlink" href="#known-issues" title="Permalink to this heading"></a></h2>
 <p>Genomepy utilizes external databases to obtain your files.
 Unfortunately this sometimes causes issues.
 Here are some of the more common issues, with solutions.</p>
 <p>Let us know if you encounter issues you cannot solve by creating <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy/issues">a new issue</a>.</p>
 <section id="provider-is-offline">
-<h3>Provider is offline<a class="headerlink" href="#provider-is-offline" title="Permalink to this headline"></a></h3>
+<h3>Provider is offline<a class="headerlink" href="#provider-is-offline" title="Permalink to this heading"></a></h3>
 <p>Occasionally one of the providers experience connection issues, which can last anywhere between minutes to hours.
 When this happens genomepy will warn that the provider appears offline, or that the URL seems broken.</p>
 <p>If the issue does not pass, you can try to reset genomepy.
 Simply run <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">clean</span></code> on the command line, or run <code class="docutils literal notranslate"><span class="pre">genomepy.clean()</span></code> in Python.</p>
 </section>
 <section id="this-genome-is-missing">
-<h3>This genome is missing<a class="headerlink" href="#this-genome-is-missing" title="Permalink to this headline"></a></h3>
+<h3>This genome is missing<a class="headerlink" href="#this-genome-is-missing" title="Permalink to this heading"></a></h3>
 <p>Genomepy stores provider data on your computer to rerun it faster later.
 If a provider was offline during this time, it may miss (parts of) the data.</p>
 <p>To re-download the data, remove the local data with <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">clean</span></code>, then <code class="docutils literal notranslate"><span class="pre">search</span></code> for your genome again.</p>
 </section>
 <section id="this-genome-is-still-missing-url-is-broken">
-<h3>This genome is STILL missing/URL is broken<a class="headerlink" href="#this-genome-is-still-missing-url-is-broken" title="Permalink to this headline"></a></h3>
+<h3>This genome is STILL missing/URL is broken<a class="headerlink" href="#this-genome-is-still-missing-url-is-broken" title="Permalink to this heading"></a></h3>
 <p>Sadly, not everything (naming, structure, filenames) is always consistent on the provider end.
 Contact the provider to get it fixed!
 One notable group are Ensembl fungi, which seems to be mostly mislabelled.</p>
@@ -112,7 +113,7 @@ One notable group are Ensembl fungi, which seems to be mostly mislabelled.</p>
 and downloading the files with <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">install</span> <span class="pre">GENOME_URL</span> <span class="pre">-p</span> <span class="pre">url</span> <span class="pre">--url-to-annotation</span> <span class="pre">ANNOTATION_URL</span></code>.</p>
 </section>
 <section id="which-genome-gene-annotation-to-use">
-<h3>Which genome/gene annotation to use<a class="headerlink" href="#which-genome-gene-annotation-to-use" title="Permalink to this headline"></a></h3>
+<h3>Which genome/gene annotation to use<a class="headerlink" href="#which-genome-gene-annotation-to-use" title="Permalink to this heading"></a></h3>
 <p>Each provider has its pros and cons:</p>
 <ul class="simple">
 <li><p>Ensembl has excellent gene annotations, but their chromosome names can cause issues with some tools.</p></li>
@@ -136,7 +137,7 @@ and downloading the files with <code class="docutils literal notranslate"><span 
 
   <div role="contentinfo">
     <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-03-28, 15:36 (UTC).
+      <span class="lastupdated">Last updated on 2022-06-02, 14:58 (UTC).
       </span></p>
   </div>
 

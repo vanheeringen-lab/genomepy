@@ -9,6 +9,13 @@ genomepy.annotation.mygene
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      query_mygene
+   
    
 
    

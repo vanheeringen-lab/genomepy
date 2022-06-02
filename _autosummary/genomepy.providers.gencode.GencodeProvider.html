@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -114,11 +115,11 @@
            <div itemprop="articleBody">
              
   <section id="genomepy-providers-gencode-gencodeprovider">
-<h1>genomepy.providers.gencode.GencodeProvider<a class="headerlink" href="#genomepy-providers-gencode-gencodeprovider" title="Permalink to this headline"></a></h1>
+<h1>genomepy.providers.gencode.GencodeProvider<a class="headerlink" href="#genomepy-providers-gencode-gencodeprovider" title="Permalink to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genomepy.providers.gencode.</span></span><span class="sig-name descname"><span class="pre">GencodeProvider</span></span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="genomepy.providers.base.BaseProvider.html#genomepy.providers.base.BaseProvider" title="genomepy.providers.base.BaseProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">genomepy.providers.base.BaseProvider</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="genomepy.providers.base.BaseProvider.html#genomepy.providers.base.BaseProvider" title="genomepy.providers.base.BaseProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseProvider</span></code></a></p>
 <p>GENCODE genome provider.</p>
 <p>GENCODE sports superb annotations for human and mouse with UCSC-style chromosome names.
 Genomes on this provider are unmasked, so we use the UCSC genomes instead.</p>
@@ -130,7 +131,7 @@ Genomes on this provider are unmasked, so we use the UCSC genomes instead.</p>
 <dd></dd></dl>
 
 <p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -166,41 +167,47 @@ Genomes on this provider are unmasked, so we use the UCSC genomes instead.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.head_annotation" title="genomepy.providers.gencode.GencodeProvider.head_annotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">head_annotation</span></code></a>(name[, genomes_dir, n])</p></td>
 <td><p>Download the first n lines of the annotation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.list_available_genomes" title="genomepy.providers.gencode.GencodeProvider.list_available_genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_available_genomes</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.list_available_genomes" title="genomepy.providers.gencode.GencodeProvider.list_available_genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_available_genomes</span></code></a>([size])</p></td>
 <td><p>List all available genomes.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.ping" title="genomepy.providers.gencode.GencodeProvider.ping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ping</span></code></a>()</p></td>
 <td><p>Can the provider be reached?</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.search" title="genomepy.providers.gencode.GencodeProvider.search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></a>(term)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.search" title="genomepy.providers.gencode.GencodeProvider.search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></a>(term[, size])</p></td>
 <td><p>Search for term in genome names, descriptions and taxonomy ID.</p></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Attributes</p>
-<table class="longtable docutils align-default">
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">accession_fields</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.accession_fields" title="genomepy.providers.gencode.GencodeProvider.accession_fields"><code class="xref py py-obj docutils literal notranslate"><span class="pre">accession_fields</span></code></a></p></td>
 <td><p>Metadata fields that (can) contain the assembly's accession ID.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">description_fields</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.description_fields" title="genomepy.providers.gencode.GencodeProvider.description_fields"><code class="xref py py-obj docutils literal notranslate"><span class="pre">description_fields</span></code></a></p></td>
 <td><p>Metadata fields with assembly related info.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">genomes</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.genomes" title="genomepy.providers.gencode.GencodeProvider.genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">genomes</span></code></a></p></td>
 <td><p>Dictionary with assembly names as key and assembly metadata dictionary as value.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.name" title="genomepy.providers.gencode.GencodeProvider.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p></td>
 <td><p>Name of this provider.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">taxid_fields</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.gencode.GencodeProvider.taxid_fields" title="genomepy.providers.gencode.GencodeProvider.taxid_fields"><code class="xref py py-obj docutils literal notranslate"><span class="pre">taxid_fields</span></code></a></p></td>
 <td><p>Metadata fields that (can) contain the assembly's taxonomy ID.</p></td>
 </tr>
 </tbody>
 </table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.accession_fields">
+<span class="sig-name descname"><span class="pre">accession_fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['assembly_accession']</span></em><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.accession_fields" title="Permalink to this definition"></a></dt>
+<dd><p>Metadata fields that (can) contain the assembly’s accession ID.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.annotation_links">
 <span class="sig-name descname"><span class="pre">annotation_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.annotation_links" title="Permalink to this definition"></a></dt>
@@ -233,6 +240,12 @@ Genomes on this provider are unmasked, so we use the UCSC genomes instead.</p>
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.description_fields">
+<span class="sig-name descname"><span class="pre">description_fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['species',</span> <span class="pre">'other_info',</span> <span class="pre">'text_search']</span></em><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.description_fields" title="Permalink to this definition"></a></dt>
+<dd><p>Metadata fields with assembly related info.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -272,6 +285,12 @@ Contigs between the UCSC genome and GENCODE annotations match.</p>
 <dd class="field-odd"><p>int</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.genomes">
+<span class="sig-name descname"><span class="pre">genomes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.genomes" title="Permalink to this definition"></a></dt>
+<dd><p>Dictionary with assembly names as key and assembly metadata dictionary as value.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -350,13 +369,22 @@ Contigs between the UCSC genome and GENCODE annotations match.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.list_available_genomes">
-<span class="sig-name descname"><span class="pre">list_available_genomes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.list_available_genomes" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">list_available_genomes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.list_available_genomes" title="Permalink to this definition"></a></dt>
 <dd><p>List all available genomes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Yields</dt>
-<dd class="field-odd"><p><strong>genomes</strong> (<em>list of tuples</em>) – tuples with assembly name, accession, scientific_name, taxonomy id and description</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>genomes</strong> (<em>list of tuples</em>) – tuples with assembly name, accession, scientific_name, taxonomy id and description</p></li>
+<li><p><strong>size</strong> (<em>bool, optional</em>) – Show absolute genome size.</p></li>
+</ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GENCODE'</span></em><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.name" title="Permalink to this definition"></a></dt>
+<dd><p>Name of this provider.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -367,21 +395,30 @@ Contigs between the UCSC genome and GENCODE annotations match.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.search">
-<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.search" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.search" title="Permalink to this definition"></a></dt>
 <dd><p>Search for term in genome names, descriptions and taxonomy ID.</p>
 <p>The search is case-insensitive.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>term</strong> (<em>str</em><em>, </em><em>int</em>) – Search term, case-insensitive.
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>term</strong> (<em>str</em><em>, </em><em>int</em>) – Search term, case-insensitive.
 Can be (part of) an assembly name (e.g. hg38),
 scientific name (Danio rerio) or assembly
 accession (<cite>GCA_000146045</cite>/<cite>GCF_</cite>),
-or an exact taxonomy id (7227).</p>
+or an exact taxonomy id (7227).</p></li>
+<li><p><strong>size</strong> (<em>bool</em><em>, </em><em>optional</em>) – Show absolute genome size.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Yields</dt>
 <dd class="field-even"><p><em>tuples with name and metadata</em></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genomepy.providers.gencode.GencodeProvider.taxid_fields">
+<span class="sig-name descname"><span class="pre">taxid_fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['taxonomy_id']</span></em><a class="headerlink" href="#genomepy.providers.gencode.GencodeProvider.taxid_fields" title="Permalink to this definition"></a></dt>
+<dd><p>Metadata fields that (can) contain the assembly’s taxonomy ID.</p>
 </dd></dl>
 
 </dd></dl>
@@ -400,7 +437,7 @@ or an exact taxonomy id (7227).</p>
 
   <div role="contentinfo">
     <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-03-28, 15:36 (UTC).
+      <span class="lastupdated">Last updated on 2022-06-02, 14:58 (UTC).
       </span></p>
   </div>
 

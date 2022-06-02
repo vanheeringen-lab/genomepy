@@ -18,6 +18,7 @@ genomepy.cli
       get_install_options
       terminal_formatting
       terminal_header
+      terminal_subheader
    
    
 

@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -96,11 +97,11 @@
            <div itemprop="articleBody">
              
   <section id="genomepy-genome-genome">
-<h1>genomepy.genome.Genome<a class="headerlink" href="#genomepy-genome-genome" title="Permalink to this headline"></a></h1>
+<h1>genomepy.genome.Genome<a class="headerlink" href="#genomepy-genome-genome" title="Permalink to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="genomepy.genome.Genome">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genomepy.genome.</span></span><span class="sig-name descname"><span class="pre">Genome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genomes_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.genome.Genome" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pyfaidx.Fasta</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Fasta</span></code></p>
 <p>pyfaidx Fasta object of a genome with additional attributes &amp; methods.</p>
 <p>Generates a genome index file, sizes file and gaps file of the genome.</p>
 <dl class="field-list simple">
@@ -121,11 +122,12 @@
 <dt class="sig sig-object py" id="genomepy.genome.Genome.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genomes_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.genome.Genome.__init__" title="Permalink to this definition"></a></dt>
 <dd><p>An object that provides a pygr compatible interface.
-filename: name of fasta file</p>
+filename:  name of fasta file or fsspec.core.OpenFile instance
+indexname: name of index file or fsspec.core.OpenFile instance</p>
 </dd></dl>
 
 <p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -161,7 +163,7 @@ filename: name of fasta file</p>
 </tbody>
 </table>
 <p class="rubric">Attributes</p>
-<table class="longtable docutils align-default">
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -393,7 +395,7 @@ Example input files can be found in genomepy/tests/data/regions.*</p></li>
 
   <div role="contentinfo">
     <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-03-28, 15:36 (UTC).
+      <span class="lastupdated">Last updated on 2022-06-02, 14:58 (UTC).
       </span></p>
   </div>
 

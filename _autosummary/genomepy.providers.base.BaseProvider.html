@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -113,7 +114,7 @@
            <div itemprop="articleBody">
              
   <section id="genomepy-providers-base-baseprovider">
-<h1>genomepy.providers.base.BaseProvider<a class="headerlink" href="#genomepy-providers-base-baseprovider" title="Permalink to this headline"></a></h1>
+<h1>genomepy.providers.base.BaseProvider<a class="headerlink" href="#genomepy-providers-base-baseprovider" title="Permalink to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="genomepy.providers.base.BaseProvider">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genomepy.providers.base.</span></span><span class="sig-name descname"><span class="pre">BaseProvider</span></span><a class="headerlink" href="#genomepy.providers.base.BaseProvider" title="Permalink to this definition"></a></dt>
@@ -125,7 +126,7 @@
 <dd></dd></dl>
 
 <p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -161,19 +162,19 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.base.BaseProvider.head_annotation" title="genomepy.providers.base.BaseProvider.head_annotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">head_annotation</span></code></a>(name[, genomes_dir, n])</p></td>
 <td><p>Download the first n lines of the annotation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.base.BaseProvider.list_available_genomes" title="genomepy.providers.base.BaseProvider.list_available_genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_available_genomes</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.base.BaseProvider.list_available_genomes" title="genomepy.providers.base.BaseProvider.list_available_genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_available_genomes</span></code></a>([size])</p></td>
 <td><p>List all available genomes.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.base.BaseProvider.ping" title="genomepy.providers.base.BaseProvider.ping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ping</span></code></a>()</p></td>
 <td><p>Can the provider be reached?</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.base.BaseProvider.search" title="genomepy.providers.base.BaseProvider.search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></a>(term)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.base.BaseProvider.search" title="genomepy.providers.base.BaseProvider.search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></a>(term[, size])</p></td>
 <td><p>Search for term in genome names, descriptions and taxonomy ID.</p></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Attributes</p>
-<table class="longtable docutils align-default">
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -355,11 +356,14 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.base.BaseProvider.list_available_genomes">
-<span class="sig-name descname"><span class="pre">list_available_genomes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.base.BaseProvider.list_available_genomes" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">list_available_genomes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.base.BaseProvider.list_available_genomes" title="Permalink to this definition"></a></dt>
 <dd><p>List all available genomes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Yields</dt>
-<dd class="field-odd"><p><strong>genomes</strong> (<em>list of tuples</em>) – tuples with assembly name, accession, scientific_name, taxonomy id and description</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>genomes</strong> (<em>list of tuples</em>) – tuples with assembly name, accession, scientific_name, taxonomy id and description</p></li>
+<li><p><strong>size</strong> (<em>bool, optional</em>) – Show absolute genome size.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -378,16 +382,19 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.base.BaseProvider.search">
-<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.base.BaseProvider.search" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.base.BaseProvider.search" title="Permalink to this definition"></a></dt>
 <dd><p>Search for term in genome names, descriptions and taxonomy ID.</p>
 <p>The search is case-insensitive.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>term</strong> (<em>str</em><em>, </em><em>int</em>) – Search term, case-insensitive.
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>term</strong> (<em>str</em><em>, </em><em>int</em>) – Search term, case-insensitive.
 Can be (part of) an assembly name (e.g. hg38),
 scientific name (Danio rerio) or assembly
 accession (<cite>GCA_000146045</cite>/<cite>GCF_</cite>),
-or an exact taxonomy id (7227).</p>
+or an exact taxonomy id (7227).</p></li>
+<li><p><strong>size</strong> (<em>bool</em><em>, </em><em>optional</em>) – Show absolute genome size.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Yields</dt>
 <dd class="field-even"><p><em>tuples with name and metadata</em></p>
@@ -417,7 +424,7 @@ or an exact taxonomy id (7227).</p>
 
   <div role="contentinfo">
     <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-03-28, 15:36 (UTC).
+      <span class="lastupdated">Last updated on 2022-06-02, 14:58 (UTC).
       </span></p>
   </div>
 

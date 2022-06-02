@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -97,15 +98,18 @@
            <div itemprop="articleBody">
              
   <section id="genomepy-functions-list-available-genomes">
-<h1>genomepy.functions.list_available_genomes<a class="headerlink" href="#genomepy-functions-list-available-genomes" title="Permalink to this headline"></a></h1>
+<h1>genomepy.functions.list_available_genomes<a class="headerlink" href="#genomepy-functions-list-available-genomes" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="genomepy.functions.list_available_genomes">
-<span class="sig-prename descclassname"><span class="pre">genomepy.functions.</span></span><span class="sig-name descname"><span class="pre">list_available_genomes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#genomepy.functions.list_available_genomes" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">genomepy.functions.</span></span><span class="sig-name descname"><span class="pre">list_available_genomes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#genomepy.functions.list_available_genomes" title="Permalink to this definition"></a></dt>
 <dd><p>List all available genomes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>provider</strong> (<em>str</em><em>, </em><em>optional</em>) – List genomes from specific provider. Genomes from all
-providers will be returned if not specified.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>provider</strong> (<em>str</em><em>, </em><em>optional</em>) – List genomes from specific provider. Genomes from all
+providers will be returned if not specified.</p></li>
+<li><p><strong>size</strong> (<em>bool</em><em>, </em><em>optional</em>) – Show absolute genome size.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Yields</dt>
 <dd class="field-even"><p><em>list</em> – tuples with genome name, provider and metadata</p>
@@ -127,7 +131,7 @@ providers will be returned if not specified.</p>
 
   <div role="contentinfo">
     <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-03-28, 15:36 (UTC).
+      <span class="lastupdated">Last updated on 2022-06-02, 14:58 (UTC).
       </span></p>
   </div>
 
