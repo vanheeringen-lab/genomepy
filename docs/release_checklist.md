@@ -63,37 +63,30 @@
 7. Push everything to github, including tags:
 
     ```shell
-    git push --follow-tags origin develop
+    git push --follow-tags origin develop master
     ```
 
-8. Pull into master
-
-    ```shell
-    git checkout master
-    git push origin master
-    ```
-
-9. Upload to pypi:
+8. Upload to pypi:
 
     ```shell
     python setup.py sdist bdist_wheel
     twine upload dist/genomepy-${new_version}*
     ```
 
-10. Create release on github (if it not already exists)
+9. Create release on github (if it not already exists)
 
     * Update release with CHANGELOG information from the latest version
     * Download the tarball from the github release (`.tar.gz`).
     * Attach downloaded tarball to release as binary (this way the download count get tracked).
 
-11a. Update bioconda package
+10a. Update bioconda package
 
     * wait for the bioconda bot to create a PR
     * update dependencies in the bioconda recipe.yaml if needed
     * approve the PR
     * comment: @bioconda-bot please merge
 
-11b. Update bioconda package
+10b. Update bioconda package
 
     * fork bioconda/bioconda-recipes
     * follow the steps in the [docs](https://bioconda.github.io/contributor/workflow.html)
