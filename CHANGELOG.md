@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.13.1] - 2022-06-21
+
+### Changed
+- removed unused keys from Ensembl and UCSC databases to reduce their size
+
+### Fixed
+- added a retry for initializing the diskcache (seq2science/issues/887)
+- can now find ensembl urls for genomes not using url_names properly (#205) 
+
 ## [0.13.0] - 2022-06-02
 
 ### Added
@@ -407,6 +416,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.13.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.13.0...0.13.1
 [0.13.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.12.0...0.13.0
 [0.12.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.11.1...0.12.0
 [0.11.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.11.0...0.11.1

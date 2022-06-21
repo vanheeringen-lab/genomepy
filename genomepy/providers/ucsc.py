@@ -400,7 +400,16 @@ def get_genomes(rest_url):
     ucsc_json = r.json()
     genomes = ucsc_json["ucscGenomes"]
 
+    # filter summaries to these keys (to reduce the size of the cached data)
+    summary_keys_to_keep = [
+        "taxId",
+        "description",
+        "scientificName",
+        "sourceName",
+        "htmlPath",
+    ]
     for genome in genomes:
+        genomes[genome] = {k: genomes[genome][k] for k in summary_keys_to_keep}
         genomes[genome]["assembly_accession"] = None
         genomes[genome]["annotations"] = []
     # add accession IDs (self.assembly_accession will try to fill in the blanks)

@@ -104,17 +104,26 @@ class EnsemblProvider(BaseProvider):
         lwr_name = genome["url_name"].lower()
 
         ftp_directory = f"{ftp}/pub/release-{version}{div_path}/fasta/{lwr_name}/dna"
+        # some entries don't use url_name in their url... -,-
+        # examples:
+        #   - EnsemblVertebrates: mus_musculus_nzohlltj
+        #   - EnsemblMetazoa: caenorhabditis_elegans
+        if not check_url(ftp_directory, 2):
+            lwr_name = genome["name"]
+            ftp_directory = f"{ftp}/pub/release-{version}{div_path}/fasta/{lwr_name}/dna"
+
         # this assembly has its own directory
         if name == "GRCh37":
             ftp_directory = genome["genome"].format(version)
 
         # specific fasta file
-        cap_name = genome["url_name"].capitalize()
+        cap_name = lwr_name.capitalize()
         asm_name = re.sub(r"\.p\d+$", "", safe(genome["assembly_name"]))
         mask_lvl = {"soft": "_sm", "hard": "_rm", "none": ""}[mask]
         asm_lvl = "toplevel" if kwargs.get("toplevel") else "primary_assembly"
+        version_tag = "" if int(version) > 30 else f".{version}"
 
-        ftp_file = f"{cap_name}.{asm_name}.dna{mask_lvl}.{asm_lvl}.fa.gz"
+        ftp_file = f"{cap_name}.{asm_name}{version_tag}.dna{mask_lvl}.{asm_lvl}.fa.gz"
 
         # combine
         link = f"{ftp_directory}/{ftp_file}"
@@ -161,9 +170,16 @@ class EnsemblProvider(BaseProvider):
         lwr_name = genome["url_name"].lower()
 
         ftp_directory = f"{ftp}/pub/release-{version}{div_path}/gtf/{lwr_name}"
+        # some entries don't use url_name in their url... -,-
+        # examples:
+        #   - EnsemblVertebrates: mus_musculus_nzohlltj
+        #   - EnsemblMetazoa: caenorhabditis_elegans
+        if not check_url(ftp_directory, 2):
+            lwr_name = genome["name"]
+            ftp_directory = f"{ftp}/pub/release-{version}{div_path}/gtf/{lwr_name}"
 
         # specific gtf file
-        cap_name = genome["url_name"].capitalize()
+        cap_name = lwr_name.capitalize()
         asm_name = re.sub(r"\.p\d+$", "", safe(genome["assembly_name"]))
 
         ftp_file = f"{cap_name}.{asm_name}.{version}.gtf.gz"
@@ -233,8 +249,23 @@ def get_genomes(rest_url):
         division_genomes = retry(
             request_json, 3, rest_url, f"info/genomes/division/{division}?"
         )
+
+        # filter summaries to these keys (to reduce the size of the cached data)
+        summary_keys_to_keep = [
+            "assembly_name",
+            "assembly_accession",
+            "taxonomy_id",
+            "name",
+            "scientific_name",
+            "url_name",
+            "display_name",
+            "genebuild",
+            "division",
+            "base_count",
+        ]
         for genome in division_genomes:
-            genomes[safe(genome["assembly_name"])] = genome
+            name = safe(genome["assembly_name"])
+            genomes[name] = {k: genome[k] for k in summary_keys_to_keep}
 
     genomes = add_grch37(genomes)
     return genomes
