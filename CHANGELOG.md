@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- removed unused keys from Ensembl and UCSC databases to reduce their size
+
 ### Fixed
 - added a retry for initializing the diskcache (seq2science/issues/887)
 - can now find ensembl urls for genomes not using url_names properly (#205) 
