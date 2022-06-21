@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- added a retry for initializing the diskcache (seq2science/issues/887)
+- can now find ensembl urls for genomes not using url_names properly (#205) 
+
 ## [0.13.0] - 2022-06-02
 
 ### Added

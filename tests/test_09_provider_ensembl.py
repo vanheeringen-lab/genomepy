@@ -50,6 +50,22 @@ def test_get_genome_download_link(ensembl):
         + "fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz"
     )
 
+    # non vertebrate: < release 30
+    link = ensembl.get_genome_download_link("TAIR10", mask="soft", **{"version": 25})
+    assert (
+        link
+        == "http://ftp.ensemblgenomes.org/pub/release-25/plants/"
+        + "fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.25.dna_sm.toplevel.fa.gz"
+    )
+
+    # non vertebrate: entry not using url_name (see issue #205)
+    link = ensembl.get_genome_download_link("WBcel235", mask="soft", **{"version": 35})
+    assert (
+        link
+        == "http://ftp.ensemblgenomes.org/pub/release-35/metazoa/"
+        + "fasta/caenorhabditis_elegans/dna/Caenorhabditis_elegans.WBcel235.dna_sm.toplevel.fa.gz"
+    )
+
     # vertebrate with primary assembly: unmasked
     link = ensembl.get_genome_download_link("GRCz11", mask="none", **{"version": 98})
     assert (
@@ -92,6 +108,15 @@ def test_get_annotation_download_links(ensembl):
     expected_link = (
         "http://ftp.ensembl.org/pub/release-98/gtf/"
         "danio_rerio/Danio_rerio.GRCz11.98.gtf.gz"
+    )
+    assert links[0] == expected_link
+
+    # non vertebrate: latest version
+    version = ensembl.get_version(False)
+    links = ensembl.get_annotation_download_links("TAIR10")
+    expected_link = (
+        f"http://ftp.ensemblgenomes.org/pub/release-{version}/plants/"
+        f"gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.{version}.gtf.gz"
     )
     assert links[0] == expected_link
 

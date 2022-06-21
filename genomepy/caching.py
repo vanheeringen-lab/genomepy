@@ -1,5 +1,7 @@
 import os
 from shutil import rmtree
+from sqlite3 import DatabaseError
+from time import sleep
 
 from appdirs import user_cache_dir
 from diskcache import Cache
@@ -16,7 +18,12 @@ os.makedirs(genomepy_cache_dir, exist_ok=True)
 
 # Store the output of slow commands (marked with @disk_cache.memoize) for fast reuse
 # DiskCache uses the LRU (least-recently-stored) eviction policy by default
-disk_cache = Cache(directory=genomepy_cache_dir)
+try:
+    disk_cache = Cache(directory=genomepy_cache_dir)
+except DatabaseError:
+    # another process was writing to the cache at the same time
+    sleep(3)
+    disk_cache = Cache(directory=genomepy_cache_dir)
 
 
 def clean():
