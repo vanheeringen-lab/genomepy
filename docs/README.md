@@ -3,7 +3,6 @@
 # Generating the docs
 
 ## Run
-* install genomepy (once) with `python setup.py develop`
 * `sphinx-build docs build`
 * open/refresh `build/index.html` in your browser (site did not refresh if the url ends with "#")
 * if changes were made to the README.md in the root directory,
@@ -13,6 +12,7 @@ check that the lines still match in the various content pages.
 ### install dependencies
 * `mamba env update --file environment.yml`
 * `mamba env update --file docs/requirements.yaml`
+* `pip install -e .`
 
 ### follow guides:
 * https://eikonomega.medium.com/getting-started-with-sphinx-autodoc-part-1-2cebbbca5365
