@@ -42,10 +42,7 @@ def test_connect_ftp_link():
 
 
 def test_read_url(
-    url="https://mbdata.science.ru.nl/siebrenf/GRCh37/GRCh37/README.txt",
-    expected="name: GRCh37",
-    # TODO: uncomment when xenbase's FTP is up again
-    # url="http://ftp.xenbase.org/pub/Genomics/JGI/README", expected="The data"
+    url="http://ftp.xenbase.org/pub/Genomics/JGI/README", expected="The data"
 ):
     text = genomepy.online.read_url(url)
     assert text.startswith(expected)
@@ -70,8 +67,7 @@ def test_check_url():
     assert genomepy.online.check_url(
         "https://mbdata.science.ru.nl/siebrenf/GRCh37/GRCh37/README.txt"
     )
-    # TODO: uncomment when xenbase's FTP is up again
-    # assert genomepy.online.check_url("http://ftp.xenbase.org/pub/Genomics/JGI/README")
+    assert genomepy.online.check_url("http://ftp.xenbase.org/pub/Genomics/JGI/README")
 
     # bad URL:
     assert not genomepy.online.check_url("https://www.thiswebsiteisoffline.nl/")
