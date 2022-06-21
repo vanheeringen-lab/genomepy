@@ -67,7 +67,12 @@
     ```
 
 8. Pull into master
-  
+
+    ```shell
+    git checkout master
+    git push origin master
+    ```
+
 9. Upload to pypi:
 
     ```shell

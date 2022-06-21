@@ -132,7 +132,12 @@ genomepy install -af -p <span class="nb">local</span> -l local_test ~/.local/sha
 </pre></div>
 </div>
 </li>
-<li><p>Pull into master</p></li>
+<li><p>Pull into master</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git checkout master
+git push origin master
+</pre></div>
+</div>
+</li>
 <li><p>Upload to pypi:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python setup.py sdist bdist_wheel
 twine upload dist/genomepy-<span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>*
@@ -174,7 +179,7 @@ twine upload dist/genomepy-<span class="si">${</span><span class="nv">new_versio
 
   <div role="contentinfo">
     <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-06-02, 14:58 (UTC).
+      <span class="lastupdated">Last updated on 2022-06-21, 15:33 (UTC).
       </span></p>
   </div>
 
