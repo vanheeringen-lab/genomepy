@@ -188,7 +188,7 @@ def get_install_options():
 
     Add the provider name in front of the options to prevent overlap.
     """
-    if sys.argv[1] == "install":
+    if len(sys.argv) > 1 and sys.argv[1] == "install":
         install_options = INSTALL_OPTIONS
 
         # extend install options with provider specific options
