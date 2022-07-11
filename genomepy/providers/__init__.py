@@ -98,7 +98,8 @@ def online_providers(provider: str = None):
     provider
         Provider instances
     """
-    for provider in [provider] if provider else list_providers():
+    providers = [provider] if provider else list_providers()
+    for provider in providers:
         try:
             yield create(provider)
         except ConnectionError as e:

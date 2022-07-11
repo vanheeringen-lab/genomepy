@@ -7,13 +7,10 @@ Run from root directory to format:
   bash tests/format.sh
 Run from root directory to lint:
   bash tests/format.sh lint
-
-Tool versions must match the pre-commit hook to prevent later issues.
-This is automatically fixes if installed with `conda env create -f environment.yml`
 '
 
 # files & directories to format/lint
-targets=("setup.py genomepy/ tests/")
+targets=("genomepy/ tests/")
 
 # check current directory
 if [[ $(pwd) != *genomepy ]] || [[ $(ls) != *genomepy* ]]; then
@@ -55,8 +52,8 @@ black \
   | grep 'would reformat'
 
 if $lint; then
-  flake8 \
-    $targets
+  flakeheaven lint \
+  $targets
 
   echo ""
   echo "Done"

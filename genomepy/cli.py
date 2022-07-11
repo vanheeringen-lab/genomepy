@@ -314,7 +314,9 @@ SEARCH_FORMAT = {
     "other_info": "<40",
 }
 FULL_SEARCH_STRING = " ".join([f"{{:{size}}}" for size in SEARCH_FORMAT.values()])
-SEARCH_STRING = " ".join([f"{{:{size}}}" for size in SEARCH_FORMAT.values() if size != "<13"])
+SEARCH_STRING = " ".join(
+    [f"{{:{size}}}" for size in SEARCH_FORMAT.values() if size != "<13"]
+)
 if sys.stdout.isatty():
 
     def bool_to_unicode(boolean: bool) -> str:
@@ -342,7 +344,7 @@ if sys.stdout.isatty():
                 row[n] = "na"
         if len(row) == 8:
             # genome_size
-            row[6] = f'{int(row[6]):,}'
+            row[6] = f"{int(row[6]):,}"
             row = FULL_SEARCH_STRING.format(*row)
         else:
             row = SEARCH_STRING.format(*row)
@@ -364,6 +366,7 @@ if sys.stdout.isatty():
             print(FULL_SEARCH_STRING.format(*subheader))
         else:
             print(SEARCH_STRING.format(*subheader[:-1]))
+
 else:
 
     def terminal_formatting(row: list):

@@ -110,7 +110,9 @@ class EnsemblProvider(BaseProvider):
         #   - EnsemblMetazoa: caenorhabditis_elegans
         if not check_url(ftp_directory, 2):
             lwr_name = genome["name"]
-            ftp_directory = f"{ftp}/pub/release-{version}{div_path}/fasta/{lwr_name}/dna"
+            ftp_directory = (
+                f"{ftp}/pub/release-{version}{div_path}/fasta/{lwr_name}/dna"
+            )
 
         # this assembly has its own directory
         if name == "GRCh37":

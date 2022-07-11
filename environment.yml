@@ -4,21 +4,21 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  # Also found in setup.py
+  # Also found in pyproject.toml
   - appdirs
-  - biopython>=1.73  # for pyfaidx
+  - biopython >=1.73  # for pyfaidx
   - diskcache
   - click
   - colorama
   - loguru
   - mygene
   - mysql-connector-python
-  - norns>=0.1.5
+  - norns >=0.1.5
   - numpy
   - pandas
-  - pyfaidx>=0.5.7
+  - pyfaidx >=0.5.7
   - requests
-  - tqdm>=4.51
+  - tqdm >=4.51
 
   # Bgzip
   - tabix
@@ -38,16 +38,13 @@ dependencies:
   - minimap2
   - star
 
-  # Distribution
-  - setuptools
-
   # Testing
-  - autoflake=1.4  # versions match .pre-commit-config.yaml
-  - black=21.5b2
-  - flake8=3.9.2
-  - flake8-bugbear=21.4.3
-  - isort=5.9.1
-  - pre-commit
+  - autoflake ==1.4
+  - black ==22.6.0
+  - flake8 ==4.0.1
+  - flake8-bugbear ==22.7.1
+  - flakeheaven ==2.0.0
+  - isort ==5.10.1
   - pytest
   - pytest-rerunfailures
   - pytest-cov
