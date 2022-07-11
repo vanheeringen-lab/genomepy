@@ -43,7 +43,8 @@ before_install:
 
       export PATH=$HOME/miniconda/bin:$PATH;
       conda config --set always_yes yes;
-      conda install conda-forge::mamba;
+      conda update -c defaults conda;
+      conda install -c conda-forge mamba;
       mamba env create -n genomepy python=$PYTHON_VERSION -f environment.yml;
     fi
 
