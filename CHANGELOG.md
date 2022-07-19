@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- now using `filelock` for improved thread safety
+
 ## [0.13.1] - 2022-06-21
 
 ### Changed

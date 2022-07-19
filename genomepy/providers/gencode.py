@@ -3,7 +3,7 @@ from time import sleep
 
 from loguru import logger
 
-from genomepy.caching import cache_exp_long, disk_cache
+from genomepy.caching import cache_exp_long, disk_cache, lock
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import update_readme
 from genomepy.online import check_url, connect_ftp_link
@@ -255,6 +255,7 @@ def _get_genomes(ftp_link):
     return genomes
 
 
+@lock
 @disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-gencode")
 def get_genomes(ftp_link):
     """genomes dict of the latest gencode release of each major assembly."""
