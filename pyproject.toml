@@ -4,6 +4,7 @@ description = "Genes and genomes at your fingertips"
 authors = [
     {name = "Siebren Frölich", email = "siebrenf@gmail.com"},
     {name = "Maarten van der Sande", email = "m.vandersande@science.ru.nl"},
+    {name = "Tilman Schäfers", email = "tilman.schaefers@ru.nl"},
     {name = "Simon van Heeringen", email = "simon.vanheeringen@gmail.com"},
 ]
 maintainers = [
