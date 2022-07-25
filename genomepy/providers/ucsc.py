@@ -53,7 +53,9 @@ class UcscProvider(BaseProvider):
     @staticmethod
     def ping():
         """Can the provider be reached?"""
-        return bool(check_url("http://hgdownload.soe.ucsc.edu/goldenPath"))
+        url_online = bool(check_url("http://hgdownload.soe.ucsc.edu/goldenPath"))
+        api_online = bool(check_url("http://api.genome.ucsc.edu/list/ucscGenomes"))
+        return url_online and api_online
 
     def _search_accession(self, term: str) -> Iterator[str]:
         """
