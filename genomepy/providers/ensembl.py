@@ -50,7 +50,10 @@ class EnsemblProvider(BaseProvider):
     @staticmethod
     def ping():
         """Can the provider be reached?"""
-        return bool(check_url("https://rest.ensembl.org/info/ping?"))
+        api_online = bool(check_url("https://rest.ensembl.org/info/ping?"))
+        vertebrate_url_online = bool(check_url("http://ftp.ensembl.org"))
+        other_url_online = bool(check_url("http://ftp.ensemblgenomes.org"))
+        return api_online and vertebrate_url_online and other_url_online
 
     def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""

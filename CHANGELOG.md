@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - now using `filelock` for improved thread safety
+- now checking if every API/FTP/HTTP(S) is accessible before proceeding
 
 ### Changed
 - switched to `pyproject.toml` + `hatchling` for packaging
