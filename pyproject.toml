@@ -1,0 +1,106 @@
+[project]
+name = "genomepy"
+description = "Genes and genomes at your fingertips"
+authors = [
+    {name = "Siebren Frölich", email = "siebrenf@gmail.com"},
+    {name = "Maarten van der Sande", email = "m.vandersande@science.ru.nl"},
+    {name = "Tilman Schäfers", email = "tilman.schaefers@ru.nl"},
+    {name = "Simon van Heeringen", email = "simon.vanheeringen@gmail.com"},
+]
+maintainers = [
+    {name = "Siebren Frölich", email = "siebrenf@gmail.com"},
+    {name = "Simon van Heeringen", email = "simon.vanheeringen@gmail.com"},
+]
+
+requires-python = ">=3.7"
+dependencies = [
+    "appdirs",
+    "biopython >=1.73",
+    "diskcache",
+    "click",
+    "colorama",
+    "filelock",
+    "loguru",
+    "mygene",
+    "mysql-connector-python",
+    "norns >=0.1.5",
+    "numpy",
+    "pandas",
+    "pyfaidx >=0.5.7",
+    "requests",
+    "tqdm >=4.51",
+]
+
+dynamic = ["version"]
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+keywords = [
+    "genome",
+    "assembly",
+    "gene",
+    "annotation",
+    "Ensembl",
+    "UCSC",
+    "NCBI",
+    "GENCODE",
+]
+
+[project.urls]
+Homepage = "https://github.com/vanheeringen-lab/genomepy"
+Documentation = "https://vanheeringen-lab.github.io/genomepy/"
+News = "https://github.com/vanheeringen-lab/genomepy/blob/master/CHANGELOG.md"
+Readme = "https://github.com/vanheeringen-lab/genomepy/blob/master/README.md"
+
+[project.scripts]
+genomepy = "genomepy.cli:cli"
+
+# pyproject.toml documentation:
+# https://peps.python.org/pep-0621/
+# https://hatch.pypa.io/latest/config/metadata/
+# https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+# https://python-poetry.org/docs/pyproject/
+
+[build-system]
+requires = ["hatchling>=1.5.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "genomepy/__about__.py"
+
+# include files specified in .gitignore
+[tool.hatch.build]
+artifacts = [
+    "genomepy/config/default.yaml",
+]
+
+# # include other files
+# [tool.hatch.build.force-include]
+# "LICENSE" = "genomepy/LICENSE"
+# "README.md" = "genomepy/README.md"
+# "CHANGELOG.md" = "genomepy/CHANGELOG.md"
+
+[tool.isort]
+profile = "black"
+conda_env = "environment.yml"
+overwrite_in_place = true
+
+[tool.flakeheaven]
+max_line_length = 88
+show_source = true
+
+[tool.flakeheaven.plugins]
+flake8-bugbear = ["+*"]
+pycodestyle = ["+*", "-E501", "-W503"]
+pyflakes = ["+*"]
+pylint = ["+*"]

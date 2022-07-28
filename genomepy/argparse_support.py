@@ -15,7 +15,7 @@ def parse_genome(auto_install=False, genomes_dir=None):
         auto_install : bool, optional
             Install a genome if it's not found locally.
         genomes_dir : str, optional
-            Directory to look for and/or insall genomes.
+            Directory to look for and/or install genomes.
     """
 
     class GenomeAction(argparse.Action):

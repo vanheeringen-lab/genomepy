@@ -33,12 +33,12 @@ class GencodeProvider(BaseProvider):
         "text_search",
     ]
     _cli_install_options = {}
-    _ftp_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode"
+    _url = "ftp://ftp.ebi.ac.uk/pub/databases/gencode"
 
     def __init__(self):
         self._provider_status()
         # Populate on init, so that methods can be cached
-        self.genomes = _get_genomes(self._ftp_link)
+        self.genomes = _get_genomes(self._url)
         self.ucsc = UcscProvider()
         self.gencode2ucsc = get_gencode2ucsc(self.genomes)
         self._update_genomes()
@@ -46,7 +46,8 @@ class GencodeProvider(BaseProvider):
     @staticmethod
     def ping():
         """Can the provider be reached?"""
-        return bool(check_url("ftp.ebi.ac.uk/pub/databases/gencode"))
+        ftp_online = bool(check_url("ftp.ebi.ac.uk/pub/databases/gencode"))
+        return ftp_online
 
     def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""

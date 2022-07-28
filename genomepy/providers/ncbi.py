@@ -56,7 +56,8 @@ class NcbiProvider(BaseProvider):
     @staticmethod
     def ping():
         """Can the provider be reached?"""
-        return bool(check_url("https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"))
+        url_online = bool(check_url("https://ftp.ncbi.nlm.nih.gov/genomes/"))
+        return url_online
 
     def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""

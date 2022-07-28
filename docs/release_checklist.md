@@ -28,13 +28,13 @@
 5. Check if release works on pypi:
 
     ```shell
-    python setup.py sdist bdist_wheel
+    python -m build
 
     # twine must be up to date (3.3.0 works). System installed twine can interfere.
     twine upload --repository-url https://test.pypi.org/legacy/ dist/genomepy-${new_version}*
 
-    python setup.py develop --uninstall
-   
+    pip uninstall genomepy
+
     # the \ is to escape the ==, so the variable ${new_version} can be called
     pip install --extra-index-url https://test.pypi.org/simple/ genomepy\==${new_version}
 
@@ -69,7 +69,7 @@
 8. Upload to pypi:
 
     ```shell
-    python setup.py sdist bdist_wheel
+    python -m build
     twine upload dist/genomepy-${new_version}*
     ```
 

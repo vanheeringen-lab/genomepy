@@ -167,7 +167,7 @@ class Annotation:
                 raise ValueError(f"{field} not in GTF attributes!")
 
         # extract the text between the quotes
-        series = df["attribute"].str.extract(fr'{field} "(.*?)"', expand=False)
+        series = df["attribute"].str.extract(rf'{field} "(.*?)"', expand=False)
         series.name = field
         return series
 
@@ -444,7 +444,7 @@ def _get_name_and_dir(name, genomes_dir=None):
         name = safe(os.path.basename(fname))
         # remove suffices
         any_ext = "(" + ")|(".join(exts) + ")"
-        name = re.sub(fr"(\.annotation)?\.({any_ext})(\.gz)?$", "", name)
+        name = re.sub(rf"(\.annotation)?\.({any_ext})(\.gz)?$", "", name)
     elif os.path.isdir(fname):
         genome_dir = fname
         name = safe(os.path.basename(fname))
