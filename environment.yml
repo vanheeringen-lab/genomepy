@@ -39,6 +39,9 @@ dependencies:
   - minimap2
   - star
 
+  # Distribution
+  - python-build
+
   # Testing
   - autoflake ==1.4
   - black ==22.6.0
