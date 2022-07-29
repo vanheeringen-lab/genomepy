@@ -396,16 +396,17 @@ else:
 @click.option("-s", "--size", is_flag=True, help="show absolute genome size")
 def search(term, provider=None, size=False):
     """
-    Search for genomes that contain TERM in their name, description
-    accession (must start with GCA_ or GCF_) or (matching) taxonomy.
-    Search is case-insensitive.
+    Search for genomes that contain TERM in their name, description,
+    accession (must start with GCA_ or GCF_) or taxonomy (start).
+
+    Search is case-insensitive, name/description search accepts multiple terms and regex.
 
     Returns the metadata of each found genome, including the availability of a gene annotation.
     For UCSC, up to 4 gene annotation styles are available:
     "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
     Each with different naming schemes.
     """
-    term = "_".join(term)
+    term = " ".join(term)
     no_genomes = True
     for row in genomepy.search(term, provider, size):
         if no_genomes:

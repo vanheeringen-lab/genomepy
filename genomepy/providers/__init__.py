@@ -12,7 +12,7 @@ from genomepy.providers.local import LocalProvider
 from genomepy.providers.ncbi import NcbiProvider, download_assembly_report
 from genomepy.providers.ucsc import UcscProvider
 from genomepy.providers.url import UrlProvider
-from genomepy.utils import get_genomes_dir, safe
+from genomepy.utils import get_genomes_dir
 
 __all__ = [
     "Provider",
@@ -106,18 +106,18 @@ def online_providers(provider: str = None):
             logger.warning(str(e))
 
 
-def search(term, provider: str = None, size=False):
+def search(term: str or int, provider: str = None, size=False):
     """
     Search for a genome.
 
     If provider is specified, search only that specific provider, else
     search all providers. Both the name and description are used for the
-    search. Search term is case-insensitive.
+    search. Search term is case-insensitive and can contain regex.
 
     Parameters
     ----------
-    term : str
-        Search term, case-insensitive.
+    term : str, int
+        Search term, case-insensitive, allows regex.
     provider : str , optional
         Only search the specified provider (faster).
     size : bool, optional
@@ -128,7 +128,6 @@ def search(term, provider: str = None, size=False):
     list
         genome name, provider and metadata
     """
-    term = safe(str(term))
     for p in online_providers(provider):
         for row in p.search(term, size):
             ret = list(row[:1]) + [p.name] + list(row[1:])

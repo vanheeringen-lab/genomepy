@@ -9,9 +9,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Added
 - now using `filelock` for improved thread safety
 - now checking if every API/FTP/HTTP(S) is accessible before proceeding
+- genomepy search improvements:
+  - text search now accepts regex, and multiple substrings (space separated) are unordered.
+  - taxonomy search now returns all hits that start with the given number.
 
 ### Changed
 - switched to `pyproject.toml` + `hatchling` for packaging
+
+### Fixed
+- updated the README and CLI documentation to mention the `Local` provider
 
 ## [0.13.1] - 2022-06-21
 
