@@ -5,6 +5,7 @@
 1. Make sure all tests pass.
 
     ```shell
+    mamba env update -f environment.yml
     pytest -vvv
     ```
 
