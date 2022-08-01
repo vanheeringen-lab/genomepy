@@ -3,7 +3,7 @@
 [![bioconda-badge](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io)
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/genomepy/badges/downloads.svg)](https://anaconda.org/bioconda/genomepy)
 [![PyPI version](https://badge.fury.io/py/genomepy.svg)](https://badge.fury.io/py/genomepy)
-<!--- [![star this repo](https://githubbadges.com/star.svg?user=vanheeringen-lab&repo=genomepy&style=flat)](https://github.com/vanheeringen-lab/genomepy) -->
+[![GitHub stars](https://badgen.net/github/stars/vanheeringen-lab/genomepy)](https://GitHub.com/vanheeringen-lab/genomepy/stargazers/)
 
 [![Build Status](https://app.travis-ci.com/vanheeringen-lab/genomepy.svg?branch=master)](https://app.travis-ci.com/github/vanheeringen-lab/genomepy/branches)
 [![Maintainability](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/maintainability)](https://codeclimate.com/github/vanheeringen-lab/genomepy/maintainability)
@@ -618,8 +618,9 @@ To test your changes locally, run the following command: `pytest -vvv`
 ## Contributors
 
 - Siebren Frölich - [@siebrenf](https://github.com/siebrenf)
-- Simon van Heeringen - [@simonvh](https://github.com/simonvh)
 - Maarten van der Sande - [@Maarten-vd-Sande](https://github.com/Maarten-vd-Sande)
+- Tilman Schäfers [@tilschaef](https://github.com/tilschaef)
+- Simon van Heeringen - [@simonvh](https://github.com/simonvh)
 - Dohoon Lee - [@dohlee](https://github.com/dohlee)
 - Jie Zhu - [@alienzj](https://github.com/alienzj)
 

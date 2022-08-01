@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'genomepy'
-copyright = 'Simon van Heeringen, Siebren Frölich, Maarten van der Sande'
-author = 'Simon van Heeringen, Siebren Frölich, Maarten van der Sande'
+copyright = 'Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen'
+author = 'Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen'
 
 
 # -- General configuration ---------------------------------------------------
