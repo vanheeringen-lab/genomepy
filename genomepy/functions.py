@@ -1,6 +1,7 @@
 """Module-level functions"""
 import os
 import re
+import sys
 from tempfile import mkdtemp
 from typing import Optional
 
@@ -335,7 +336,9 @@ def _lazy_provider_selection(name, provider=None):
         if p.name == "Local" and os.path.exists(cleanpath(name)):
             return p
 
-    raise GenomeDownloadError(f"{name} not found on {', '.join(providers)}.")
+    if len(providers):
+        raise GenomeDownloadError(f"{name} not found on {', '.join(providers)}.")
+    sys.exit(0)
 
 
 def _provider_selection(name, localname, genomes_dir, provider=None):

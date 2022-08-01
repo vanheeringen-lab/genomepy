@@ -5,6 +5,7 @@
 1. Make sure all tests pass.
 
     ```shell
+    mamba env update -f environment.yml
     pytest -vvv
     ```
 
@@ -52,6 +53,7 @@
     genomepy install -af -p ncbi ASM2732v1
     genomepy install -af -p url -l url_test https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.fna.gz --URL-to-annotation https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz
     genomepy install -af -p local -l local_test ~/.local/share/genomes/TAIR10/TAIR10.fa --Local-path-to-annotation ~/.local/share/genomes/TAIR10/TAIR10.annotation.gtf
+    
     ```
 
 6. Finish the release:

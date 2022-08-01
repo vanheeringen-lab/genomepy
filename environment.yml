@@ -41,6 +41,8 @@ dependencies:
 
   # Distribution
   - python-build
+  - twine ==3.3.0
+  - keyring ==22.3.0
 
   # Testing
   - autoflake ==1.4
