@@ -351,17 +351,17 @@ $ genomepy  install hg38 -p UCSC --annotation
 All selected options are stored in a `README.txt`. 
 This includes the original name, download location and other genomepy operations (such as regex filtering and time).
 
-###### Additional providers
+#### Other providers (any URL/local files)
 
 To facilitate the downloading of genomes not supported by either NCBI, UCSC, or Ensembl, genomes 
-can also be downloaded directly from an url, by specifying `URL` as the provider:
+can also be downloaded directly from any URL, by specifying `URL` as the provider:
 
 ```bash
 $ genomepy install -p url https://research.nhgri.nih.gov/hydra/download/assembly/\Hm105_Dovetail_Assembly_1.0.fa.gz
 ```
 
-This installs the genome under the filename of the link, but can be changed with the `--localname` option.
 Similarly, if you have a local fasta file, you can install this using the filepath and specifying `Local` as the provider.
+This installs the genome under the filename of the URL/filepath, but can be changed with the `--localname` option.
 
 If you add the `--annotation` flag, genomepy will search the (remote) directory for an annotation file as well.
 Should this fail, you can also add a URL to the annotation with `--URL-to-annotation` with the `URL` provider, 
