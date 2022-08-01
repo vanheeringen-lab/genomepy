@@ -14,7 +14,6 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -118,11 +117,11 @@
            <div itemprop="articleBody">
              
   <section id="genomepy-providers-ucsc-ucscprovider">
-<h1>genomepy.providers.ucsc.UcscProvider<a class="headerlink" href="#genomepy-providers-ucsc-ucscprovider" title="Permalink to this heading"></a></h1>
+<h1>genomepy.providers.ucsc.UcscProvider<a class="headerlink" href="#genomepy-providers-ucsc-ucscprovider" title="Permalink to this headline"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="genomepy.providers.ucsc.UcscProvider">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genomepy.providers.ucsc.</span></span><span class="sig-name descname"><span class="pre">UcscProvider</span></span><a class="headerlink" href="#genomepy.providers.ucsc.UcscProvider" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="genomepy.providers.base.BaseProvider.html#genomepy.providers.base.BaseProvider" title="genomepy.providers.base.BaseProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseProvider</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="genomepy.providers.base.BaseProvider.html#genomepy.providers.base.BaseProvider" title="genomepy.providers.base.BaseProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">genomepy.providers.base.BaseProvider</span></code></a></p>
 <p>UCSC genome provider.</p>
 <p>The UCSC API REST server is used to search and list genomes.
 The UCSC MySQL database is used to find metadata and annotations.</p>
@@ -132,7 +131,7 @@ The UCSC MySQL database is used to find metadata and annotations.</p>
 <dd></dd></dl>
 
 <p class="rubric">Methods</p>
-<table class="autosummary longtable docutils align-default">
+<table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -180,35 +179,29 @@ The UCSC MySQL database is used to find metadata and annotations.</p>
 </tbody>
 </table>
 <p class="rubric">Attributes</p>
-<table class="autosummary longtable docutils align-default">
+<table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ucsc.UcscProvider.accession_fields" title="genomepy.providers.ucsc.UcscProvider.accession_fields"><code class="xref py py-obj docutils literal notranslate"><span class="pre">accession_fields</span></code></a></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">accession_fields</span></code></p></td>
 <td><p>Metadata fields that (can) contain the assembly's accession ID.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.ucsc.UcscProvider.description_fields" title="genomepy.providers.ucsc.UcscProvider.description_fields"><code class="xref py py-obj docutils literal notranslate"><span class="pre">description_fields</span></code></a></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">description_fields</span></code></p></td>
 <td><p>Metadata fields with assembly related info.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ucsc.UcscProvider.genomes" title="genomepy.providers.ucsc.UcscProvider.genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">genomes</span></code></a></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">genomes</span></code></p></td>
 <td><p>Dictionary with assembly names as key and assembly metadata dictionary as value.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.ucsc.UcscProvider.name" title="genomepy.providers.ucsc.UcscProvider.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></p></td>
 <td><p>Name of this provider.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ucsc.UcscProvider.taxid_fields" title="genomepy.providers.ucsc.UcscProvider.taxid_fields"><code class="xref py py-obj docutils literal notranslate"><span class="pre">taxid_fields</span></code></a></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">taxid_fields</span></code></p></td>
 <td><p>Metadata fields that (can) contain the assembly's taxonomy ID.</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="genomepy.providers.ucsc.UcscProvider.accession_fields">
-<span class="sig-name descname"><span class="pre">accession_fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['assembly_accession']</span></em><a class="headerlink" href="#genomepy.providers.ucsc.UcscProvider.accession_fields" title="Permalink to this definition"></a></dt>
-<dd><p>Metadata fields that (can) contain the assembly’s accession ID.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.ucsc.UcscProvider.annotation_links">
 <span class="sig-name descname"><span class="pre">annotation_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#genomepy.providers.ucsc.UcscProvider.annotation_links" title="Permalink to this definition"></a></dt>
@@ -244,12 +237,6 @@ If not, any linked NCBI assembly pages can also be scraped.</p>
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="genomepy.providers.ucsc.UcscProvider.description_fields">
-<span class="sig-name descname"><span class="pre">description_fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['description',</span> <span class="pre">'scientificName']</span></em><a class="headerlink" href="#genomepy.providers.ucsc.UcscProvider.description_fields" title="Permalink to this definition"></a></dt>
-<dd><p>Metadata fields with assembly related info.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -289,12 +276,6 @@ If not, any linked NCBI assembly pages can also be scraped.</p>
 <dd class="field-odd"><p>int</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="genomepy.providers.ucsc.UcscProvider.genomes">
-<span class="sig-name descname"><span class="pre">genomes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#genomepy.providers.ucsc.UcscProvider.genomes" title="Permalink to this definition"></a></dt>
-<dd><p>Dictionary with assembly names as key and assembly metadata dictionary as value.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -353,8 +334,11 @@ name is not found.</p></li>
 <li><p><strong>mask</strong> (<em>str</em><em> , </em><em>optional</em>) – Masking level. Options: soft, hard or none. Default is soft.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>str with the http/ftp download link.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str with the http/ftp download link.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -396,12 +380,6 @@ Downloads all available if left blank.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="genomepy.providers.ucsc.UcscProvider.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'UCSC'</span></em><a class="headerlink" href="#genomepy.providers.ucsc.UcscProvider.name" title="Permalink to this definition"></a></dt>
-<dd><p>Name of this provider.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.ucsc.UcscProvider.ping">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ping</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ucsc.UcscProvider.ping" title="Permalink to this definition"></a></dt>
@@ -410,7 +388,7 @@ Downloads all available if left blank.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.ucsc.UcscProvider.search">
-<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ucsc.UcscProvider.search" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ucsc.UcscProvider.search" title="Permalink to this definition"></a></dt>
 <dd><p>Search for term in genome names, descriptions and taxonomy ID.</p>
 <p>The search is case-insensitive.</p>
 <dl class="field-list simple">
@@ -420,7 +398,7 @@ Downloads all available if left blank.</p>
 Can be (part of) an assembly name (e.g. hg38),
 scientific name (Danio rerio) or assembly
 accession (<cite>GCA_000146045</cite>/<cite>GCF_</cite>),
-or an exact taxonomy id (7227).</p></li>
+or a taxonomy id (7227).</p></li>
 <li><p><strong>size</strong> (<em>bool</em><em>, </em><em>optional</em>) – Show absolute genome size.</p></li>
 </ul>
 </dd>
@@ -428,12 +406,6 @@ or an exact taxonomy id (7227).</p></li>
 <dd class="field-even"><p><em>tuples with name and metadata</em></p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="genomepy.providers.ucsc.UcscProvider.taxid_fields">
-<span class="sig-name descname"><span class="pre">taxid_fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['taxId']</span></em><a class="headerlink" href="#genomepy.providers.ucsc.UcscProvider.taxid_fields" title="Permalink to this definition"></a></dt>
-<dd><p>Metadata fields that (can) contain the assembly’s taxonomy ID.</p>
 </dd></dl>
 
 </dd></dl>
@@ -451,8 +423,8 @@ or an exact taxonomy id (7227).</p></li>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-06-21, 15:33 (UTC).
+    <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
+      <span class="lastupdated">Last updated on 2022-08-01, 13:38 (UTC).
       </span></p>
   </div>
 

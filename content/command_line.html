@@ -14,7 +14,6 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -42,7 +41,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Command line documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#quick-usage">Quick usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plugins-and-indexing">Plugins and indexing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#genome-location">Genome location</a></li>
@@ -52,6 +50,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#command-line">Command line</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#install-a-genome">Install a genome.</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#other-providers-any-url-local-files">Other providers (any URL/local files)</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#manage-plugins">Manage plugins.</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#search-for-a-genome">Search for a genome.</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#list-available-providers">List available providers</a></li>
@@ -95,32 +94,28 @@
            <div itemprop="articleBody">
              
   <section id="command-line-documentation">
-<h1>Command line documentation<a class="headerlink" href="#command-line-documentation" title="Permalink to this heading"></a></h1>
-<section id="quick-usage">
-<h2>Quick usage<a class="headerlink" href="#quick-usage" title="Permalink to this heading"></a></h2>
+<h1>Command line documentation<a class="headerlink" href="#command-line-documentation" title="Permalink to this headline"></a></h1>
 <ol class="arabic">
 <li><p>Find your genome: <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">genomepy</span> <span class="pre">search</span> <span class="pre">zebrafish</span></code></p>
 <p>Console output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>name      provider    accession           tax_id     annotation    species        other_info
-GRCz11    Ensembl     GCA_000002035.4     7955       ✓             Danio rerio    2017-08-Ensembl/2018-04
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>name      provider    accession           tax_id     annotation    species        other_info
+GRCz11    Ensembl     GCA_000002035.4     <span class="m">7955</span>       ✓             Danio rerio    <span class="m">2017</span>-08-Ensembl/2018-04
 ^
-Use name for genomepy install
+Use name <span class="k">for</span> genomepy install
 </pre></div>
 </div>
 </li>
-<li><p>Install your genome (with annotation): <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">genomepy</span> <span class="pre">install</span> <span class="pre">--annotation</span> <span class="pre">GRCz11</span> <span class="pre">--provider</span> <span class="pre">ensembl</span></code></p>
-<p>Default genome directory: <code class="docutils literal notranslate"><span class="pre">~/.local/share/genomes/</span></code></p>
-</li>
+<li><p>Install your genome (with annotation): <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">genomepy</span> <span class="pre">install</span> <span class="pre">--annotation</span> <span class="pre">GRCz11</span> <span class="pre">--provider</span> <span class="pre">ensembl</span></code></p></li>
 </ol>
-</section>
+<p>The default genomes directory: <code class="docutils literal notranslate"><span class="pre">~/.local/share/genomes/</span></code></p>
 <section id="plugins-and-indexing">
-<h2>Plugins and indexing<a class="headerlink" href="#plugins-and-indexing" title="Permalink to this heading"></a></h2>
-<p>By default genomepy generates support files, including a genome index,
+<h2>Plugins and indexing<a class="headerlink" href="#plugins-and-indexing" title="Permalink to this headline"></a></h2>
+<p>By default, genomepy generates support files including a genome index,
 chromosome sizes and gap locations (Ns in the sequence).</p>
-<p>For some genomes genomepy can download blacklist files (generated by the Kundaje lab).
-This will only work when installing these genomes from UCSC.
-Enable this plugin to use it.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy plugin enable blacklist
+<p>For some model organisms, genomepy can download a genome blacklist (generated by the Kundaje lab).
+Blacklists are only available for these model organisms when downloaded from UCSC, and for the human and mouse genomes.
+Enable the blacklist plugin to use it.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy plugin <span class="nb">enable</span> blacklist
 </pre></div>
 </div>
 <p>You can also create indices for some widely using aligners.
@@ -135,40 +130,41 @@ Currently, genomepy supports:</p>
 </ul>
 <p>Note 1: these programs are not installed by genomepy and need to be
 installed separately for the indexing to work.</p>
-<p>Note 2: splice-aware indexing is performed by Hisat2 and STAR.
+<p>Note 2: splice-aware indexing (required for e.g. RNA-seq) is performed by STAR and Hisat2.
 Splice-aware indexing requires the annotation to be downloaded as well.
 You will receive a warning if indexing is performed without annotation for these aligners.</p>
-<p>Note 3: STAR can further improve mapping to (novel) splice junctions by indexing again (2-pass mapping mode).
+<p>Note 3: STAR can further improve mapping to (novel) splice junctions by indexing again
+(see 2-pass mapping mode in the STAR manual).
 The second pass is not supported by genomepy.</p>
 <p>You can configure the index creation using the <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">plugin</span></code> command (see below)</p>
 </section>
 <section id="configuration">
-<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading"></a></h2>
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline"></a></h2>
 <p>To change the default configuration, generate a personal config file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy config generate
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy config generate
 Created config file /home/simon/.config/genomepy/genomepy.yaml
 </pre></div>
 </div>
 <section id="genome-location">
-<h3>Genome location<a class="headerlink" href="#genome-location" title="Permalink to this heading"></a></h3>
-<p>By default genomes will be saved in <code class="docutils literal notranslate"><span class="pre">~/.local/share/genomes</span></code>.</p>
+<h3>Genome location<a class="headerlink" href="#genome-location" title="Permalink to this headline"></a></h3>
+<p>By default, genomes will be saved in <code class="docutils literal notranslate"><span class="pre">~/.local/share/genomes</span></code>.</p>
 <p>To set the default genome directory, to <code class="docutils literal notranslate"><span class="pre">/data/genomes</span></code> for instance,
 edit <code class="docutils literal notranslate"><span class="pre">~/.config/genomepy/genomepy.yaml</span></code> and change the following line:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">genomes_dir</span><span class="p">:</span> <span class="o">~/.</span><span class="n">local</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">genomes</span><span class="o">/</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>genomes_dir: ~/.local/share/genomes/
 </pre></div>
 </div>
 <p>to:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">genomes_dir</span><span class="p">:</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">genomes</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>genomes_dir: /data/genomes
 </pre></div>
 </div>
 <p>The genome directory can still be overwritten via the command-line.</p>
 </section>
 <section id="compression">
-<h3>Compression<a class="headerlink" href="#compression" title="Permalink to this heading"></a></h3>
+<h3>Compression<a class="headerlink" href="#compression" title="Permalink to this headline"></a></h3>
 <p>Optionally genome FASTA files can be saved using bgzip compression.
 This means that the FASTA files will take up less space on disk.
 To enable this use the flag <code class="docutils literal notranslate"><span class="pre">--bgzip</span></code> on the command line, or add the following line to your config file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bgzip</span><span class="p">:</span> <span class="kc">True</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bgzip: True
 </pre></div>
 </div>
 <p>Most tools are able to use bgzip-compressed genome files.
@@ -178,12 +174,12 @@ which comes installed with genomepy.</p>
 </section>
 </section>
 <section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h2>
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline"></a></h2>
 <section id="command-line">
-<h3>Command line<a class="headerlink" href="#command-line" title="Permalink to this heading"></a></h3>
+<h3>Command line<a class="headerlink" href="#command-line" title="Permalink to this headline"></a></h3>
 <p>All functions come with a short explanation when appended with <code class="docutils literal notranslate"><span class="pre">--help</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy --help
-Usage: genomepy [OPTIONS] COMMAND [ARGS]...
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy --help
+Usage: genomepy <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
 
 Options:
   --version   Show the version and exit.
@@ -194,104 +190,105 @@ Commands:
   clean       remove provider data
   config      manage configuration
   genomes     list available genomes
-  install     install a genome &amp; run active plugins
+  install     install a genome <span class="p">&amp;</span> run active plugins
   plugin      manage plugins
   providers   list available providers
-  search      search for genomes
+  search      search <span class="k">for</span> genomes
 </pre></div>
 </div>
 <section id="install-a-genome">
-<h4>Install a genome.<a class="headerlink" href="#install-a-genome" title="Permalink to this heading"></a></h4>
+<h4>Install a genome.<a class="headerlink" href="#install-a-genome" title="Permalink to this headline"></a></h4>
 <p>Find the name of your desired genome:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy search xenopus tropicalis
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy search xenopus tro
 name                       provider    accession           tax_id    annotation     species               other_info
                                                                       n r e k
-Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3       8364        ✓          Xenopus tropicalis    2019-04-Ensembl/2019-12
-xenTro1                    UCSC        na                    8364     ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. 2004 (JGI 3.0/xenTro1)
-xenTro2                    UCSC        na                    8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. 2005 (JGI 4.1/xenTro2)
-xenTro3                    UCSC        GCA_000004195.1       8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. 2009 (JGI 4.2/xenTro3)
-xenTro7                    UCSC        GCA_000004195.2       8364     ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. 2012 (JGI 7.0/xenTro7)
-xenTro9                    UCSC        GCA_000004195.3       8364     ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
-Xtropicalis_v7             NCBI        GCF_000004195.2       8364        ✓          Xenopus tropicalis    DOE Joint Genome Institute
-Xenopus_tropicalis_v9.1    NCBI        GCF_000004195.3       8364        ✓          Xenopus tropicalis    DOE Joint Genome Institute
-UCB_Xtro_10.0              NCBI        GCF_000004195.4       8364        ✓          Xenopus tropicalis    University of California, Berkeley
-ASM1336827v1               NCBI        GCA_013368275.1       8364        ✗          Xenopus tropicalis    Southern University of Science and Technology
+Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3       <span class="m">8364</span>        ✓          Xenopus tropicalis    <span class="m">2019</span>-04-Ensembl/2019-12
+xenTro1                    UCSC        na                    <span class="m">8364</span>     ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. <span class="m">2004</span> <span class="o">(</span>JGI <span class="m">3</span>.0/xenTro1<span class="o">)</span>
+xenTro2                    UCSC        na                    <span class="m">8364</span>     ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. <span class="m">2005</span> <span class="o">(</span>JGI <span class="m">4</span>.1/xenTro2<span class="o">)</span>
+xenTro3                    UCSC        GCA_000004195.1       <span class="m">8364</span>     ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. <span class="m">2009</span> <span class="o">(</span>JGI <span class="m">4</span>.2/xenTro3<span class="o">)</span>
+xenTro7                    UCSC        GCA_000004195.2       <span class="m">8364</span>     ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. <span class="m">2012</span> <span class="o">(</span>JGI <span class="m">7</span>.0/xenTro7<span class="o">)</span>
+xenTro9                    UCSC        GCA_000004195.3       <span class="m">8364</span>     ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. <span class="m">2016</span> <span class="o">(</span>Xenopus_tropicalis_v9.1/xenTro9<span class="o">)</span>
+Xtropicalis_v7             NCBI        GCF_000004195.2       <span class="m">8364</span>        ✓          Xenopus tropicalis    DOE Joint Genome Institute
+Xenopus_tropicalis_v9.1    NCBI        GCF_000004195.3       <span class="m">8364</span>        ✓          Xenopus tropicalis    DOE Joint Genome Institute
+UCB_Xtro_10.0              NCBI        GCF_000004195.4       <span class="m">8364</span>        ✓          Xenopus tropicalis    University of California, Berkeley
+ASM1336827v1               NCBI        GCA_013368275.1       <span class="m">8364</span>        ✗          Xenopus tropicalis    Southern University of Science and Technology
  ^
- Use name for genomepy install
+ Use name <span class="k">for</span> genomepy install
 </pre></div>
 </div>
 <p>You can search by genome name (case-insensitive), taxonomy ID or assembly accession ID.
 Additionally, you can limit the search result to one provider with <code class="docutils literal notranslate"><span class="pre">-p</span></code>/<code class="docutils literal notranslate"><span class="pre">--provider</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy search 8364 -p ucsc
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy search <span class="m">8364</span> -p ucsc
 name                    provider    accession           tax_id    annotation     species               other_info
                                                                    n r e k
-xenTro1                 UCSC        na                    8364     ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. 2004 (JGI 3.0/xenTro1)
-xenTro2                 UCSC        na                    8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. 2005 (JGI 4.1/xenTro2)
-xenTro3                 UCSC        GCA_000004195.1       8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. 2009 (JGI 4.2/xenTro3)
-xenTro7                 UCSC        GCA_000004195.2       8364     ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. 2012 (JGI 7.0/xenTro7)
-xenTro9                 UCSC        GCA_000004195.3       8364     ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
+xenTro1                 UCSC        na                    <span class="m">8364</span>     ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. <span class="m">2004</span> <span class="o">(</span>JGI <span class="m">3</span>.0/xenTro1<span class="o">)</span>
+xenTro2                 UCSC        na                    <span class="m">8364</span>     ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. <span class="m">2005</span> <span class="o">(</span>JGI <span class="m">4</span>.1/xenTro2<span class="o">)</span>
+xenTro3                 UCSC        GCA_000004195.1       <span class="m">8364</span>     ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. <span class="m">2009</span> <span class="o">(</span>JGI <span class="m">4</span>.2/xenTro3<span class="o">)</span>
+xenTro7                 UCSC        GCA_000004195.2       <span class="m">8364</span>     ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. <span class="m">2012</span> <span class="o">(</span>JGI <span class="m">7</span>.0/xenTro7<span class="o">)</span>
+xenTro9                 UCSC        GCA_000004195.3       <span class="m">8364</span>     ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. <span class="m">2016</span> <span class="o">(</span>Xenopus_tropicalis_v9.1/xenTro9<span class="o">)</span>
  ^
- Use name for genomepy install
+ Use name <span class="k">for</span> genomepy install
 </pre></div>
 </div>
-<p>Lets say we want to download the latest <em>Xenopus tropicalis</em> genome from UCSC.</p>
+<p>Let’s say we want to download a <em>Xenopus tropicalis</em> genome from UCSC.</p>
 <p>If you are interested in the gene annotation as well, you might want to check which gene annotation suits your needs.
-Because we’re looking at UCSC there are several options for us to choose from.
+Because we’re looking at UCSC, and there are several options for us to choose from.
 In the search results, <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">r</span> <span class="pre">e</span> <span class="pre">k</span></code> denotes which UCSC annotations are available.
 These stand for <strong>n</strong>cbiRefSeq, <strong>r</strong>efGene, <strong>e</strong>nsGene and <strong>k</strong>nownGene, respectively.</p>
 <p>We can quickly inspect these with the <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">annotation</span></code> command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy annotation xenTro9 -p ucsc
-12:04:41 | INFO | UCSC ncbiRefSeq
-chr1    genomepy        transcript      133270  152620  .       -       .       gene_id &quot;LOC100490505&quot;; transcript_id &quot;XM_012956089.1&quot;;  gene_name &quot;LOC100490505&quot;;
-chr1    genomepy        exon    133270  134186  .       -       .       gene_id &quot;LOC100490505&quot;; transcript_id &quot;XM_012956089.1&quot;; exon_number &quot;1&quot;; exon_id &quot;XM_012956089.1.1&quot;; gene_name &quot;LOC100490505&quot;;
-12:04:45 | INFO | UCSC refGene
-chr1    genomepy        transcript      193109390       193134311       .       +       .       gene_id &quot;pias2&quot;; transcript_id &quot;NM_001078987&quot;;  gene_name &quot;pias2&quot;;
-chr1    genomepy        exon    193109390       193109458       .       +       .       gene_id &quot;pias2&quot;; transcript_id &quot;NM_001078987&quot;; exon_number &quot;1&quot;; exon_id &quot;NM_001078987.1&quot;; gene_name &quot;pias2&quot;;
-12:04:49 | INFO | UCSC ensGene
-chr1    genomepy        transcript      133270  152620  .       -       .       gene_id &quot;ENSXETG00000030302.2&quot;; transcript_id &quot;ENSXETT00000061673.2&quot;;  gene_name &quot;ENSXETG00000030302.2&quot;;
-chr1    genomepy        exon    133270  134186  .       -       .       gene_id &quot;ENSXETG00000030302.2&quot;; transcript_id &quot;ENSXETT00000061673.2&quot;; exon_number &quot;1&quot;; exon_id &quot;ENSXETT00000061673.2.1&quot;; gene_name &quot;ENSXETG00000030302.2&quot;;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy annotation xenTro9 -p ucsc
+<span class="m">12</span>:04:41 <span class="p">|</span> INFO <span class="p">|</span> UCSC ncbiRefSeq
+chr1    genomepy        transcript      <span class="m">133270</span>  <span class="m">152620</span>  .       -       .       gene_id <span class="s2">&quot;LOC100490505&quot;</span><span class="p">;</span> transcript_id <span class="s2">&quot;XM_012956089.1&quot;</span><span class="p">;</span>  gene_name <span class="s2">&quot;LOC100490505&quot;</span><span class="p">;</span>
+chr1    genomepy        exon    <span class="m">133270</span>  <span class="m">134186</span>  .       -       .       gene_id <span class="s2">&quot;LOC100490505&quot;</span><span class="p">;</span> transcript_id <span class="s2">&quot;XM_012956089.1&quot;</span><span class="p">;</span> exon_number <span class="s2">&quot;1&quot;</span><span class="p">;</span> exon_id <span class="s2">&quot;XM_012956089.1.1&quot;</span><span class="p">;</span> gene_name <span class="s2">&quot;LOC100490505&quot;</span><span class="p">;</span>
+<span class="m">12</span>:04:45 <span class="p">|</span> INFO <span class="p">|</span> UCSC refGene
+chr1    genomepy        transcript      <span class="m">193109390</span>       <span class="m">193134311</span>       .       +       .       gene_id <span class="s2">&quot;pias2&quot;</span><span class="p">;</span> transcript_id <span class="s2">&quot;NM_001078987&quot;</span><span class="p">;</span>  gene_name <span class="s2">&quot;pias2&quot;</span><span class="p">;</span>
+chr1    genomepy        exon    <span class="m">193109390</span>       <span class="m">193109458</span>       .       +       .       gene_id <span class="s2">&quot;pias2&quot;</span><span class="p">;</span> transcript_id <span class="s2">&quot;NM_001078987&quot;</span><span class="p">;</span> exon_number <span class="s2">&quot;1&quot;</span><span class="p">;</span> exon_id <span class="s2">&quot;NM_001078987.1&quot;</span><span class="p">;</span> gene_name <span class="s2">&quot;pias2&quot;</span><span class="p">;</span>
+<span class="m">12</span>:04:49 <span class="p">|</span> INFO <span class="p">|</span> UCSC ensGene
+chr1    genomepy        transcript      <span class="m">133270</span>  <span class="m">152620</span>  .       -       .       gene_id <span class="s2">&quot;ENSXETG00000030302.2&quot;</span><span class="p">;</span> transcript_id <span class="s2">&quot;ENSXETT00000061673.2&quot;</span><span class="p">;</span>  gene_name <span class="s2">&quot;ENSXETG00000030302.2&quot;</span><span class="p">;</span>
+chr1    genomepy        exon    <span class="m">133270</span>  <span class="m">134186</span>  .       -       .       gene_id <span class="s2">&quot;ENSXETG00000030302.2&quot;</span><span class="p">;</span> transcript_id <span class="s2">&quot;ENSXETT00000061673.2&quot;</span><span class="p">;</span> exon_number <span class="s2">&quot;1&quot;</span><span class="p">;</span> exon_id <span class="s2">&quot;ENSXETT00000061673.2.1&quot;</span><span class="p">;</span> gene_name <span class="s2">&quot;ENSXETG00000030302.2&quot;</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>Here we can see that the <code class="docutils literal notranslate"><span class="pre">refGene</span></code> annotation has actual HGNC gene names, so lets go with this annotation.</p>
+<p>Here we can see that the <code class="docutils literal notranslate"><span class="pre">refGene</span></code> annotation has actual HGNC gene names, so lets go with this annotation.
+This differs between genomes, so be sure to check!</p>
 <p>Copy the name returned by the search function to install.
 For UCSC we can also select the annotation type.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy install xenTro9 --UCSC-annotation refGene
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy install xenTro9 --UCSC-annotation refGene
 </pre></div>
 </div>
 <p>Since we did not specify the provider here, genomepy will use the first provider it can find with <code class="docutils literal notranslate"><span class="pre">xenTro9</span></code>.
 Since we learned in <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">search</span></code> that only UCSC uses this name, it will be UCSC.
 We can also specify genomepy to use UCSC by giving it the provider name with <code class="docutils literal notranslate"><span class="pre">-p</span></code>/<code class="docutils literal notranslate"><span class="pre">--provider</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy install xenTro9 -p UCSC
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy install xenTro9 -p UCSC
 Downloading genome from http://hgdownload.soe.ucsc.edu/goldenPath/xenTro9/bigZips/xenTro9.fa.gz...
 Genome download successful, starting post processing...
 
 name: xenTro9
-local name: xenTro9
+<span class="nb">local</span> name: xenTro9
 fasta: /data/genomes/xenTro9/xenTro9.fa
 </pre></div>
 </div>
 <p>Next, the genome is downloaded to the directory specified in the config file.
 To choose a different directory, use the <code class="docutils literal notranslate"><span class="pre">-g</span></code>/<code class="docutils literal notranslate"><span class="pre">--genomes_dir</span></code> option:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy install sacCer3 -p UCSC -g /path/to/my/genomes
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy install sacCer3 -p UCSC -g /path/to/my/genomes
 Downloading genome from http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz...
 Genome download successful, starting post processing...
 
 name: sacCer3
-local name: sacCer3
+<span class="nb">local</span> name: sacCer3
 fasta: /path/to/my/genomes/sacCer3/sacCer3.fa
 </pre></div>
 </div>
 <p>You can use a regular expression to filter for matching sequences
 (or non-matching sequences by using the <code class="docutils literal notranslate"><span class="pre">--no-match</span></code> option).
 For instance, the following command downloads hg38 and saves only the major chromosomes:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy install hg38 -p UCSC -r &#39;chr[0-9XY]+$&#39;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy install hg38 -p UCSC -r <span class="s1">&#39;chr[0-9XY]+$&#39;</span>
 downloading from http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz...
-done...
+<span class="k">done</span>...
 name: hg38
-local name: hg38
+<span class="nb">local</span> name: hg38
 fasta: /data/genomes/hg38/hg38.fa
 
-$ grep &quot;&gt;&quot; /data/genomes/hg38/hg38.fa
+$ grep <span class="s2">&quot;&gt;&quot;</span> /data/genomes/hg38/hg38.fa
 &gt;chr1
 &gt;chr10
 &gt;chr11
@@ -319,27 +316,34 @@ $ grep &quot;&gt;&quot; /data/genomes/hg38/hg38.fa
 </pre></div>
 </div>
 <p>By default, sequences are soft-masked. Use <code class="docutils literal notranslate"><span class="pre">-m</span> <span class="pre">hard</span></code> for hard masking, or <code class="docutils literal notranslate"><span class="pre">-m</span> <span class="pre">none</span></code> for no masking.</p>
-<p>The chromosome sizes are saved in file called <code class="docutils literal notranslate"><span class="pre">&lt;genome_name&gt;.fa.sizes</span></code>.</p>
 <p>You can choose to download gene annotation files with the <code class="docutils literal notranslate"><span class="pre">--annotation</span></code> option.
 These will be saved in (gzipped) BED and GTF format.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy  install hg38 -p UCSC --annotation
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy  install hg38 -p UCSC --annotation
 </pre></div>
 </div>
-<p>To facilitate the downloading of genomes not supported by either NCBI, UCSC, or Ensembl, genomes
-can also be downloaded directly from an url:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy install -p url https://research.nhgri.nih.gov/hydra/download/assembly/\Hm105_Dovetail_Assembly_1.0.fa.gz
-</pre></div>
-</div>
-<p>This installs the genome under the filename of the link, but can be changed with the <code class="docutils literal notranslate"><span class="pre">--localname</span></code> option</p>
-<p>If you add the <code class="docutils literal notranslate"><span class="pre">--annotation</span></code> flag, genomepy will search the remote directory for an annotation file as well.
-Should this fail, you can also add a url to the annotation with <code class="docutils literal notranslate"><span class="pre">--URL-to-annotation</span></code>.</p>
-<p>Finally, in the spirit of reproducibility all selected options are stored in a <code class="docutils literal notranslate"><span class="pre">README.txt</span></code>.
+<p>All selected options are stored in a <code class="docutils literal notranslate"><span class="pre">README.txt</span></code>.
 This includes the original name, download location and other genomepy operations (such as regex filtering and time).</p>
 </section>
+<section id="other-providers-any-url-local-files">
+<h4>Other providers (any URL/local files)<a class="headerlink" href="#other-providers-any-url-local-files" title="Permalink to this headline"></a></h4>
+<p>To facilitate the downloading of genomes not supported by either NCBI, UCSC, or Ensembl, genomes
+can also be downloaded directly from any URL, by specifying <code class="docutils literal notranslate"><span class="pre">URL</span></code> as the provider:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy install -p url https://research.nhgri.nih.gov/hydra/download/assembly/<span class="se">\H</span>m105_Dovetail_Assembly_1.0.fa.gz
+</pre></div>
+</div>
+<p>Similarly, if you have a local fasta file, you can install this using the filepath and specifying <code class="docutils literal notranslate"><span class="pre">Local</span></code> as the provider.
+This installs the genome under the filename of the URL/filepath, but can be changed with the <code class="docutils literal notranslate"><span class="pre">--localname</span></code> option.</p>
+<p>If you add the <code class="docutils literal notranslate"><span class="pre">--annotation</span></code> flag, genomepy will search the (remote) directory for an annotation file as well.
+Should this fail, you can also add a URL to the annotation with <code class="docutils literal notranslate"><span class="pre">--URL-to-annotation</span></code> with the <code class="docutils literal notranslate"><span class="pre">URL</span></code> provider,
+or a filepath with <code class="docutils literal notranslate"><span class="pre">--Local-path-to-annotation</span></code> with the <code class="docutils literal notranslate"><span class="pre">Local</span></code> provider:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy install -p <span class="nb">local</span> /path/to/genome.fa --Local-path-to-annotation /path/to/gene.annotation.gtf
+</pre></div>
+</div>
+</section>
 <section id="manage-plugins">
-<h4>Manage plugins.<a class="headerlink" href="#manage-plugins" title="Permalink to this heading"></a></h4>
+<h4>Manage plugins.<a class="headerlink" href="#manage-plugins" title="Permalink to this headline"></a></h4>
 <p>Use <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">plugin</span> <span class="pre">list</span></code> to view the available plugins.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy plugin list
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy plugin list
 plugin              enabled
 bowtie2
 bwa
@@ -351,85 +355,87 @@ blacklist
 </pre></div>
 </div>
 <p>Enable plugins as follows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy plugin enable bwa hisat2
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy plugin <span class="nb">enable</span> bwa hisat2
 Enabled plugins: bwa, hisat2
 </pre></div>
 </div>
 <p>And disable like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy plugin disable bwa
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy plugin disable bwa
 Enabled plugins: hisat2
 </pre></div>
 </div>
 </section>
 <section id="search-for-a-genome">
-<h4>Search for a genome.<a class="headerlink" href="#search-for-a-genome" title="Permalink to this heading"></a></h4>
+<h4>Search for a genome.<a class="headerlink" href="#search-for-a-genome" title="Permalink to this headline"></a></h4>
 <p>You can search by genome name (case-insensitive), taxonomy ID or assembly accession ID.
 Additionally, you can limit the search result to one provider with <code class="docutils literal notranslate"><span class="pre">-p</span></code>/<code class="docutils literal notranslate"><span class="pre">--provider</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy search xenopus tropicalis
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy search xenopus tropicalis
 name                       provider    accession           tax_id    annotation     species               other_info
                                                                       n r e k
-Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3       8364        ✓          Xenopus tropicalis    2019-04-Ensembl/2019-12
-xenTro1                    UCSC        na                    8364     ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. 2004 (JGI 3.0/xenTro1)
-xenTro2                    UCSC        na                    8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. 2005 (JGI 4.1/xenTro2)
-xenTro3                    UCSC        GCA_000004195.1       8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. 2009 (JGI 4.2/xenTro3)
-xenTro7                    UCSC        GCA_000004195.2       8364     ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. 2012 (JGI 7.0/xenTro7)
-xenTro9                    UCSC        GCA_000004195.3       8364     ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
-Xtropicalis_v7             NCBI        GCF_000004195.2       8364        ✓          Xenopus tropicalis    DOE Joint Genome Institute
-Xenopus_tropicalis_v9.1    NCBI        GCF_000004195.3       8364        ✓          Xenopus tropicalis    DOE Joint Genome Institute
-UCB_Xtro_10.0              NCBI        GCF_000004195.4       8364        ✓          Xenopus tropicalis    University of California, Berkeley
-ASM1336827v1               NCBI        GCA_013368275.1       8364        ✗          Xenopus tropicalis    Southern University of Science and Technology
+Xenopus_tropicalis_v9.1    Ensembl     GCA_000004195.3       <span class="m">8364</span>        ✓          Xenopus tropicalis    <span class="m">2019</span>-04-Ensembl/2019-12
+xenTro1                    UCSC        na                    <span class="m">8364</span>     ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. <span class="m">2004</span> <span class="o">(</span>JGI <span class="m">3</span>.0/xenTro1<span class="o">)</span>
+xenTro2                    UCSC        na                    <span class="m">8364</span>     ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. <span class="m">2005</span> <span class="o">(</span>JGI <span class="m">4</span>.1/xenTro2<span class="o">)</span>
+xenTro3                    UCSC        GCA_000004195.1       <span class="m">8364</span>     ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. <span class="m">2009</span> <span class="o">(</span>JGI <span class="m">4</span>.2/xenTro3<span class="o">)</span>
+xenTro7                    UCSC        GCA_000004195.2       <span class="m">8364</span>     ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. <span class="m">2012</span> <span class="o">(</span>JGI <span class="m">7</span>.0/xenTro7<span class="o">)</span>
+xenTro9                    UCSC        GCA_000004195.3       <span class="m">8364</span>     ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. <span class="m">2016</span> <span class="o">(</span>Xenopus_tropicalis_v9.1/xenTro9<span class="o">)</span>
+Xtropicalis_v7             NCBI        GCF_000004195.2       <span class="m">8364</span>        ✓          Xenopus tropicalis    DOE Joint Genome Institute
+Xenopus_tropicalis_v9.1    NCBI        GCF_000004195.3       <span class="m">8364</span>        ✓          Xenopus tropicalis    DOE Joint Genome Institute
+UCB_Xtro_10.0              NCBI        GCF_000004195.4       <span class="m">8364</span>        ✓          Xenopus tropicalis    University of California, Berkeley
+ASM1336827v1               NCBI        GCA_013368275.1       <span class="m">8364</span>        ✗          Xenopus tropicalis    Southern University of Science and Technology
  ^
- Use name for genomepy install
+ Use name <span class="k">for</span> genomepy install
 </pre></div>
 </div>
 <p>Only search a specific provider:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy search tropicalis -p ucsc
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy search tropicalis -p ucsc
 name                    provider    accession           tax_id    annotation     species               other_info
                                                                    n r e k
-xenTro1                 UCSC        na                    8364     ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. 2004 (JGI 3.0/xenTro1)
-xenTro2                 UCSC        na                    8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. 2005 (JGI 4.1/xenTro2)
-xenTro3                 UCSC        GCA_000004195.1       8364     ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. 2009 (JGI 4.2/xenTro3)
-xenTro7                 UCSC        GCA_000004195.2       8364     ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. 2012 (JGI 7.0/xenTro7)
-xenTro9                 UCSC        GCA_000004195.3       8364     ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. 2016 (Xenopus_tropicalis_v9.1/xenTro9)
+xenTro1                 UCSC        na                    <span class="m">8364</span>     ✗ ✗ ✗ ✗       Xenopus tropicalis    Oct. <span class="m">2004</span> <span class="o">(</span>JGI <span class="m">3</span>.0/xenTro1<span class="o">)</span>
+xenTro2                 UCSC        na                    <span class="m">8364</span>     ✗ ✓ ✓ ✗       Xenopus tropicalis    Aug. <span class="m">2005</span> <span class="o">(</span>JGI <span class="m">4</span>.1/xenTro2<span class="o">)</span>
+xenTro3                 UCSC        GCA_000004195.1       <span class="m">8364</span>     ✗ ✓ ✓ ✗       Xenopus tropicalis    Nov. <span class="m">2009</span> <span class="o">(</span>JGI <span class="m">4</span>.2/xenTro3<span class="o">)</span>
+xenTro7                 UCSC        GCA_000004195.2       <span class="m">8364</span>     ✓ ✓ ✗ ✗       Xenopus tropicalis    Sep. <span class="m">2012</span> <span class="o">(</span>JGI <span class="m">7</span>.0/xenTro7<span class="o">)</span>
+xenTro9                 UCSC        GCA_000004195.3       <span class="m">8364</span>     ✓ ✓ ✓ ✗       Xenopus tropicalis    Jul. <span class="m">2016</span> <span class="o">(</span>Xenopus_tropicalis_v9.1/xenTro9<span class="o">)</span>
  ^
- Use name for genomepy install
+ Use name <span class="k">for</span> genomepy install
 </pre></div>
 </div>
 <p>Note that searching doesn’t work flawlessly, so try a few variations if you don’t get any results.</p>
 </section>
 <section id="list-available-providers">
-<h4>List available providers<a class="headerlink" href="#list-available-providers" title="Permalink to this heading"></a></h4>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy providers
+<h4>List available providers<a class="headerlink" href="#list-available-providers" title="Permalink to this headline"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy providers
+GENCODE
 Ensembl
 UCSC
 NCBI
+Local
 URL
 </pre></div>
 </div>
 </section>
 <section id="list-available-genomes">
-<h4>List available genomes<a class="headerlink" href="#list-available-genomes" title="Permalink to this heading"></a></h4>
-<p>You can constrain the genome list by using the <code class="docutils literal notranslate"><span class="pre">-p</span></code> option to search only a
-specific provider.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy genomes -p UCSC
+<h4>List available genomes<a class="headerlink" href="#list-available-genomes" title="Permalink to this headline"></a></h4>
+<p>You can constrain the genome list by using the <code class="docutils literal notranslate"><span class="pre">-p</span></code>/<code class="docutils literal notranslate"><span class="pre">--provider</span></code> option to search only a specific provider.
+Additionally, you can get the absolute <code class="docutils literal notranslate"><span class="pre">--size</span></code> of each genome (this option slows down the search).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy genomes -p UCSC
 name                    provider    accession          tax_id     annotation     species                                     other_info
                                                                    n r e k
-ailMel1                 UCSC        GCF_000004335.2      9646      ✓ ✗ ✓ ✗       Ailuropoda melanoleuca                      Dec. 2009 (BGI-Shenzhen 1.0/ailMel1)
-allMis1                 UCSC        GCA_000281125.1      8496      ✗ ✓ ✗ ✗       Alligator mississippiensis                  Aug. 2012 (allMis0.2/allMis1)
-anoCar1                 UCSC        na                  28377      ✗ ✗ ✓ ✗       Anolis carolinensis                         Feb. 2007 (Broad/anoCar1)
+ailMel1                 UCSC        GCF_000004335.2      <span class="m">9646</span>      ✓ ✗ ✓ ✗       Ailuropoda melanoleuca                      Dec. <span class="m">2009</span> <span class="o">(</span>BGI-Shenzhen <span class="m">1</span>.0/ailMel1<span class="o">)</span>
+allMis1                 UCSC        GCA_000281125.1      <span class="m">8496</span>      ✗ ✓ ✗ ✗       Alligator mississippiensis                  Aug. <span class="m">2012</span> <span class="o">(</span>allMis0.2/allMis1<span class="o">)</span>
+anoCar1                 UCSC        na                  <span class="m">28377</span>      ✗ ✗ ✓ ✗       Anolis carolinensis                         Feb. <span class="m">2007</span> <span class="o">(</span>Broad/anoCar1<span class="o">)</span>
 </pre></div>
 </div>
 </section>
 <section id="manage-configuration">
-<h4>Manage configuration<a class="headerlink" href="#manage-configuration" title="Permalink to this heading"></a></h4>
+<h4>Manage configuration<a class="headerlink" href="#manage-configuration" title="Permalink to this headline"></a></h4>
 <p>List the current configuration file that genomepy uses:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy config file
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy config file
 /home/simon/.config/genomepy/genomepy.yaml
 </pre></div>
 </div>
 <p>To show the contents of the config file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy config show
-# Directory were downloaded genomes will be stored
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy config show
+<span class="c1"># Directory were downloaded genomes will be stored</span>
 genomes_dir: ~/.local/share/genomes/
 
 plugin:
@@ -437,15 +443,18 @@ plugin:
 </pre></div>
 </div>
 <p>To generate a personal configuration file (existing file will be overwritten):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ genomepy config generate
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ genomepy config generate
 Created config file /home/simon/.config/genomepy/genomepy.yaml
 </pre></div>
 </div>
 </section>
 <section id="local-cache">
-<h4>Local cache.<a class="headerlink" href="#local-cache" title="Permalink to this heading"></a></h4>
+<h4>Local cache.<a class="headerlink" href="#local-cache" title="Permalink to this headline"></a></h4>
 <p>Note that the first time you run <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">search</span></code> or <code class="docutils literal notranslate"><span class="pre">list</span></code>
-the command will take a while as the genome lists have to be downloaded.</p>
+the command will take a while as the genome lists have to be downloaded.
+The lists are cached locally, which will save time later.
+The cached files are stored in <code class="docutils literal notranslate"><span class="pre">~/.cache/genomepy</span></code> and expire after 7 days.
+You can also delete this directory to clean the cache using <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">clean</span></code>.</p>
 </section>
 </section>
 </section>
@@ -462,8 +471,8 @@ the command will take a while as the genome lists have to be downloaded.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-06-21, 15:33 (UTC).
+    <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
+      <span class="lastupdated">Last updated on 2022-08-01, 13:38 (UTC).
       </span></p>
   </div>
 

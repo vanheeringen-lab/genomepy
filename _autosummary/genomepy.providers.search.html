@@ -14,7 +14,6 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -107,18 +106,18 @@
            <div itemprop="articleBody">
              
   <section id="genomepy-providers-search">
-<h1>genomepy.providers.search<a class="headerlink" href="#genomepy-providers-search" title="Permalink to this heading"></a></h1>
+<h1>genomepy.providers.search<a class="headerlink" href="#genomepy-providers-search" title="Permalink to this headline"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="genomepy.providers.search">
-<span class="sig-prename descclassname"><span class="pre">genomepy.providers.</span></span><span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.search" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">genomepy.providers.</span></span><span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.search" title="Permalink to this definition"></a></dt>
 <dd><p>Search for a genome.</p>
 <p>If provider is specified, search only that specific provider, else
 search all providers. Both the name and description are used for the
-search. Search term is case-insensitive.</p>
+search. Search term is case-insensitive and can contain regex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>term</strong> (<em>str</em>) – Search term, case-insensitive.</p></li>
+<li><p><strong>term</strong> (<em>str</em><em>, </em><em>int</em>) – Search term, case-insensitive, allows regex.</p></li>
 <li><p><strong>provider</strong> (<em>str</em><em> , </em><em>optional</em>) – Only search the specified provider (faster).</p></li>
 <li><p><strong>size</strong> (<em>bool</em><em>, </em><em>optional</em>) – Show absolute genome size.</p></li>
 </ul>
@@ -142,8 +141,8 @@ search. Search term is case-insensitive.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-06-21, 15:33 (UTC).
+    <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
+      <span class="lastupdated">Last updated on 2022-08-01, 13:38 (UTC).
       </span></p>
   </div>
 

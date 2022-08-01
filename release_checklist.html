@@ -14,7 +14,6 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -71,10 +70,11 @@
            <div itemprop="articleBody">
              
   <section id="release-checklist">
-<h1>Release checklist<a class="headerlink" href="#release-checklist" title="Permalink to this heading"></a></h1>
+<h1>Release checklist<a class="headerlink" href="#release-checklist" title="Permalink to this headline"></a></h1>
 <ol class="arabic">
 <li><p>Make sure all tests pass.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pytest -vvv
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>mamba env update -f environment.yml
+pytest -vvv
 </pre></div>
 </div>
 </li>
@@ -95,12 +95,12 @@ git flow release start <span class="si">${</span><span class="nv">new_version</s
 </ul>
 </li>
 <li><p>Check if release works on pypi:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python setup.py sdist bdist_wheel
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python -m build
 
 <span class="c1"># twine must be up to date (3.3.0 works). System installed twine can interfere.</span>
 twine upload --repository-url https://test.pypi.org/legacy/ dist/genomepy-<span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>*
 
-python setup.py develop --uninstall
+pip uninstall genomepy
 
 <span class="c1"># the is to escape the ==, so the variable ${new_version} can be called</span>
 pip install --extra-index-url https://test.pypi.org/simple/ genomepy<span class="se">\=</span><span class="o">=</span><span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>
@@ -128,18 +128,12 @@ genomepy install -af -p <span class="nb">local</span> -l local_test ~/.local/sha
 </div>
 </li>
 <li><p>Push everything to github, including tags:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git push --follow-tags origin develop
-</pre></div>
-</div>
-</li>
-<li><p>Pull into master</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git checkout master
-git push origin master
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git push --follow-tags origin develop master
 </pre></div>
 </div>
 </li>
 <li><p>Upload to pypi:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python setup.py sdist bdist_wheel
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python -m build
 twine upload dist/genomepy-<span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>*
 </pre></div>
 </div>
@@ -152,14 +146,14 @@ twine upload dist/genomepy-<span class="si">${</span><span class="nv">new_versio
 </ul>
 </li>
 </ol>
-<p>11a. Update bioconda package</p>
+<p>10a. Update bioconda package</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="n">wait</span> <span class="k">for</span> <span class="n">the</span> <span class="n">bioconda</span> <span class="n">bot</span> <span class="n">to</span> <span class="n">create</span> <span class="n">a</span> <span class="n">PR</span>
 <span class="o">*</span> <span class="n">update</span> <span class="n">dependencies</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">bioconda</span> <span class="n">recipe</span><span class="o">.</span><span class="n">yaml</span> <span class="k">if</span> <span class="n">needed</span>
 <span class="o">*</span> <span class="n">approve</span> <span class="n">the</span> <span class="n">PR</span>
 <span class="o">*</span> <span class="n">comment</span><span class="p">:</span> <span class="nd">@bioconda</span><span class="o">-</span><span class="n">bot</span> <span class="n">please</span> <span class="n">merge</span>
 </pre></div>
 </div>
-<p>11b. Update bioconda package</p>
+<p>10b. Update bioconda package</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>* fork bioconda/bioconda-recipes
 * follow the steps in the [docs](https://bioconda.github.io/contributor/workflow.html)
 * get the hash from the downloaded tarbal using `sha256sum *genomepy-${new_version}.tar.gz`
@@ -178,8 +172,8 @@ twine upload dist/genomepy-<span class="si">${</span><span class="nv">new_versio
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-06-21, 15:33 (UTC).
+    <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
+      <span class="lastupdated">Last updated on 2022-08-01, 13:38 (UTC).
       </span></p>
   </div>
 

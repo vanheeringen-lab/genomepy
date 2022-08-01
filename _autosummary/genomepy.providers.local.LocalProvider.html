@@ -14,7 +14,6 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -111,11 +110,11 @@
            <div itemprop="articleBody">
              
   <section id="genomepy-providers-local-localprovider">
-<h1>genomepy.providers.local.LocalProvider<a class="headerlink" href="#genomepy-providers-local-localprovider" title="Permalink to this heading"></a></h1>
+<h1>genomepy.providers.local.LocalProvider<a class="headerlink" href="#genomepy-providers-local-localprovider" title="Permalink to this headline"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="genomepy.providers.local.LocalProvider">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genomepy.providers.local.</span></span><span class="sig-name descname"><span class="pre">LocalProvider</span></span><a class="headerlink" href="#genomepy.providers.local.LocalProvider" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="genomepy.providers.base.BaseProvider.html#genomepy.providers.base.BaseProvider" title="genomepy.providers.base.BaseProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseProvider</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="genomepy.providers.base.BaseProvider.html#genomepy.providers.base.BaseProvider" title="genomepy.providers.base.BaseProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">genomepy.providers.base.BaseProvider</span></code></a></p>
 <p>Local genome provider.</p>
 <p>Give a local genome the genomepy treatment.</p>
 <dl class="py method">
@@ -124,7 +123,7 @@
 <dd></dd></dl>
 
 <p class="rubric">Methods</p>
-<table class="autosummary longtable docutils align-default">
+<table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -172,35 +171,29 @@
 </tbody>
 </table>
 <p class="rubric">Attributes</p>
-<table class="autosummary longtable docutils align-default">
+<table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.local.LocalProvider.accession_fields" title="genomepy.providers.local.LocalProvider.accession_fields"><code class="xref py py-obj docutils literal notranslate"><span class="pre">accession_fields</span></code></a></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">accession_fields</span></code></p></td>
 <td><p>Metadata fields that (can) contain the assembly's accession ID.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.local.LocalProvider.description_fields" title="genomepy.providers.local.LocalProvider.description_fields"><code class="xref py py-obj docutils literal notranslate"><span class="pre">description_fields</span></code></a></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">description_fields</span></code></p></td>
 <td><p>Metadata fields with assembly related info.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.local.LocalProvider.genomes" title="genomepy.providers.local.LocalProvider.genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">genomes</span></code></a></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">genomes</span></code></p></td>
 <td><p>Dictionary with assembly names as key and assembly metadata dictionary as value.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.local.LocalProvider.name" title="genomepy.providers.local.LocalProvider.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></p></td>
 <td><p>Name of this provider.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.local.LocalProvider.taxid_fields" title="genomepy.providers.local.LocalProvider.taxid_fields"><code class="xref py py-obj docutils literal notranslate"><span class="pre">taxid_fields</span></code></a></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">taxid_fields</span></code></p></td>
 <td><p>Metadata fields that (can) contain the assembly's taxonomy ID.</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="genomepy.providers.local.LocalProvider.accession_fields">
-<span class="sig-name descname"><span class="pre">accession_fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#genomepy.providers.local.LocalProvider.accession_fields" title="Permalink to this definition"></a></dt>
-<dd><p>Metadata fields that (can) contain the assembly’s accession ID.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.local.LocalProvider.annotation_links">
 <span class="sig-name descname"><span class="pre">annotation_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#genomepy.providers.local.LocalProvider.annotation_links" title="Permalink to this definition"></a></dt>
@@ -233,12 +226,6 @@
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="genomepy.providers.local.LocalProvider.description_fields">
-<span class="sig-name descname"><span class="pre">description_fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#genomepy.providers.local.LocalProvider.description_fields" title="Permalink to this definition"></a></dt>
-<dd><p>Metadata fields with assembly related info.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -287,12 +274,6 @@
 <dd class="field-odd"><p>int</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="genomepy.providers.local.LocalProvider.genomes">
-<span class="sig-name descname"><span class="pre">genomes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#genomepy.providers.local.LocalProvider.genomes" title="Permalink to this definition"></a></dt>
-<dd><p>Dictionary with assembly names as key and assembly metadata dictionary as value.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -355,12 +336,6 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="genomepy.providers.local.LocalProvider.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Local'</span></em><a class="headerlink" href="#genomepy.providers.local.LocalProvider.name" title="Permalink to this definition"></a></dt>
-<dd><p>Name of this provider.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.local.LocalProvider.ping">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ping</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.local.LocalProvider.ping" title="Permalink to this definition"></a></dt>
@@ -372,12 +347,6 @@
 <span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.local.LocalProvider.search" title="Permalink to this definition"></a></dt>
 <dd><p>return an empty generator,
 same as if no genomes were found at the other providers</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="genomepy.providers.local.LocalProvider.taxid_fields">
-<span class="sig-name descname"><span class="pre">taxid_fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#genomepy.providers.local.LocalProvider.taxid_fields" title="Permalink to this definition"></a></dt>
-<dd><p>Metadata fields that (can) contain the assembly’s taxonomy ID.</p>
 </dd></dl>
 
 </dd></dl>
@@ -395,8 +364,8 @@ same as if no genomes were found at the other providers</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright Simon van Heeringen, Siebren Frölich, Maarten van der Sande.
-      <span class="lastupdated">Last updated on 2022-06-21, 15:33 (UTC).
+    <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
+      <span class="lastupdated">Last updated on 2022-08-01, 13:38 (UTC).
       </span></p>
   </div>
 
