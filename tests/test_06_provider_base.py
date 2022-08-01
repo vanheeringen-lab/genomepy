@@ -162,7 +162,7 @@ def test_head_annotation(ncbi, caplog, capsys):
 
 
 def test__search_text(ucsc):
-    term = genomepy.utils.lower("Ailuropoda melanoleuca")
+    term = "Ailuropoda melanoleuca"
     assert list(ucsc._search_text("not_in_description")) == []
     assert next(ucsc._search_text(term)) == "ailMel1"
 

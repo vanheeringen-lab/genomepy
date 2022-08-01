@@ -1,11 +1,12 @@
 """BaseProvider class, the parent of the provider classes"""
 import gzip
 import os
+import re
 import shutil
 import subprocess as sp
 import time
 from tempfile import TemporaryDirectory, mkdtemp
-from typing import Iterator, List, Union
+from typing import Iterator, List
 from urllib.request import urlopen
 
 import pandas as pd
@@ -16,7 +17,7 @@ from genomepy.annotation.utils import read_annot, write_annot
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import extract_archive, get_file_info, update_readme
 from genomepy.online import download_file
-from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf, safe
+from genomepy.utils import get_genomes_dir, get_localname, mkdir_p, rm_rf, safe
 
 
 class BaseProvider:
@@ -311,10 +312,14 @@ class BaseProvider:
 
     def _search_text(self, term: str) -> Iterator[str]:
         """check if search term is found in the provider's genome name or description field(s)"""
+        # multiple search terms: order doesn't matter
+        if " " in term:
+            term = "".join([f"(?=.*{t})" for t in term.split()])
+
+        pattern = re.compile(term, re.I)  # case insensitive
         for name, metadata in self.genomes.items():
-            if term in lower(name) or any(
-                [term in lower(metadata[f]) for f in self.description_fields]
-            ):
+            texts = [name] + [str(metadata[f]) for f in self.description_fields]
+            if any(pattern.search(t) for t in texts):
                 yield name
 
     def _search_accession(self, term: str) -> Iterator[str]:
@@ -322,16 +327,18 @@ class BaseProvider:
         # cut off prefix (GCA_/GCF_) and suffix (version numbers, e.g. '.3')
         term = term[4:].split(".")[0]
         for name, metadata in self.genomes.items():
-            if any([term in str(metadata[f]) for f in self.accession_fields]):
+            if any(term in str(metadata[f]) for f in self.accession_fields):
                 yield name
 
     def _search_taxonomy(self, term: str) -> Iterator[str]:
-        """check if search term matches to any of the provider's taxonomy field(s)"""
+        """check if search term is the start of the provider's taxonomy field(s)"""
         for name, metadata in self.genomes.items():
-            if any([term == lower(metadata[f]) for f in self.taxid_fields]):
+            if any(
+                str(metadata[f]).strip().startswith(term) for f in self.taxid_fields
+            ):
                 yield name
 
-    def search(self, term: Union[str, int], size=False):
+    def search(self, term: str or int, size=False):
         """
         Search for term in genome names, descriptions and taxonomy ID.
 
@@ -344,7 +351,7 @@ class BaseProvider:
             Can be (part of) an assembly name (e.g. hg38),
             scientific name (Danio rerio) or assembly
             accession (`GCA_000146045`/`GCF_`),
-            or an exact taxonomy id (7227).
+            or a taxonomy id (7227).
         size : bool, optional
             Show absolute genome size.
 
@@ -352,13 +359,14 @@ class BaseProvider:
         ------
         tuples with name and metadata
         """
-        term = lower(term)
+        term = str(term).strip()
 
-        search_function = self._search_text
-        if term.startswith(("gca_", "gcf_")):
+        if term.lower().startswith(("gca_", "gcf_")):
             search_function = self._search_accession
-        if term.isdigit():
+        elif term.isdigit():
             search_function = self._search_taxonomy
+        else:
+            search_function = self._search_text
 
         for name in search_function(term):
             yield self._genome_info_tuple(name, size)
