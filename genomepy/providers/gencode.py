@@ -3,7 +3,7 @@ from time import sleep
 
 from loguru import logger
 
-from genomepy.caching import cache_exp_long, disk_cache
+from genomepy.caching import cache_exp_long, disk_cache, lock
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import update_readme
 from genomepy.online import check_url, connect_ftp_link
@@ -33,12 +33,12 @@ class GencodeProvider(BaseProvider):
         "text_search",
     ]
     _cli_install_options = {}
-    _ftp_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode"
+    _url = "ftp://ftp.ebi.ac.uk/pub/databases/gencode"
 
     def __init__(self):
         self._provider_status()
         # Populate on init, so that methods can be cached
-        self.genomes = _get_genomes(self._ftp_link)
+        self.genomes = _get_genomes(self._url)
         self.ucsc = UcscProvider()
         self.gencode2ucsc = get_gencode2ucsc(self.genomes)
         self._update_genomes()
@@ -46,7 +46,8 @@ class GencodeProvider(BaseProvider):
     @staticmethod
     def ping():
         """Can the provider be reached?"""
-        return bool(check_url("ftp.ebi.ac.uk/pub/databases/gencode"))
+        ftp_online = bool(check_url("ftp.ebi.ac.uk/pub/databases/gencode"))
+        return ftp_online
 
     def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""
@@ -255,6 +256,7 @@ def _get_genomes(ftp_link):
     return genomes
 
 
+@lock
 @disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-gencode")
 def get_genomes(ftp_link):
     """genomes dict of the latest gencode release of each major assembly."""

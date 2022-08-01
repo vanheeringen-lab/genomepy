@@ -3,7 +3,7 @@ import re
 import requests
 from loguru import logger
 
-from genomepy.caching import cache_exp_long, cache_exp_short, disk_cache
+from genomepy.caching import cache_exp_long, cache_exp_short, disk_cache, lock
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, retry
 from genomepy.providers.base import BaseProvider
@@ -50,7 +50,10 @@ class EnsemblProvider(BaseProvider):
     @staticmethod
     def ping():
         """Can the provider be reached?"""
-        return bool(check_url("https://rest.ensembl.org/info/ping?"))
+        api_online = bool(check_url("https://rest.ensembl.org/info/ping?"))
+        vertebrate_url_online = bool(check_url("http://ftp.ensembl.org"))
+        other_url_online = bool(check_url("http://ftp.ensemblgenomes.org"))
+        return api_online and vertebrate_url_online and other_url_online
 
     def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""
@@ -65,6 +68,7 @@ class EnsemblProvider(BaseProvider):
         return name, accession, taxid, annotations, species, other
 
     @staticmethod
+    @lock
     @disk_cache.memoize(expire=cache_exp_short, tag="get_version-ensembl")
     def get_version(vertebrates=False, set_version=None, url=_url):
         """Retrieve current version from Ensembl FTP."""
@@ -110,7 +114,9 @@ class EnsemblProvider(BaseProvider):
         #   - EnsemblMetazoa: caenorhabditis_elegans
         if not check_url(ftp_directory, 2):
             lwr_name = genome["name"]
-            ftp_directory = f"{ftp}/pub/release-{version}{div_path}/fasta/{lwr_name}/dna"
+            ftp_directory = (
+                f"{ftp}/pub/release-{version}{div_path}/fasta/{lwr_name}/dna"
+            )
 
         # this assembly has its own directory
         if name == "GRCh37":
@@ -237,6 +243,7 @@ def add_grch37(genomes):
     return genomes
 
 
+@lock
 @disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ensembl")
 def get_genomes(rest_url):
     logger.info("Downloading assembly summaries from Ensembl")

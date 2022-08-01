@@ -8,7 +8,7 @@ import pandas as pd
 from loguru import logger
 from tqdm.auto import tqdm
 
-from genomepy.caching import cache_exp_long, disk_cache
+from genomepy.caching import cache_exp_long, disk_cache, lock
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, read_url
 from genomepy.providers.base import BaseProvider
@@ -56,7 +56,8 @@ class NcbiProvider(BaseProvider):
     @staticmethod
     def ping():
         """Can the provider be reached?"""
-        return bool(check_url("https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/"))
+        url_online = bool(check_url("https://ftp.ncbi.nlm.nih.gov/genomes/"))
+        return url_online
 
     def _genome_info_tuple(self, name, size=False):
         """tuple with assembly metadata"""
@@ -200,6 +201,7 @@ class NcbiProvider(BaseProvider):
                 return link
 
 
+@lock
 @disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ncbi")
 def get_genomes(assembly_url):
     """Parse genomes from assembly summary txt files."""

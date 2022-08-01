@@ -10,7 +10,7 @@ import pandas as pd
 import requests
 from loguru import logger
 
-from genomepy.caching import cache_exp_long, disk_cache
+from genomepy.caching import cache_exp_long, disk_cache, lock
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import update_readme
 from genomepy.online import check_url, read_url
@@ -53,7 +53,9 @@ class UcscProvider(BaseProvider):
     @staticmethod
     def ping():
         """Can the provider be reached?"""
-        return bool(check_url("http://hgdownload.soe.ucsc.edu/goldenPath"))
+        url_online = bool(check_url("http://hgdownload.soe.ucsc.edu/goldenPath"))
+        api_online = bool(check_url("http://api.genome.ucsc.edu/list/ucscGenomes"))
+        return url_online and api_online
 
     def _search_accession(self, term: str) -> Iterator[str]:
         """
@@ -390,6 +392,7 @@ class UcscProvider(BaseProvider):
                             break
 
 
+@lock
 @disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ucsc")
 def get_genomes(rest_url):
     logger.info("Downloading assembly summaries from UCSC")
@@ -587,6 +590,7 @@ def download_annotation(name, annot, genomes_dir, localname, n=None):
     rm_rf(tmp_dir)
 
 
+@lock
 @disk_cache.memoize(expire=cache_exp_long, tag="scrape_accession-ucsc")
 def scrape_accession(htmlpath: str) -> str or None:
     """

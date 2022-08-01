@@ -188,7 +188,7 @@ def get_install_options():
 
     Add the provider name in front of the options to prevent overlap.
     """
-    if sys.argv[1] == "install":
+    if len(sys.argv) > 1 and sys.argv[1] == "install":
         install_options = INSTALL_OPTIONS
 
         # extend install options with provider specific options
@@ -314,7 +314,9 @@ SEARCH_FORMAT = {
     "other_info": "<40",
 }
 FULL_SEARCH_STRING = " ".join([f"{{:{size}}}" for size in SEARCH_FORMAT.values()])
-SEARCH_STRING = " ".join([f"{{:{size}}}" for size in SEARCH_FORMAT.values() if size != "<13"])
+SEARCH_STRING = " ".join(
+    [f"{{:{size}}}" for size in SEARCH_FORMAT.values() if size != "<13"]
+)
 if sys.stdout.isatty():
 
     def bool_to_unicode(boolean: bool) -> str:
@@ -342,7 +344,7 @@ if sys.stdout.isatty():
                 row[n] = "na"
         if len(row) == 8:
             # genome_size
-            row[6] = f'{int(row[6]):,}'
+            row[6] = f"{int(row[6]):,}"
             row = FULL_SEARCH_STRING.format(*row)
         else:
             row = SEARCH_STRING.format(*row)
@@ -364,6 +366,7 @@ if sys.stdout.isatty():
             print(FULL_SEARCH_STRING.format(*subheader))
         else:
             print(SEARCH_STRING.format(*subheader[:-1]))
+
 else:
 
     def terminal_formatting(row: list):
@@ -393,16 +396,17 @@ else:
 @click.option("-s", "--size", is_flag=True, help="show absolute genome size")
 def search(term, provider=None, size=False):
     """
-    Search for genomes that contain TERM in their name, description
-    accession (must start with GCA_ or GCF_) or (matching) taxonomy.
-    Search is case-insensitive.
+    Search for genomes that contain TERM in their name, description,
+    accession (must start with GCA_ or GCF_) or taxonomy (start).
+
+    Search is case-insensitive, name/description search accepts multiple terms and regex.
 
     Returns the metadata of each found genome, including the availability of a gene annotation.
     For UCSC, up to 4 gene annotation styles are available:
     "ncbiRefSeq", "refGene", "ensGene", "knownGene" (respectively).
     Each with different naming schemes.
     """
-    term = "_".join(term)
+    term = " ".join(term)
     no_genomes = True
     for row in genomepy.search(term, provider, size):
         if no_genomes:

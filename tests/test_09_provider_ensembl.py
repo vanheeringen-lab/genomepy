@@ -12,7 +12,14 @@ def test_ensemblprovider(ensembl):
 def test_genome_info_tuple(ensembl):
     t = ensembl._genome_info_tuple("KH", size=True)
     assert isinstance(t, tuple)
-    assert t[:-1] == ("KH", "GCA_000224145.1", 7719, True, 'Ciona intestinalis', 115227500)
+    assert t[:-1] == (
+        "KH",
+        "GCA_000224145.1",
+        7719,
+        True,
+        "Ciona intestinalis",
+        115227500,
+    )
 
 
 def test_get_version(ensembl):

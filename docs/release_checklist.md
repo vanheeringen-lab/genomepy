@@ -5,6 +5,7 @@
 1. Make sure all tests pass.
 
     ```shell
+    mamba env update -f environment.yml
     pytest -vvv
     ```
 
@@ -28,13 +29,13 @@
 5. Check if release works on pypi:
 
     ```shell
-    python setup.py sdist bdist_wheel
+    python -m build
 
     # twine must be up to date (3.3.0 works). System installed twine can interfere.
     twine upload --repository-url https://test.pypi.org/legacy/ dist/genomepy-${new_version}*
 
-    python setup.py develop --uninstall
-   
+    pip uninstall genomepy
+
     # the \ is to escape the ==, so the variable ${new_version} can be called
     pip install --extra-index-url https://test.pypi.org/simple/ genomepy\==${new_version}
 
@@ -52,6 +53,7 @@
     genomepy install -af -p ncbi ASM2732v1
     genomepy install -af -p url -l url_test https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.fna.gz --URL-to-annotation https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz
     genomepy install -af -p local -l local_test ~/.local/share/genomes/TAIR10/TAIR10.fa --Local-path-to-annotation ~/.local/share/genomes/TAIR10/TAIR10.annotation.gtf
+    
     ```
 
 6. Finish the release:
@@ -63,37 +65,30 @@
 7. Push everything to github, including tags:
 
     ```shell
-    git push --follow-tags origin develop
+    git push --follow-tags origin develop master
     ```
 
-8. Pull into master
+8. Upload to pypi:
 
     ```shell
-    git checkout master
-    git push origin master
-    ```
-
-9. Upload to pypi:
-
-    ```shell
-    python setup.py sdist bdist_wheel
+    python -m build
     twine upload dist/genomepy-${new_version}*
     ```
 
-10. Create release on github (if it not already exists)
+9. Create release on github (if it not already exists)
 
     * Update release with CHANGELOG information from the latest version
     * Download the tarball from the github release (`.tar.gz`).
     * Attach downloaded tarball to release as binary (this way the download count get tracked).
 
-11a. Update bioconda package
+10a. Update bioconda package
 
     * wait for the bioconda bot to create a PR
     * update dependencies in the bioconda recipe.yaml if needed
     * approve the PR
     * comment: @bioconda-bot please merge
 
-11b. Update bioconda package
+10b. Update bioconda package
 
     * fork bioconda/bioconda-recipes
     * follow the steps in the [docs](https://bioconda.github.io/contributor/workflow.html)
