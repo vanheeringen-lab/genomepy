@@ -68,6 +68,8 @@ def test_activate(deactivate_plugins):
 
     assert len(genomepy.plugins.get_active_plugins()) == 0
     genomepy.plugins.activate("bwa")
+    # don't crash activating active plugins
+    genomepy.plugins.activate("bwa")
     assert len(genomepy.plugins.get_active_plugins()) == 1
     genomepy.plugins.deactivate("bwa")
 
@@ -79,6 +81,8 @@ def test_deactivate(deactivate_plugins):
     assert len(genomepy.plugins.get_active_plugins()) == 1
     genomepy.plugins.deactivate("bwa")
     assert len(genomepy.plugins.get_active_plugins()) == 0
+    # don't crash deactivating inactive plugins
+    genomepy.plugins.deactivate("bwa")
 
 
 def test_manage_plugins(capsys):
@@ -87,12 +91,16 @@ def test_manage_plugins(capsys):
     captured = capsys.readouterr().out.strip().split("\n")
     assert captured[2].startswith("blacklist")
     assert captured[2].endswith("*")
+    # don't crash activating active plugins
+    genomepy.plugins.manage_plugins("enable", ["blacklist"])
 
     genomepy.plugins.manage_plugins("disable", ["blacklist"])
     genomepy.plugins.manage_plugins("list")
     captured = capsys.readouterr().out.strip().split("\n")
-    assert captured[2].startswith("blacklist")
-    assert not captured[2].endswith("*")
+    assert captured[3].startswith("blacklist"), captured
+    assert not captured[3].endswith("*")
+    # don't crash deactivating inactive plugins
+    genomepy.plugins.manage_plugins("disable", ["blacklist"])
 
     with pytest.raises(ValueError):
         genomepy.plugins.manage_plugins("blurp")

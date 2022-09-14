@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- disabling already disabled plugins no longer thows an error
+
 ## [0.14.0] - 2022-08-01
 
 ### Added
