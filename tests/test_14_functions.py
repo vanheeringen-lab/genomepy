@@ -20,7 +20,8 @@ def test_list_available_genomes():
     g = genomepy.functions.list_available_genomes("Ensembl")
     metadata = next(g)
     assert isinstance(metadata, list)
-    assert metadata[0:2] == ["ASM394721v1", "Ensembl"]
+    # this will give an error if ensembl adds a new assembly to the top of their list
+    assert metadata[0:2] == ["ENA_1", "Ensembl"]
 
 
 def test_list_installed_genomes():
@@ -39,11 +40,11 @@ def test_list_installed_genomes():
 
 
 def test__lazy_provider_selection():
-    # Xenopus_tropicalis_v9.1 can be found on both Ensembl and NCBI.
+    # UCB_Xtro_10.0 can be found on both Ensembl and NCBI.
     # Ensembl is first in lazy selection.
 
     # find genome in specified provider (NCBI)
-    name = "Xenopus_tropicalis_v9.1"
+    name = "UCB_Xtro_10.0"
     provider = "NCBI"
     p = genomepy.functions._lazy_provider_selection(name, provider)
     assert "ncbi" in str(p)
@@ -63,7 +64,7 @@ def test__lazy_provider_selection():
 
 def test__provider_selection():
     # specified provider
-    name = "Xenopus_tropicalis_v9.1"
+    name = "UCB_Xtro_10.0"
     localname = "test_genome"
     genomes_dir = os.getcwd()
     provider = "NCBI"

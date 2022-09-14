@@ -151,7 +151,7 @@ def manage_plugins(command: str, plugin_names: list = None):
             raise ValueError(f"Unknown plugin: '{name}'.")
 
     if command in ["enable", "activate"]:
-        [active_plugins.append(name) for name in plugin_names if name not in active_plugins]
+        [active_plugins.append(name) for name in plugin_names]
 
     elif command in ["disable", "deactivate"]:
         [active_plugins.remove(name) for name in plugin_names if name in active_plugins]
@@ -161,7 +161,7 @@ def manage_plugins(command: str, plugin_names: list = None):
             f"Invalid plugin command: '{command}'. Options: 'list', 'enable' or 'disable'."
         )
 
-    active_plugins = sorted(list(set(active_plugins)))
+    active_plugins = sorted(set(active_plugins))
     config["plugin"] = active_plugins
     config.save()
     print(f"Enabled plugins: {', '.join(active_plugins)}")
