@@ -18,6 +18,7 @@ dependencies:
   - numpy
   - pandas
   - pyfaidx >=0.5.7
+  - python >=3.7
   - requests
   - tqdm >=4.51
 
