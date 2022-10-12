@@ -19,7 +19,7 @@ dependencies = [
     "diskcache",
     "click",
     "colorama",
-    "filelock",
+    "filelock >=3.5",
     "loguru",
     "mygene",
     "mysql-connector-python",

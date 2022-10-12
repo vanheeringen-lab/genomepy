@@ -10,7 +10,7 @@ dependencies:
   - diskcache
   - click
   - colorama
-  - filelock
+  - filelock >=3.5
   - loguru
   - mygene
   - mysql-connector-python
@@ -18,6 +18,7 @@ dependencies:
   - numpy
   - pandas
   - pyfaidx >=0.5.7
+  - python >=3.7
   - requests
   - tqdm >=4.51
 
