@@ -1,7 +1,7 @@
 name: genomepy
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   # Also found in pyproject.toml
