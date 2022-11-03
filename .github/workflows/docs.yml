@@ -18,8 +18,8 @@ jobs:
 
       - name: Install dependencies 🔨
         run: |
-          $CONDA/bin/conda config --add channels conda-forge
           $CONDA/bin/conda config --add channels bioconda
+          $CONDA/bin/conda config --add channels conda-forge
           $CONDA/bin/conda install mamba
           $CONDA/bin/mamba env update --file environment.yml --name base
           $CONDA/bin/mamba env update --file docs/requirements.yaml --name base
