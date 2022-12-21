@@ -6,7 +6,7 @@ channels:
 dependencies:
   # Also found in pyproject.toml
   - appdirs
-  - biopython >=1.73  # for pyfaidx
+  - biopython >=1.73, <1.80  # for pyfaidx (biopython 1.80 requires pyfaidx >0.7.1)
   - diskcache
   - click
   - colorama
