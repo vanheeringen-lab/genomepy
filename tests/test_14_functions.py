@@ -21,7 +21,7 @@ def test_list_available_genomes():
     metadata = next(g)
     assert isinstance(metadata, list)
     # this will give an error if ensembl adds a new assembly to the top of their list
-    assert metadata[0:2] == ["ENA_1", "Ensembl"]
+    assert metadata[0:2] == ["ASM394721v1", "Ensembl"]
 
 
 def test_list_installed_genomes():
