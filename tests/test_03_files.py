@@ -165,7 +165,7 @@ def test__open():
     with genomepy.files._open(a2) as gtf:
         lines = gtf.readlines()
     assert lines == ["gzipped file"]
-    genomepy.files.rm_rf(a1)
+    genomepy.files.rm_rf(a2)
 
 
 def test_get_file_info(fname="tests/data/small_genome.fa.gz"):
