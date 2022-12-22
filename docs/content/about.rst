@@ -7,7 +7,7 @@ About
    :end-line: 14
 
 .. mdinclude:: ../../README.md
-   :start-line: 617
+   :start-line: 530
 
 ..
    note: start- and end-line are 0-indexed.
