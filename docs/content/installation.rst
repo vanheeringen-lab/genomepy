@@ -4,7 +4,7 @@ Installation
 
 .. mdinclude:: ../../README.md
    :start-line: 43
-   :end-line: 85
+   :end-line: 78
 
 ..
    note: start- and end-line are 0-indexed.
