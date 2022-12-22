@@ -23,7 +23,7 @@ check that the lines still match in the various content pages.
 ### changes to conf.py
 * line 12: uncomment path setup
 * line 15: `sys.path.insert(0, os.path.abspath('..'))`
-* line 30: added extensions & extention configurations
+* line 30: added extensions & extension configurations
 * line 56: added `html_sidebars`
 * line 65: `html_theme = "sphinx_rtd_theme"`
 * line 66: added last-updated time
