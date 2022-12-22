@@ -30,6 +30,10 @@ Don't be shy and [let us know](https://github.com/vanheeringen-lab/genomepy/issu
 1.  [Installation](#installation)
 2.  [Quick usage](#quick-usage)
 3.  [Command line](#command-line-interface)
+    1. [Search](#search-genomes--gene-annotations)
+    2. [Compare](#compare-gene-annotations)
+    3. [Install](#install-a-genome--gene-annotation)
+    4. [Plugins](#plugins)
 4.  [Python](#python-api)
 5.  [Frequently Asked Questions](#frequently-asked-questions)
 6.  [Getting help](#getting-help)
@@ -88,7 +92,7 @@ You can find the binaries [here](http://hgdownload.cse.ucsc.edu/admin/exe/).
    Use name for genomepy install
   ```
 
-2.  Install your genome (with annotation): `$ genomepy install --annotation GRCz11 --provider ensembl `
+2.  Install your genome (with gene annotation): `$ genomepy install --annotation GRCz11 --provider ensembl `
 
 The default genomes directory: `~/.local/share/genomes/`
 
@@ -120,7 +124,7 @@ Commands:
 Let's say we want to download a *Xenopus tropicalis* genome & gene annotation. 
 First, lets find out what's out there!
 
-You can search by (case-insensitive) genome name, taxonomy ID or assembly accession ID.
+You can search by name, taxonomy ID or assembly accession ID.
 Additionally, you can limit the search result to one provider with `-p`/`--provider`.
 Furthermore, you can get the absolute `--size` of each genome (this option slows down the search).
 
@@ -417,7 +421,7 @@ You can also delete this directory to clean the cache using `genomepy clean`.
 
 ## Python API
 
-Check out our [Python API documentation here](https://vanheeringen-lab.github.io/genomepy/)
+Check out our [Python API documentation here](https://vanheeringen-lab.github.io/genomepy/content/api_core.html)
 
 ```
 >>> import genomepy
@@ -461,7 +465,7 @@ gcaacccgctggggtcaccttccacactgtggaagctttgttcttttgctctttgcagtaaatcttgct...
 
 The `genomepy.Genome` class builds on top of the `pyfaidx.Fasta` class, 
 see the [pyfaidx documentation](https://github.com/mdshw5/pyfaidx) for more details.
-The `genome.Annotation` class contains pandas Dataframes with GTF and BED files, as well as additional class methods to utilize these.
+The `genomepy.Annotation` class contains pandas Dataframes with GTF and BED files, as well as additional class methods to utilize these.
 
 ## Frequently Asked Questions
 
