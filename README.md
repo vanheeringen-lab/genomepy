@@ -31,7 +31,7 @@ Don't be shy and [let us know](https://github.com/vanheeringen-lab/genomepy/issu
 2.  [Quick usage](#quick-usage)
 3.  [Command line](#command-line-interface)
     1. [Search](#search-genomes--gene-annotations)
-    2. [Compare](#compare-gene-annotations)
+    2. [Inspect](#inspect-gene-annotations)
     3. [Install](#install-a-genome--gene-annotation)
     4. [Plugins](#plugins)
 4.  [Python](#python-api)
@@ -146,7 +146,7 @@ ASM1336827v1               NCBI        GCA_013368275.1       8364        ✗    
  Use name for genomepy install
 ```
 
-### Compare gene annotations
+### Inspect gene annotations
 
 Let's say we want to download the *Xenopus tropicalis* genome & gene annotation from UCSC.
 
