@@ -279,7 +279,7 @@ $ genomepy install hg38 --bgzip
 #### Other providers (any URL/local files)
 
 To use assemblies not on NCBI, UCSC, Ensembl or GENCODE, you can give a URL instead of a name, together with `--provider URL`.
-Similarly, if you have a local fasta file, you can install this using the filepath, together with `--provider Local`:
+Similarly, if you have a local FASTA file, you can install this using the filepath, together with `--provider Local`:
 
 ```bash
 $ genomepy install -p url https://research.nhgri.nih.gov/hydra/download/assembly/\Hm105_Dovetail_Assembly_1.0.fa.gz
@@ -347,7 +347,7 @@ $ genomepy plugin enable bwa star
 Enabled plugins: blacklist, bwa, star
 ```
 
-You can pass the number of threads to use for alignment with `genomepy install --threads` (default is 8).
+You can pass the number of threads to use for aligner index creation with `genomepy install --threads` (default is 8).
 
 ### Configuration
 
@@ -499,6 +499,11 @@ and downloading the files with `genomepy install GENOME_URL -p url --url-to-anno
 ### The genomepy config was corrupted
 You can create a new one with `genomepy config generate` on command line,
 or `genomepy.manage_config("generate")` in Python.
+
+### What's genomepy maximum memory usage?
+Genomepy does not read a genome fully into memory. 
+Therefore installing takes less than 1 GB, regardless of the genome's size.
+Searching NCBI is the most costly operation, costing around 3 GB for the first time.
 
 ### Which genome/gene annotation to use
 Each provider has its pros and cons:
