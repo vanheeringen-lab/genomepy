@@ -9,6 +9,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/maintainability)](https://codeclimate.com/github/vanheeringen-lab/genomepy/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/test_coverage)](https://codeclimate.com/github/vanheeringen-lab/genomepy/test_coverage)
 
+[![arXiv](https://img.shields.io/badge/arXiv-10.48550/arXiv.2209.00842-b31b1b.svg)](https://doi.org/10.48550/arXiv.2209.00842)
 [![status](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd/status.svg)](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1010458.svg)](https://doi.org/10.5281/zenodo.1010458)
 
@@ -45,28 +46,21 @@ Don't be shy and [let us know](https://github.com/vanheeringen-lab/genomepy/issu
 
 genomepy requires Python 3.7+
 
-You can install genomepy via [bioconda](https://bioconda.github.io/):
+You can install genomepy via [bioconda](https://bioconda.github.io/), pip or git.
+
+#### Bioconda
 
 ```bash
 $ conda install -c bioconda genomepy
 ``` 
 
-Or via pip:
+#### Pip
 
 ```bash
 $ pip install genomepy
 ```
 
-Or via git:
-
-```bash
-$ git clone https://github.com/vanheeringen-lab/genomepy.git
-$ conda env create -n genomepy -f genomepy/environment.yml
-$ conda activate genomepy
-$ pip install -e genomepy
-```
-
-With Pip installation, you will have to install additional dependencies, and make them available in your PATH.
+With the Pip installation, you will have to install additional dependencies, and make them available in your PATH.
 
 To read/write bgzipped genomes you will have to install `tabix`.
 
@@ -79,6 +73,15 @@ If you want to use gene annotation features, you will have to install the follow
 * `gff3ToGenePred`
 
 You can find the binaries [here](http://hgdownload.cse.ucsc.edu/admin/exe/).
+
+#### Git
+
+```bash
+$ git clone https://github.com/vanheeringen-lab/genomepy.git
+$ conda env create -n genomepy -f genomepy/environment.yml
+$ conda activate genomepy
+$ pip install -e genomepy
+```
 
 ## Quick usage
 
@@ -151,7 +154,7 @@ ASM1336827v1               NCBI        GCA_013368275.1       8364        ✗    
 Let's say we want to download the *Xenopus tropicalis* genome & gene annotation from UCSC.
 
 Since we are interested in the gene annotation as well, we should check which gene annotation suits our needs.
-Because we're looking at UCSC, and there are several options for us to choose from.
+As you can see in the search results, UCSC has several gene annotations for us to choose from.
 In the search results, `n r e k ` denotes which UCSC annotations are available. 
 These stand for **n**cbiRefSeq, **r**efGene, **e**nsGene and **k**nownGene, respectively.
 
@@ -502,8 +505,8 @@ or `genomepy.manage_config("generate")` in Python.
 
 ### What's genomepy maximum memory usage?
 Genomepy does not read a genome fully into memory. 
-Therefore installing takes less than 1 GB, regardless of the genome's size.
-Searching NCBI is the most costly operation, costing around 3 GB for the first time.
+Therefore, installing takes less than 1 GB RAM regardless of the genome's size.
+Searching NCBI is the most costly operation, using around 3 GB (the first time).
 
 ### Which genome/gene annotation to use
 Each provider has its pros and cons:

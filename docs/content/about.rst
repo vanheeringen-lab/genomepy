@@ -4,10 +4,10 @@ About
 
 .. mdinclude:: ../../README.md
    :start-line: 2
-   :end-line: 14
+   :end-line: 15
 
 .. mdinclude:: ../../README.md
-   :start-line: 539
+   :start-line: 541
 
 ..
    note: start- and end-line are 0-indexed.
