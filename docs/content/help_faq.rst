@@ -3,5 +3,5 @@ Frequently Asked Questions
 ==========================
 
 .. mdinclude:: ../../README.md
-   :start-line: 550
-   :end-line: 595
+   :start-line: 473
+   :end-line: 517
