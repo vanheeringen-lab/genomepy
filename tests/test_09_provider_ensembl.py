@@ -66,11 +66,11 @@ def test_get_genome_download_link(ensembl):
     )
 
     # non vertebrate: entry not using url_name (see issue #205)
-    link = ensembl.get_genome_download_link("WBcel235", mask="soft", **{"version": 35})
+    link = ensembl.get_genome_download_link("Aqu1", mask="soft", **{"version": 35})
     assert (
         link
         == "http://ftp.ensemblgenomes.org/pub/release-35/metazoa/"
-        + "fasta/caenorhabditis_elegans/dna/Caenorhabditis_elegans.WBcel235.dna_sm.toplevel.fa.gz"
+        + "fasta/amphimedon_queenslandica/dna/Amphimedon_queenslandica.Aqu1.dna_sm.toplevel.fa.gz"
     )
 
     # vertebrate with primary assembly: unmasked

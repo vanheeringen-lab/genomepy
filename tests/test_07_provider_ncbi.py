@@ -20,7 +20,7 @@ def test_genome_info_tuple(ncbi):
         "GCF_000027325.1",
         2097,
         True,
-        "Mycoplasma genitalium G37",
+        "Mycoplasmoides genitalium G37",
         580076,
     )
 

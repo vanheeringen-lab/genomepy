@@ -11,7 +11,7 @@ genomepy: genes and genomes at your fingertips!
 * finding
 * downloading
 * preprocessing
-* manipulating
+* handling
 
 genomes and gene annotations.
 

@@ -49,12 +49,12 @@ def test_search():
     metadata = search[0]
 
     # case insensitive assembly name search
-    search = list(genomepy.providers.search("XeNoPuS_tRoPiCaLiS_v9.1", "ensembl"))
+    search = list(genomepy.providers.search("UcB_xTrO_10.0", "ensembl"))
     metadata2 = search[0]
 
     assert metadata == metadata2
     assert isinstance(metadata, list)
-    assert "Xenopus_tropicalis_v9.1" in str(metadata[0])
+    assert "UCB_Xtro_10.0" in str(metadata[0])
     assert "Ensembl" in str(metadata[1])
     assert "GCA_000004195" in str(metadata[2])
     assert "8364" in str(metadata[3])

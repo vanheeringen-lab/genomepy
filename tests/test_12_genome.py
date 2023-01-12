@@ -139,15 +139,17 @@ def test_generate_gap_bed(fname="tests/data/gap.fa", outname="tests/data/gap.bed
     expected = open(outname).read()
 
     assert result == expected
+    genomepy.files.rm_rf(fname + ".fai")
 
 
-def test_generate_fa_sizes(infa="tests/data/gap.fa"):
+def test_generate_fa_sizes(fname="tests/data/gap.fa"):
     tmp = NamedTemporaryFile().name
-    genomepy.genome.generate_fa_sizes(infa, tmp)
+    genomepy.genome.generate_fa_sizes(fname, tmp)
 
     result = open(tmp).read()
 
     assert result == "chr1\t28\nchr2\t45\nchr3\t15\n"
+    genomepy.files.rm_rf(fname + ".fai")
 
 
 # genome.sequences.py
@@ -302,7 +304,7 @@ def test_get_random_sequences(small_genome):
 # seq.py
 
 
-def test_as_seqdict():
+def test_as_seqdict(small_genome):
     test_data = [
         "tests/data/as_seqdict/test.bed",
         "tests/data/as_seqdict/test.fa",
@@ -314,9 +316,9 @@ def test_as_seqdict():
         pyfaidx.Fasta("tests/data/as_seqdict/test.fa"),
     ]
 
-    # test differnt inputs
+    # test different inputs
     for dataset in test_data:
-        result = as_seqdict(dataset, genome="tests/data/small_genome.fa.gz")
+        result = as_seqdict(dataset, genome=small_genome.filename)
         assert "chrI:110-120" in result, "key not present"
         assert "chrII:130-140" in result, "key not present"
         assert "chrIII:410-420" in result, "key not present"

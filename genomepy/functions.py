@@ -132,7 +132,7 @@ def install_genome(
         Genome name
 
     provider : str , optional
-        Provider name. will try Ensembl, UCSC and NCBI (in that order) if not specified.
+        Provider name. will try Gencode, Ensembl, UCSC and NCBI (in that order) if not specified.
 
     genomes_dir : str , optional
         Where to create the output folder.
@@ -188,6 +188,10 @@ def install_genome(
 
         to_annotation : text , optional
             URL only: direct link to annotation file.
+            Required if this is not the same directory as the fasta.
+
+        path_to_annotation : text, optional
+            Local only: path to local annotation file.
             Required if this is not the same directory as the fasta.
 
     Returns
