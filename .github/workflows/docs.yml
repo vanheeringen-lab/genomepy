@@ -24,10 +24,10 @@ jobs:
           mamba activate
           
           # create a yaml with only docs requirements
-          n="$(($(grep -n "# Plugins" environment.yml | cut -d: -f1)-1))"
+          n="$(( $(grep -n '# Plugins' environment.yml | cut -d ':' -f1) - 1 ))"
           head environment.yml -n $n > requirements.yaml
           
-          n="$(($(wc -l docs/requirements.yaml | cut -d ' ' -f1)-$(grep -n "dependencies:" environment.yml | cut -d: -f1)+1))"
+          n="$(( $(wc -l docs/requirements.yaml | cut -d ' ' -f1) - $(grep -n 'dependencies:' environment.yml | cut -d ':' -f1) + 1 ))"
           tail docs/requirements.yaml -n $n >> requirements.yaml
           
           # install requirements
@@ -35,7 +35,7 @@ jobs:
           
           # install genomepy
           mamba activate genomepy
-          pip install .
+          pip install . --no-deps --ignore-installed
 
           # build docs
           sphinx-build docs build
