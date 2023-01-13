@@ -15,7 +15,7 @@ env:
   global:
     - CC_TEST_REPORTER_ID=951f438ac8a0fa93801ff0bf69922df59fe03800bf7ea8ab77a3c26cda444979
 
-install:
+before_install:
   # setup mambaforge
   - wget -q -O Mambaforge.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
   - bash Mambaforge.sh -b -p "${HOME}/conda" > /dev/null
@@ -23,8 +23,10 @@ install:
   - source "${HOME}/conda/etc/profile.d/mamba.sh"
   - mamba activate
 
+install:
   # install genomepy
-  - mamba env create -n genomepy -f requirements.yaml;
+  - mamba env create --name genomepy --file environment.yml
+  - mamba activate genomepy
   - pip install . --no-deps --ignore-installed
 
 before_script:
