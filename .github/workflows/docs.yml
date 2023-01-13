@@ -23,10 +23,11 @@ jobs:
           channels: conda-forge,bioconda,defaults
           channel-priority: true
           activate-environment: genomepy
-          environment-file: environment.yml,docs/requirements.yaml
+          environment-file: environment.yml
 
       - name: Build 🔧
         run: |
+          mamba install --file docs/requirements.yaml
           sphinx-build docs build
           touch build/.nojekyll
 
