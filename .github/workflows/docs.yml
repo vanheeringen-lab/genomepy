@@ -26,7 +26,8 @@ jobs:
           head environment.yml -n $stop > requirements.yaml
           
           # install requirements
-          mamba env create --name genomepy --file requirements.yaml
+          mamba create --name genomepy python=3.7
+          mamba env update --name genomepy --file requirements.yaml
           mamba env update --name genomepy --file docs/requirements.yaml
           
       - name: Pip install 🐍
