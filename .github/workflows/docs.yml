@@ -8,30 +8,30 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v2.3.1
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v1
+      - name: Install 🔨
+        uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: 3.7
-
-      - name: Install dependencies 🔨
-        run: |
-          $CONDA/bin/conda config --add channels bioconda
-          $CONDA/bin/conda config --add channels conda-forge
-          $CONDA/bin/conda install mamba
-          $CONDA/bin/mamba env update --file environment.yml --name base
-          $CONDA/bin/mamba env update --file docs/requirements.yaml --name base
-          $CONDA/bin/pip install .
+          # python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,bioconda,defaults
+          channel-priority: true
+          activate-environment: genomepy
+          environment-file: environment.yml,docs/requirements.yaml
 
       - name: Build 🔧
         run: |
-          $CONDA/bin/sphinx-build docs build
+          sphinx-build docs build
           touch build/.nojekyll
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@4.1.4
+        uses: JamesIves/github-pages-deploy-action@4
         with:
           branch: gh-pages # The branch the action should deploy to.
           folder: build # The folder the action should deploy.
