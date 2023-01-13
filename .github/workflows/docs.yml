@@ -21,13 +21,15 @@ jobs:
           source "${HOME}/conda/etc/profile.d/mamba.sh"
           mamba activate
           
-          # truncate environment.yml (to exclude dev packages)
+          # create a yaml with only the docs requirements
           stop="$(grep -n "# Plugins" environment.yml | head -n 1 | cut -d: -f1)"
           head environment.yml -n $stop > requirements.yaml
+          echo "  - sphinx" >> requirements.yaml
+          echo "  - sphinx_rtd_theme" >> requirements.yaml
+          echo "  - m2r2 >=0.3.2" >> requirements.yaml
           
           # install requirements
-          mamba env create --name genomepy --file docs/requirements.yaml
-          mamba env update --name genomepy --file requirements.yaml
+          mamba env create --name genomepy --file requirements.yaml
           
       - name: Pip install 🐍
         run: |
