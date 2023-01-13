@@ -23,12 +23,13 @@ jobs:
           # activate mambaforge
           source "${HOME}/conda/etc/profile.d/conda.sh"
           source "${HOME}/conda/etc/profile.d/mamba.sh"
-          conda activate
+          mamba activate
           # install requirements
-          conda config --add channels bioconda
-          conda config --add channels conda-forge
-          mamba env update --name base --file environment.yml
-          mamba env update --name base --file=docs/requirements.yaml
+          #conda config --add channels bioconda
+          #conda config --add channels conda-forge
+          mamba env create --name genomepy --file environment.yml
+          mamba env update --name genomepy --file docs/requirements.yaml
+          mamba activate genomepy
           pip install .
 
       - name: Build 🔧
@@ -36,7 +37,7 @@ jobs:
           # activate mambaforge
           #source "${HOME}/conda/etc/profile.d/conda.sh"
           #source "${HOME}/conda/etc/profile.d/mamba.sh"
-          conda activate
+          mamba activate genomepy
           # build docs
           sphinx-build docs build
           touch build/.nojekyll
