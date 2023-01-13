@@ -17,27 +17,28 @@ jobs:
           # setup mambaforge
           wget -q -O Mambaforge.sh  "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
           bash Mambaforge.sh -b -p "${HOME}/conda" > /dev/null
-          source "${HOME}/conda/etc/profile.d/conda.sh"
-          source "${HOME}/conda/etc/profile.d/mamba.sh"
-          mamba activate
+          #source "${HOME}/conda/etc/profile.d/conda.sh"
+          #source "${HOME}/conda/etc/profile.d/mamba.sh"
+          #mamba activate
           
           # install requirements
-          mamba env create --name genomepy --file environment.yml
-          mamba env update --name genomepy --file docs/requirements.yaml
-          mamba activate genomepy
+          ${HOME}/conda/bin/mamba env create --name genomepy --file environment.yml
+          ${HOME}/conda/bin/mamba env update --name genomepy --file docs/requirements.yaml
           
-      - name: Install 🔨
+      - name: Pip install 🐍
         run: |
+          # activate mambaforge
           #source "${HOME}/conda/etc/profile.d/conda.sh"
-          source "${HOME}/conda/etc/profile.d/mamba.sh"
-          mamba activate genomepy
+          #source "${HOME}/conda/etc/profile.d/mamba.sh"
+          ${HOME}/conda/bin/mamba activate genomepy
+          
           #pip --disable-pip-version-check install .
           pip install .
 
       - name: Build 🔧
         run: |
           # activate mambaforge
-          #source "${HOME}/conda/etc/profile.d/conda.sh"
+          source "${HOME}/conda/etc/profile.d/conda.sh"
           source "${HOME}/conda/etc/profile.d/mamba.sh"
           mamba activate genomepy
           
