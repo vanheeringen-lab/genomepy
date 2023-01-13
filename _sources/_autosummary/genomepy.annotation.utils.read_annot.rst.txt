@@ -1,0 +1,6 @@
+genomepy.annotation.utils.read\_annot
+=====================================
+
+.. currentmodule:: genomepy.annotation.utils
+
+.. autofunction:: read_annot

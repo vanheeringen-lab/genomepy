@@ -1,0 +1,30 @@
+genomepy.argparse\_support
+==========================
+
+.. automodule:: genomepy.argparse_support
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      parse_genome
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,58 @@
+genomepy.providers
+==================
+
+.. automodule:: genomepy.providers
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      create
+      list_online_providers
+      list_providers
+      map_locations
+      online_providers
+      search
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      Provider
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   genomepy.providers.base
+   genomepy.providers.ensembl
+   genomepy.providers.gencode
+   genomepy.providers.local
+   genomepy.providers.ncbi
+   genomepy.providers.ucsc
+   genomepy.providers.url
+

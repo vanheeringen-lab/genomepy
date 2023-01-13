@@ -1,0 +1,6 @@
+genomepy.providers.ncbi.download\_assembly\_report
+==================================================
+
+.. currentmodule:: genomepy.providers.ncbi
+
+.. autofunction:: download_assembly_report

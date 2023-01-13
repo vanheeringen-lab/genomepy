@@ -1,0 +1,47 @@
+genomepy.providers.ucsc.UcscProvider
+====================================
+
+.. currentmodule:: genomepy.providers.ucsc
+
+.. autoclass:: UcscProvider
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~UcscProvider.__init__
+      ~UcscProvider.annotation_links
+      ~UcscProvider.assembly_accession
+      ~UcscProvider.download_annotation
+      ~UcscProvider.download_genome
+      ~UcscProvider.genome_taxid
+      ~UcscProvider.get_annotation_download_link
+      ~UcscProvider.get_annotation_download_links
+      ~UcscProvider.get_genome_download_link
+      ~UcscProvider.head_annotation
+      ~UcscProvider.list_available_genomes
+      ~UcscProvider.ping
+      ~UcscProvider.search
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~UcscProvider.accession_fields
+      ~UcscProvider.description_fields
+      ~UcscProvider.genomes
+      ~UcscProvider.name
+      ~UcscProvider.taxid_fields
+   
+   

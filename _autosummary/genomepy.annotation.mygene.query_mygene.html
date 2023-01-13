@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>genomepy.annotation.mygene.query_mygene &mdash; genomepy  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="genomepy.annotation.sanitize" href="genomepy.annotation.sanitize.html" />
+    <link rel="prev" title="genomepy.annotation.mygene" href="genomepy.annotation.mygene.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> genomepy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../content/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../content/command_line.html">Command line documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../content/api_core.html">Python API documentation (core)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="genomepy.html">Python API documentation (full)</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="genomepy.annotation.html">genomepy.annotation</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="genomepy.annotation.filter_regex.html">genomepy.annotation.filter_regex</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.annotation.Annotation.html">genomepy.annotation.Annotation</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="genomepy.annotation.mygene.html">genomepy.annotation.mygene</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">genomepy.annotation.mygene.query_mygene</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.annotation.sanitize.html">genomepy.annotation.sanitize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.annotation.utils.html">genomepy.annotation.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.argparse_support.html">genomepy.argparse_support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.caching.html">genomepy.caching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.cli.html">genomepy.cli</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.config.html">genomepy.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.exceptions.html">genomepy.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.files.html">genomepy.files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.functions.html">genomepy.functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.genome.html">genomepy.genome</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.online.html">genomepy.online</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.plugins.html">genomepy.plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.providers.html">genomepy.providers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.seq.html">genomepy.seq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.utils.html">genomepy.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../content/help_faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../content/about.html">About</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">genomepy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="genomepy.html">genomepy</a> &raquo;</li>
+        
+          <li><a href="genomepy.annotation.html">genomepy.annotation</a> &raquo;</li>
+        
+          <li><a href="genomepy.annotation.mygene.html">genomepy.annotation.mygene</a> &raquo;</li>
+        
+      <li>genomepy.annotation.mygene.query_mygene</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/vanheeringen-lab/genomepy/blob/develop/docs/_autosummary/genomepy.annotation.mygene.query_mygene.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="genomepy-annotation-mygene-query-mygene">
+<h1>genomepy.annotation.mygene.query_mygene<a class="headerlink" href="#genomepy-annotation-mygene-query-mygene" title="Permalink to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="genomepy.annotation.mygene.query_mygene">
+<span class="sig-prename descclassname"><span class="pre">genomepy.annotation.mygene.</span></span><span class="sig-name descname"><span class="pre">query_mygene</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tax_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'genomic_pos'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#genomepy.annotation.mygene.query_mygene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use mygene.info to map gene identifiers to another type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>iterable</em>) – a list or list-like of gene identifiers</p></li>
+<li><p><strong>tax_id</strong> (<em>str</em><em> or </em><em>int</em>) – Target genome taxonomy id</p></li>
+<li><p><strong>field</strong> (<em>str</em><em>, </em><em>optional</em>) – Target identifier to map the query genes to. Valid fields
+are: ensembl.gene, entrezgene, symbol, name, refseq, entrezgene. Note that
+refseq will return the protein refseq_id by default, use <cite>refseq.translation.rna</cite> to
+return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
+not supported.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>mapped gene annotation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="genomepy.annotation.sanitize.html" class="btn btn-neutral float-right" title="genomepy.annotation.sanitize" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="genomepy.annotation.mygene.html" class="btn btn-neutral float-left" title="genomepy.annotation.mygene" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
+      <span class="lastupdated">
+        Last updated on 2023-01-13, 11:28 (UTC).
+      </span>
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

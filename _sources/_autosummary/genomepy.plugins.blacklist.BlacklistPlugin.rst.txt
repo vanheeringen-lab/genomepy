@@ -1,0 +1,36 @@
+genomepy.plugins.blacklist.BlacklistPlugin
+==========================================
+
+.. currentmodule:: genomepy.plugins.blacklist
+
+.. autoclass:: BlacklistPlugin
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~BlacklistPlugin.__init__
+      ~BlacklistPlugin.activate
+      ~BlacklistPlugin.after_genome_download
+      ~BlacklistPlugin.deactivate
+      ~BlacklistPlugin.get_properties
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~BlacklistPlugin.github_url
+      ~BlacklistPlugin.http_dict
+   
+   

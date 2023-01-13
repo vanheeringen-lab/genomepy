@@ -1,0 +1,6 @@
+genomepy.utils.get\_remotename
+==============================
+
+.. currentmodule:: genomepy.utils
+
+.. autofunction:: get_remotename

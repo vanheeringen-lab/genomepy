@@ -1,0 +1,40 @@
+genomepy.providers.ncbi
+=======================
+
+.. automodule:: genomepy.providers.ncbi
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      download_assembly_report
+      get_genome_size
+      get_genomes
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      NcbiProvider
+   
+   
+
+   
+   
+   
+
+
+

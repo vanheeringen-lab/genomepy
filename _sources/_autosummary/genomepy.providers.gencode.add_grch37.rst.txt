@@ -1,0 +1,6 @@
+genomepy.providers.gencode.add\_grch37
+======================================
+
+.. currentmodule:: genomepy.providers.gencode
+
+.. autofunction:: add_grch37

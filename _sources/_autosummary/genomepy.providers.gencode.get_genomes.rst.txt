@@ -1,0 +1,6 @@
+genomepy.providers.gencode.get\_genomes
+=======================================
+
+.. currentmodule:: genomepy.providers.gencode
+
+.. autofunction:: get_genomes

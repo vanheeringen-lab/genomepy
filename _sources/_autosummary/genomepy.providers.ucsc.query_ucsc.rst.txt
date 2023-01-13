@@ -1,0 +1,6 @@
+genomepy.providers.ucsc.query\_ucsc
+===================================
+
+.. currentmodule:: genomepy.providers.ucsc
+
+.. autofunction:: query_ucsc

@@ -1,0 +1,6 @@
+genomepy.files.get\_file\_info
+==============================
+
+.. currentmodule:: genomepy.files
+
+.. autofunction:: get_file_info

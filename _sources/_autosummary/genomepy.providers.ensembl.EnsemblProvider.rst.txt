@@ -1,0 +1,48 @@
+genomepy.providers.ensembl.EnsemblProvider
+==========================================
+
+.. currentmodule:: genomepy.providers.ensembl
+
+.. autoclass:: EnsemblProvider
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~EnsemblProvider.__init__
+      ~EnsemblProvider.annotation_links
+      ~EnsemblProvider.assembly_accession
+      ~EnsemblProvider.download_annotation
+      ~EnsemblProvider.download_genome
+      ~EnsemblProvider.genome_taxid
+      ~EnsemblProvider.get_annotation_download_link
+      ~EnsemblProvider.get_annotation_download_links
+      ~EnsemblProvider.get_genome_download_link
+      ~EnsemblProvider.get_version
+      ~EnsemblProvider.head_annotation
+      ~EnsemblProvider.list_available_genomes
+      ~EnsemblProvider.ping
+      ~EnsemblProvider.search
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~EnsemblProvider.accession_fields
+      ~EnsemblProvider.description_fields
+      ~EnsemblProvider.genomes
+      ~EnsemblProvider.name
+      ~EnsemblProvider.taxid_fields
+   
+   

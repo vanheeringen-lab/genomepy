@@ -1,0 +1,6 @@
+genomepy.files.glob\_ext\_files
+===============================
+
+.. currentmodule:: genomepy.files
+
+.. autofunction:: glob_ext_files

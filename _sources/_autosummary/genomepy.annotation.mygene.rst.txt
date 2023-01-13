@@ -1,0 +1,30 @@
+genomepy.annotation.mygene
+==========================
+
+.. automodule:: genomepy.annotation.mygene
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      query_mygene
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,6 @@
+genomepy.plugins.activate
+=========================
+
+.. currentmodule:: genomepy.plugins
+
+.. autofunction:: activate

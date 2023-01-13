@@ -1,0 +1,29 @@
+genomepy.plugins.star.StarPlugin
+================================
+
+.. currentmodule:: genomepy.plugins.star
+
+.. autoclass:: StarPlugin
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~StarPlugin.__init__
+      ~StarPlugin.activate
+      ~StarPlugin.after_genome_download
+      ~StarPlugin.deactivate
+      ~StarPlugin.get_properties
+   
+   
+
+   
+   
+   

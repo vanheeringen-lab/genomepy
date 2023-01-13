@@ -1,0 +1,6 @@
+genomepy.annotation.utils.generate\_annot
+=========================================
+
+.. currentmodule:: genomepy.annotation.utils
+
+.. autofunction:: generate_annot

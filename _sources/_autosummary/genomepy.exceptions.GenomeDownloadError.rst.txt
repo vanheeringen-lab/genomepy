@@ -1,0 +1,6 @@
+genomepy.exceptions.GenomeDownloadError
+=======================================
+
+.. currentmodule:: genomepy.exceptions
+
+.. autoexception:: GenomeDownloadError

@@ -1,0 +1,34 @@
+genomepy.functions
+==================
+
+.. automodule:: genomepy.functions
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      generate_env
+      head_annotations
+      install_genome
+      list_available_genomes
+      list_installed_genomes
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

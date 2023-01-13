@@ -1,0 +1,6 @@
+genomepy.functions.list\_available\_genomes
+===========================================
+
+.. currentmodule:: genomepy.functions
+
+.. autofunction:: list_available_genomes

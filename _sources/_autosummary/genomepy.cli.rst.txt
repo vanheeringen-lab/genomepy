@@ -1,0 +1,34 @@
+genomepy.cli
+============
+
+.. automodule:: genomepy.cli
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      custom_options
+      get_install_options
+      terminal_formatting
+      terminal_header
+      terminal_subheader
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

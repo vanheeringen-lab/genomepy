@@ -1,0 +1,6 @@
+genomepy.providers.ucsc.scrape\_accession
+=========================================
+
+.. currentmodule:: genomepy.providers.ucsc
+
+.. autofunction:: scrape_accession

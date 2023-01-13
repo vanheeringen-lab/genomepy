@@ -1,0 +1,6 @@
+genomepy.plugins.show\_plugins
+==============================
+
+.. currentmodule:: genomepy.plugins
+
+.. autofunction:: show_plugins

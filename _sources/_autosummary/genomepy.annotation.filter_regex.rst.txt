@@ -1,0 +1,6 @@
+genomepy.annotation.filter\_regex
+=================================
+
+.. currentmodule:: genomepy.annotation
+
+.. autofunction:: filter_regex

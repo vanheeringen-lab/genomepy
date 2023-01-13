@@ -1,0 +1,6 @@
+genomepy.argparse\_support.parse\_genome
+========================================
+
+.. currentmodule:: genomepy.argparse_support
+
+.. autofunction:: parse_genome

@@ -1,0 +1,6 @@
+genomepy.plugins.deactivate
+===========================
+
+.. currentmodule:: genomepy.plugins
+
+.. autofunction:: deactivate

@@ -1,0 +1,6 @@
+genomepy.genome.sequences.get\_random\_sequences
+================================================
+
+.. currentmodule:: genomepy.genome.sequences
+
+.. autofunction:: get_random_sequences

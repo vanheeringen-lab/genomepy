@@ -1,0 +1,60 @@
+genomepy.plugins
+================
+
+.. automodule:: genomepy.plugins
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      activate
+      convert
+      deactivate
+      get_active_plugins
+      init_plugins
+      list_plugins
+      manage_plugins
+      show_plugins
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      Plugin
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   genomepy.plugins.blacklist
+   genomepy.plugins.bowtie2
+   genomepy.plugins.bwa
+   genomepy.plugins.gmap
+   genomepy.plugins.hisat2
+   genomepy.plugins.minimap2
+   genomepy.plugins.star
+

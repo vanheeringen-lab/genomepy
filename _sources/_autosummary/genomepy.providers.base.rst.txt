@@ -1,0 +1,40 @@
+genomepy.providers.base
+=======================
+
+.. automodule:: genomepy.providers.base
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      download_annotation
+      download_head
+      rename_contigs
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      BaseProvider
+   
+   
+
+   
+   
+   
+
+
+

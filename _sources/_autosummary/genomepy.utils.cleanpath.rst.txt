@@ -1,0 +1,6 @@
+genomepy.utils.cleanpath
+========================
+
+.. currentmodule:: genomepy.utils
+
+.. autofunction:: cleanpath

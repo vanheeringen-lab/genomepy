@@ -1,0 +1,6 @@
+genomepy.genome.generate\_gap\_bed
+==================================
+
+.. currentmodule:: genomepy.genome
+
+.. autofunction:: generate_gap_bed

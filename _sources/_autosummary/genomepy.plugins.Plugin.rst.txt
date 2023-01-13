@@ -1,0 +1,29 @@
+genomepy.plugins.Plugin
+=======================
+
+.. currentmodule:: genomepy.plugins
+
+.. autoclass:: Plugin
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Plugin.__init__
+      ~Plugin.activate
+      ~Plugin.after_genome_download
+      ~Plugin.deactivate
+      ~Plugin.get_properties
+   
+   
+
+   
+   
+   

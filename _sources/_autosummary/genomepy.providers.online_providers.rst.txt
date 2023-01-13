@@ -1,0 +1,6 @@
+genomepy.providers.online\_providers
+====================================
+
+.. currentmodule:: genomepy.providers
+
+.. autofunction:: online_providers
