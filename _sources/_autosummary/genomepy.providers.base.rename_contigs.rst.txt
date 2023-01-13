@@ -1,6 +1,0 @@
-genomepy.providers.base.rename\_contigs
-=======================================
-
-.. currentmodule:: genomepy.providers.base
-
-.. autofunction:: rename_contigs

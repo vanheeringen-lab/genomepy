@@ -1,6 +1,0 @@
-genomepy.providers.gencode.get\_gencode2ucsc
-============================================
-
-.. currentmodule:: genomepy.providers.gencode
-
-.. autofunction:: get_gencode2ucsc

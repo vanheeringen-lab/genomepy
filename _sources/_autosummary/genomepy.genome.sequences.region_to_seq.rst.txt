@@ -1,6 +1,0 @@
-genomepy.genome.sequences.region\_to\_seq
-=========================================
-
-.. currentmodule:: genomepy.genome.sequences
-
-.. autofunction:: region_to_seq

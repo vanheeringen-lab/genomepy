@@ -1,6 +1,0 @@
-genomepy.providers.ensembl.request\_json
-========================================
-
-.. currentmodule:: genomepy.providers.ensembl
-
-.. autofunction:: request_json

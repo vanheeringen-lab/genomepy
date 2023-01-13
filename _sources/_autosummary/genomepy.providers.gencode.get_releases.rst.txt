@@ -1,6 +1,0 @@
-genomepy.providers.gencode.get\_releases
-========================================
-
-.. currentmodule:: genomepy.providers.gencode
-
-.. autofunction:: get_releases

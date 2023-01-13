@@ -1,6 +1,0 @@
-genomepy.providers.map\_locations
-=================================
-
-.. currentmodule:: genomepy.providers
-
-.. autofunction:: map_locations

@@ -1,6 +1,0 @@
-genomepy.providers.url.search\_url\_for\_annotations
-====================================================
-
-.. currentmodule:: genomepy.providers.url
-
-.. autofunction:: search_url_for_annotations

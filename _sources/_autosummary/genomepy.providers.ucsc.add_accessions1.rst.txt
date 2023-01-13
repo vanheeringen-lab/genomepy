@@ -1,6 +1,0 @@
-genomepy.providers.ucsc.add\_accessions1
-========================================
-
-.. currentmodule:: genomepy.providers.ucsc
-
-.. autofunction:: add_accessions1

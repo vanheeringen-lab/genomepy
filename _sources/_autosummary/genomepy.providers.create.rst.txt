@@ -1,6 +1,0 @@
-genomepy.providers.create
-=========================
-
-.. currentmodule:: genomepy.providers
-
-.. autofunction:: create

@@ -1,6 +1,0 @@
-genomepy.providers.ensembl.get\_genomes
-=======================================
-
-.. currentmodule:: genomepy.providers.ensembl
-
-.. autofunction:: get_genomes

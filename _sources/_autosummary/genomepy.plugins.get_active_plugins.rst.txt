@@ -1,6 +1,0 @@
-genomepy.plugins.get\_active\_plugins
-=====================================
-
-.. currentmodule:: genomepy.plugins
-
-.. autofunction:: get_active_plugins

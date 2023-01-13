@@ -1,6 +1,0 @@
-genomepy.genome.generate\_fa\_sizes
-===================================
-
-.. currentmodule:: genomepy.genome
-
-.. autofunction:: generate_fa_sizes

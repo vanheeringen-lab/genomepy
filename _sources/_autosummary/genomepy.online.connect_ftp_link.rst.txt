@@ -1,6 +1,0 @@
-genomepy.online.connect\_ftp\_link
-==================================
-
-.. currentmodule:: genomepy.online
-
-.. autofunction:: connect_ftp_link

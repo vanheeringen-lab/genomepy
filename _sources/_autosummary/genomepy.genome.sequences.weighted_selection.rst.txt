@@ -1,6 +1,0 @@
-genomepy.genome.sequences.weighted\_selection
-=============================================
-
-.. currentmodule:: genomepy.genome.sequences
-
-.. autofunction:: weighted_selection

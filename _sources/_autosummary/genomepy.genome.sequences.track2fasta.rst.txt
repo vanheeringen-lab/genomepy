@@ -1,6 +1,0 @@
-genomepy.genome.sequences.track2fasta
-=====================================
-
-.. currentmodule:: genomepy.genome.sequences
-
-.. autofunction:: track2fasta

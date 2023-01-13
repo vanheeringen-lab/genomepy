@@ -1,6 +1,0 @@
-genomepy.providers.list\_providers
-==================================
-
-.. currentmodule:: genomepy.providers
-
-.. autofunction:: list_providers

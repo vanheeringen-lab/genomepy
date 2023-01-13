@@ -1,6 +1,0 @@
-genomepy.online.read\_url
-=========================
-
-.. currentmodule:: genomepy.online
-
-.. autofunction:: read_url

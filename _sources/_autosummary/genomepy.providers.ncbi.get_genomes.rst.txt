@@ -1,6 +1,0 @@
-genomepy.providers.ncbi.get\_genomes
-====================================
-
-.. currentmodule:: genomepy.providers.ncbi
-
-.. autofunction:: get_genomes

@@ -1,6 +1,0 @@
-genomepy.seq.as\_seqdict
-========================
-
-.. currentmodule:: genomepy.seq
-
-.. autofunction:: as_seqdict

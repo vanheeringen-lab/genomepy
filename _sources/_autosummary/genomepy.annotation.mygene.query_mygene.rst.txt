@@ -1,6 +1,0 @@
-genomepy.annotation.mygene.query\_mygene
-========================================
-
-.. currentmodule:: genomepy.annotation.mygene
-
-.. autofunction:: query_mygene

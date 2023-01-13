@@ -1,6 +1,0 @@
-genomepy.files.extract\_zip
-===========================
-
-.. currentmodule:: genomepy.files
-
-.. autofunction:: extract_zip

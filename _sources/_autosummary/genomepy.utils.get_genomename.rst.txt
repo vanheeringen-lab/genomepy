@@ -1,6 +1,0 @@
-genomepy.utils.get\_genomename
-==============================
-
-.. currentmodule:: genomepy.utils
-
-.. autofunction:: get_genomename

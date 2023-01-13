@@ -1,6 +1,0 @@
-genomepy.providers.ucsc.get\_genomes
-====================================
-
-.. currentmodule:: genomepy.providers.ucsc
-
-.. autofunction:: get_genomes

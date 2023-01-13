@@ -1,6 +1,0 @@
-genomepy.functions.list\_installed\_genomes
-===========================================
-
-.. currentmodule:: genomepy.functions
-
-.. autofunction:: list_installed_genomes

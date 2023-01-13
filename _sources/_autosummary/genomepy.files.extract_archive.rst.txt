@@ -1,6 +1,0 @@
-genomepy.files.extract\_archive
-===============================
-
-.. currentmodule:: genomepy.files
-
-.. autofunction:: extract_archive

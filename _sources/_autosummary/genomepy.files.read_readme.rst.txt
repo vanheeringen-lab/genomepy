@@ -1,6 +1,0 @@
-genomepy.files.read\_readme
-===========================
-
-.. currentmodule:: genomepy.files
-
-.. autofunction:: read_readme

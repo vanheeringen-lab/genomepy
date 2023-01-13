@@ -1,6 +1,0 @@
-genomepy.utils.run\_index\_cmd
-==============================
-
-.. currentmodule:: genomepy.utils
-
-.. autofunction:: run_index_cmd

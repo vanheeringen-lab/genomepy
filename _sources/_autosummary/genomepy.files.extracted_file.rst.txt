@@ -1,6 +1,0 @@
-genomepy.files.extracted\_file
-==============================
-
-.. currentmodule:: genomepy.files
-
-.. autofunction:: extracted_file

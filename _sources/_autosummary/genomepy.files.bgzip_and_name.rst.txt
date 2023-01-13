@@ -1,6 +1,0 @@
-genomepy.files.bgzip\_and\_name
-===============================
-
-.. currentmodule:: genomepy.files
-
-.. autofunction:: bgzip_and_name

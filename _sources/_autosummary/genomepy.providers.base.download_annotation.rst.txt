@@ -1,6 +1,0 @@
-genomepy.providers.base.download\_annotation
-============================================
-
-.. currentmodule:: genomepy.providers.base
-
-.. autofunction:: download_annotation

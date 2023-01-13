@@ -1,6 +1,0 @@
-genomepy.files.gzip\_and\_name
-==============================
-
-.. currentmodule:: genomepy.files
-
-.. autofunction:: gzip_and_name

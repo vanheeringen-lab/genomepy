@@ -1,6 +1,0 @@
-genomepy.providers.url.fuzzy\_annotation\_search
-================================================
-
-.. currentmodule:: genomepy.providers.url
-
-.. autofunction:: fuzzy_annotation_search

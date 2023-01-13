@@ -1,6 +1,0 @@
-genomepy.genome.sequences.bed\_to\_seq
-======================================
-
-.. currentmodule:: genomepy.genome.sequences
-
-.. autofunction:: bed_to_seq

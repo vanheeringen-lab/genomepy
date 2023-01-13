@@ -1,6 +1,0 @@
-genomepy.providers.search
-=========================
-
-.. currentmodule:: genomepy.providers
-
-.. autofunction:: search

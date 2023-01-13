@@ -1,6 +1,0 @@
-genomepy.plugins.init\_plugins
-==============================
-
-.. currentmodule:: genomepy.plugins
-
-.. autofunction:: init_plugins

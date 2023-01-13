@@ -1,6 +1,0 @@
-genomepy.genome.sequences.bad\_coords
-=====================================
-
-.. currentmodule:: genomepy.genome.sequences
-
-.. autofunction:: bad_coords

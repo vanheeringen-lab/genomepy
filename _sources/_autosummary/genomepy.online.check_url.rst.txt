@@ -1,6 +1,0 @@
-genomepy.online.check\_url
-==========================
-
-.. currentmodule:: genomepy.online
-
-.. autofunction:: check_url

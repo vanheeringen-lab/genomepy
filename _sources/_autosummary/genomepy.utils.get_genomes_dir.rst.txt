@@ -1,6 +1,0 @@
-genomepy.utils.get\_genomes\_dir
-================================
-
-.. currentmodule:: genomepy.utils
-
-.. autofunction:: get_genomes_dir

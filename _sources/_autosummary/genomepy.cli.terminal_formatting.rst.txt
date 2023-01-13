@@ -1,6 +1,0 @@
-genomepy.cli.terminal\_formatting
-=================================
-
-.. currentmodule:: genomepy.cli
-
-.. autofunction:: terminal_formatting

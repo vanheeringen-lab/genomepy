@@ -1,6 +1,0 @@
-genomepy.cli.get\_install\_options
-==================================
-
-.. currentmodule:: genomepy.cli
-
-.. autofunction:: get_install_options

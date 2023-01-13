@@ -1,6 +1,0 @@
-genomepy.files.parse\_file
-==========================
-
-.. currentmodule:: genomepy.files
-
-.. autofunction:: parse_file

@@ -1,6 +1,0 @@
-genomepy.functions.head\_annotations
-====================================
-
-.. currentmodule:: genomepy.functions
-
-.. autofunction:: head_annotations

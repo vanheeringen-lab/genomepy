@@ -1,6 +1,0 @@
-genomepy.utils.try\_except\_pass
-================================
-
-.. currentmodule:: genomepy.utils
-
-.. autofunction:: try_except_pass

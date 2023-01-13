@@ -1,6 +1,0 @@
-genomepy.cli.terminal\_subheader
-================================
-
-.. currentmodule:: genomepy.cli
-
-.. autofunction:: terminal_subheader

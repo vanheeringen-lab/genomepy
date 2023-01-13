@@ -3,8 +3,8 @@ Command line documentation
 ==========================
 
 .. mdinclude:: ../../README.md
-   :start-line: 87
-   :end-line: 505
+   :start-line: 102
+   :end-line: 425
 
 ..
    note: start- and end-line are 0-indexed.

@@ -1,6 +1,0 @@
-genomepy.files.update\_readme
-=============================
-
-.. currentmodule:: genomepy.files
-
-.. autofunction:: update_readme

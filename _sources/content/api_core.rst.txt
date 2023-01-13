@@ -15,8 +15,7 @@ Finding genomic data
 When looking to download a new genome/gene annotation, your first step would be :code:`genomepy.search`.
 This function will check either one, or all, providers.
 Advanced users may want to specify a provider for their search to speed up the process.
-To see which providers are available, use :code:`genomepy.list_providers`,
-or :code:`genomepy.list_online_providers`:
+To see which providers are available, use :code:`genomepy.list_providers` or :code:`genomepy.list_online_providers`:
 
 ------------
 
@@ -169,7 +168,7 @@ To use the function, it must be explicitly imported with :code:`from genomepy.se
 ------------
 
 A non-core function worth mentioning is :code:`genomepy.files.filter_fasta`,
-for if you wish to filter a fasta file by chromosome name using regex,
+for when you wish to filter a fasta file by chromosome name using regex,
 but want the output straight to (another) fasta file.
 
 ------------
@@ -185,8 +184,8 @@ Using a gene annotation
 Similarly, the :code:`genomepy.Annotation` class helps you get the genes in check.
 This class returns a number of neat pandas dataframes, such as the :code:`named_gtf`,
 or an annotation with the gene or chromosome names remapped to another type.
-Remapping gene names to another type is also with the Annotation class with :code:`Annotation.map_genes`,
-but also separately with :code:`genomepy.query_mygene`, as it's just so damn useful.
+Remapping gene names to another type is also possible with :code:`Annotation.map_genes`.
+This feature also comes as separate function :code:`genomepy.query_mygene`, as it's just so darn useful.
 
 ------------
 

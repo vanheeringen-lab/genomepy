@@ -1,6 +1,0 @@
-genomepy.files.write\_readme
-============================
-
-.. currentmodule:: genomepy.files
-
-.. autofunction:: write_readme

@@ -1,32 +1,71 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>Release checklist &mdash; genomepy  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-    <script src="_static/js/theme.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="index.html" class="icon icon-home"> genomepy
+          
+
+          
           </a>
+
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -34,55 +73,108 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/command_line.html">Command line documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/api_core.html">Python API documentation (core)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="_autosummary/genomepy.html">Python API documentation (full)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/help_faq.html">FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/about.html">About</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">genomepy</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
+    
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
       <li>Release checklist</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+          
+            
               <a href="https://github.com/vanheeringen-lab/genomepy/blob/develop/docs/release_checklist.md" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
+            
   <section id="release-checklist">
-<h1>Release checklist<a class="headerlink" href="#release-checklist" title="Permalink to this headline"></a></h1>
+<h1>Release checklist<a class="headerlink" href="#release-checklist" title="Permalink to this heading">¶</a></h1>
 <ol class="arabic">
 <li><p>Make sure all tests pass.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>mamba env update -f environment.yml
-pytest -vvv
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>mamba<span class="w"> </span>env<span class="w"> </span>update<span class="w"> </span>-f<span class="w"> </span>environment.yml
+pytest<span class="w"> </span>-vvv
 </pre></div>
 </div>
 </li>
 <li><p>Create release candidate with <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">flow</span></code>:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nv">new_version</span><span class="o">=</span><span class="m">0</span>.0.0
-<span class="nb">echo</span> <span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>
+<span class="nb">echo</span><span class="w"> </span><span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>
 
-git flow release start <span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>
+git<span class="w"> </span>flow<span class="w"> </span>release<span class="w"> </span>start<span class="w"> </span><span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>
 </pre></div>
 </div>
 </li>
@@ -95,46 +187,46 @@ git flow release start <span class="si">${</span><span class="nv">new_version</s
 </ul>
 </li>
 <li><p>Check if release works on pypi:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python -m build
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>build
 
 <span class="c1"># twine must be up to date (3.3.0 works). System installed twine can interfere.</span>
-twine upload --repository-url https://test.pypi.org/legacy/ dist/genomepy-<span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>*
+twine<span class="w"> </span>upload<span class="w"> </span>--repository-url<span class="w"> </span>https://test.pypi.org/legacy/<span class="w"> </span>dist/genomepy-<span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>*
 
-pip uninstall genomepy
+pip<span class="w"> </span>uninstall<span class="w"> </span>genomepy
 
 <span class="c1"># the is to escape the ==, so the variable ${new_version} can be called</span>
-pip install --extra-index-url https://test.pypi.org/simple/ genomepy<span class="se">\=</span><span class="o">=</span><span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>
+pip<span class="w"> </span>install<span class="w"> </span>--extra-index-url<span class="w"> </span>https://test.pypi.org/simple/<span class="w"> </span>genomepy<span class="se">\=</span><span class="o">=</span><span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>
 
 <span class="c1"># tests</span>
-genomepy --version
-genomepy --help
-genomepy install --help
-genomepy clean
-genomepy search xenopus_tropicalis
-genomepy annotation hg38
-genomepy annotation GRCh38.p13
-genomepy install -af -p gencode GRCm39
-genomepy install -af -p ensembl TAIR10
-genomepy install -af -p ucsc sacCer3 --UCSC-annotation ensGene
-genomepy install -af -p ncbi ASM2732v1
-genomepy install -af -p url -l url_test https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.fna.gz --URL-to-annotation https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz
-genomepy install -af -p <span class="nb">local</span> -l local_test ~/.local/share/genomes/TAIR10/TAIR10.fa --Local-path-to-annotation ~/.local/share/genomes/TAIR10/TAIR10.annotation.gtf
+genomepy<span class="w"> </span>--version
+genomepy<span class="w"> </span>--help
+genomepy<span class="w"> </span>install<span class="w"> </span>--help
+genomepy<span class="w"> </span>clean
+genomepy<span class="w"> </span>search<span class="w"> </span>xenopus_tropicalis
+genomepy<span class="w"> </span>annotation<span class="w"> </span>hg38
+genomepy<span class="w"> </span>annotation<span class="w"> </span>GRCh38.p13
+genomepy<span class="w"> </span>install<span class="w"> </span>-af<span class="w"> </span>-p<span class="w"> </span>gencode<span class="w"> </span>GRCm39
+genomepy<span class="w"> </span>install<span class="w"> </span>-af<span class="w"> </span>-p<span class="w"> </span>ensembl<span class="w"> </span>TAIR10
+genomepy<span class="w"> </span>install<span class="w"> </span>-af<span class="w"> </span>-p<span class="w"> </span>ucsc<span class="w"> </span>sacCer3<span class="w"> </span>--UCSC-annotation<span class="w"> </span>ensGene
+genomepy<span class="w"> </span>install<span class="w"> </span>-af<span class="w"> </span>-p<span class="w"> </span>ncbi<span class="w"> </span>ASM2732v1
+genomepy<span class="w"> </span>install<span class="w"> </span>-af<span class="w"> </span>-p<span class="w"> </span>url<span class="w"> </span>-l<span class="w"> </span>url_test<span class="w"> </span>https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.fna.gz<span class="w"> </span>--URL-to-annotation<span class="w"> </span>https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1/GCF_000027325.1_ASM2732v1_genomic.gff.gz
+genomepy<span class="w"> </span>install<span class="w"> </span>-af<span class="w"> </span>-p<span class="w"> </span><span class="nb">local</span><span class="w"> </span>-l<span class="w"> </span>local_test<span class="w"> </span>~/.local/share/genomes/TAIR10/TAIR10.fa<span class="w"> </span>--Local-path-to-annotation<span class="w"> </span>~/.local/share/genomes/TAIR10/TAIR10.annotation.gtf
 </pre></div>
 </div>
 </li>
 <li><p>Finish the release:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git flow release finish <span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>flow<span class="w"> </span>release<span class="w"> </span>finish<span class="w"> </span><span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>
 </pre></div>
 </div>
 </li>
 <li><p>Push everything to github, including tags:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git push --follow-tags origin develop master
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>push<span class="w"> </span>--follow-tags<span class="w"> </span>origin<span class="w"> </span>develop<span class="w"> </span>master
 </pre></div>
 </div>
 </li>
 <li><p>Upload to pypi:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python -m build
-twine upload dist/genomepy-<span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>*
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>build
+twine<span class="w"> </span>upload<span class="w"> </span>dist/genomepy-<span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>*
 </pre></div>
 </div>
 </li>
@@ -166,32 +258,49 @@ twine upload dist/genomepy-<span class="si">${</span><span class="nv">new_versio
 
 
            </div>
+           
           </div>
           <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
-      <span class="lastupdated">Last updated on 2022-09-30, 07:55 (UTC).
-      </span></p>
-  </div>
+    <p>
+        &#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
+      <span class="lastupdated">
+        Last updated on 2023-01-13, 10:18 (UTC).
+      </span>
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

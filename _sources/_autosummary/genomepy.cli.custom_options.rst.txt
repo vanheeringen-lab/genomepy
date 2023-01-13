@@ -1,6 +1,0 @@
-genomepy.cli.custom\_options
-============================
-
-.. currentmodule:: genomepy.cli
-
-.. autofunction:: custom_options

@@ -1,6 +1,0 @@
-genomepy.config.generate\_config
-================================
-
-.. currentmodule:: genomepy.config
-
-.. autofunction:: generate_config

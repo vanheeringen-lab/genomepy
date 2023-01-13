@@ -1,6 +1,0 @@
-genomepy.caching.clean
-======================
-
-.. currentmodule:: genomepy.caching
-
-.. autofunction:: clean

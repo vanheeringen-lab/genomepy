@@ -1,34 +1,73 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>Python API documentation (core) &mdash; genomepy  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-    <script src="../_static/js/theme.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="genomepy" href="../_autosummary/genomepy.html" />
+    <link rel="next" title="Frequently Asked Questions" href="help_faq.html" />
     <link rel="prev" title="Command line documentation" href="command_line.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="../index.html" class="icon icon-home"> genomepy
+          
+
+          
           </a>
+
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -36,7 +75,18 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
@@ -49,1033 +99,210 @@
 <li class="toctree-l2"><a class="reference internal" href="#using-a-gene-annotation">Using a gene annotation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../_autosummary/genomepy.html">Python API documentation (full)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="help_faq.html">FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">genomepy</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
+    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
       <li>Python API documentation (core)</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+          
+            
               <a href="https://github.com/vanheeringen-lab/genomepy/blob/develop/docs/content/api_core.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
+            
   <section id="python-api-documentation-core">
-<h1>Python API documentation (core)<a class="headerlink" href="#python-api-documentation-core" title="Permalink to this headline"></a></h1>
+<h1>Python API documentation (core)<a class="headerlink" href="#python-api-documentation-core" title="Permalink to this heading">¶</a></h1>
 <p>This page described the core genomepy functionality.
 These classes and functions can be found on the top level of the genomepy module (e.g. <code class="code docutils literal notranslate"><span class="pre">genomepy.search</span></code>),
 and are made available when running <code class="code docutils literal notranslate"><span class="pre">from</span> <span class="pre">genomepy</span> <span class="pre">import</span> <span class="pre">*</span></code> (we won’t judge you).</p>
 <p>Additional functions that do not fit the core functionality, but we feel are still pretty cool, are also described.</p>
 <section id="finding-genomic-data">
-<h2>Finding genomic data<a class="headerlink" href="#finding-genomic-data" title="Permalink to this headline"></a></h2>
+<h2>Finding genomic data<a class="headerlink" href="#finding-genomic-data" title="Permalink to this heading">¶</a></h2>
 <p>When looking to download a new genome/gene annotation, your first step would be <code class="code docutils literal notranslate"><span class="pre">genomepy.search</span></code>.
 This function will check either one, or all, providers.
 Advanced users may want to specify a provider for their search to speed up the process.
-To see which providers are available, use <code class="code docutils literal notranslate"><span class="pre">genomepy.list_providers</span></code>,
-or <code class="code docutils literal notranslate"><span class="pre">genomepy.list_online_providers</span></code>:</p>
+To see which providers are available, use <code class="code docutils literal notranslate"><span class="pre">genomepy.list_providers</span></code> or <code class="code docutils literal notranslate"><span class="pre">genomepy.list_online_providers</span></code>:</p>
 <hr class="docutils" />
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.</span></span><span class="sig-name descname"><span class="pre">list_providers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>List of providers genomepy supports</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>names of providers</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.</span></span><span class="sig-name descname"><span class="pre">list_online_providers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>List of providers genomepy supports <em>that are online right now</em>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>names of online providers</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.</span></span><span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Search for a genome.</p>
-<p>If provider is specified, search only that specific provider, else
-search all providers. Both the name and description are used for the
-search. Search term is case-insensitive and can contain regex.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>term</strong> (<em>str</em><em>, </em><em>int</em>) – Search term, case-insensitive, allows regex.</p></li>
-<li><p><strong>provider</strong> (<em>str</em><em> , </em><em>optional</em>) – Only search the specified provider (faster).</p></li>
-<li><p><strong>size</strong> (<em>bool</em><em>, </em><em>optional</em>) – Show absolute genome size.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Yields</dt>
-<dd class="field-even"><p><em>list</em> – genome name, provider and metadata</p>
-</dd>
-</dl>
-</dd></dl>
-
 <hr class="docutils" />
 <p>If you have no idea what you are looking for, you could even check out <em>all</em> available genomes.
 Be warned, <code class="code docutils literal notranslate"><span class="pre">genomepy.list_available_genomes</span></code> is like watching the Star Wars title crawl.</p>
 <hr class="docutils" />
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.</span></span><span class="sig-name descname"><span class="pre">list_available_genomes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span></dt>
-<dd><p>List all available genomes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>provider</strong> (<em>str</em><em>, </em><em>optional</em>) – List genomes from specific provider. Genomes from all
-providers will be returned if not specified.</p></li>
-<li><p><strong>size</strong> (<em>bool</em><em>, </em><em>optional</em>) – Show absolute genome size.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Yields</dt>
-<dd class="field-even"><p><em>list</em> – tuples with genome name, provider and metadata</p>
-</dd>
-</dl>
-</dd></dl>
-
 <hr class="docutils" />
 <p>If we search for homo sapiens for instance, we find that <code class="code docutils literal notranslate"><span class="pre">GRCh3.p13</span></code> and <code class="code docutils literal notranslate"><span class="pre">hg38</span></code> are the latest versions.
 These names describe the same genome, but different <code class="code docutils literal notranslate"><span class="pre">assemblies</span></code>, with differences between them.</p>
 <p>One of these differences is the quality of the gene annotation.
 Next, we can inspect these with <code class="code docutils literal notranslate"><span class="pre">genomepy.head_annotations</span></code>:</p>
 <hr class="docutils" />
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.</span></span><span class="sig-name descname"><span class="pre">head_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Quickly inspect the metadata of each available annotation for the specified genome.</p>
-<p>For UCSC, up to 4 gene annotation styles are available:
-“ncbiRefSeq”, “refGene”, “ensGene”, “knownGene” (respectively).</p>
-<p>For NCBI, the chromosome names are not yet sanitized.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – genome name</p></li>
-<li><p><strong>provider</strong> (<em>str</em><em>, </em><em>optional</em>) – only search the specified provider for the genome name</p></li>
-<li><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – number of lines to show</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <hr class="docutils" />
 <section id="installing-genomic-data">
-<h2>Installing genomic data<a class="headerlink" href="#installing-genomic-data" title="Permalink to this headline"></a></h2>
+<h2>Installing genomic data<a class="headerlink" href="#installing-genomic-data" title="Permalink to this heading">¶</a></h2>
 <p>Now that you have seen whats available, its time to download a genome.
 The default parameter for <code class="code docutils literal notranslate"><span class="pre">genomepy.install_genome</span></code> are optimized for sequence alignment and gene counting,
 but you have full control over them, so have a look!</p>
 <p>genomepy won’t overwrite any files you already downloaded (unless specified),
 but you can review your local genomes with <code class="code docutils literal notranslate"><span class="pre">genomepy.list_installed_genomes</span></code>.</p>
 <hr class="docutils" />
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.</span></span><span class="sig-name descname"><span class="pre">install_genome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genomes_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">localname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'soft'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_alt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regex</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_match</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bgzip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_annotation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_matching</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../_autosummary/genomepy.genome.Genome.html#genomepy.genome.Genome" title="genomepy.genome.Genome"><span class="pre">genomepy.genome.Genome</span></a></span></span></dt>
-<dd><p>Install a genome (&amp; gene annotation).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – Genome name</p></li>
-<li><p><strong>provider</strong> (<em>str</em><em> , </em><em>optional</em>) – Provider name. will try Ensembl, UCSC and NCBI (in that order) if not specified.</p></li>
-<li><p><strong>genomes_dir</strong> (<em>str</em><em> , </em><em>optional</em>) – Where to create the output folder.</p></li>
-<li><p><strong>localname</strong> (<em>str</em><em> , </em><em>optional</em>) – Custom name for this genome.</p></li>
-<li><p><strong>mask</strong> (<em>str</em><em> , </em><em>optional</em>) – Genome masking of repetitive sequences. Options: hard/soft/none, default is soft.</p></li>
-<li><p><strong>keep_alt</strong> (<em>bool</em><em> , </em><em>optional</em>) – Some genomes contain alternative regions. These regions cause issues with
-sequence alignment, as they are inherently duplications of the consensus regions.
-Set to true to keep these alternative regions.</p></li>
-<li><p><strong>regex</strong> (<em>str</em><em> , </em><em>optional</em>) – Regular expression to select specific chromosome / scaffold names.</p></li>
-<li><p><strong>invert_match</strong> (<em>bool</em><em> , </em><em>optional</em>) – Set to True to select all chromosomes that <em>don’t</em> match the regex.</p></li>
-<li><p><strong>bgzip</strong> (<em>bool</em><em> , </em><em>optional</em>) – If set to True the genome FASTA file will be compressed using bgzip,
-and gene annotation will be compressed with gzip.</p></li>
-<li><p><strong>threads</strong> (<em>int</em><em> , </em><em>optional</em>) – Build genome index using multithreading (if supported). Default: lowest of 8/all threads.</p></li>
-<li><p><strong>force</strong> (<em>bool</em><em> , </em><em>optional</em>) – Set to True to overwrite existing files.</p></li>
-<li><p><strong>annotation</strong> (<em>bool</em><em> , </em><em>optional</em>) – If set to True, download gene annotation in BED and GTF format.</p></li>
-<li><p><strong>only_annotation</strong> (<em>bool</em><em> , </em><em>optional</em>) – If set to True, only download the gene annotation files.</p></li>
-<li><p><strong>skip_matching</strong> (<em>bool</em><em> , </em><em>optional</em>) – If set to True, contigs in the annotation not matching
-those in the genome will not be corrected.</p></li>
-<li><p><strong>skip_filter</strong> (<em>bool</em><em> , </em><em>optional</em>) – If set to True, the gene annotations will not be filtered to match the genome contigs.</p></li>
-<li><p><strong>kwargs</strong> (<em>dict</em><em> , </em><em>optional</em>) – <p>Provider specific options.</p>
-<dl class="simple">
-<dt>toplevel<span class="classifier">bool , optional</span></dt><dd><p>Ensembl only: Always download the toplevel genome. Ignores potential primary assembly.</p>
-</dd>
-<dt>version<span class="classifier">int , optional</span></dt><dd><p>Ensembl only: Specify release version. Default is latest.</p>
-</dd>
-<dt>to_annotation<span class="classifier">text , optional</span></dt><dd><p>URL only: direct link to annotation file.
-Required if this is not the same directory as the fasta.</p>
-</dd>
-</dl>
-</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Genome class with the installed genome</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="../_autosummary/genomepy.genome.Genome.html#genomepy.genome.Genome" title="genomepy.genome.Genome">Genome</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.</span></span><span class="sig-name descname"><span class="pre">list_installed_genomes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">genomes_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span></dt>
-<dd><p>List all locally available genomes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>genomes_dir</strong> (<em>str</em><em>, </em><em>optional</em>) – Directory with genomes installed by genomepy.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>genome names</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
 <hr class="docutils" />
 <p>If you want to download a sequence blacklist, or create an aligner index, you might wanna look at plugins!
 Don’t worry, you can rerun the <code class="code docutils literal notranslate"><span class="pre">genome.install_genome</span></code> command, and genomepy will only run the new parts.</p>
 <hr class="docutils" />
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.</span></span><span class="sig-name descname"><span class="pre">manage_plugins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plugin_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Manage genomepy plugins</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>command</strong> (<em>str</em>) – <p>command to perform. Options:</p>
-<dl class="simple">
-<dt>list</dt><dd><p>show plugins and status</p>
-</dd>
-<dt>enable</dt><dd><p>enable plugins</p>
-</dd>
-<dt>disable</dt><dd><p>disable plugins</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>plugin_names</strong> (<em>list</em>) – plugin names for the enable/disable command</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
 <hr class="docutils" />
 <p>The genome and gene annotations were installed in the genomes directory (unless specified otherwise).
 If you have a specific location in mind, you could set this as default in the genomepy config.
 To find and inspect it, use <code class="code docutils literal notranslate"><span class="pre">genomepy.manage_config</span></code>:</p>
 <hr class="docutils" />
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.</span></span><span class="sig-name descname"><span class="pre">manage_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Manage the genomepy configuration</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>command</strong> (<em>str</em>) – <p>command to perform. Options:</p>
-<dl class="simple">
-<dt>file</dt><dd><p>return config filepath</p>
-</dd>
-<dt>show</dt><dd><p>return config content</p>
-</dd>
-<dt>generate</dt><dd><p>create new config file</p>
-</dd>
-</dl>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <hr class="docutils" />
 <section id="errors">
-<h2>Errors<a class="headerlink" href="#errors" title="Permalink to this headline"></a></h2>
+<h2>Errors<a class="headerlink" href="#errors" title="Permalink to this heading">¶</a></h2>
 <p>Did something go wrong? Oh noes!
 If the problem persists, clear the genomepy cache with <code class="code docutils literal notranslate"><span class="pre">genomepy.clean</span></code>, and try again.</p>
 <hr class="docutils" />
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.</span></span><span class="sig-name descname"><span class="pre">clean</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Remove cached data on providers.</p>
-</dd></dl>
-
 </section>
 <hr class="docutils" />
 <section id="using-a-genome">
-<h2>Using a genome<a class="headerlink" href="#using-a-genome" title="Permalink to this headline"></a></h2>
+<h2>Using a genome<a class="headerlink" href="#using-a-genome" title="Permalink to this heading">¶</a></h2>
 <p>Alright, you’ve got the goods!
 You can browse the genome’s sequences and metadata with the <code class="code docutils literal notranslate"><span class="pre">genomepy.Genome</span></code> class.
 This class builds on the <code class="code docutils literal notranslate"><span class="pre">pyfaidx.Fasta</span></code> class to also provide you with several options
 to get specific sequences from your genome, and save these to file.</p>
 <hr class="docutils" />
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genomepy.</span></span><span class="sig-name descname"><span class="pre">Genome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genomes_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>pyfaidx Fasta object of a genome with additional attributes &amp; methods.</p>
-<p>Generates a genome index file, sizes file and gaps file of the genome.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – Genome name</p></li>
-<li><p><strong>genomes_dir</strong> (<em>str</em><em>, </em><em>optional</em>) – Genome installation directory</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An object that provides a pygr compatible interface.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pyfaidx.Fasta</p>
-</dd>
-</dl>
-<p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code>()</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_random_sequences</span></code>([n, length, chroms, ...])</p></td>
-<td><p>Return random genomic sequences.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_seq</span></code>(name, start, end[, rc])</p></td>
-<td><p>Return a sequence by record name and interval [start, end).</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_spliced_seq</span></code>(name, intervals[, rc])</p></td>
-<td><p>Return a sequence by record name and list of intervals</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">items</span></code>()</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">keys</span></code>()</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">track2fasta</span></code>(track[, fastafile, stranded, ...])</p></td>
-<td><p>Return a list of fasta sequences as Sequence objects as directed from the track(s).</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">values</span></code>()</p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Attributes</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">gaps</span></code></p></td>
-<td><p>contigs and the number of Ns contained</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plugin</span></code></p></td>
-<td><p>dict of all active plugins and their properties</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sizes</span></code></p></td>
-<td><p>contigs and their lengths</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">genomes_dir</span></code></p></td>
-<td><p>path to the genomepy genomes directory</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></p></td>
-<td><p>genome name</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">genome_file</span></code></p></td>
-<td><p>path to the genome fasta</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">genome_dir</span></code></p></td>
-<td><p>path to the genome directory</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">index_file</span></code></p></td>
-<td><p>path to the genome index</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sizes_file</span></code></p></td>
-<td><p>path to the chromosome sizes file</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">gaps_file</span></code></p></td>
-<td><p>path to the chromosome gaps file</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">annotation_gtf_file</span></code></p></td>
-<td><p>path to the gene annotation GTF file</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">annotation_bed_file</span></code></p></td>
-<td><p>path to the gene annotation BED file</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">readme_file</span></code></p></td>
-<td><p>path to the README file</p></td>
-</tr>
-</tbody>
-</table>
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">annotation_bed_file</span></span></dt>
-<dd><p>path to the gene annotation BED file</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">annotation_gtf_file</span></span></dt>
-<dd><p>path to the gene annotation GTF file</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">assembly_accession</span></span></dt>
-<dd><p>genome assembly accession</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">gaps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em></dt>
-<dd><p>contigs and the number of Ns contained</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>contents of the gaps file</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">gaps_file</span></span></dt>
-<dd><p>path to the chromosome gaps file</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">genome_dir</span></span></dt>
-<dd><p>path to the genome directory</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">genome_file</span></span></dt>
-<dd><p>path to the genome fasta</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">genomes_dir</span></span></dt>
-<dd><p>path to the genomepy genomes directory</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_random_sequences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chroms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'list'</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Return random genomic sequences.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> (<em>int</em><em> , </em><em>optional</em>) – Number of sequences to return.</p></li>
-<li><p><strong>length</strong> (<em>int</em><em> , </em><em>optional</em>) – Length of sequences to return.</p></li>
-<li><p><strong>chroms</strong> (<em>list</em><em> , </em><em>optional</em>) – Return sequences only from these chromosomes.</p></li>
-<li><p><strong>max_n</strong> (<em>float</em><em> , </em><em>optional</em>) – Maximum fraction of Ns.</p></li>
-<li><p><strong>outtype</strong> (<em>string</em><em> , </em><em>optional</em>) – return the output as list or string.
-Options: “list” or “string”, default: “list”.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>coordinates as lists or strings:
-List with [chrom, start, end] genomic coordinates.
-String with “chrom:start-end” genomic coordinates
-(can be used as input for track2fasta).</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Return a sequence by record name and interval [start, end).</p>
-<p>Coordinates are 1-based, end-exclusive.
-If rc is set, reverse complement will be returned.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_spliced_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intervals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Return a sequence by record name and list of intervals</p>
-<p>Interval list is an iterable of [start, end].
-Coordinates are 1-based, end-exclusive.
-If rc is set, reverse complement will be returned.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">index_file</span></span></dt>
-<dd><p>path to the genome index</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">name</span></span></dt>
-<dd><p>genome name</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plugin</span></span></dt>
-<dd><p>dict of all active plugins and their properties</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">readme_file</span></span></dt>
-<dd><p>path to the README file</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">sizes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em></dt>
-<dd><p>contigs and their lengths</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>contents of the sizes file</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">sizes_file</span></span></dt>
-<dd><p>path to the chromosome sizes file</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">tax_id</span></span></dt>
-<dd><p>genome taxonomy identifier</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">track2fasta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">track</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fastafile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stranded</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extend_up</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extend_down</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Return a list of fasta sequences as Sequence objects
-as directed from the track(s).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>track</strong> (<em>list/region file/bed file</em>) – region(s) you wish to translate to fasta.
-Example input files can be found in genomepy/tests/data/regions.*</p></li>
-<li><p><strong>fastafile</strong> (<em>bool</em><em> , </em><em>optional</em>) – return Sequences as list or save to file? (default: list)</p></li>
-<li><p><strong>stranded</strong> (<em>bool</em><em> , </em><em>optional</em>) – return sequences for both strands? Required BED6 (or higher) as input (default: False)</p></li>
-<li><p><strong>extend_up</strong> (<em>int</em><em> , </em><em>optional</em>) – extend the sequences up? (command is strand sensitive, default: 0)</p></li>
-<li><p><strong>extend_down</strong> (<em>int</em><em> , </em><em>optional</em>) – extend the sequences down? (command is strand sensitive, default: 0)</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
 <hr class="docutils" />
 <p>You can obtain genomic sequences from a wide variety of inputs with <code class="code docutils literal notranslate"><span class="pre">as_seqdict</span></code>.
 To use the function, it must be explicitly imported with <code class="code docutils literal notranslate"><span class="pre">from</span> <span class="pre">genomepy.seq</span> <span class="pre">import</span> <span class="pre">as_seqdict</span></code>.</p>
 <hr class="docutils" />
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.seq.</span></span><span class="sig-name descname"><span class="pre">as_seqdict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_convert</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genome</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.seq.</span></span><span class="sig-name descname"><span class="pre">as_seqdict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_convert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genome</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.seq.</span></span><span class="sig-name descname"><span class="pre">as_seqdict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_convert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_io.TextIOWrapper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genome</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.seq.</span></span><span class="sig-name descname"><span class="pre">as_seqdict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_convert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genome</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.seq.</span></span><span class="sig-name descname"><span class="pre">as_seqdict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_convert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyfaidx.Fasta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genome</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.seq.</span></span><span class="sig-name descname"><span class="pre">as_seqdict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_convert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genome</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Convert input to a dictionary with name as key and sequence as value.</p>
-<p>If the input contains genomic coordinates, the genome needs to be
-specified. If minsize is specified all sequences will be checked if they
-are not shorter than minsize. If regions (or a region file) are used as
-the input, the genome can optionally be specified in the region using the
-following format: <a class="reference external" href="mailto:genome&#37;&#52;&#48;chrom">genome<span>&#64;</span>chrom</a>:start-end.</p>
-<p>Current supported input types include:
-* FASTA, BED and region files.
-* List or numpy.ndarray of regions.
-* pyfaidx.Fasta object.
-* pybedtools.BedTool object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>to_convert</strong> (<em>list</em><em>, </em><em>str</em><em>, </em><em>pyfaidx.Fasta</em><em> or </em><em>pybedtools.BedTool</em>) – Input to convert to FASTA-like dictionary</p></li>
-<li><p><strong>genome</strong> (<em>str</em><em>, </em><em>optional</em>) – Genomepy genome name.</p></li>
-<li><p><strong>minsize</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – If specified, check if all sequences have at least size minsize.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>sequence names as key and sequences as value.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
 <hr class="docutils" />
 <p>A non-core function worth mentioning is <code class="code docutils literal notranslate"><span class="pre">genomepy.files.filter_fasta</span></code>,
-for if you wish to filter a fasta file by chromosome name using regex,
+for when you wish to filter a fasta file by chromosome name using regex,
 but want the output straight to (another) fasta file.</p>
 <hr class="docutils" />
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.files.</span></span><span class="sig-name descname"><span class="pre">filter_fasta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">infa</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfa</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regex</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.*'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_match</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span></dt>
-<dd><p>Filter fasta file based on regex.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>infa</strong> (<em>str</em>) – Filename of the input fasta file.</p></li>
-<li><p><strong>outfa</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename of the output fasta file. If None, infa is overwritten.</p></li>
-<li><p><strong>regex</strong> (<em>str</em><em>, </em><em>optional</em>) – Regular expression used for selecting sequences.
-Matches everything if left blank.</p></li>
-<li><p><strong>invert_match</strong> (<em>bool</em><em>, </em><em>optional</em>) – Select all sequence <em>not</em> matching regex if set.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>removed contigs</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <hr class="docutils" />
 <section id="using-a-gene-annotation">
-<h2>Using a gene annotation<a class="headerlink" href="#using-a-gene-annotation" title="Permalink to this headline"></a></h2>
+<h2>Using a gene annotation<a class="headerlink" href="#using-a-gene-annotation" title="Permalink to this heading">¶</a></h2>
 <p>Similarly, the <code class="code docutils literal notranslate"><span class="pre">genomepy.Annotation</span></code> class helps you get the genes in check.
 This class returns a number of neat pandas dataframes, such as the <code class="code docutils literal notranslate"><span class="pre">named_gtf</span></code>,
 or an annotation with the gene or chromosome names remapped to another type.
-Remapping gene names to another type is also with the Annotation class with <code class="code docutils literal notranslate"><span class="pre">Annotation.map_genes</span></code>,
-but also separately with <code class="code docutils literal notranslate"><span class="pre">genomepy.query_mygene</span></code>, as it’s just so damn useful.</p>
+Remapping gene names to another type is also possible with <code class="code docutils literal notranslate"><span class="pre">Annotation.map_genes</span></code>.
+This feature also comes as separate function <code class="code docutils literal notranslate"><span class="pre">genomepy.query_mygene</span></code>, as it’s just so darn useful.</p>
 <hr class="docutils" />
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genomepy.</span></span><span class="sig-name descname"><span class="pre">Annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genomes_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Manipulate genes and whole gene annotations with pandas dataframes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – Genome name/directory/fasta or gene annotation BED/GTF file.</p></li>
-<li><p><strong>genomes_dir</strong> (<em>str</em><em>, </em><em>optional</em>) – Genomes installation directory.</p></li>
-<li><p><strong>quiet</strong> (<em>bool</em><em>, </em><em>optional</em>) – Silence init warnings</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>attributes &amp; methods to manipulate gene annotations</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>object</p>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">annotation_bed_file</span></span></dt>
-<dd><p>path to the gene annotation BED file</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">annotation_contigs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em></dt>
-<dd><p>Contigs found in the gene annotation BED</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">annotation_gtf_file</span></span></dt>
-<dd><p>path to the gene annotation GTF file</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">bed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em></dt>
-<dd><p>Dataframe with BED format annotation</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">filter_regex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regex</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.*'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_match</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span></dt>
-<dd><p>Filter a dataframe by any column using regex.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>annot</strong> (<em>str</em><em> or </em><em>pd.Dataframe</em>) – annotation to filter: “bed”, “gtf” or a pandas dataframe</p></li>
-<li><p><strong>regex</strong> (<em>str</em>) – regex string to match</p></li>
-<li><p><strong>invert_match</strong> (<em>bool</em><em>, </em><em>optional</em>) – keep contigs NOT matching the regex string</p></li>
-<li><p><strong>column</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – column name or number to filter (default: 1st, contig name)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>filtered dataframe</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pd.DataFrame</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">from_attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gtf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Convert the specified GTF attribute field to a pandas series</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>field</strong> (<em>str</em>) – field from the GTF’s attribute column.</p></li>
-<li><p><strong>annot</strong> (<em>str</em><em> or </em><em>pd.Dataframe</em><em>, </em><em>optional</em>) – any GTF in dataframe format, or the default GTF.</p></li>
-<li><p><strong>check</strong> (<em>bool</em><em>, </em><em>optional</em>) – filter the GTF for rows containing field?</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>with the same index as the input GTF and the field column</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pd.Series</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">gene_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">genes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bed'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span></dt>
-<dd><p>Retrieve gene locations.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>genes</strong> (<em>Iterable</em>) – List of gene names as found in the given annotation file type</p></li>
-<li><p><strong>annot</strong> (<em>str</em><em>, </em><em>optional</em>) – Annotation file type: ‘bed’ or ‘gtf’ (default: “bed”)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>gene annotation</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.DataFrame</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">genes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gtf'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span></dt>
-<dd><p>Retrieve gene names from an annotation.</p>
-<p>For BED files, names are taken from the ‘name’ columns.</p>
-<p>For GTF files, names are taken from the ‘gene_name’ field
-in the attribute column, if available.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>annot</strong> (<em>str</em><em>, </em><em>optional</em>) – Annotation file type: ‘bed’ or ‘gtf’ (default: “gtf”)</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>gene names</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">genome_contigs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em></dt>
-<dd><p>Contigs found in the genome fasta</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">genome_dir</span></span></dt>
-<dd><p>path to the genome directory</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">genome_file</span></span></dt>
-<dd><p>path to the genome fasta</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">gtf</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em></dt>
-<dd><p>Dataframe with GTF format annotation</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">gtf_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gtf'</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Create a dictionary based on the columns or attribute fields in a GTF.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>key</strong> (<em>str</em>) – column name or attribute fields (e.g. “seqname”, “gene_name”)</p></li>
-<li><p><strong>value</strong> (<em>str</em>) – column name or attribute fields (e.g. “gene_id”, “transcript_name”)</p></li>
-<li><p><strong>string_values</strong> (<em>bool</em><em>, </em><em>optional</em>) – attempt to format the dict values as strings
-(only happens if all value lists are length 1)</p></li>
-<li><p><strong>annot</strong> (<em>str</em><em> or </em><em>pd.Dataframe</em><em>, </em><em>optional</em>) – annotation to filter: “gtf” or a pandas dataframe</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>with values as lists. If string_values is True
-and all lists are length 1, values will be strings.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">index_file</span></span></dt>
-<dd><p>path to the genome index</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">lengths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gene_name'</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Return a series with the selected GTF attribute as index,
-and its lengths as values.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>attribute</strong> (<em>str</em>) – attribute to provide lengths of. Options: gene_name, gene_id,
-transcript_name, transcript_id. Attribute must be present in the GTF file.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>attribute indexed series named ‘length’</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pd.Series</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">map_genes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">product</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'protein'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bed'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span></dt>
-<dd><p>Use mygene.info to map gene identifiers to any specified <cite>field</cite>.</p>
-<p>Returns the dataframe with remapped “name” column.
-Drops missing identifiers.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>annot</strong> (<em>str</em><em> or </em><em>pd.Dataframe</em>) – Annotation dataframe to map (a pandas dataframe or “bed”).
-Is mapped to a column named “name” (required).</p></li>
-<li><p><strong>field</strong> (<em>str</em><em>, </em><em>optional</em>) – Identifier for gene annotation. Uses mygene.info to map ids. Valid fields
-are: ensembl.gene, entrezgene, symbol, name, refseq, entrezgene. Note that
-refseq will return the protein refseq_id by default, use <cite>product=”rna”</cite> to
-return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
-not supported.</p></li>
-<li><p><strong>product</strong> (<em>str</em><em>, </em><em>optional</em>) – Either “protein” or “rna”. Only used when <cite>field=”refseq”</cite></p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>remapped gene annotation</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.DataFrame</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">map_locations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></span></dt>
-<dd><p>Map chromosome mapping from one assembly to another.</p>
-<p>Uses the NCBI assembly reports to find contigs.
-Drops missing contigs.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>annot</strong> (<em>str</em><em> or </em><em>pd.Dataframe</em>) – annotation to map: “bed”, “gtf” or a pandas dataframe.</p></li>
-<li><p><strong>to</strong> (<em>str</em>) – target provider (UCSC, Ensembl or NCBI)</p></li>
-<li><p><strong>drop</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True, replace the chromosome column.
-If False, add a 2nd chromosome column.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>chromosome mapping.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.DataFrame</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">name</span></span></dt>
-<dd><p>genome name</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">named_gtf</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em></dt>
-<dd><p>Dataframe with GTF format annotation, with gene_name as index</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">readme_file</span></span></dt>
-<dd><p>path to the README file</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">sanitize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Match the contigs names of the gene annotations to the genome’s.</p>
-<p>First, match the contig names if possible.
-Second, remove contig names not found in the genome.
-Third, save the results and log this in the README.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>match</strong> (<em>bool</em><em>, </em><em>optional</em>) – match annotation contig names to the genome contig names (default is True)</p></li>
-<li><p><strong>filter</strong> (<em>bool</em><em>, </em><em>optional</em>) – remove annotation contig names not found in the genome contig names (default is True)</p></li>
-<li><p><strong>overwrite</strong> (<em>bool</em><em>, </em><em>optional</em>) – update the annotation files on disk, and log this in the README (default is False).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>updated attributes</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Annotation class</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">sizes_file</span></span></dt>
-<dd><p>path to the chromosome sizes file</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">tax_id</span></span></dt>
-<dd><p>genome taxonomy identifier</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.</span></span><span class="sig-name descname"><span class="pre">query_mygene</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tax_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'genomic_pos'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span></dt>
-<dd><p>Use mygene.info to map gene identifiers to another type.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>query</strong> (<em>iterable</em>) – a list or list-like of gene identifiers</p></li>
-<li><p><strong>tax_id</strong> (<em>str</em><em> or </em><em>int</em>) – Target genome taxonomy id</p></li>
-<li><p><strong>field</strong> (<em>str</em><em>, </em><em>optional</em>) – Target identifier to map the query genes to. Valid fields
-are: ensembl.gene, entrezgene, symbol, name, refseq, entrezgene. Note that
-refseq will return the protein refseq_id by default, use <cite>refseq.translation.rna</cite> to
-return the RNA refseq_id. Currently, mapping to Ensembl transcript ids is
-not supported.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>mapped gene annotation.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.DataFrame</p>
-</dd>
-</dl>
-</dd></dl>
-
 <hr class="docutils" />
 <p>Another non-core function worth mentioning is <code class="code docutils literal notranslate"><span class="pre">genomepy.annotation.filter_regex</span></code>,
 which allows you to filter a dataframe by any columns using regex.</p>
 <hr class="docutils" />
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">genomepy.annotation.</span></span><span class="sig-name descname"><span class="pre">filter_regex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regex</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_match</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.core.frame.DataFrame</span></span></span></dt>
-<dd><p>Filter a pandas dataframe by a column (default: 1st, contig name).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<em>pd.Dataframe</em>) – annotation to filter (a pandas dataframe)</p></li>
-<li><p><strong>regex</strong> (<em>str</em>) – regex string to match</p></li>
-<li><p><strong>invert_match</strong> (<em>bool</em><em>, </em><em>optional</em>) – keep contigs NOT matching the regex string</p></li>
-<li><p><strong>column</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – column name or number to filter (default: 1st, contig name)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>filtered dataframe</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pd.DataFrame</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 </section>
 
 
            </div>
+           
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="help_faq.html" class="btn btn-neutral float-right" title="Frequently Asked Questions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="command_line.html" class="btn btn-neutral float-left" title="Command line documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../_autosummary/genomepy.html" class="btn btn-neutral float-right" title="genomepy" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
-      <span class="lastupdated">Last updated on 2022-09-30, 07:55 (UTC).
-      </span></p>
-  </div>
+    <p>
+        &#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
+      <span class="lastupdated">
+        Last updated on 2023-01-13, 10:18 (UTC).
+      </span>
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

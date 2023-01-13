@@ -1,6 +1,0 @@
-genomepy.config.manage\_config
-==============================
-
-.. currentmodule:: genomepy.config
-
-.. autofunction:: manage_config
