@@ -16,18 +16,16 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install 🔨
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          # python-version: 3.7
-          mamba-version: "*"
-          channels: conda-forge,bioconda,defaults
-          channel-priority: true
-          activate-environment: genomepy
-          environment-file: environment.yml
+        run: |
+          wget -O Mambaforge.sh  "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
+          bash Miniforge3.sh -b -p "${HOME}/conda"
+          source "${HOME}/conda/etc/profile.d/conda.sh"
+          source "${HOME}/conda/etc/profile.d/mamba.sh"
+          conda activate
+          mamba install --file=environment.yml --file=docs/requirements.yaml
 
       - name: Build 🔧
         run: |
-          mamba install --file docs/requirements.yaml
           sphinx-build docs build
           touch build/.nojekyll
 
