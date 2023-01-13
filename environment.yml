@@ -2,7 +2,6 @@ name: genomepy
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   # Also found in pyproject.toml
   - appdirs
@@ -14,7 +13,7 @@ dependencies:
   - loguru
   - mygene
   - mysql-connector-python
-  - norns >=0.1.5
+  - norns >=0.1.6
   - numpy
   - pandas
   - pyfaidx >=0.5.7
