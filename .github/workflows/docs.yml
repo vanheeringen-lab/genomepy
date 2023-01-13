@@ -25,6 +25,8 @@ jobs:
           source "${HOME}/conda/etc/profile.d/mamba.sh"
           conda activate
           # install requirements
+          conda config --add channels bioconda
+          conda config --add channels conda-forge
           mamba env update --name base --file environment.yml --file=docs/requirements.yaml
 
       - name: Build 🔧
