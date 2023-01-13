@@ -8,9 +8,9 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -el {0}
+    #defaults:
+    #  run:
+    #    shell: bash -el {0}
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
@@ -27,13 +27,15 @@ jobs:
           # install requirements
           conda config --add channels bioconda
           conda config --add channels conda-forge
-          mamba env update --name base --file environment.yml --file=docs/requirements.yaml
+          mamba env update --name base --file environment.yml
+          mamba env update --name base --file=docs/requirements.yaml
+          pip install .
 
       - name: Build 🔧
         run: |
           # activate mambaforge
-          source "${HOME}/conda/etc/profile.d/conda.sh"
-          source "${HOME}/conda/etc/profile.d/mamba.sh"
+          #source "${HOME}/conda/etc/profile.d/conda.sh"
+          #source "${HOME}/conda/etc/profile.d/mamba.sh"
           conda activate
           # build docs
           sphinx-build docs build
