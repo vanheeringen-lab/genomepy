@@ -8,9 +8,6 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    #defaults:
-    #  run:
-    #    shell: bash -el {0}
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
@@ -19,25 +16,31 @@ jobs:
         run: |
           # setup mambaforge
           wget -q -O Mambaforge.sh  "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
-          bash Mambaforge.sh -b -p "${HOME}/conda"
-          # activate mambaforge
-          source "${HOME}/conda/etc/profile.d/conda.sh"
+          bash Mambaforge.sh -b -p "${HOME}/conda" > /dev/null
+          #source "${HOME}/conda/etc/profile.d/conda.sh"
           source "${HOME}/conda/etc/profile.d/mamba.sh"
           mamba activate
+          
           # install requirements
-          #conda config --add channels bioconda
-          #conda config --add channels conda-forge
           mamba env create --name genomepy --file environment.yml
           mamba env update --name genomepy --file docs/requirements.yaml
           mamba activate genomepy
+          
+      - name: Install 🔨
+        run: |
+          #source "${HOME}/conda/etc/profile.d/conda.sh"
+          source "${HOME}/conda/etc/profile.d/mamba.sh"
+          mamba activate genomepy
+          #pip --disable-pip-version-check install .
           pip install .
 
       - name: Build 🔧
         run: |
           # activate mambaforge
           #source "${HOME}/conda/etc/profile.d/conda.sh"
-          #source "${HOME}/conda/etc/profile.d/mamba.sh"
+          source "${HOME}/conda/etc/profile.d/mamba.sh"
           mamba activate genomepy
+          
           # build docs
           sphinx-build docs build
           touch build/.nojekyll
