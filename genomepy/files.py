@@ -326,7 +326,7 @@ def bgzip_and_name(fname, bgzip_file=True) -> str:
         ret = sp.check_call(["bgzip", fname])
         fname += ".gz"
         if ret != 0:
-            raise Exception(f"Error bgzipping genome {fname}. Is tabix installed?")
+            raise Exception(f"Error bgzipping genome {fname}. Is pysam installed?")
     return fname
 
 

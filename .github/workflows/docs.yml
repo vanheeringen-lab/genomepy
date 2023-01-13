@@ -10,28 +10,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v2.3.1
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-
-      - name: Install dependencies 🔨
+      - name: Install & Build 📜
         run: |
-          $CONDA/bin/conda config --add channels bioconda
-          $CONDA/bin/conda config --add channels conda-forge
-          $CONDA/bin/conda install mamba
-          $CONDA/bin/mamba env update --file environment.yml --name base
-          $CONDA/bin/mamba env update --file docs/requirements.yaml --name base
-          $CONDA/bin/pip install .
+          # for spinx autosummary feature, we need to install genomepy
+        
+          # setup mambaforge
+          wget -q -O Mambaforge.sh  "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
+          bash Mambaforge.sh -b -p "${HOME}/conda" > /dev/null
+          source "${HOME}/conda/etc/profile.d/conda.sh"
+          source "${HOME}/conda/etc/profile.d/mamba.sh"
+          mamba activate
+          
+          # create a yaml with only docs requirements
+          n="$(( $(grep -n '# Plugins' environment.yml | cut -d ':' -f1) - 1 ))"
+          head environment.yml -n $n > requirements.yaml
+          
+          n="$(( $(wc -l docs/requirements.yaml | cut -d ' ' -f1) - $(grep -n 'dependencies:' environment.yml | cut -d ':' -f1) + 1 ))"
+          tail docs/requirements.yaml -n $n >> requirements.yaml
+          
+          # install requirements
+          mamba env create --name genomepy --file requirements.yaml
+          
+          # install genomepy
+          mamba activate genomepy
+          pip install . --no-deps --ignore-installed
 
-      - name: Build 🔧
-        run: |
-          $CONDA/bin/sphinx-build docs build
+          # build docs
+          sphinx-build docs build
           touch build/.nojekyll
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@4.1.4
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages # The branch the action should deploy to.
           folder: build # The folder the action should deploy.

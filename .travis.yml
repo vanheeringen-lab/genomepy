@@ -6,51 +6,28 @@ branches:
 
 # use the minimal travis environment since we test in conda
 language: minimal
-
-# dist
 dist: focal
-
 os:
   - osx
   - linux
-  
+
 env:
   global:
     - CC_TEST_REPORTER_ID=951f438ac8a0fa93801ff0bf69922df59fe03800bf7ea8ab77a3c26cda444979
-  jobs:
-    - PYTHON_VERSION=3.7
-
-cache:
-  directories:
-    - $HOME/miniconda
 
 before_install:
-  # install miniconda or use the cache
-  - if test -e $HOME/miniconda/bin; then
-      echo "Miniconda already installed";
-
-      export PATH=$HOME/miniconda/bin:$PATH;
-      conda config --set always_yes yes;
-      mamba env update -n genomepy -f environment.yml --prune;
-    fi
-  - if ! test -e $HOME/miniconda/bin; then
-      echo "Installing miniconda";
-
-      CONDA_OS=$([ "$TRAVIS_OS_NAME" = "linux" ] && echo "Linux" || echo "MacOSX");
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-${CONDA_OS}-x86_64.sh -O miniconda.sh;
-      chmod +x miniconda.sh;
-      ./miniconda.sh -b -p $HOME/miniconda -f;
-
-      export PATH=$HOME/miniconda/bin:$PATH;
-      conda config --set always_yes yes;
-      conda update -c defaults conda;
-      conda install -c conda-forge mamba;
-      mamba env create -n genomepy python=$PYTHON_VERSION -f environment.yml;
-    fi
+  # setup mambaforge
+  - wget -q -O Mambaforge.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
+  - bash Mambaforge.sh -b -p "${HOME}/conda" > /dev/null
+  - source "${HOME}/conda/etc/profile.d/conda.sh"
+  - source "${HOME}/conda/etc/profile.d/mamba.sh"
+  - mamba activate
 
 install:
-  - source activate genomepy
-  - pip install -e .
+  # install genomepy
+  - mamba env create --name genomepy --file environment.yml
+  - mamba activate genomepy
+  - pip install . --no-deps --ignore-installed
 
 before_script:
   # install codeclimate test coverage
@@ -64,9 +41,6 @@ script:
   - pytest -vvv
     --reruns 1 --reruns-delay 10
     --cov=genomepy --cov-config=tests/.coveragerc --cov-report=xml
-
-before_cache:
-  - conda clean --all
 
 after_script:
   # send the coverage data to Code Climate
