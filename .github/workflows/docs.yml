@@ -12,16 +12,16 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
 
-      - name: Install 🔨 & Build 🔧
+      - name: Install & Build 📜
         run: |
+          # for spinx autosummary feature, we need to install genomepy
+        
           # setup mambaforge
           wget -q -O Mambaforge.sh  "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
           bash Mambaforge.sh -b -p "${HOME}/conda" > /dev/null
           source "${HOME}/conda/etc/profile.d/conda.sh"
           source "${HOME}/conda/etc/profile.d/mamba.sh"
           mamba activate
-          
-          # for autosummary, we need to install genomepy
           
           # create a yaml with only docs requirements
           n="$(($(grep -n "# Plugins" environment.yml | cut -d: -f1)-1))"
