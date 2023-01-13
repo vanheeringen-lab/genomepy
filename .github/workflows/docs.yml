@@ -12,7 +12,7 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
 
-      - name: Install 🔨
+      - name: Install 🔨 & Build 🔧
         run: |
           # setup mambaforge
           wget -q -O Mambaforge.sh  "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
@@ -21,33 +21,22 @@ jobs:
           source "${HOME}/conda/etc/profile.d/mamba.sh"
           mamba activate
           
-          # create a yaml with only the docs requirements
-          stop="$(grep -n "# Plugins" environment.yml | head -n 1 | cut -d: -f1)"
-          head environment.yml -n $stop > requirements.yaml
-          echo "  - sphinx" >> requirements.yaml
-          echo "  - sphinx_rtd_theme" >> requirements.yaml
-          echo "  - m2r2 >=0.3.2" >> requirements.yaml
+          # for autosummary, we need to install genomepy
+          
+          # create a yaml with only docs requirements
+          n="$(($(grep -n "# Plugins" environment.yml | cut -d: -f1)-1))"
+          head environment.yml -n $n > requirements.yaml
+          
+          n="$(($(wc -l docs/requirements.yaml | cut -d ' ' -f1)-$(grep -n "dependencies:" environment.yml | cut -d: -f1)+1))"
+          tail docs/requirements.yaml -n $n >> requirements.yaml
           
           # install requirements
           mamba env create --name genomepy --file requirements.yaml
           
-      - name: Pip install 🐍
-        run: |
-          # activate mambaforge
-          source "${HOME}/conda/etc/profile.d/conda.sh"
-          source "${HOME}/conda/etc/profile.d/mamba.sh"
+          # install genomepy
           mamba activate genomepy
-          
-          #pip --disable-pip-version-check install .
           pip install .
 
-      - name: Build 🔧
-        run: |
-          # activate mambaforge
-          source "${HOME}/conda/etc/profile.d/conda.sh"
-          source "${HOME}/conda/etc/profile.d/mamba.sh"
-          mamba activate genomepy
-          
           # build docs
           sphinx-build docs build
           touch build/.nojekyll
