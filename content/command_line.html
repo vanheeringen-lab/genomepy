@@ -1,73 +1,36 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>Command line documentation &mdash; genomepy  documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Python API documentation (core)" href="api_core.html" />
     <link rel="prev" title="Installation" href="installation.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../index.html" class="icon icon-home"> genomepy
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -75,18 +38,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
@@ -120,75 +72,32 @@
 <li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">genomepy</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-      <li>Command line documentation</li>
-    
-    
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Command line documentation</li>
       <li class="wy-breadcrumbs-aside">
-        
-          
-            
               <a href="https://github.com/vanheeringen-lab/genomepy/blob/develop/docs/content/command_line.rst" class="fa fa-github"> Edit on GitHub</a>
-            
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <section id="command-line-documentation">
-<h1>Command line documentation<a class="headerlink" href="#command-line-documentation" title="Permalink to this heading">¶</a></h1>
+<h1>Command line documentation<a class="headerlink" href="#command-line-documentation" title="Permalink to this heading"></a></h1>
 <p>All commands come with a short explanation when appended with <code class="docutils literal notranslate"><span class="pre">-h</span></code>/<code class="docutils literal notranslate"><span class="pre">--help</span></code>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>genomepy<span class="w"> </span>--help
 Usage:<span class="w"> </span>genomepy<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
@@ -209,7 +118,7 @@ Commands:
 </pre></div>
 </div>
 <section id="search-genomes-gene-annotations">
-<h2>Search genomes &amp; gene annotations<a class="headerlink" href="#search-genomes-gene-annotations" title="Permalink to this heading">¶</a></h2>
+<h2>Search genomes &amp; gene annotations<a class="headerlink" href="#search-genomes-gene-annotations" title="Permalink to this heading"></a></h2>
 <p>Let’s say we want to download a <em>Xenopus tropicalis</em> genome &amp; gene annotation.
 First, lets find out what’s out there!</p>
 <p>You can search by name, taxonomy ID or assembly accession ID.
@@ -234,7 +143,7 @@ ASM1336827v1<span class="w">               </span>NCBI<span class="w">        </
 </div>
 </section>
 <section id="inspect-gene-annotations">
-<h2>Inspect gene annotations<a class="headerlink" href="#inspect-gene-annotations" title="Permalink to this heading">¶</a></h2>
+<h2>Inspect gene annotations<a class="headerlink" href="#inspect-gene-annotations" title="Permalink to this heading"></a></h2>
 <p>Let’s say we want to download the <em>Xenopus tropicalis</em> genome &amp; gene annotation from UCSC.</p>
 <p>Since we are interested in the gene annotation as well, we should check which gene annotation suits our needs.
 As you can see in the search results, UCSC has several gene annotations for us to choose from.
@@ -257,7 +166,7 @@ chr1<span class="w">    </span>genomepy<span class="w">        </span>exon<span 
 This differs between assemblies, so be sure to check!</p>
 </section>
 <section id="install-a-genome-gene-annotation">
-<h2>Install a genome &amp; gene annotation<a class="headerlink" href="#install-a-genome-gene-annotation" title="Permalink to this heading">¶</a></h2>
+<h2>Install a genome &amp; gene annotation<a class="headerlink" href="#install-a-genome-gene-annotation" title="Permalink to this heading"></a></h2>
 <p>Copy the name returned by the search function to install.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>genomepy<span class="w"> </span>install<span class="w"> </span>xenTro9
 </pre></div>
@@ -294,7 +203,7 @@ fasta:<span class="w"> </span>/path/to/my/genomes/sacCer3/sacCer3.fa
 </pre></div>
 </div>
 <section id="regex-masking-compression">
-<h3>Regex, masking &amp; compression<a class="headerlink" href="#regex-masking-compression" title="Permalink to this heading">¶</a></h3>
+<h3>Regex, masking &amp; compression<a class="headerlink" href="#regex-masking-compression" title="Permalink to this heading"></a></h3>
 <p>You can use a regular expression to filter for matching sequences
 (or non-matching sequences by using the <code class="docutils literal notranslate"><span class="pre">-n</span></code>/<code class="docutils literal notranslate"><span class="pre">--no-match</span></code> option).
 For instance, the following command downloads hg38 and saves only the major chromosomes:</p>
@@ -345,7 +254,7 @@ See <a class="reference external" href="#compression">Configuration</a> for deta
 </div>
 </section>
 <section id="other-providers-any-url-local-files">
-<h3>Other providers (any URL/local files)<a class="headerlink" href="#other-providers-any-url-local-files" title="Permalink to this heading">¶</a></h3>
+<h3>Other providers (any URL/local files)<a class="headerlink" href="#other-providers-any-url-local-files" title="Permalink to this heading"></a></h3>
 <p>To use assemblies not on NCBI, UCSC, Ensembl or GENCODE, you can give a URL instead of a name, together with <code class="docutils literal notranslate"><span class="pre">--provider</span> <span class="pre">URL</span></code>.
 Similarly, if you have a local FASTA file, you can install this using the filepath, together with <code class="docutils literal notranslate"><span class="pre">--provider</span> <span class="pre">Local</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>genomepy<span class="w"> </span>install<span class="w"> </span>-p<span class="w"> </span>url<span class="w"> </span>https://research.nhgri.nih.gov/hydra/download/assembly/<span class="se">\H</span>m105_Dovetail_Assembly_1.0.fa.gz
@@ -360,19 +269,19 @@ or a filepath with <code class="docutils literal notranslate"><span class="pre">
 </div>
 </section>
 <section id="reproducibility">
-<h3>Reproducibility<a class="headerlink" href="#reproducibility" title="Permalink to this heading">¶</a></h3>
+<h3>Reproducibility<a class="headerlink" href="#reproducibility" title="Permalink to this heading"></a></h3>
 <p>All selected options are stored in a <code class="docutils literal notranslate"><span class="pre">README.txt</span></code>.
 This includes the original name, download location and other genomepy operations (such as regex filtering and time).</p>
 </section>
 </section>
 <section id="plugins">
-<h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this heading">¶</a></h2>
+<h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this heading"></a></h2>
 <p>Plugins are optional steps that are executed after installing an assembly with <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">install</span></code>.
 If you already installed an assembly, you can activate a plugin and rerun the install command.
 This will not overwrite your local files, unless you use the <code class="docutils literal notranslate"><span class="pre">--force</span></code> option.</p>
 <p>Check which plugins are enabled with <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">plugin</span> <span class="pre">list</span></code>.</p>
 <section id="genome-blacklists">
-<h3>Genome blacklists<a class="headerlink" href="#genome-blacklists" title="Permalink to this heading">¶</a></h3>
+<h3>Genome blacklists<a class="headerlink" href="#genome-blacklists" title="Permalink to this heading"></a></h3>
 <p>For some model organisms, genomepy can download a genome blacklist (generated by the <a class="reference external" href="https://www.nature.com/articles/s41598-019-45839-z">Kundaje lab</a>).
 Blacklists are only available for these model organisms when downloaded from UCSC, and for the human and mouse genomes.</p>
 <p>Enable the blacklist plugin to use it:</p>
@@ -382,7 +291,7 @@ Enabled<span class="w"> </span>plugins:<span class="w"> </span>blacklist
 </div>
 </section>
 <section id="aligner-indexes">
-<h3>Aligner indexes<a class="headerlink" href="#aligner-indexes" title="Permalink to this heading">¶</a></h3>
+<h3>Aligner indexes<a class="headerlink" href="#aligner-indexes" title="Permalink to this heading"></a></h3>
 <p>You can also create aligner indexes for several widely used aligners.
 Currently, genomepy supports:</p>
 <ul class="simple">
@@ -408,7 +317,7 @@ Enabled<span class="w"> </span>plugins:<span class="w"> </span>blacklist,<span c
 </section>
 </section>
 <section id="id1">
-<h2>Configuration<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
+<h2>Configuration<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
 <p>All defaults can be overwritten on the command line and in Python.
 However, you can create &amp; edit the config file to change the default settings:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>genomepy<span class="w"> </span>config<span class="w"> </span>generate
@@ -416,7 +325,7 @@ Created<span class="w"> </span>config<span class="w"> </span>file<span class="w"
 </pre></div>
 </div>
 <section id="genome-location">
-<h3>Genome location<a class="headerlink" href="#genome-location" title="Permalink to this heading">¶</a></h3>
+<h3>Genome location<a class="headerlink" href="#genome-location" title="Permalink to this heading"></a></h3>
 <p>By default, genomes will be saved in <code class="docutils literal notranslate"><span class="pre">~/.local/share/genomes</span></code>.</p>
 <p>To set the default genome directory, to <code class="docutils literal notranslate"><span class="pre">/data/genomes</span></code> for instance,
 edit <code class="docutils literal notranslate"><span class="pre">~/.config/genomepy/genomepy.yaml</span></code> and change the following line:</p>
@@ -425,7 +334,7 @@ edit <code class="docutils literal notranslate"><span class="pre">~/.config/geno
 </div>
 </section>
 <section id="compression">
-<h3>Compression<a class="headerlink" href="#compression" title="Permalink to this heading">¶</a></h3>
+<h3>Compression<a class="headerlink" href="#compression" title="Permalink to this heading"></a></h3>
 <p>Genome FASTA files can be stored using bgzip compression.
 This means that the FASTA files will take up less space on disk.
 Set the following line to your config file:</p>
@@ -439,7 +348,7 @@ which comes installed with genomepy.</p>
 </section>
 </section>
 <section id="list-available-providers">
-<h2>List available providers<a class="headerlink" href="#list-available-providers" title="Permalink to this heading">¶</a></h2>
+<h2>List available providers<a class="headerlink" href="#list-available-providers" title="Permalink to this heading"></a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>genomepy<span class="w"> </span>providers
 GENCODE
 Ensembl
@@ -451,7 +360,7 @@ URL
 </div>
 </section>
 <section id="list-available-genomes">
-<h2>List available genomes<a class="headerlink" href="#list-available-genomes" title="Permalink to this heading">¶</a></h2>
+<h2>List available genomes<a class="headerlink" href="#list-available-genomes" title="Permalink to this heading"></a></h2>
 <p>You can constrain the genome list by using the <code class="docutils literal notranslate"><span class="pre">-p</span></code>/<code class="docutils literal notranslate"><span class="pre">--provider</span></code> option to search only a specific provider.
 Additionally, you can get the absolute <code class="docutils literal notranslate"><span class="pre">--size</span></code> of each genome (this option slows down the search).</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>genomepy<span class="w"> </span>genomes<span class="w"> </span>-p<span class="w"> </span>UCSC
@@ -464,7 +373,7 @@ anoCar1<span class="w">                 </span>UCSC<span class="w">        </spa
 </div>
 </section>
 <section id="local-cache">
-<h2>Local cache.<a class="headerlink" href="#local-cache" title="Permalink to this heading">¶</a></h2>
+<h2>Local cache.<a class="headerlink" href="#local-cache" title="Permalink to this heading"></a></h2>
 <p>Note that the first time you run <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">search</span></code> or <code class="docutils literal notranslate"><span class="pre">list</span></code>
 the command will take a while as the genome lists have to be downloaded.
 The lists are cached locally, which will save time later.
@@ -475,53 +384,35 @@ You can also delete this directory to clean the cache using <code class="docutil
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="api_core.html" class="btn btn-neutral float-right" title="Python API documentation (core)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api_core.html" class="btn btn-neutral float-right" title="Python API documentation (core)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
-      <span class="lastupdated">
-        Last updated on 2023-01-13, 11:55 (UTC).
-      </span>
-
-    </p>
+    <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
+      <span class="lastupdated">Last updated on 2023-01-13, 14:50 (UTC).
+      </span></p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

@@ -3,7 +3,7 @@
 # Generating the docs
 
 ## Run
-* `sphinx-build docs build`
+* `sphinx-build docs build -W`
 * open/refresh `build/index.html` in your browser (site did not refresh if the url ends with "#")
 * if changes were made to the README.md in the root directory,
 check that the lines still match in the various content pages.
@@ -12,7 +12,7 @@ check that the lines still match in the various content pages.
 ### install dependencies
 * `mamba env update --file environment.yml`
 * `mamba env update --file docs/requirements.yaml`
-* `pip install -e .`
+* `pip install -e . --no-deps --ignore-installed`
 
 ### follow guides:
 * https://eikonomega.medium.com/getting-started-with-sphinx-autodoc-part-1-2cebbbca5365

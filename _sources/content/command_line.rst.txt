@@ -4,7 +4,7 @@ Command line documentation
 
 .. mdinclude:: ../../README.md
    :start-line: 102
-   :end-line: 425
+   :end-line: 424
 
 ..
    note: start- and end-line are 0-indexed.
