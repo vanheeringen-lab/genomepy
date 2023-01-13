@@ -22,7 +22,7 @@ jobs:
           source "${HOME}/conda/etc/profile.d/conda.sh"
           source "${HOME}/conda/etc/profile.d/mamba.sh"
           conda activate
-          mamba install --file=environment.yml --file=docs/requirements.yaml
+          mamba env update --name base --file environment.yml --file=docs/requirements.yaml
 
       - name: Build 🔧
         run: |
