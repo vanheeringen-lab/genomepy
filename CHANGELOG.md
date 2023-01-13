@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 - disabling already disabled plugins no longer thows an error
+- bgzipping in python>3.7 (openssl shenanigans. tabix was deprecated for htslib)
 
 ## [0.14.0] - 2022-08-01
 

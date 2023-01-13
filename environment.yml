@@ -22,7 +22,7 @@ dependencies:
   - tqdm >=4.51
 
   # Bgzip
-  - tabix
+  - htslib >=1.11
 
   # Annotation downloading
   - ucsc-bedtogenepred

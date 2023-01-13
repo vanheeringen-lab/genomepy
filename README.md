@@ -62,7 +62,7 @@ $ pip install genomepy
 
 With the Pip installation, you will have to install additional dependencies, and make them available in your PATH.
 
-To read/write bgzipped genomes you will have to install `tabix`.
+To read/write bgzipped genomes you will have to install `pysam`.
 
 If you want to use gene annotation features, you will have to install the following utilities:
 
