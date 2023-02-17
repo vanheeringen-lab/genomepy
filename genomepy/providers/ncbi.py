@@ -8,7 +8,7 @@ import pandas as pd
 from loguru import logger
 from tqdm.auto import tqdm
 
-from genomepy.caching import cache_exp_long, disk_cache, lock
+from genomepy.caching import cache_exp_genomes, disk_cache, lock
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.online import check_url, read_url
 from genomepy.providers.base import BaseProvider
@@ -202,7 +202,7 @@ class NcbiProvider(BaseProvider):
 
 
 @lock
-@disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ncbi")
+@disk_cache.memoize(expire=cache_exp_genomes, tag="get_genomes-ncbi")
 def get_genomes(assembly_url):
     """Parse genomes from assembly summary txt files."""
     logger.info("Downloading assembly summaries from NCBI, this will take a while...")

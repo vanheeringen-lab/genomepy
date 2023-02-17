@@ -36,7 +36,9 @@ if not skip:
         """
         mask = masking if masking != "unmasked" else "none"
         for genome in ["Amel_HAv3.1", "ASM23943v1"]:
-            assert ensembl.get_genome_download_link(genome, mask=mask)
+            assert ensembl.get_genome_download_link(
+                genome, mask=mask, **{"version": 55}
+            )
 
     def test_ucsc_genome_download_links(masking, ucsc):
         """Test UCSC HTTP links for various genomes
