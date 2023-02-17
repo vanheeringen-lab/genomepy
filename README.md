@@ -416,10 +416,10 @@ anoCar1                 UCSC        na                  28377      ✗ ✗ ✓ �
 
 ### Local cache.
 
-Note that the first time you run `genomepy search` or `list`
-the command will take a while as the genome lists have to be downloaded.
+Note that the first time you run `genomepy search` or `list` the command will take a while as the genome lists have to be downloaded.
 The lists are cached locally, which will save time later.
-The cached files are stored in `~/.cache/genomepy` and expire after 7 days.
+The cached files are stored in `~/.cache/genomepy` and expire after 7 days (so they stay up to date).
+This expiration time can be changed in the config file.
 You can also delete this directory to clean the cache using `genomepy clean`.
 
 ## Python API
