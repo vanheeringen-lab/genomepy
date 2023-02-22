@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- you can now tune the cache expiration time in the config
+  - create a config with `genomepy config generate`, then tweak the values as desired.
+
 ### Fixed
 - disabling already disabled plugins no longer thows an error
 - bgzipping in python>3.7 (openssl shenanigans. tabix was deprecated for htslib)
