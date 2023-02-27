@@ -96,13 +96,14 @@ def list_installed_genomes(genomes_dir: str = None) -> list:
         genome names
     """
     genomes_dir = get_genomes_dir(genomes_dir, check_exist=False)
-    if os.path.exists(genomes_dir):
-        return [
-            subdir
-            for subdir in os.listdir(genomes_dir)
-            if _is_genome_dir(os.path.join(genomes_dir, subdir))
-        ]
-    return []
+    if not os.path.exists(genomes_dir):
+        return []
+
+    installed_genomes = []
+    for subdir in sorted(os.listdir(genomes_dir)):
+        if _is_genome_dir(os.path.join(genomes_dir, subdir)):
+            installed_genomes.append(subdir)
+    return installed_genomes
 
 
 def install_genome(
@@ -278,11 +279,15 @@ def install_genome(
 
     # zip files downloaded now
     if bgzip is True or (bgzip is None and config.get("bgzip")):
-        if genome_downloaded:
-            bgzip_and_name(genome.filename)
         if annotation_downloaded:
             gzip_and_name(annotation.annotation_gtf_file)
             gzip_and_name(annotation.annotation_bed_file)
+        if genome_downloaded:
+            bgzipped_genome = bgzip_and_name(genome.filename)
+
+            # update references to bgzipped files
+            genome = Genome(bgzipped_genome, genomes_dir=genomes_dir)
+            generate_env(genomes_dir=genomes_dir)
 
     return genome
 

@@ -11,8 +11,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
   - create a config with `genomepy config generate`, then tweak the values as desired.
 
 ### Fixed
-- disabling already disabled plugins no longer thows an error
-- bgzipping in python>3.7 (openssl shenanigans. tabix was deprecated for htslib)
+- disabling already disabled plugins no longer throws an error
+- bgzipping fixes:
+  - bgzip works again with python>3.7 (openssl shenanigans. tabix was deprecated for htslib)
+  - genome index works with `genome install --bgzip` (a 2nd is created with the correct naming format)
+  - export file works with `genome install --bgzip`
+  - `genomepy.install_genome(bgzip=True)` returns a Genome class instance with correct paths
 
 ## [0.14.0] - 2022-08-01
 
