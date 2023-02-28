@@ -29,11 +29,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> genomepy
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            genomepy
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -85,7 +89,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Command line documentation</li>
       <li class="wy-breadcrumbs-aside">
               <a href="https://github.com/vanheeringen-lab/genomepy/blob/develop/docs/content/command_line.rst" class="fa fa-github"> Edit on GitHub</a>
@@ -374,10 +378,10 @@ anoCar1<span class="w">                 </span>UCSC<span class="w">        </spa
 </section>
 <section id="local-cache">
 <h2>Local cache.<a class="headerlink" href="#local-cache" title="Permalink to this heading"></a></h2>
-<p>Note that the first time you run <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">search</span></code> or <code class="docutils literal notranslate"><span class="pre">list</span></code>
-the command will take a while as the genome lists have to be downloaded.
+<p>Note that the first time you run <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">search</span></code> or <code class="docutils literal notranslate"><span class="pre">list</span></code> the command will take a while as the genome lists have to be downloaded.
 The lists are cached locally, which will save time later.
-The cached files are stored in <code class="docutils literal notranslate"><span class="pre">~/.cache/genomepy</span></code> and expire after 7 days.
+The cached files are stored in <code class="docutils literal notranslate"><span class="pre">~/.cache/genomepy</span></code> and expire after 7 days (so they stay up to date).
+This expiration time can be changed in the config file.
 You can also delete this directory to clean the cache using <code class="docutils literal notranslate"><span class="pre">genomepy</span> <span class="pre">clean</span></code>.</p>
 </section>
 </section>
@@ -394,7 +398,7 @@ You can also delete this directory to clean the cache using <code class="docutil
 
   <div role="contentinfo">
     <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
-      <span class="lastupdated">Last updated on 2023-01-13, 19:22 (UTC).
+      <span class="lastupdated">Last updated on 2023-02-28, 12:48 (UTC).
       </span></p>
   </div>
 

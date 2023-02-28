@@ -1,0 +1,6 @@
+genomepy.utils.check\_ucsc\_tools
+=================================
+
+.. currentmodule:: genomepy.utils
+
+.. autofunction:: check_ucsc_tools

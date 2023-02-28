@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>genomepy.online.retry &mdash; genomepy  documentation</title>
+  <title>genomepy.utils.check_ucsc_tools &mdash; genomepy  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -20,8 +20,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="genomepy.plugins" href="genomepy.plugins.html" />
-    <link rel="prev" title="genomepy.online.read_url" href="genomepy.online.read_url.html" /> 
+    <link rel="next" title="genomepy.utils.cleanpath" href="genomepy.utils.cleanpath.html" />
+    <link rel="prev" title="genomepy.utils" href="genomepy.utils.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -58,21 +58,29 @@
 <li class="toctree-l2"><a class="reference internal" href="genomepy.files.html">genomepy.files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="genomepy.functions.html">genomepy.functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="genomepy.genome.html">genomepy.genome</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="genomepy.online.html">genomepy.online</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="genomepy.online.check_url.html">genomepy.online.check_url</a></li>
-<li class="toctree-l3"><a class="reference internal" href="genomepy.online.connect_ftp_link.html">genomepy.online.connect_ftp_link</a></li>
-<li class="toctree-l3"><a class="reference internal" href="genomepy.online.download_file.html">genomepy.online.download_file</a></li>
-<li class="toctree-l3"><a class="reference internal" href="genomepy.online.read_url.html">genomepy.online.read_url</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">genomepy.online.retry</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#genomepy.online.retry"><code class="docutils literal notranslate"><span class="pre">retry()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="genomepy.online.html">genomepy.online</a></li>
 <li class="toctree-l2"><a class="reference internal" href="genomepy.plugins.html">genomepy.plugins</a></li>
 <li class="toctree-l2"><a class="reference internal" href="genomepy.providers.html">genomepy.providers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="genomepy.seq.html">genomepy.seq</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genomepy.utils.html">genomepy.utils</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="genomepy.utils.html">genomepy.utils</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">genomepy.utils.check_ucsc_tools</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#genomepy.utils.check_ucsc_tools"><code class="docutils literal notranslate"><span class="pre">check_ucsc_tools()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.cleanpath.html">genomepy.utils.cleanpath</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.cmd_ok.html">genomepy.utils.cmd_ok</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.get_genomename.html">genomepy.utils.get_genomename</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.get_genomes_dir.html">genomepy.utils.get_genomes_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.get_localname.html">genomepy.utils.get_localname</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.get_remotename.html">genomepy.utils.get_remotename</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.lower.html">genomepy.utils.lower</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.mkdir_p.html">genomepy.utils.mkdir_p</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.rm_rf.html">genomepy.utils.rm_rf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.run_index_cmd.html">genomepy.utils.run_index_cmd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.safe.html">genomepy.utils.safe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="genomepy.utils.try_except_pass.html">genomepy.utils.try_except_pass</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../content/help_faq.html">FAQ</a></li>
@@ -94,10 +102,10 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="genomepy.html">genomepy</a></li>
-          <li class="breadcrumb-item"><a href="genomepy.online.html">genomepy.online</a></li>
-      <li class="breadcrumb-item active">genomepy.online.retry</li>
+          <li class="breadcrumb-item"><a href="genomepy.utils.html">genomepy.utils</a></li>
+      <li class="breadcrumb-item active">genomepy.utils.check_ucsc_tools</li>
       <li class="wy-breadcrumbs-aside">
-              <a href="https://github.com/vanheeringen-lab/genomepy/blob/develop/docs/_autosummary/genomepy.online.retry.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/vanheeringen-lab/genomepy/blob/develop/docs/_autosummary/genomepy.utils.check_ucsc_tools.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -105,13 +113,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="genomepy-online-retry">
-<h1>genomepy.online.retry<a class="headerlink" href="#genomepy-online-retry" title="Permalink to this heading"></a></h1>
+  <section id="genomepy-utils-check-ucsc-tools">
+<h1>genomepy.utils.check_ucsc_tools<a class="headerlink" href="#genomepy-utils-check-ucsc-tools" title="Permalink to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="genomepy.online.retry">
-<span class="sig-prename descclassname"><span class="pre">genomepy.online.</span></span><span class="sig-name descname"><span class="pre">retry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tries</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.online.retry" title="Permalink to this definition"></a></dt>
-<dd><p>Retry functions with potential connection errors.</p>
-<p>args and kwargs are passed to func.</p>
+<dt class="sig sig-object py" id="genomepy.utils.check_ucsc_tools">
+<span class="sig-prename descclassname"><span class="pre">genomepy.utils.</span></span><span class="sig-name descname"><span class="pre">check_ucsc_tools</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tools</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.utils.check_ucsc_tools" title="Permalink to this definition"></a></dt>
+<dd><p>Check if UCSC tools for gene annotation conversion are installed.
+These tools are installed by Bioconda, but not by Pip.</p>
 </dd></dl>
 
 </section>
@@ -120,8 +128,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="genomepy.online.read_url.html" class="btn btn-neutral float-left" title="genomepy.online.read_url" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="genomepy.plugins.html" class="btn btn-neutral float-right" title="genomepy.plugins" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="genomepy.utils.html" class="btn btn-neutral float-left" title="genomepy.utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="genomepy.utils.cleanpath.html" class="btn btn-neutral float-right" title="genomepy.utils.cleanpath" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
