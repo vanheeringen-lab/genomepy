@@ -6,9 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.15.0] - 2023-02-28
+
+### Added
+- you can now tune the cache expiration time in the config
+  - create a config with `genomepy config generate`, then tweak the values as desired.
+- support for biopython >=1.80 with pyfaidx update
+- raise an informative error when UCSC tools are missing
+  - this should only happen in Pip installations
+
 ### Fixed
-- disabling already disabled plugins no longer thows an error
-- bgzipping in python>3.7 (openssl shenanigans. tabix was deprecated for htslib)
+- disabling already disabled plugins no longer throws an error
+- bgzipping fixes:
+  - bgzip works again with python>3.7 (openssl shenanigans. tabix was deprecated for htslib)
+  - genome index works with `genome install --bgzip` (a 2nd is created with the correct naming format)
+  - export file works with `genome install --bgzip`
+  - `genomepy.install_genome(bgzip=True)` returns a Genome class instance with correct paths
 
 ## [0.14.0] - 2022-08-01
 
@@ -435,6 +448,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.15.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.14.0...0.15.0
 [0.14.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.13.1...0.14.0
 [0.13.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.13.0...0.13.1
 [0.13.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.12.0...0.13.0

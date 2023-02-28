@@ -126,7 +126,7 @@ def get_remotename(name):
 
 
 def safe(name: Any) -> str:
-    """Replace spaces with undescores."""
+    """Replace spaces with underscores."""
     return str(name).strip().replace(" ", "_")
 
 
@@ -172,3 +172,21 @@ def try_except_pass(errors, func, *args, **kwargs):
         return func(*args, **kwargs)
     except errors:
         pass
+
+
+def check_ucsc_tools(tools: list = None):
+    """
+    Check if UCSC tools for gene annotation conversion are installed.
+    These tools are installed by Bioconda, but not by Pip.
+    """
+    # check only one tool for simplicity
+    if tools is None:
+        tools = ["genePredToGtf"]
+
+    for tool in tools:
+        if shutil.which(tool) is None:
+            raise OSError(
+                "Installing gene annotations requires missing UCSC tools. "
+                "See https://github.com/vanheeringen-lab/genomepy#pip "
+                "for download links and details."
+            )

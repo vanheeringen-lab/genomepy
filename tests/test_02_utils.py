@@ -120,3 +120,10 @@ def test_try_except_pass():
     # unexpected error is not caught
     with pytest.raises(ValueError):
         genomepy.utils.try_except_pass(FileNotFoundError, raise_error)
+
+
+def test_check_ucsc_tools():
+    genomepy.utils.check_ucsc_tools()
+
+    with pytest.raises(OSError):
+        genomepy.utils.check_ucsc_tools(["this_tool_does_not_exist_1234567890"])

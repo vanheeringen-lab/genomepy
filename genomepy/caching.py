@@ -7,12 +7,22 @@ from diskcache import Cache
 from filelock import FileLock
 
 from genomepy.__about__ import __version__
+from genomepy.config import config
 from genomepy.utils import rm_rf
 
-# Set short/long cache expiration times (in seconds)
-cache_exp_short = 3.6e3
-cache_exp_long = 8.64e4
 
+def _cast(var):
+    if str(var).lower() == "none":
+        return None
+    try:
+        return float(var)
+    except ValueError:
+        return var
+
+
+# Set short/long cache expiration times (in seconds)
+cache_exp_other = _cast(config.get("cache_exp_other", 3.6e3))
+cache_exp_genomes = _cast(config.get("cache_exp_genomes", 6.048e5))
 
 genomepy_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
 os.makedirs(genomepy_cache_dir, exist_ok=True)

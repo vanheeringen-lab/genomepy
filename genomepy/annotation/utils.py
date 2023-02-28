@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from genomepy.files import _open, extracted_file, gzip_and_name
-from genomepy.utils import rm_rf
+from genomepy.utils import check_ucsc_tools, rm_rf
 
 GTF_FORMAT = [
     "seqname",
@@ -136,6 +136,8 @@ def generate_annot(template, target, overwrite=False):
     overwrite: bool, optional
         overwrite existing target file?
     """
+    check_ucsc_tools()
+
     exts = os.path.basename(template.lower()).split(".")
     exts = [e for e in exts if e in ["gtf", "bed"]]
     if len(exts) == 0:

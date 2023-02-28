@@ -10,13 +10,20 @@ import pandas as pd
 import requests
 from loguru import logger
 
-from genomepy.caching import cache_exp_long, disk_cache, lock
+from genomepy.caching import cache_exp_genomes, disk_cache, lock
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import update_readme
 from genomepy.online import check_url, read_url
 from genomepy.providers.base import BaseProvider
 from genomepy.providers.ncbi import NcbiProvider, get_genome_size
-from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf
+from genomepy.utils import (
+    check_ucsc_tools,
+    get_genomes_dir,
+    get_localname,
+    lower,
+    mkdir_p,
+    rm_rf,
+)
 
 # order determines which annotation genomepy will attempt to install
 # for more info, see http://genome.ucsc.edu/FAQ/FAQgenes.html
@@ -393,7 +400,7 @@ class UcscProvider(BaseProvider):
 
 
 @lock
-@disk_cache.memoize(expire=cache_exp_long, tag="get_genomes-ucsc")
+@disk_cache.memoize(expire=cache_exp_genomes, tag="get_genomes-ucsc")
 def get_genomes(rest_url):
     logger.info("Downloading assembly summaries from UCSC")
 
@@ -535,6 +542,8 @@ def download_annotation(name, annot, genomes_dir, localname, n=None):
     Download the extended genePred file from the UCSC MySQL database.
     Next convert this to a BED and GTF file.
     """
+    check_ucsc_tools()
+
     out_dir = os.path.join(genomes_dir, localname)
     mkdir_p(out_dir)
     tmp_dir = mkdtemp(dir=out_dir)
@@ -591,7 +600,7 @@ def download_annotation(name, annot, genomes_dir, localname, n=None):
 
 
 @lock
-@disk_cache.memoize(expire=cache_exp_long, tag="scrape_accession-ucsc")
+@disk_cache.memoize(expire=cache_exp_genomes, tag="scrape_accession-ucsc")
 def scrape_accession(htmlpath: str) -> str or None:
     """
     Attempt to scrape the assembly accession (`GCA_`/`GCF_`) from a genome's readme.html,
@@ -604,7 +613,7 @@ def scrape_accession(htmlpath: str) -> str or None:
 
     Returns
     ------
-    str
+    str or None
         Assembly accession or 'na'
     """
     ucsc_url = f"https://hgdownload.soe.ucsc.edu/{htmlpath}"

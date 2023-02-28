@@ -5,7 +5,7 @@ channels:
 dependencies:
   # Also found in pyproject.toml
   - appdirs
-  - biopython >=1.73, <1.80  # for pyfaidx (biopython 1.80 requires pyfaidx >0.7.1)
+  - biopython >=1.73
   - diskcache
   - click
   - colorama
@@ -16,7 +16,7 @@ dependencies:
   - norns >=0.1.6
   - numpy
   - pandas
-  - pyfaidx >=0.5.7
+  - pyfaidx >=0.7.2.1
   - python >=3.7
   - requests
   - tqdm >=4.51
