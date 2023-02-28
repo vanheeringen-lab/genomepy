@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - you can now tune the cache expiration time in the config
   - create a config with `genomepy config generate`, then tweak the values as desired.
 - support for biopython >=1.80 with pyfaidx update
+- raise an informative error when UCSC tools are missing
+  - this should only happen in Pip installations
 
 ### Fixed
 - disabling already disabled plugins no longer throws an error

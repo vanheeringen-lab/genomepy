@@ -17,7 +17,14 @@ from genomepy.annotation.utils import read_annot, write_annot
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import extract_archive, get_file_info, update_readme
 from genomepy.online import download_file
-from genomepy.utils import get_genomes_dir, get_localname, mkdir_p, rm_rf, safe
+from genomepy.utils import (
+    check_ucsc_tools,
+    get_genomes_dir,
+    get_localname,
+    mkdir_p,
+    rm_rf,
+    safe,
+)
 
 
 class BaseProvider:
@@ -410,6 +417,8 @@ class BaseProvider:
 
 def download_annotation(genomes_dir, annot_url, localname, n=None):
     """download annotation file, convert to intermediate file and generate output files"""
+
+    check_ucsc_tools()
 
     # create output directory if missing
     out_dir = os.path.join(genomes_dir, localname)

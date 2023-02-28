@@ -16,7 +16,14 @@ from genomepy.files import update_readme
 from genomepy.online import check_url, read_url
 from genomepy.providers.base import BaseProvider
 from genomepy.providers.ncbi import NcbiProvider, get_genome_size
-from genomepy.utils import get_genomes_dir, get_localname, lower, mkdir_p, rm_rf
+from genomepy.utils import (
+    check_ucsc_tools,
+    get_genomes_dir,
+    get_localname,
+    lower,
+    mkdir_p,
+    rm_rf,
+)
 
 # order determines which annotation genomepy will attempt to install
 # for more info, see http://genome.ucsc.edu/FAQ/FAQgenes.html
@@ -535,6 +542,8 @@ def download_annotation(name, annot, genomes_dir, localname, n=None):
     Download the extended genePred file from the UCSC MySQL database.
     Next convert this to a BED and GTF file.
     """
+    check_ucsc_tools()
+
     out_dir = os.path.join(genomes_dir, localname)
     mkdir_p(out_dir)
     tmp_dir = mkdtemp(dir=out_dir)
@@ -604,7 +613,7 @@ def scrape_accession(htmlpath: str) -> str or None:
 
     Returns
     ------
-    str
+    str or None
         Assembly accession or 'na'
     """
     ucsc_url = f"https://hgdownload.soe.ucsc.edu/{htmlpath}"
