@@ -9,9 +9,9 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/maintainability)](https://codeclimate.com/github/vanheeringen-lab/genomepy/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/test_coverage)](https://codeclimate.com/github/vanheeringen-lab/genomepy/test_coverage)
 
-[![arXiv](https://img.shields.io/badge/arXiv-10.48550/arXiv.2209.00842-b31b1b.svg)](https://doi.org/10.48550/arXiv.2209.00842)
-[![status](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd/status.svg)](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1010458.svg)](https://doi.org/10.5281/zenodo.1010458)
+[![bioinformatics](https://img.shields.io/badge/DOI-10.1093%2Fbioinformatics%2Fbtad119-%23167da4)](https://doi.org/10.1093/bioinformatics/btad119)
+[![zenodo](https://zenodo.org/badge/DOI/10.5281/zenodo.1010458.svg)](https://doi.org/10.5281/zenodo.1010458)
+<!--- [![arXiv](https://img.shields.io/badge/arXiv-10.48550/arXiv.2209.00842-b31b1b.svg)](https://doi.org/10.48550/arXiv.2209.00842) [![status](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd/status.svg)](http://joss.theoj.org/papers/df434a15edd00c8c2f4076668575d1cd) -->
 
 genomepy is designed to provide a _simple_ and _straightforward_ way to download and use genomic data.
 This includes (1) searching available data, 
