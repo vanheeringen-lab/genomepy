@@ -355,7 +355,7 @@ You can pass the number of threads to use for aligner index creation with `genom
 ### Configuration
 
 All defaults can be overwritten on the command line and in Python.
-However, you can create & edit the config file to change the default settings:
+However, you can create & edit the config file to change the default settings ([full description](https://vanheeringen-lab.github.io/genomepy/content/config.html)):
 
 ```bash
 $ genomepy config generate
