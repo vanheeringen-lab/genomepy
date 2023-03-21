@@ -5,7 +5,7 @@ Configuration
 Genomepy uses many configurable options.
 The default setting for several options can be overwritten using a config file.
 
-You can create new config file can be created with `genomepy config generate`,
+You can create new config file with `genomepy config generate`,
 or find the location of your current config file with `genomepy config file`.
 
 Configurable options
