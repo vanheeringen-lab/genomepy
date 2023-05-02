@@ -183,6 +183,29 @@ def test_filter_regex():
     genomepy.utils.rm_rf(gtf_file)
 
 
+def test_attributes():
+    a = genomepy.annotation.Annotation("GRCz11", genomes_dir="tests/data")
+    att = a.attributes()
+    print(att)
+    assert att == [
+        "exon_id",
+        "exon_number",
+        "exon_version",
+        "gene_biotype",
+        "gene_id",
+        "gene_name",
+        "gene_source",
+        "gene_version",
+        "protein_id",
+        "protein_version",
+        "transcript_biotype",
+        "transcript_id",
+        "transcript_name",
+        "transcript_source",
+        "transcript_version",
+    ]
+
+
 def test_gtf_dict():
     a = genomepy.annotation.Annotation("GRCz11", genomes_dir="tests/data")
     gid2gname = a.gtf_dict("gene_id", "gene_name")
