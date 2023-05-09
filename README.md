@@ -51,7 +51,7 @@ You can install genomepy via [bioconda](https://bioconda.github.io/), pip or git
 #### Bioconda
 
 ```bash
-$ conda install -c bioconda genomepy
+$ conda install -c conda-forge -c bioconda 'genomepy>=0.15'
 ``` 
 
 #### Pip
