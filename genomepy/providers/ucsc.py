@@ -20,7 +20,6 @@ from genomepy.utils import (
     check_ucsc_tools,
     get_genomes_dir,
     get_localname,
-    lower,
     mkdir_p,
     rm_rf,
 )
@@ -64,7 +63,7 @@ class UcscProvider(BaseProvider):
         api_online = bool(check_url("http://api.genome.ucsc.edu/list/ucscGenomes"))
         return url_online and api_online
 
-    def _search_accession(self, term: str) -> Iterator[str]:
+    def _search_accession(self, term: str, exact=False) -> Iterator[str]:
         """
         UCSC does not always store assembly accessions.
         If no hits were found, search accession on NCBI (most genomes + stable accession IDs),
@@ -79,58 +78,48 @@ class UcscProvider(BaseProvider):
         ------
         genome names
         """
-        # cut off prefix (GCA_/GCF_) and suffix (version numbers, e.g. '.3')
-        term = term[4:].split(".")[0]
-        hits = 0
+        # cut off prefix (GCA/GCF) and suffix (version numbers, e.g. '.3')
+        term = term.upper() if exact else term[3:].split(".")[0]
+        hits = False
         for name, metadata in self.genomes.items():
             if any([term in str(metadata[f]) for f in self.accession_fields]):
-                hits += 1
+                hits = True
                 yield name
 
         # search NCBI only if we found no local hits
-        if hits == 0:
-            return self._search_accession_ncbi(term)
+        if hits is False:
+            yield from self._search_accession_ncbi(term, exact)
 
-    def _search_accession_ncbi(self, term: str) -> Iterator[str]:
+    def _search_accession_ncbi(self, term: str, exact=False) -> Iterator[str]:
         """
         search NCBI (most genomes + stable accession IDs),
-        then uses the NCBI accession search results for a UCSC text search.
+        then uses the NCBI accession search results for a UCSC taxonomy search.
 
         Parameters
         ----------
         term : str
             Assembly accession, `GCA_`/`GCF_`
 
-        Yields
-        ------
+        Returns
+        -------
         genome names
         """
         # NCBI provides a consistent assembly accession. This can be used to
         # retrieve the species, and then search for that.
         p = NcbiProvider()
-        ncbi_genomes = list(p._search_accession(term))
+        ncbi_genomes = p._search_accession(term, exact)
+        tax_ids = set(p.genome_taxid(g) for g in ncbi_genomes)
 
-        # remove superstrings (keep GRCh38, not GRCh38.p1 to GRCh38.p13)
-        unique_ncbi_genomes = []
-        for i in ncbi_genomes:
-            if sum([j in i for j in ncbi_genomes]) == 1:
-                unique_ncbi_genomes.append(i)
-
-        # add NCBI organism names to search terms
-        organism_names = [
-            p.genomes[name]["organism_name"] for name in unique_ncbi_genomes
-        ]
-        terms = list(set(unique_ncbi_genomes + organism_names))
-
-        # search with NCBI results in the given provider
-        for name, metadata in self.genomes.items():
-            for term in terms:
-                term = lower(term)
-                if term in lower(name) or any(
-                    [term in lower(metadata[f]) for f in self.description_fields]
-                ):
-                    yield name
-                    break  # max one hit per genome
+        names = []
+        for tax_id in tax_ids:
+            for name in self._search_taxonomy(str(tax_id), exact=True):
+                names.append(name)
+                if exact and "." in term:
+                    # now that we have names, we can try to scrape for accession IDs
+                    # with an exact hit
+                    if term == self.assembly_accession(name):
+                        return [name]
+        return names
 
     def assembly_accession(self, name: str) -> str or None:
         """

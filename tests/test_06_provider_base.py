@@ -162,23 +162,26 @@ def test_head_annotation(ncbi, caplog, capsys):
 
 
 def test__search_text(ucsc):
-    term = "Ailuropoda melanoleuca"
     assert list(ucsc._search_text("not_in_description")) == []
-    assert next(ucsc._search_text(term)) == "ailMel1"
+    assert list(ucsc._search_text("xenTro1")) == ["xenTro1", "xenTro10"]
+    assert list(ucsc._search_text("xenTro1", exact=True)) == ["xenTro1"]
 
 
 def test__search_accession(ncbi):
     assert list(ncbi._search_accession("not_an_id")) == []
-    assert next(ncbi._search_accession("GCA_000004335.1")) == "AilMel_1.0"
+    assert list(ncbi._search_accession("GCA_000004335.1", exact=True)) == ["AilMel_1.0"]
 
 
 def test__search_taxonomy(ucsc):
     assert list(ucsc._search_taxonomy("not_an_id")) == []
-    assert next(ucsc._search_taxonomy("9646")) == "ailMel1"
+    assert list(ucsc._search_taxonomy("306")) == ["micMur1", "micMur2", "otoGar3"]
+    assert list(ucsc._search_taxonomy("306", exact=True)) == []
+    assert list(ucsc._search_taxonomy("30611", exact=True)) == ["otoGar3"]
 
 
 def test_search(ucsc):
-    for method in ["ailMel1", "9646", "Ailuropoda melanoleuca"]:
-        genome = next(ucsc.search(method))
-        assert genome[0] == "ailMel1"
-        assert isinstance(genome, tuple)
+    for method in ["ailMel1", "9646", "GCF_000004335.2", "Ailuropoda melanoleuca"]:
+        genomes = list(ucsc.search(method, exact=True))
+        assert len(genomes) == 1
+        assert genomes[0][0] == "ailMel1"
+        assert isinstance(genomes[0], tuple)

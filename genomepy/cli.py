@@ -393,8 +393,9 @@ else:
 @click.command(short_help="search for genomes")
 @click.argument("term", nargs=-1)
 @click.option("-p", "--provider", help="only search this provider")
+@click.option("-e", "--exact", is_flag=True, help="exact matches only")
 @click.option("-s", "--size", is_flag=True, help="show absolute genome size")
-def search(term, provider=None, size=False):
+def search(term, provider=None, exact=False, size=False):
     """
     Search for genomes that contain TERM in their name, description,
     accession (must start with GCA_ or GCF_) or taxonomy (start).
@@ -408,7 +409,7 @@ def search(term, provider=None, size=False):
     """
     term = " ".join(term)
     no_genomes = True
-    for row in genomepy.search(term, provider, size):
+    for row in genomepy.search(term, provider, exact, size):
         if no_genomes:
             no_genomes = False
             terminal_header(size)
