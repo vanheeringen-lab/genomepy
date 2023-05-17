@@ -106,7 +106,7 @@ def online_providers(provider: str = None):
             logger.warning(str(e))
 
 
-def search(term: str or int, provider: str = None, size=False):
+def search(term: str or int, provider: str = None, exact=False, size=False):
     """
     Search for a genome.
 
@@ -120,6 +120,8 @@ def search(term: str or int, provider: str = None, size=False):
         Search term, case-insensitive, allows regex.
     provider : str , optional
         Only search the specified provider (faster).
+    exact : bool, optional
+        term must be an exact match
     size : bool, optional
         Show absolute genome size.
 
@@ -129,7 +131,7 @@ def search(term: str or int, provider: str = None, size=False):
         genome name, provider and metadata
     """
     for p in online_providers(provider):
-        for row in p.search(term, size):
+        for row in p.search(term, exact, size):
             ret = list(row[:1]) + [p.name] + list(row[1:])
             yield ret
 

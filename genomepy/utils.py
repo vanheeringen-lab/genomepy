@@ -130,11 +130,6 @@ def safe(name: Any) -> str:
     return str(name).strip().replace(" ", "_")
 
 
-def lower(string: Any) -> str:
-    """safe(str).lower() for case-insensitive text comparisons"""
-    return safe(string).lower()
-
-
 def get_localname(name: Any, localname=None) -> str:
     """
     Returns the safe version of the given localname.

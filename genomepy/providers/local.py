@@ -36,7 +36,7 @@ class LocalProvider(BaseProvider):
     def assembly_accession(self, name):
         return
 
-    def search(self, term, size=False):
+    def search(self, term, exact=False, size=False):
         """return an empty generator,
         same as if no genomes were found at the other providers"""
         yield from ()
