@@ -33,7 +33,7 @@ def test_assembly_accession(ucsc):
 
 def test__search_accession_ncbi(ucsc):
     ret = list(ucsc._search_accession_ncbi("GCF_000004195.2"))
-    expected = ['xenTro1', 'xenTro10', 'xenTro2', 'xenTro3', 'xenTro7', 'xenTro9']
+    expected = ["xenTro1", "xenTro10", "xenTro2", "xenTro3", "xenTro7", "xenTro9"]
     assert ret == expected
 
     # exact accession ID without version
