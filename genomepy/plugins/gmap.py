@@ -9,11 +9,7 @@ from genomepy.utils import cmd_ok, rm_rf, run_index_cmd
 
 class GmapPlugin(Plugin):
     def after_genome_download(self, genome, threads=1, force=False):
-        gmap_build = "gmap build"
-        # CLI changes in newer versions
-        if not cmd_ok(gmap_build):
-            gmap_build = "gmap_build"
-        if not cmd_ok(gmap_build):
+        if not cmd_ok("gmap_build"):
             return
 
         # Create index dir
@@ -29,7 +25,7 @@ class GmapPlugin(Plugin):
                 # its content is moved to index dir, consistent with other plugins
                 tmp_dir = mkdtemp(dir=".")
                 # Create index
-                cmd = f"{gmap_build} -D {tmp_dir} -d {genome.name} {fname}"
+                cmd = f"gmap_build -D {tmp_dir} -d {genome.name} {fname}"
                 run_index_cmd("gmap", cmd)
 
                 # Move files to index_dir
