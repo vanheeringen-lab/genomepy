@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Added
 - `genomepy search` now accepts the `--exact` flag
 
+### Fixed
+- `genomepy.install()` now returns a `Genome` instance with updated annotation attributes. 
+
 ## [0.15.0] - 2023-02-28
 
 ### Added
