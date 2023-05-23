@@ -157,9 +157,9 @@ class Annotation:
         df = _parse_annot(self, annot)
         attributes = set()
         for feature in df["feature"].unique():
-            feature_attributes = df[df["feature"] == feature]["attribute"].head(1).values[0]
-            feature_attributes = re.findall(r'\s*(.+?)\s*".+?"\s*;', feature_attributes)
-            attributes.update(feature_attributes)
+            f_attributes = df[df["feature"] == feature]["attribute"].head(1).values[0]
+            f_attributes = re.findall(r'\s*(.+?)\s*".+?"\s*;', f_attributes)
+            attributes.update(f_attributes)
         return sorted(attributes)
 
     def from_attributes(
