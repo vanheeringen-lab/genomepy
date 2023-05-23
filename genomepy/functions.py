@@ -268,8 +268,11 @@ def install_genome(
 
     if annotation_downloaded:
         annotation = Annotation(localname, genomes_dir=genomes_dir)
-        if genome_found and not (skip_matching and skip_filter):
-            annotation.sanitize(not skip_matching, not skip_filter, True)
+        if genome_found:
+            # update references to annotation files
+            genome = Genome(localname, genomes_dir=genomes_dir)
+            if not (skip_matching and skip_filter):
+                annotation.sanitize(not skip_matching, not skip_filter, True)
 
     # Run active plugins (also if the genome was downloaded earlier)
     if genome_found:
