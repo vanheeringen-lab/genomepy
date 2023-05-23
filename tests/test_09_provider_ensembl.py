@@ -23,17 +23,27 @@ def test_genome_info_tuple(ensembl):
 
 
 def test_get_version(ensembl):
-    v = ensembl.get_version(vertebrates=True)
+    v = ensembl.get_version(is_vertebrate=True)
     assert v.isnumeric()
     assert int(v) > 100
 
-    v = ensembl.get_version()
+    v = ensembl.get_version(is_vertebrate=False)
     assert v.isnumeric()
     assert int(v) > 50
 
-    v = ensembl.get_version(set_version=42)
+    v = ensembl.get_version(is_vertebrate=True, name="ARS1", set_version=92)
     assert v.isnumeric()
-    assert v == "42"
+    assert v == "92"
+
+    v = ensembl.get_version(is_vertebrate=False, name="TAIR10", set_version=33)
+    assert v.isnumeric()
+    assert v == "33"
+
+    with pytest.raises(ValueError):
+        # release does not exist
+        ensembl.get_version(is_vertebrate=True, name="ARS1", set_version=1)
+        # assembl does not exist on specified release
+        ensembl.get_version(is_vertebrate=False, name="TAIR10", set_version=1)
 
 
 def test_get_division(ensembl):
