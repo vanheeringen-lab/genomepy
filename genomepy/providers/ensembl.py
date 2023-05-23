@@ -67,27 +67,38 @@ class EnsemblProvider(BaseProvider):
             return name, accession, taxid, annotations, species, length, other
         return name, accession, taxid, annotations, species, other
 
-    def get_version(self, is_vertebrate, name=None, set_version=None):
+    def get_version(self, name, version=None):
         """Retrieve a release version of the Ensembl or EnsemblGenomes FTP."""
+        division, is_vertebrate = self.get_division(name)
         latest_version = self.get_release(is_vertebrate)
-        if set_version is None:
+        if version is None:
             return str(latest_version)
 
         ensembl = f"Ensembl{'' if is_vertebrate else 'Genomes'}"
         all_versions = self.get_releases(is_vertebrate)
-        if int(set_version) not in all_versions:
+        if int(version) not in all_versions:
             raise ValueError(
-                f"{ensembl} release version {set_version} "
+                f"{ensembl} release version {version} "
                 f"not found. Available versions: {all_versions}"
             )
 
         releases = self.releases_with_assembly(name)
-        if int(set_version) not in releases:
+        if int(version) not in releases:
             raise ValueError(
-                f"{name} not found on {ensembl} release {set_version}. "
+                f"{name} not found on {ensembl} release {version}. "
                 f"Available on release versions: {releases}"
             )
-        return str(set_version)
+        return str(version)
+
+    def get_division(self, name):
+        """Retrieve the division of a genome."""
+        genome = self.genomes[safe(name)]
+        division = genome["division"].lower().replace("ensembl", "")
+        if division == "bacteria":
+            raise NotImplementedError("Bacteria from Ensembl not supported.")
+
+        is_vertebrate = bool(division == "vertebrates")
+        return division, is_vertebrate
 
     @disk_cache.memoize(
         expire=cache_exp_other, tag="get_release-ensembl", ignore={"self"}
@@ -113,6 +124,7 @@ class EnsemblProvider(BaseProvider):
         )
         return releases
 
+    @lock
     @disk_cache.memoize(
         expire=cache_exp_other, tag="get_releases-ensembl", ignore={"self"}
     )
@@ -121,7 +133,7 @@ class EnsemblProvider(BaseProvider):
         genome = self.genomes[safe(name)]
         lwr_name = genome["name"]
         asm_name = re.sub(r"\.p\d+$", "", safe(genome["assembly_name"]))
-        division, is_vertebrate = get_division(genome)
+        division, is_vertebrate = self.get_division(name)
 
         # all releases with the genome fasta
         releases = self.get_releases(is_vertebrate)
@@ -155,13 +167,13 @@ class EnsemblProvider(BaseProvider):
         str with the http download link.
         """
         genome = self.genomes[safe(name)]
-        division, is_vertebrate = get_division(genome)
+        division, is_vertebrate = self.get_division(name)
 
         # base directory of the genome
         ftp = "http://ftp.ensemblgenomes.org"
         if is_vertebrate:
             ftp = "http://ftp.ensembl.org"
-        version = self.get_version(is_vertebrate, name, kwargs.get("version"))
+        version = self.get_version(name, kwargs.get("version"))
         div_path = "" if is_vertebrate else f"/{division}"
         lwr_name = genome["name"]
         ftp_directory = f"{ftp}/pub/release-{version}{div_path}/fasta/{lwr_name}/dna"
@@ -213,13 +225,13 @@ class EnsemblProvider(BaseProvider):
             http link(s)
         """
         genome = self.genomes[safe(name)]
-        division, is_vertebrate = get_division(genome)
+        division, is_vertebrate = self.get_division(name)
 
         # base directory of the genome
         ftp = "http://ftp.ensemblgenomes.org"
         if is_vertebrate:
             ftp = "http://ftp.ensembl.org"
-        version = self.get_version(is_vertebrate, name, kwargs.get("version"))
+        version = self.get_version(name, kwargs.get("version"))
         div_path = "" if is_vertebrate else f"/{division}"
         lwr_name = genome["name"]
         ftp_directory = f"{ftp}/pub/release-{version}{div_path}/gtf/{lwr_name}"
@@ -235,16 +247,6 @@ class EnsemblProvider(BaseProvider):
         if name == "GRCh37":
             link = genome["annotation"].format(version)
         return [link] if check_url(link, max_tries=2) else []
-
-
-def get_division(genome: dict):
-    """Retrieve the division of a genome."""
-    division = genome["division"].lower().replace("ensembl", "")
-    if division == "bacteria":
-        raise NotImplementedError("Bacteria from Ensembl not supported.")
-
-    is_vertebrate = bool(division == "vertebrates")
-    return division, is_vertebrate
 
 
 def request_json(rest_url, ext):

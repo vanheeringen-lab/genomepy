@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
   - if the assembly does not exist on the release version, all available options are given
   - if the URL to the genome or annotation files is incorrect, the error message stays the same
 
+### Changed
+- function `get_division` is now a class method of EnsemblProvider
+- EnsemblProvider class methods `get_division` and `get_version` now require an assembly name.
+
 ### Fixed
 - `genomepy.install()` now returns a `Genome` instance with updated annotation attributes.
 
