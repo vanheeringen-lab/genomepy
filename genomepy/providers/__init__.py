@@ -108,11 +108,13 @@ def online_providers(provider: str = None):
 
 def search(term: str or int, provider: str = None, exact=False, size=False):
     """
-    Search for a genome.
+    Search for term in genome names and descriptions (if term contains text. Case-insensitive),
+    assembly accession IDs (if term starts with GCA_ or GCF_),
+    or taxonomy IDs (if term is a number).
 
-    If provider is specified, search only that specific provider, else
-    search all providers. Both the name and description are used for the
-    search. Search term is case-insensitive and can contain regex.
+    If provider is specified, search only that specific provider, else search all providers.
+
+    Note: exact accession ID search on UCSC may return different patch levels.
 
     Parameters
     ----------

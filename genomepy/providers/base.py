@@ -324,7 +324,7 @@ class BaseProvider:
         """check if search term is found in the provider's genome name or description field(s)"""
         if exact:
             # allow several commonly used spacers inside the term
-            term = re.sub(r'[ _.-]', r'[ _.-]', rf"^{term}$")
+            term = re.sub(r"[ _.-]", r"[ _.-]", rf"^{term}$")
         elif " " in term:
             # multiple search terms: order doesn't matter
             term = "".join([f"(?=.*{t})" for t in term.split()])
