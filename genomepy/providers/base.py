@@ -150,12 +150,12 @@ class BaseProvider:
         raise NotImplementedError()
 
     def download_genome(
-            self,
-            name: str,
-            genomes_dir: str = None,
-            localname: str = None,
-            mask: str = "soft",
-            **kwargs,
+        self,
+        name: str,
+        genomes_dir: str = None,
+        localname: str = None,
+        mask: str = "soft",
+        **kwargs,
     ):
         """
         Download a (gzipped) genome file to a specific directory
@@ -477,9 +477,9 @@ def download_annotation(genomes_dir, annot_url, localname, n=None):
                 break
         end_col = start_col + 10
         cmd = (
-                f"""cat {{0}} | cut -f {start_col}-{end_col} | """
-                # knownGene.txt.gz has spotty fields, this replaces non-integer fields with zeroes
-                + """awk 'BEGIN {{FS=OFS="\t"}} !($11 ~ /^[0-9]+$/) {{$11="0"}}1' > {1}"""
+            f"""cat {{0}} | cut -f {start_col}-{end_col} | """
+            # knownGene.txt.gz has spotty fields, this replaces non-integer fields with zeroes
+            + """awk 'BEGIN {{FS=OFS="\t"}} !($11 ~ /^[0-9]+$/) {{$11="0"}}1' > {1}"""
         )
     else:
         raise TypeError(f"file type extension {ext} not recognized!")
