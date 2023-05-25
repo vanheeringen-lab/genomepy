@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - `genomepy search` now accepts the `--exact` flag
+- `genomepy.Annotation.attributes()` returns a list of all attributes from the GTF attributes column. 
+  - e.g. gene_name, gene_version
+  - nice to use with `genomepy.Annotation.from_attributes()` or `genomepy.Annotation.gtf_dict()`
 
 ### Fixed
 - `genomepy.install()` now returns a `Genome` instance with updated annotation attributes. 
