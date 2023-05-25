@@ -186,7 +186,6 @@ def test_filter_regex():
 def test_attributes():
     a = genomepy.annotation.Annotation("GRCz11", genomes_dir="tests/data")
     att = a.attributes()
-    print(att)
     assert att == [
         "exon_id",
         "exon_number",
