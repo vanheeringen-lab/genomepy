@@ -79,12 +79,15 @@ class BaseProvider:
         """
         List all available genomes.
 
+        Parameters
+        ----------
+        size : bool, optional
+            Show absolute genome size.
+
         Yields
         ------
         genomes : list of tuples
             tuples with assembly name, accession, scientific_name, taxonomy id and description
-        size : bool, optional
-            Show absolute genome size.
         """
         for name in self.genomes.keys():
             yield self._genome_info_tuple(name, size)
@@ -320,8 +323,8 @@ class BaseProvider:
     def _search_text(self, term: str, exact=False) -> Iterator[str]:
         """check if search term is found in the provider's genome name or description field(s)"""
         if exact:
-            # allow underscores and spaces in the term & no alphanumerics around the term
-            term = re.sub("[ _]", "[ _]", rf"(^|\W|_){term}(_|\W|$)")
+            # allow several commonly used spacers inside the term
+            term = re.sub(r'[ _.-]', r'[ _.-]', rf"^{term}$")
         elif " " in term:
             # multiple search terms: order doesn't matter
             term = "".join([f"(?=.*{t})" for t in term.split()])
@@ -356,18 +359,20 @@ class BaseProvider:
 
     def search(self, term: str or int, exact=False, size=False):
         """
-        Search for term in genome names, descriptions and taxonomy ID.
+        Search for term in genome names and descriptions (if term contains text. Case-insensitive),
+        assembly accession IDs (if term starts with GCA_ or GCF_),
+        or taxonomy IDs (if term is a number).
 
-        The search is case-insensitive.
+        Note: exact accession ID search on UCSC may return different patch levels.
 
         Parameters
         ----------
         term : str, int
             Search term, case-insensitive.
-            Can be (part of) an assembly name (e.g. hg38),
-            scientific name (Danio rerio) or assembly
-            accession (`GCA_000146045`/`GCF_`),
-            or a taxonomy id (7227).
+            Can be an assembly name (e.g. hg38),
+            scientific name (Danio rerio),
+            assembly accession ID (GCA_000146045),
+            or taxonomy ID (7227).
         exact : bool, optional
             term must be an exact match
         size : bool, optional
