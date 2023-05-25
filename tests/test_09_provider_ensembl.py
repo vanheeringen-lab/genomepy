@@ -24,20 +24,20 @@ def test_genome_info_tuple(ensembl):
 
 def test_get_version(ensembl):
     v = ensembl.get_version("ARS1")
-    assert v.isnumeric()
-    assert int(v) > 100
+    assert isinstance(v, int)
+    assert v > 100
 
     v = ensembl.get_version("TAIR10")
-    assert v.isnumeric()
-    assert int(v) > 50
+    assert isinstance(v, int)
+    assert v > 50
 
     v = ensembl.get_version(name="ARS1", version=92)
-    assert v.isnumeric()
-    assert v == "92"
+    assert isinstance(v, int)
+    assert v == 92
 
     v = ensembl.get_version(name="TAIR10", version=33)
-    assert v.isnumeric()
-    assert v == "33"
+    assert isinstance(v, int)
+    assert v == 33
 
     with pytest.raises(ValueError):
         # release does not exist

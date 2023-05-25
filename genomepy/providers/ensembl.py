@@ -67,12 +67,15 @@ class EnsemblProvider(BaseProvider):
             return name, accession, taxid, annotations, species, length, other
         return name, accession, taxid, annotations, species, other
 
-    def get_version(self, name, version=None):
-        """Retrieve a release version of the Ensembl or EnsemblGenomes FTP."""
+    def get_version(self, name: str, version=None) -> int:
+        """
+        Retrieve the latest Ensembl or EnsemblGenomes release version,
+        or check if the requested release version exists.
+        """
         division, is_vertebrate = self.get_division(name)
         if version is None:
             latest_version = self.get_release(is_vertebrate)
-            return str(latest_version)
+            return latest_version
 
         ensembl = f"Ensembl{'' if is_vertebrate else 'Genomes'}"
         all_versions = self.get_releases(is_vertebrate)
@@ -88,31 +91,31 @@ class EnsemblProvider(BaseProvider):
                 f"{name} not found on {ensembl} release {version}. "
                 f"Available on release versions: {releases}"
             )
-        return str(version)
+        return version
 
-    def get_division(self, name):
+    def get_division(self, name: str):
         """Retrieve the division of a genome."""
         genome = self.genomes[safe(name)]
-        division = genome["division"].lower().replace("ensembl", "")
+        division = str(genome["division"]).lower().replace("ensembl", "")
         if division == "bacteria":
             raise NotImplementedError("Bacteria from Ensembl not supported.")
 
-        is_vertebrate = bool(division == "vertebrates")
+        is_vertebrate = division == "vertebrates"
         return division, is_vertebrate
 
     @disk_cache.memoize(
         expire=cache_exp_other, tag="get_release-ensembl", ignore={"self"}
     )
-    def get_release(self, is_vertebrate) -> int:
-        """Retrieve current release version from the Ensembl or EnsemblGenomes FTP."""
+    def get_release(self, is_vertebrate: bool) -> int:
+        """Retrieve current Ensembl or EnsemblGenomes release version."""
         ext = "/info/data/?" if is_vertebrate else "/info/eg_version?"
         ret = retry(request_json, 3, self._url, ext)
         return int(ret["releases"][0] if is_vertebrate else ret["version"])
 
     @staticmethod
     @disk_cache.memoize(expire=cache_exp_other)
-    def get_releases(is_vertebrate):
-        """retrieve all release version from the Ensembl or EnsemblGenomes FTP"""
+    def get_releases(is_vertebrate: bool):
+        """Retrieve all Ensembl or EnsemblGenomes release versions."""
         url = "http://ftp.ensemblgenomes.org/pub?"
         if is_vertebrate:
             url = "http://ftp.ensembl.org/pub?"
@@ -131,8 +134,8 @@ class EnsemblProvider(BaseProvider):
     @disk_cache.memoize(
         expire=cache_exp_other, tag="get_releases-ensembl", ignore={"self"}
     )
-    def releases_with_assembly(self, name):
-        """List all releases of Ensembl or EnsemblGenomes with the specified genome."""
+    def releases_with_assembly(self, name: str):
+        """List all Ensembl or EnsemblGenomes release versions with the specified genome."""
         genome = self.genomes[safe(name)]
         lwr_name = genome["name"]
         asm_name = re.sub(r"\.p\d+$", "", safe(genome["assembly_name"]))
@@ -190,7 +193,7 @@ class EnsemblProvider(BaseProvider):
         asm_name = re.sub(r"\.p\d+$", "", safe(genome["assembly_name"]))
         mask_lvl = {"soft": "_sm", "hard": "_rm", "none": ""}[mask]
         asm_lvl = "toplevel" if kwargs.get("toplevel") else "primary_assembly"
-        version_tag = "" if int(version) > 30 else f".{version}"
+        version_tag = "" if version > 30 else f".{version}"
 
         ftp_file = f"{cap_name}.{asm_name}{version_tag}.dna{mask_lvl}.{asm_lvl}.fa.gz"
 
