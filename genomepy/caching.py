@@ -5,6 +5,7 @@ from time import time
 from appdirs import user_cache_dir
 from diskcache import Cache
 from filelock import FileLock
+from loguru import logger
 
 from genomepy.__about__ import __version__
 from genomepy.config import config
@@ -45,4 +46,4 @@ def clean():
     """Remove cached data on providers."""
     rmtree(genomepy_cache_dir, ignore_errors=True)
     os.makedirs(genomepy_cache_dir, exist_ok=True)
-    print("All clean!")
+    logger.info("All clean!")
