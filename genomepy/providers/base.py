@@ -71,7 +71,7 @@ class BaseProvider:
             f"  genomepy search {name} -p {self.name}"
         )
 
-    def _genome_info_tuple(self, name, size=False):
+    def _genome_info_tuple(self, name: str, size: bool = False):
         """tuple with assembly metadata"""
         raise NotImplementedError()
 
