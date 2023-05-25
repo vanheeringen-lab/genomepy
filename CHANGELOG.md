@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
   - if the release does not exist, options will be given
   - if the assembly does not exist on the release version, all available options are given
   - if the URL to the genome or annotation files is incorrect, the error message stays the same
+- new config option: `ucsc_mirror`, options: `eu` or `us`.
+  - the mirror should only affect download speed
+  - can be nice if the other mirror is down!
 
 ### Changed
 - function `get_division` is now a class method of EnsemblProvider
