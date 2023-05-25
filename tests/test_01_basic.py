@@ -84,7 +84,7 @@ def test_exceptions():
 
 def test_config():
     config = norns.config("genomepy", default="config/default.yaml")
-    assert len(config.keys()) == 5
+    assert len(config.keys()) == 6
 
 
 def test_manage_config(capsys):
