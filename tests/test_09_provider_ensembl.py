@@ -39,11 +39,16 @@ def test_get_version(ensembl):
     assert isinstance(v, int)
     assert v == 33
 
+    # release is not a number
+    with pytest.raises(TypeError):
+        ensembl.get_version(name="TAIR10", version="not a number")
+
+    # release does not exist
     with pytest.raises(ValueError):
-        # release does not exist
         ensembl.get_version(name="ARS1", version=1)
 
-        # assembly does not exist on specified release
+    # assembly does not exist on specified release
+    with pytest.raises(FileNotFoundError):
         ensembl.get_version(name="TAIR10", version=1)
 
 

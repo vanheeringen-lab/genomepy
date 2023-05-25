@@ -77,17 +77,21 @@ class EnsemblProvider(BaseProvider):
             latest_version = self.get_release(is_vertebrate)
             return latest_version
 
-        ensembl = f"Ensembl{'' if is_vertebrate else 'Genomes'}"
+        if not str(version).isdecimal():
+            raise TypeError("Version must be a number")
+        version = int(version)
+
         all_versions = self.get_releases(is_vertebrate)
-        if int(version) not in all_versions:
+        ensembl = f"Ensembl{'' if is_vertebrate else 'Genomes'}"
+        if version not in all_versions:
             raise ValueError(
                 f"{ensembl} release version {version} "
                 f"not found. Available versions: {all_versions}"
             )
 
         releases = self.releases_with_assembly(name)
-        if int(version) not in releases:
-            raise ValueError(
+        if version not in releases:
+            raise FileNotFoundError(
                 f"{name} not found on {ensembl} release {version}. "
                 f"Available on release versions: {releases}"
             )
