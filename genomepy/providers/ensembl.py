@@ -122,6 +122,9 @@ class EnsemblProvider(BaseProvider):
             [int(i) for i in re.findall(r'"release-(\d+)/"', ret.text)],
             reverse=True,
         )
+        if is_vertebrate:
+            # ignore immature releases
+            releases = [r for r in releases if r > 46]
         return releases
 
     @lock
@@ -273,9 +276,9 @@ def add_grch37(genomes):
         ),
         "assembly_accession": "GCA_000001405.14",
         "taxonomy_id": 9606,
-        "name": "human",
+        "name": "Homo_sapiens",
         "scientific_name": "Homo sapiens",
-        "url_name": "Homo_sapiens",
+        "url_name": "human",
         "assembly_name": "GRCh37",
         "division": "vertebrates",
         "base_count": "3137144693",
@@ -313,6 +316,8 @@ def get_genomes(rest_url):
             "base_count",
         ]
         for genome in division_genomes:
+            if "_gca_" in genome["name"]:
+                continue  # ~1600 mislabeled protists and fungi
             name = safe(genome["assembly_name"])
             genomes[name] = {k: genome[k] for k in summary_keys_to_keep}
 

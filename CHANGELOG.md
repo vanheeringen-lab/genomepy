@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 - `genomepy.install()` now returns a `Genome` instance with updated annotation attributes.
+- now ignoring ~1600 assemblies from the Ensembl database with incorrect metadata
+  - no easy way to retrieve this data
 
 ## [0.15.0] - 2023-02-28
 
