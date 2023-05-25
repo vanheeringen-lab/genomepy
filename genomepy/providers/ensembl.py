@@ -70,8 +70,8 @@ class EnsemblProvider(BaseProvider):
     def get_version(self, name, version=None):
         """Retrieve a release version of the Ensembl or EnsemblGenomes FTP."""
         division, is_vertebrate = self.get_division(name)
-        latest_version = self.get_release(is_vertebrate)
         if version is None:
+            latest_version = self.get_release(is_vertebrate)
             return str(latest_version)
 
         ensembl = f"Ensembl{'' if is_vertebrate else 'Genomes'}"
