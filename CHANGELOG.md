@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - `genomepy search` now accepts the `--exact` flag
+- `genomepy.Annotation.attributes()` returns a list of all attributes from the GTF attributes column. 
+  - e.g. gene_name, gene_version
+  - nice to use with `genomepy.Annotation.from_attributes()` or `genomepy.Annotation.gtf_dict()`
 - When installing assemblies from older Ensembl release versions, a clearer error message is given if assembly cannot be found:
   - if the release does not exist, options will be given
   - if the assembly does not exist on the release version, all available options are given
