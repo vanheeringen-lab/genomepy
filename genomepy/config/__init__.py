@@ -2,6 +2,7 @@ import os
 from shutil import copyfile
 
 from appdirs import user_config_dir
+from loguru import logger
 from norns import config as cfg
 
 __all__ = ["config", "manage_config"]
@@ -21,7 +22,7 @@ def generate_config():
     default_config = cfg("genomepy", default="config/default.yaml").config_file
     copyfile(default_config, new_config)
     config.config_file = new_config
-    print(f"Created config file {new_config}")
+    logger.info(f"Created config file {new_config}")
 
 
 def manage_config(command):

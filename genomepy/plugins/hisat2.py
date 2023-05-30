@@ -28,7 +28,6 @@ class Hisat2Plugin(Plugin):
 
             # if an annotation is present, generate a splice-aware index
             gtf_file = genome.annotation_gtf_file
-            print(gtf_file)
             if gtf_file:
                 with extracted_file(gtf_file) as _gtf_file:
                     # generate splice and exon site files to enhance indexing
@@ -60,7 +59,6 @@ class Hisat2Plugin(Plugin):
 
                 # Create index
                 run_index_cmd("hisat2", cmd)
-            print(gtf_file)
 
     def get_properties(self, genome):
         props = {
