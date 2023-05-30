@@ -32,13 +32,13 @@ ANNOTATIONS = ["ncbiRefSeq", "refGene", "ensGene", "knownGene"]
 # web adresses per mirror
 ADRESSES = {
     "us": {
-        "api": "http://api.genome.ucsc.edu/list/ucscGenomes",
-        "ftp": "http://hgdownload.soe.ucsc.edu/goldenPath",
+        "api": "https://api.genome.ucsc.edu/list/ucscGenomes",
+        "ftp": "https://hgdownload.soe.ucsc.edu/goldenPath",
         "sql": "genome-mysql.soe.ucsc.edu",
     },
     "eu": {
         "api": "https://genome-euro.ucsc.edu/cgi-bin/hubApi/list/ucscGenomes",
-        "ftp": "http://hgdownload-euro.soe.ucsc.edu/goldenPath",
+        "ftp": "https://hgdownload-euro.soe.ucsc.edu/goldenPath",
         "sql": "genome-euro-mysql.soe.ucsc.edu",
     },
 }[config.get("ucsc_mirror", "us").lower()]

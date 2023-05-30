@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Changed
 - function `get_division` is now a class method of EnsemblProvider
 - EnsemblProvider class methods `get_division` and `get_version` now require an assembly name.
+- UCSC data is now downloaded over HTTPS instead of HTTP
 
 ### Fixed
 - `genomepy.install()` now returns a `Genome` instance with updated annotation attributes.

@@ -66,18 +66,18 @@ def test_genome_info_tuple(ucsc):
 def test_get_genome_download_link(ucsc):
     link = ucsc.get_genome_download_link("sacCer3", mask="soft")
     assert link in [
-        "http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz",
-        "http://hgdownload-euro.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz",
-        "http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/sacCer3.fa.gz",
-        "http://hgdownload-euro.soe.ucsc.edu/goldenPath/sacCer3/bigZips/sacCer3.fa.gz",
+        "https://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz",
+        "https://hgdownload-euro.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz",
+        "https://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/sacCer3.fa.gz",
+        "https://hgdownload-euro.soe.ucsc.edu/goldenPath/sacCer3/bigZips/sacCer3.fa.gz",
     ]
 
     link = ucsc.get_genome_download_link("danRer7", mask="hard")
     assert link in [
-        "http://hgdownload.soe.ucsc.edu/goldenPath/danRer7/bigZips/chromFaMasked.tar.gz",
-        "http://hgdownload-euro.soe.ucsc.edu/goldenPath/danRer7/bigZips/chromFaMasked.tar.gz",
-        "http://hgdownload.soe.ucsc.edu/goldenPath/danRer7/bigZips/danRer7.fa.masked.gz",
-        "http://hgdownload-euro.soe.ucsc.edu/goldenPath/danRer7/bigZips/danRer7.fa.masked.gz",
+        "https://hgdownload.soe.ucsc.edu/goldenPath/danRer7/bigZips/chromFaMasked.tar.gz",
+        "https://hgdownload-euro.soe.ucsc.edu/goldenPath/danRer7/bigZips/chromFaMasked.tar.gz",
+        "https://hgdownload.soe.ucsc.edu/goldenPath/danRer7/bigZips/danRer7.fa.masked.gz",
+        "https://hgdownload-euro.soe.ucsc.edu/goldenPath/danRer7/bigZips/danRer7.fa.masked.gz",
     ]
 
 
