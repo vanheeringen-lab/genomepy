@@ -58,15 +58,10 @@ def get_genomes_dir(genomes_dir: str = None, check_exist: Optional[bool] = True)
 
 def cmd_ok(cmd) -> bool:
     """Returns True if cmd can be run."""
-    try:
-        sp.check_call(cmd, stderr=sp.PIPE, stdout=sp.PIPE)
-    except sp.CalledProcessError:
-        # bwa gives return code of 1 with no argument
-        pass
-    except FileNotFoundError:
-        logger.error(f"{cmd} not found, skipping")
-        return False
-    return True
+    ret = shutil.which(cmd)
+    if isinstance(ret, str) and ret.endswith(cmd):
+        return True
+    return False
 
 
 def run_index_cmd(name, cmd):

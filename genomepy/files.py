@@ -323,7 +323,7 @@ def bgzip_and_name(fname, bgzip_file=True) -> str:
         up to date filename
     """
     if bgzip_file:
-        ret = sp.check_call(["bgzip", fname])
+        ret = sp.check_call(f"bgzip {fname}", shell=True)
         fname += ".gz"
         if ret != 0:
             raise Exception(f"Error bgzipping genome {fname}. Is pysam installed?")

@@ -48,7 +48,7 @@ def genome(request):
 
     # unzip genome if required
     if request.param == "unzipped":
-        sp.check_call(["gunzip", fname])
+        sp.check_call(f"gunzip {fname}", shell=True)
 
         # add annotation (for STAR and hisat2) for 1 of 2 tests
         gtf_file = "tests/data/ce10.annotation.gtf.gz"
