@@ -27,10 +27,10 @@ def test_genomes(gencode):
 def test_get_genome_download_link(gencode):
     link = gencode.get_genome_download_link("GRCh37", mask="soft")
     assert link in [
-        "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz",
-        "http://hgdownload-euro.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz",
-        "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.masked.gz",
-        "http://hgdownload-euro.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.masked.gz",
+        "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz",
+        "https://hgdownload-euro.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz",
+        "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.masked.gz",
+        "https://hgdownload-euro.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.masked.gz",
     ]
 
 
