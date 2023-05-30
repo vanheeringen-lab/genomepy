@@ -41,12 +41,7 @@ ADRESSES = {
         "ftp": "http://hgdownload-euro.soe.ucsc.edu/goldenPath",
         "sql": "genome-euro-mysql.soe.ucsc.edu",
     },
-    # "asia": {
-    #     "api": "https://genome-asia.ucsc.edu/cgi-bin/hubApi",
-    #     "ftp": "???",
-    #     "sql": "???",
-    # }
-}[config.get("ucsc_mirror", "us")]
+}[config.get("ucsc_mirror", "us").lower()]
 
 
 class UcscProvider(BaseProvider):
@@ -163,7 +158,6 @@ class UcscProvider(BaseProvider):
         if acc:
             return acc
 
-        print("scraping", name)
         acc = scrape_accession(self.genomes[name]["htmlPath"])
         if acc:
             return acc
