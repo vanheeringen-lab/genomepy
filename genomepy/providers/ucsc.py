@@ -11,6 +11,7 @@ import requests
 from loguru import logger
 
 from genomepy.caching import cache_exp_genomes, disk_cache, lock
+from genomepy.config import config
 from genomepy.exceptions import GenomeDownloadError
 from genomepy.files import update_readme
 from genomepy.online import check_url, read_url
@@ -27,6 +28,20 @@ from genomepy.utils import (
 # order determines which annotation genomepy will attempt to install
 # for more info, see http://genome.ucsc.edu/FAQ/FAQgenes.html
 ANNOTATIONS = ["ncbiRefSeq", "refGene", "ensGene", "knownGene"]
+
+# web adresses per mirror
+ADRESSES = {
+    "us": {
+        "api": "https://api.genome.ucsc.edu/list/ucscGenomes",
+        "ftp": "https://hgdownload.soe.ucsc.edu/goldenPath",
+        "sql": "genome-mysql.soe.ucsc.edu",
+    },
+    "eu": {
+        "api": "https://genome-euro.ucsc.edu/cgi-bin/hubApi/list/ucscGenomes",
+        "ftp": "https://hgdownload-euro.soe.ucsc.edu/goldenPath",
+        "sql": "genome-euro-mysql.soe.ucsc.edu",
+    },
+}[config.get("ucsc_mirror", "us").lower()]
 
 
 class UcscProvider(BaseProvider):
@@ -49,18 +64,18 @@ class UcscProvider(BaseProvider):
             "default": None,
         },
     }
-    _url = "http://hgdownload.soe.ucsc.edu/goldenPath"
+    _url = ADRESSES["ftp"]
 
     def __init__(self):
         self._provider_status()
         # Populate on init, so that methods can be cached
-        self.genomes = get_genomes("http://api.genome.ucsc.edu/list/ucscGenomes")
+        self.genomes = get_genomes(ADRESSES["api"])
 
     @staticmethod
     def ping():
         """Can the provider be reached?"""
-        url_online = bool(check_url("http://hgdownload.soe.ucsc.edu/goldenPath"))
-        api_online = bool(check_url("http://api.genome.ucsc.edu/list/ucscGenomes"))
+        url_online = bool(check_url(ADRESSES["ftp"]))
+        api_online = bool(check_url(ADRESSES["api"]))
         return url_online and api_online
 
     def _search_accession(self, term: str, exact=False) -> Iterator[str]:
@@ -509,7 +524,7 @@ def query_ucsc(command: str, database: str = None) -> Generator:
     Streams the output into a generator.
     """
     cnx = mysql.connector.connect(
-        host="genome-mysql.soe.ucsc.edu",
+        host=ADRESSES["sql"],
         user="genome",
         port=3306,
         database=database,
@@ -605,7 +620,7 @@ def scrape_accession(htmlpath: str) -> str or None:
     str or None
         Assembly accession or 'na'
     """
-    ucsc_url = f"https://hgdownload.soe.ucsc.edu/{htmlpath}"
+    ucsc_url = ADRESSES["ftp"].replace("/goldenPath", htmlpath)
     try:
         text = read_url(ucsc_url)
     except (UnicodeDecodeError, urllib.error.URLError):

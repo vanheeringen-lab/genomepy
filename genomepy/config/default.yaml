@@ -2,4 +2,5 @@ bgzip: false
 genomes_dir: ~/.local/share/genomes/
 cache_exp_genomes: 6.048e5  # cache expiration time in seconds (None = infinite)
 cache_exp_other: 3.6e3
+ucsc_mirror: us  # options: eu us
 plugin: []
