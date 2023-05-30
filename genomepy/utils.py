@@ -61,6 +61,7 @@ def cmd_ok(cmd) -> bool:
     ret = shutil.which(cmd)
     if isinstance(ret, str) and ret.endswith(cmd):
         return True
+    logger.error(f"{cmd} not found, skipping")
     return False
 
 
