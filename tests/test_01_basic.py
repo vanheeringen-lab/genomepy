@@ -87,11 +87,10 @@ def test_config():
     assert len(config.keys()) == 6
 
 
-def test_manage_config(capsys):
+def test_manage_config(caplog, capsys):
     # make a new config
     genomepy.config.manage_config("generate")
-    captured = capsys.readouterr().out.strip()
-    assert captured.startswith("Created config file")
+    assert caplog.text.count("Created config file") == 1
 
     # check where it is found
     fname = os.path.expanduser("~/Library/Application Support/genomepy/genomepy.yaml")
@@ -112,8 +111,7 @@ def test_manage_config(capsys):
 
     # make a new config
     genomepy.config.manage_config("generate")
-    captured = capsys.readouterr().out.strip()
-    assert captured.startswith("Created config file")
+    assert caplog.text.count("Created config file") == 2
 
     # check if the mess was fixed
     genomepy.config.manage_config("show")
