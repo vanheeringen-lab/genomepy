@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.16.0] - 2023-05-31
+
 ### Added
 - `genomepy search` now accepts the `--exact` flag
 - `genomepy.Annotation.attributes()` returns a list of all attributes from the GTF attributes column. 
@@ -471,6 +473,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.16.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.15.0...0.16.0
 [0.15.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.14.0...0.15.0
 [0.14.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.13.1...0.14.0
 [0.13.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.13.0...0.13.1
