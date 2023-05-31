@@ -58,15 +58,11 @@ def get_genomes_dir(genomes_dir: str = None, check_exist: Optional[bool] = True)
 
 def cmd_ok(cmd) -> bool:
     """Returns True if cmd can be run."""
-    try:
-        sp.check_call(cmd, stderr=sp.PIPE, stdout=sp.PIPE)
-    except sp.CalledProcessError:
-        # bwa gives return code of 1 with no argument
-        pass
-    except FileNotFoundError:
-        logger.error(f"{cmd} not found, skipping")
-        return False
-    return True
+    ret = shutil.which(cmd)
+    if isinstance(ret, str) and ret.endswith(cmd):
+        return True
+    logger.error(f"{cmd} not found, skipping")
+    return False
 
 
 def run_index_cmd(name, cmd):
@@ -128,11 +124,6 @@ def get_remotename(name):
 def safe(name: Any) -> str:
     """Replace spaces with underscores."""
     return str(name).strip().replace(" ", "_")
-
-
-def lower(string: Any) -> str:
-    """safe(str).lower() for case-insensitive text comparisons"""
-    return safe(string).lower()
 
 
 def get_localname(name: Any, localname=None) -> str:

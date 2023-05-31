@@ -67,17 +67,97 @@ class EnsemblProvider(BaseProvider):
             return name, accession, taxid, annotations, species, length, other
         return name, accession, taxid, annotations, species, other
 
+    def get_version(self, name: str, version=None) -> int:
+        """
+        Retrieve the latest Ensembl or EnsemblGenomes release version,
+        or check if the requested release version exists.
+        """
+        division, is_vertebrate = self.get_division(name)
+        if version is None:
+            latest_version = self.get_release(is_vertebrate)
+            return latest_version
+
+        if not str(version).isdecimal():
+            raise TypeError("Version must be a number")
+        version = int(version)
+
+        all_versions = self.get_releases(is_vertebrate)
+        ensembl = f"Ensembl{'' if is_vertebrate else 'Genomes'}"
+        if version not in all_versions:
+            raise ValueError(
+                f"{ensembl} release version {version} "
+                f"not found. Available versions: {all_versions}"
+            )
+
+        releases = self.releases_with_assembly(name)
+        if version not in releases:
+            raise FileNotFoundError(
+                f"{name} not found on {ensembl} release {version}. "
+                f"Available on release versions: {releases}"
+            )
+        return version
+
+    def get_division(self, name: str):
+        """Retrieve the division of a genome."""
+        genome = self.genomes[safe(name)]
+        division = str(genome["division"]).lower().replace("ensembl", "")
+        if division == "bacteria":
+            raise NotImplementedError("Bacteria from Ensembl not supported.")
+
+        is_vertebrate = division == "vertebrates"
+        return division, is_vertebrate
+
+    @disk_cache.memoize(
+        expire=cache_exp_other, tag="get_release-ensembl", ignore={"self"}
+    )
+    def get_release(self, is_vertebrate: bool) -> int:
+        """Retrieve current Ensembl or EnsemblGenomes release version."""
+        ext = "/info/data/?" if is_vertebrate else "/info/eg_version?"
+        ret = retry(request_json, 3, self._url, ext)
+        return int(ret["releases"][0] if is_vertebrate else ret["version"])
+
     @staticmethod
+    @disk_cache.memoize(expire=cache_exp_other)
+    def get_releases(is_vertebrate: bool):
+        """Retrieve all Ensembl or EnsemblGenomes release versions."""
+        url = "http://ftp.ensemblgenomes.org/pub?"
+        if is_vertebrate:
+            url = "http://ftp.ensembl.org/pub?"
+        ret = retry(requests.get, 3, url)
+        # sort releases new to old
+        releases = sorted(
+            [int(i) for i in re.findall(r'"release-(\d+)/"', ret.text)],
+            reverse=True,
+        )
+        if is_vertebrate:
+            # ignore immature releases
+            releases = [r for r in releases if r > 46]
+        return releases
+
     @lock
-    @disk_cache.memoize(expire=cache_exp_other, tag="get_version-ensembl")
-    def get_version(vertebrates=False, set_version=None, url=_url):
-        """Retrieve current version from Ensembl FTP."""
-        if set_version:
-            return str(set_version)
-        ext = "/info/data/?" if vertebrates else "/info/eg_version?"
-        ret = retry(request_json, 3, url, ext)
-        releases = ret["releases"] if vertebrates else [ret["version"]]
-        return str(max(releases))
+    @disk_cache.memoize(
+        expire=cache_exp_other, tag="get_releases-ensembl", ignore={"self"}
+    )
+    def releases_with_assembly(self, name: str):
+        """List all Ensembl or EnsemblGenomes release versions with the specified genome."""
+        genome = self.genomes[safe(name)]
+        lwr_name = genome["name"]
+        asm_name = re.sub(r"\.p\d+$", "", safe(genome["assembly_name"]))
+        division, is_vertebrate = self.get_division(name)
+
+        # all releases with the genome fasta
+        releases = self.get_releases(is_vertebrate)
+        releases_with_assembly = []
+        for release in releases:
+            url = f"http://ftp.ensemblgenomes.org/pub/release-{release}/{division}/fasta/{lwr_name}/dna/"
+            if is_vertebrate:
+                url = f"https://ftp.ensembl.org/pub/release-{release}/fasta/{lwr_name}/dna/"
+            ret = retry(requests.get, 3, url)
+            if asm_name in ret.text:  # 404 error has text too, so this always works
+                releases_with_assembly.append(release)
+            else:
+                break
+        return releases_with_assembly
 
     def get_genome_download_link(self, name, mask="soft", **kwargs):
         """
@@ -97,26 +177,16 @@ class EnsemblProvider(BaseProvider):
         str with the http download link.
         """
         genome = self.genomes[safe(name)]
-        division, is_vertebrate = get_division(genome)
+        division, is_vertebrate = self.get_division(name)
 
         # base directory of the genome
         ftp = "http://ftp.ensemblgenomes.org"
         if is_vertebrate:
             ftp = "http://ftp.ensembl.org"
-        version = self.get_version(is_vertebrate, kwargs.get("version"))
+        version = self.get_version(name, kwargs.get("version"))
         div_path = "" if is_vertebrate else f"/{division}"
-        lwr_name = genome["url_name"].lower()
-
+        lwr_name = genome["name"]
         ftp_directory = f"{ftp}/pub/release-{version}{div_path}/fasta/{lwr_name}/dna"
-        # some entries don't use url_name in their url... -,-
-        # examples:
-        #   - EnsemblVertebrates: mus_musculus_nzohlltj
-        #   - EnsemblMetazoa: caenorhabditis_elegans
-        if not check_url(ftp_directory, 2):
-            lwr_name = genome["name"]
-            ftp_directory = (
-                f"{ftp}/pub/release-{version}{div_path}/fasta/{lwr_name}/dna"
-            )
 
         # this assembly has its own directory
         if name == "GRCh37":
@@ -127,7 +197,7 @@ class EnsemblProvider(BaseProvider):
         asm_name = re.sub(r"\.p\d+$", "", safe(genome["assembly_name"]))
         mask_lvl = {"soft": "_sm", "hard": "_rm", "none": ""}[mask]
         asm_lvl = "toplevel" if kwargs.get("toplevel") else "primary_assembly"
-        version_tag = "" if int(version) > 30 else f".{version}"
+        version_tag = "" if version > 30 else f".{version}"
 
         ftp_file = f"{cap_name}.{asm_name}{version_tag}.dna{mask_lvl}.{asm_lvl}.fa.gz"
 
@@ -165,24 +235,16 @@ class EnsemblProvider(BaseProvider):
             http link(s)
         """
         genome = self.genomes[safe(name)]
-        division, is_vertebrate = get_division(genome)
+        division, is_vertebrate = self.get_division(name)
 
         # base directory of the genome
         ftp = "http://ftp.ensemblgenomes.org"
         if is_vertebrate:
             ftp = "http://ftp.ensembl.org"
-        version = self.get_version(is_vertebrate, kwargs.get("version"))
+        version = self.get_version(name, kwargs.get("version"))
         div_path = "" if is_vertebrate else f"/{division}"
-        lwr_name = genome["url_name"].lower()
-
+        lwr_name = genome["name"]
         ftp_directory = f"{ftp}/pub/release-{version}{div_path}/gtf/{lwr_name}"
-        # some entries don't use url_name in their url... -,-
-        # examples:
-        #   - EnsemblVertebrates: mus_musculus_nzohlltj
-        #   - EnsemblMetazoa: caenorhabditis_elegans
-        if not check_url(ftp_directory, 2):
-            lwr_name = genome["name"]
-            ftp_directory = f"{ftp}/pub/release-{version}{div_path}/gtf/{lwr_name}"
 
         # specific gtf file
         cap_name = lwr_name.capitalize()
@@ -195,16 +257,6 @@ class EnsemblProvider(BaseProvider):
         if name == "GRCh37":
             link = genome["annotation"].format(version)
         return [link] if check_url(link, max_tries=2) else []
-
-
-def get_division(genome: dict):
-    """Retrieve the division of a genome."""
-    division = genome["division"].lower().replace("ensembl", "")
-    if division == "bacteria":
-        raise NotImplementedError("Bacteria from Ensembl not supported.")
-
-    is_vertebrate = bool(division == "vertebrates")
-    return division, is_vertebrate
 
 
 def request_json(rest_url, ext):
@@ -231,9 +283,9 @@ def add_grch37(genomes):
         ),
         "assembly_accession": "GCA_000001405.14",
         "taxonomy_id": 9606,
-        "name": "human",
+        "name": "Homo_sapiens",
         "scientific_name": "Homo sapiens",
-        "url_name": "Homo_sapiens",
+        "url_name": "human",
         "assembly_name": "GRCh37",
         "division": "vertebrates",
         "base_count": "3137144693",
@@ -271,6 +323,8 @@ def get_genomes(rest_url):
             "base_count",
         ]
         for genome in division_genomes:
+            if "_gca_" in genome["name"]:
+                continue  # ~1600 mislabeled protists and fungi
             name = safe(genome["assembly_name"])
             genomes[name] = {k: genome[k] for k in summary_keys_to_keep}
 

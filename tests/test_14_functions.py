@@ -126,7 +126,7 @@ def test__get_fasta_regex_func():
 
 def test_install_genome():
     localname = "my_genome"
-    genomepy.functions.install_genome(
+    g = genomepy.functions.install_genome(
         name="tests/data/sacCer3/sacCer3.fa",
         provider="Local",
         genomes_dir=None,
@@ -136,17 +136,10 @@ def test_install_genome():
         force=True,
     )
 
-    genomes_dir = genomepy.functions.get_genomes_dir(None, False)
-    genome_file = os.path.join(genomes_dir, localname, localname + ".fa")
-    assert os.path.exists(genome_file)
-    sizes_file = os.path.join(genomes_dir, localname, localname + ".fa.sizes")
-    assert os.path.exists(sizes_file)
-    gaps_file = os.path.join(genomes_dir, localname, localname + ".gaps.bed")
-    assert os.path.exists(gaps_file)
-    annotation_file = os.path.join(
-        genomes_dir, localname, localname + ".annotation.gtf"
-    )
-    assert os.path.exists(annotation_file)
+    assert os.path.isfile(g.genome_file)
+    assert os.path.exists(g.sizes_file)
+    assert os.path.exists(g.gaps_file)
+    assert os.path.isfile(g.annotation_gtf_file)
 
     # regex test:
     sizes = genomepy.Genome(localname).sizes.keys()

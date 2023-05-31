@@ -23,27 +23,41 @@ def test_genome_info_tuple(ensembl):
 
 
 def test_get_version(ensembl):
-    v = ensembl.get_version(vertebrates=True)
-    assert v.isnumeric()
-    assert int(v) > 100
+    v = ensembl.get_version("ARS1")
+    assert isinstance(v, int)
+    assert v > 100
 
-    v = ensembl.get_version()
-    assert v.isnumeric()
-    assert int(v) > 50
+    v = ensembl.get_version("TAIR10")
+    assert isinstance(v, int)
+    assert v > 50
 
-    v = ensembl.get_version(set_version=42)
-    assert v.isnumeric()
-    assert v == "42"
+    v = ensembl.get_version(name="ARS1", version=92)
+    assert isinstance(v, int)
+    assert v == 92
+
+    v = ensembl.get_version(name="TAIR10", version=33)
+    assert isinstance(v, int)
+    assert v == 33
+
+    # release is not a number
+    with pytest.raises(TypeError):
+        ensembl.get_version(name="TAIR10", version="not a number")
+
+    # release does not exist
+    with pytest.raises(ValueError):
+        ensembl.get_version(name="ARS1", version=1)
+
+    # assembly does not exist on specified release
+    with pytest.raises(FileNotFoundError):
+        ensembl.get_version(name="TAIR10", version=1)
 
 
 def test_get_division(ensembl):
-    genome = ensembl.genomes["TAIR10"]
-    division, is_vertebrate = genomepy.providers.ensembl.get_division(genome)
+    division, is_vertebrate = ensembl.get_division("TAIR10")
     assert division == "plants"
     assert is_vertebrate is False
 
-    genome = ensembl.genomes["GRCh38.p13"]
-    division, is_vertebrate = genomepy.providers.ensembl.get_division(genome)
+    division, is_vertebrate = ensembl.get_division("GRCh38.p13")
     assert division == "vertebrates"
     assert is_vertebrate is True
 
@@ -92,7 +106,7 @@ def test_get_genome_download_link(ensembl):
     )
 
     # vertebrate: latest version
-    version = ensembl.get_version(True)
+    version = ensembl.get_version("GRCz11")
     link = ensembl.get_genome_download_link("GRCz11", **{"toplevel": True})
     expected_link = (
         f"http://ftp.ensembl.org/pub/release-{version}/"
@@ -119,7 +133,7 @@ def test_get_annotation_download_links(ensembl):
     assert links[0] == expected_link
 
     # non vertebrate: latest version
-    version = ensembl.get_version(False)
+    version = ensembl.get_version("TAIR10")
     links = ensembl.get_annotation_download_links("TAIR10")
     expected_link = (
         f"http://ftp.ensemblgenomes.org/pub/release-{version}/plants/"
@@ -128,7 +142,7 @@ def test_get_annotation_download_links(ensembl):
     assert links[0] == expected_link
 
     # vertebrate: latest version
-    version = ensembl.get_version(True)
+    version = ensembl.get_version("GRCz11")
     links = ensembl.get_annotation_download_links("GRCz11")
     expected_link = (
         f"http://ftp.ensembl.org/pub/release-{version}/"

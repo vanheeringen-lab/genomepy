@@ -71,7 +71,7 @@ class BaseProvider:
             f"  genomepy search {name} -p {self.name}"
         )
 
-    def _genome_info_tuple(self, name, size=False):
+    def _genome_info_tuple(self, name: str, size: bool = False):
         """tuple with assembly metadata"""
         raise NotImplementedError()
 
@@ -79,12 +79,15 @@ class BaseProvider:
         """
         List all available genomes.
 
+        Parameters
+        ----------
+        size : bool, optional
+            Show absolute genome size.
+
         Yields
         ------
         genomes : list of tuples
             tuples with assembly name, accession, scientific_name, taxonomy id and description
-        size : bool, optional
-            Show absolute genome size.
         """
         for name in self.genomes.keys():
             yield self._genome_info_tuple(name, size)
@@ -317,10 +320,13 @@ class BaseProvider:
         readme = os.path.join(genomes_dir, localname, "README.txt")
         update_readme(readme, updated_metadata={"annotation url": link})
 
-    def _search_text(self, term: str) -> Iterator[str]:
+    def _search_text(self, term: str, exact=False) -> Iterator[str]:
         """check if search term is found in the provider's genome name or description field(s)"""
-        # multiple search terms: order doesn't matter
-        if " " in term:
+        if exact:
+            # allow several commonly used spacers inside the term
+            term = re.sub(r"[ _.-]", r"[ _.-]", rf"^{term}$")
+        elif " " in term:
+            # multiple search terms: order doesn't matter
             term = "".join([f"(?=.*{t})" for t in term.split()])
 
         pattern = re.compile(term, re.I)  # case insensitive
@@ -329,36 +335,46 @@ class BaseProvider:
             if any(pattern.search(t) for t in texts):
                 yield name
 
-    def _search_accession(self, term: str) -> Iterator[str]:
+    def _search_accession(self, term: str, exact=False) -> Iterator[str]:
         """check if search term is found in the provider's accession field(s)"""
-        # cut off prefix (GCA_/GCF_) and suffix (version numbers, e.g. '.3')
-        term = term[4:].split(".")[0]
+        # cut off prefix (GCA/GCF) and suffix (version numbers, e.g. '.3')
+        term = term.upper() if exact else term[3:].split(".")[0]
         for name, metadata in self.genomes.items():
             if any(term in str(metadata[f]) for f in self.accession_fields):
                 yield name
 
-    def _search_taxonomy(self, term: str) -> Iterator[str]:
+    def _search_taxonomy(self, term: str, exact=False) -> Iterator[str]:
         """check if search term is the start of the provider's taxonomy field(s)"""
+
+        def fuzzy_match(md, t):
+            return str(md).strip().startswith(t)
+
+        def exact_match(md, t):
+            return str(md).strip() == t
+
+        func = exact_match if exact else fuzzy_match
         for name, metadata in self.genomes.items():
-            if any(
-                str(metadata[f]).strip().startswith(term) for f in self.taxid_fields
-            ):
+            if any(func(metadata[f], term) for f in self.taxid_fields):
                 yield name
 
-    def search(self, term: str or int, size=False):
+    def search(self, term: str or int, exact=False, size=False):
         """
-        Search for term in genome names, descriptions and taxonomy ID.
+        Search for term in genome names and descriptions (if term contains text. Case-insensitive),
+        assembly accession IDs (if term starts with GCA_ or GCF_),
+        or taxonomy IDs (if term is a number).
 
-        The search is case-insensitive.
+        Note: exact accession ID search on UCSC may return different patch levels.
 
         Parameters
         ----------
         term : str, int
             Search term, case-insensitive.
-            Can be (part of) an assembly name (e.g. hg38),
-            scientific name (Danio rerio) or assembly
-            accession (`GCA_000146045`/`GCF_`),
-            or a taxonomy id (7227).
+            Can be an assembly name (e.g. hg38),
+            scientific name (Danio rerio),
+            assembly accession ID (GCA_000146045),
+            or taxonomy ID (7227).
+        exact : bool, optional
+            term must be an exact match
         size : bool, optional
             Show absolute genome size.
 
@@ -375,7 +391,7 @@ class BaseProvider:
         else:
             search_function = self._search_text
 
-        for name in search_function(term):
+        for name in search_function(term, exact):
             yield self._genome_info_tuple(name, size)
 
     def head_annotation(self, name: str, genomes_dir=None, n: int = 5, **kwargs):

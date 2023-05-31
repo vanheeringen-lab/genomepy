@@ -34,7 +34,7 @@ dependencies:
   # Plugins
   - bowtie2
   - bwa
-  - gmap
+  - gmap <=2021.08.25
   - hisat2
   - minimap2
   - star

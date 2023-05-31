@@ -17,12 +17,6 @@ def test__search_accession(ucsc):
     assert next(ucsc._search_accession("GCA_000004335.1")) == "ailMel1"
 
 
-def test__search_accession_ncbi(ucsc):
-    ret = list(ucsc._search_accession_ncbi("GCF_000004195.2"))
-    expected = ["xenTro1", "xenTro10", "xenTro2", "xenTro3", "xenTro7", "xenTro9"]
-    assert ret == expected
-
-
 def test_assembly_accession(ucsc):
     # in UCSC(, not in NCBI)
     accession = ucsc.assembly_accession("sacCer3")
@@ -35,6 +29,26 @@ def test_assembly_accession(ucsc):
     # not in UCSC, in NCBI
     accession = ucsc.assembly_accession("xenTro7")
     assert accession == "GCA_000004195.2"
+
+
+def test__search_accession_ncbi(ucsc):
+    ret = list(ucsc._search_accession_ncbi("GCF_000004195.2"))
+    expected = ["xenTro1", "xenTro10", "xenTro2", "xenTro3", "xenTro7", "xenTro9"]
+    assert ret == expected
+
+    # exact accession ID without version
+    ret = list(ucsc._search_accession_ncbi("GCA_000004195", exact=True))
+    assert ret == expected
+
+    # cannot scrape exact accession ID with version
+    ret = list(ucsc._search_accession_ncbi("GCA_000004555.2", exact=True))
+    expected = ["cb1", "cb3"]
+    assert ret == expected
+
+    # can scrape exact accession ID with version
+    ret = list(ucsc._search_accession_ncbi("GCA_000004195.2", exact=True))
+    expected = ["xenTro7"]
+    assert ret == expected
 
 
 def test_annotation_links(ucsc):
@@ -52,14 +66,18 @@ def test_genome_info_tuple(ucsc):
 def test_get_genome_download_link(ucsc):
     link = ucsc.get_genome_download_link("sacCer3", mask="soft")
     assert link in [
-        "http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz",
-        "http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/sacCer3.fa.gz",
+        "https://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz",
+        "https://hgdownload-euro.soe.ucsc.edu/goldenPath/sacCer3/bigZips/chromFa.tar.gz",
+        "https://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/bigZips/sacCer3.fa.gz",
+        "https://hgdownload-euro.soe.ucsc.edu/goldenPath/sacCer3/bigZips/sacCer3.fa.gz",
     ]
 
     link = ucsc.get_genome_download_link("danRer7", mask="hard")
     assert link in [
-        "http://hgdownload.soe.ucsc.edu/goldenPath/danRer7/bigZips/chromFaMasked.tar.gz",
-        "http://hgdownload.soe.ucsc.edu/goldenPath/danRer7/bigZips/danRer7.fa.masked.gz",
+        "https://hgdownload.soe.ucsc.edu/goldenPath/danRer7/bigZips/chromFaMasked.tar.gz",
+        "https://hgdownload-euro.soe.ucsc.edu/goldenPath/danRer7/bigZips/chromFaMasked.tar.gz",
+        "https://hgdownload.soe.ucsc.edu/goldenPath/danRer7/bigZips/danRer7.fa.masked.gz",
+        "https://hgdownload-euro.soe.ucsc.edu/goldenPath/danRer7/bigZips/danRer7.fa.masked.gz",
     ]
 
 

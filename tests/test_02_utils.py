@@ -76,11 +76,6 @@ def test_safe(unsafe_name="a name ", safe_name="a_name"):
     assert result == safe_name
 
 
-def test_lower(unsafe_name="A nAme ", safe_name="a_name"):
-    result = genomepy.utils.lower(unsafe_name)
-    assert result == safe_name
-
-
 def test_get_localname(name="XENTR_9.1", localname="my genome"):
     # localname input
     result = genomepy.utils.get_localname(name=name, localname=localname)
