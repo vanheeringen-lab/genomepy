@@ -25,6 +25,7 @@ Contents
    Command line documentation <content/command_line>
    Python API documentation (core) <content/api_core>
    Python API documentation (full) <_autosummary/genomepy>
+   Configuration <content/config>
    FAQ <content/help_faq>
    About <content/about>
 
