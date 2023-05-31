@@ -15,7 +15,6 @@ genomepy.providers.ensembl
       :toctree:
    
       add_grch37
-      get_division
       get_genomes
       request_json
    

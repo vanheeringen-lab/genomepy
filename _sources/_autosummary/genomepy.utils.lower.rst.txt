@@ -1,6 +1,0 @@
-genomepy.utils.lower
-====================
-
-.. currentmodule:: genomepy.utils
-
-.. autofunction:: lower

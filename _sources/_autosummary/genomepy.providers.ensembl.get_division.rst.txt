@@ -1,6 +1,0 @@
-genomepy.providers.ensembl.get\_division
-========================================
-
-.. currentmodule:: genomepy.providers.ensembl
-
-.. autofunction:: get_division

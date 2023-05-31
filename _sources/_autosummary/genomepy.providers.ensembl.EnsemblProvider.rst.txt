@@ -24,11 +24,15 @@ genomepy.providers.ensembl.EnsemblProvider
       ~EnsemblProvider.genome_taxid
       ~EnsemblProvider.get_annotation_download_link
       ~EnsemblProvider.get_annotation_download_links
+      ~EnsemblProvider.get_division
       ~EnsemblProvider.get_genome_download_link
+      ~EnsemblProvider.get_release
+      ~EnsemblProvider.get_releases
       ~EnsemblProvider.get_version
       ~EnsemblProvider.head_annotation
       ~EnsemblProvider.list_available_genomes
       ~EnsemblProvider.ping
+      ~EnsemblProvider.releases_with_assembly
       ~EnsemblProvider.search
    
    

@@ -143,31 +143,34 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.__init__" title="genomepy.annotation.Annotation.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(name[, genomes_dir, quiet])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.filter_regex" title="genomepy.annotation.Annotation.filter_regex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_regex</span></code></a>(annot[, regex, invert_match, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.attributes" title="genomepy.annotation.Annotation.attributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">attributes</span></code></a>([annot])</p></td>
+<td><p>list all attributes present in the GTF attribute field.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.filter_regex" title="genomepy.annotation.Annotation.filter_regex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_regex</span></code></a>(annot[, regex, invert_match, ...])</p></td>
 <td><p>Filter a dataframe by any column using regex.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.from_attributes" title="genomepy.annotation.Annotation.from_attributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_attributes</span></code></a>(field[, annot, check])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.from_attributes" title="genomepy.annotation.Annotation.from_attributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_attributes</span></code></a>(field[, annot, check])</p></td>
 <td><p>Convert the specified GTF attribute field to a pandas series</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.gene_coords" title="genomepy.annotation.Annotation.gene_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gene_coords</span></code></a>(genes[, annot])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.gene_coords" title="genomepy.annotation.Annotation.gene_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gene_coords</span></code></a>(genes[, annot])</p></td>
 <td><p>Retrieve gene locations.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.genes" title="genomepy.annotation.Annotation.genes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">genes</span></code></a>([annot])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.genes" title="genomepy.annotation.Annotation.genes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">genes</span></code></a>([annot])</p></td>
 <td><p>Retrieve gene names from an annotation.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.gtf_dict" title="genomepy.annotation.Annotation.gtf_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gtf_dict</span></code></a>(key, value[, string_values, annot])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.gtf_dict" title="genomepy.annotation.Annotation.gtf_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gtf_dict</span></code></a>(key, value[, string_values, annot])</p></td>
 <td><p>Create a dictionary based on the columns or attribute fields in a GTF.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.lengths" title="genomepy.annotation.Annotation.lengths"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lengths</span></code></a>([attribute])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.lengths" title="genomepy.annotation.Annotation.lengths"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lengths</span></code></a>([attribute])</p></td>
 <td><p>Return a series with the selected GTF attribute as index, and its lengths as values.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.map_genes" title="genomepy.annotation.Annotation.map_genes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_genes</span></code></a>(field[, product, annot])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.map_genes" title="genomepy.annotation.Annotation.map_genes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_genes</span></code></a>(field[, product, annot])</p></td>
 <td><p>Use mygene.info to map gene identifiers to any specified <cite>field</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.map_locations" title="genomepy.annotation.Annotation.map_locations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_locations</span></code></a>(annot, to[, drop])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.map_locations" title="genomepy.annotation.Annotation.map_locations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_locations</span></code></a>(annot, to[, drop])</p></td>
 <td><p>Map chromosome mapping from one assembly to another.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.sanitize" title="genomepy.annotation.Annotation.sanitize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sanitize</span></code></a>([match, filter, overwrite])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.annotation.Annotation.sanitize" title="genomepy.annotation.Annotation.sanitize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sanitize</span></code></a>([match, filter, overwrite])</p></td>
 <td><p>Match the contigs names of the gene annotations to the genome's.</p></td>
 </tr>
 </tbody>
@@ -239,6 +242,23 @@
 <dt class="sig sig-object py" id="genomepy.annotation.Annotation.annotation_gtf_file">
 <span class="sig-name descname"><span class="pre">annotation_gtf_file</span></span><a class="headerlink" href="#genomepy.annotation.Annotation.annotation_gtf_file" title="Permalink to this definition"></a></dt>
 <dd><p>path to the gene annotation GTF file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.annotation.Annotation.attributes">
+<span class="sig-name descname"><span class="pre">attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gtf'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.annotation.Annotation.attributes" title="Permalink to this definition"></a></dt>
+<dd><p>list all attributes present in the GTF attribute field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>annot</strong> (<em>str</em><em> or </em><em>pd.Dataframe</em><em>, </em><em>optional</em>) – any GTF in dataframe format, or the default GTF.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>with attributes</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -525,7 +545,7 @@ Third, save the results and log this in the README.</p>
 
   <div role="contentinfo">
     <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
-      <span class="lastupdated">Last updated on 2023-05-09, 08:49 (UTC).
+      <span class="lastupdated">Last updated on 2023-05-31, 11:40 (UTC).
       </span></p>
   </div>
 

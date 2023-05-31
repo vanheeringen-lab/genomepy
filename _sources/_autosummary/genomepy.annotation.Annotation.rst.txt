@@ -17,6 +17,7 @@ genomepy.annotation.Annotation
    .. autosummary::
    
       ~Annotation.__init__
+      ~Annotation.attributes
       ~Annotation.filter_regex
       ~Annotation.from_attributes
       ~Annotation.gene_coords

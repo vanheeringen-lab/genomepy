@@ -180,8 +180,8 @@ The UCSC MySQL database is used to find metadata and annotations.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.ucsc.UcscProvider.ping" title="genomepy.providers.ucsc.UcscProvider.ping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ping</span></code></a>()</p></td>
 <td><p>Can the provider be reached?</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ucsc.UcscProvider.search" title="genomepy.providers.ucsc.UcscProvider.search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></a>(term[, size])</p></td>
-<td><p>Search for term in genome names, descriptions and taxonomy ID.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ucsc.UcscProvider.search" title="genomepy.providers.ucsc.UcscProvider.search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></a>(term[, exact, size])</p></td>
+<td><p>Search for term in genome names and descriptions (if term contains text.</p></td>
 </tr>
 </tbody>
 </table>
@@ -393,11 +393,11 @@ Downloads all available if left blank.</p>
 <span class="sig-name descname"><span class="pre">list_available_genomes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ucsc.UcscProvider.list_available_genomes" title="Permalink to this definition"></a></dt>
 <dd><p>List all available genomes.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Yields</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>genomes</strong> (<em>list of tuples</em>) – tuples with assembly name, accession, scientific_name, taxonomy id and description</p></li>
-<li><p><strong>size</strong> (<em>bool, optional</em>) – Show absolute genome size.</p></li>
-</ul>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>size</strong> (<em>bool</em><em>, </em><em>optional</em>) – Show absolute genome size.</p>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><p><strong>genomes</strong> (<em>list of tuples</em>) – tuples with assembly name, accession, scientific_name, taxonomy id and description</p>
 </dd>
 </dl>
 </dd></dl>
@@ -416,17 +416,20 @@ Downloads all available if left blank.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.ucsc.UcscProvider.search">
-<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ucsc.UcscProvider.search" title="Permalink to this definition"></a></dt>
-<dd><p>Search for term in genome names, descriptions and taxonomy ID.</p>
-<p>The search is case-insensitive.</p>
+<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ucsc.UcscProvider.search" title="Permalink to this definition"></a></dt>
+<dd><p>Search for term in genome names and descriptions (if term contains text. Case-insensitive),
+assembly accession IDs (if term starts with <a href="#id1"><span class="problematic" id="id2">GCA_</span></a> or <a href="#id3"><span class="problematic" id="id4">GCF_</span></a>),
+or taxonomy IDs (if term is a number).</p>
+<p>Note: exact accession ID search on UCSC may return different patch levels.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>term</strong> (<em>str</em><em>, </em><em>int</em>) – Search term, case-insensitive.
-Can be (part of) an assembly name (e.g. hg38),
-scientific name (Danio rerio) or assembly
-accession (<cite>GCA_000146045</cite>/<cite>GCF_</cite>),
-or a taxonomy id (7227).</p></li>
+Can be an assembly name (e.g. hg38),
+scientific name (Danio rerio),
+assembly accession ID (GCA_000146045),
+or taxonomy ID (7227).</p></li>
+<li><p><strong>exact</strong> (<em>bool</em><em>, </em><em>optional</em>) – term must be an exact match</p></li>
 <li><p><strong>size</strong> (<em>bool</em><em>, </em><em>optional</em>) – Show absolute genome size.</p></li>
 </ul>
 </dd>
@@ -458,7 +461,7 @@ or a taxonomy id (7227).</p></li>
 
   <div role="contentinfo">
     <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
-      <span class="lastupdated">Last updated on 2023-05-09, 08:49 (UTC).
+      <span class="lastupdated">Last updated on 2023-05-31, 11:40 (UTC).
       </span></p>
   </div>
 

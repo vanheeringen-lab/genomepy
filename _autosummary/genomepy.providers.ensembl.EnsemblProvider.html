@@ -71,7 +71,6 @@
 <li class="toctree-l3"><a class="reference internal" href="genomepy.providers.base.html">genomepy.providers.base</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="genomepy.providers.ensembl.html">genomepy.providers.ensembl</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="genomepy.providers.ensembl.add_grch37.html">genomepy.providers.ensembl.add_grch37</a></li>
-<li class="toctree-l4"><a class="reference internal" href="genomepy.providers.ensembl.get_division.html">genomepy.providers.ensembl.get_division</a></li>
 <li class="toctree-l4"><a class="reference internal" href="genomepy.providers.ensembl.get_genomes.html">genomepy.providers.ensembl.get_genomes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="genomepy.providers.ensembl.request_json.html">genomepy.providers.ensembl.request_json</a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#">genomepy.providers.ensembl.EnsemblProvider</a></li>
@@ -165,23 +164,35 @@ The bacteria division is not yet supported.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.get_annotation_download_links" title="genomepy.providers.ensembl.EnsemblProvider.get_annotation_download_links"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_annotation_download_links</span></code></a>(name, **kwargs)</p></td>
 <td><p>Retrieve functioning gene annotation download link(s).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.get_genome_download_link" title="genomepy.providers.ensembl.EnsemblProvider.get_genome_download_link"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_genome_download_link</span></code></a>(name[, mask])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.get_division" title="genomepy.providers.ensembl.EnsemblProvider.get_division"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_division</span></code></a>(name)</p></td>
+<td><p>Retrieve the division of a genome.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.get_genome_download_link" title="genomepy.providers.ensembl.EnsemblProvider.get_genome_download_link"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_genome_download_link</span></code></a>(name[, mask])</p></td>
 <td><p>Return http link to the genome sequence</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.get_version" title="genomepy.providers.ensembl.EnsemblProvider.get_version"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_version</span></code></a>([vertebrates, set_version, url])</p></td>
-<td><p>Retrieve current version from Ensembl FTP.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.get_release" title="genomepy.providers.ensembl.EnsemblProvider.get_release"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_release</span></code></a>(is_vertebrate)</p></td>
+<td><p>Retrieve current Ensembl or EnsemblGenomes release version.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.head_annotation" title="genomepy.providers.ensembl.EnsemblProvider.head_annotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">head_annotation</span></code></a>(name[, genomes_dir, n])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.get_releases" title="genomepy.providers.ensembl.EnsemblProvider.get_releases"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_releases</span></code></a>(is_vertebrate)</p></td>
+<td><p>Retrieve all Ensembl or EnsemblGenomes release versions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.get_version" title="genomepy.providers.ensembl.EnsemblProvider.get_version"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_version</span></code></a>(name[, version])</p></td>
+<td><p>Retrieve the latest Ensembl or EnsemblGenomes release version, or check if the requested release version exists.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.head_annotation" title="genomepy.providers.ensembl.EnsemblProvider.head_annotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">head_annotation</span></code></a>(name[, genomes_dir, n])</p></td>
 <td><p>Download the first n lines of the annotation.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.list_available_genomes" title="genomepy.providers.ensembl.EnsemblProvider.list_available_genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_available_genomes</span></code></a>([size])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.list_available_genomes" title="genomepy.providers.ensembl.EnsemblProvider.list_available_genomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_available_genomes</span></code></a>([size])</p></td>
 <td><p>List all available genomes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.ping" title="genomepy.providers.ensembl.EnsemblProvider.ping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ping</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.ping" title="genomepy.providers.ensembl.EnsemblProvider.ping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ping</span></code></a>()</p></td>
 <td><p>Can the provider be reached?</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.search" title="genomepy.providers.ensembl.EnsemblProvider.search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></a>(term[, size])</p></td>
-<td><p>Search for term in genome names, descriptions and taxonomy ID.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.releases_with_assembly" title="genomepy.providers.ensembl.EnsemblProvider.releases_with_assembly"><code class="xref py py-obj docutils literal notranslate"><span class="pre">releases_with_assembly</span></code></a>(name)</p></td>
+<td><p>List all Ensembl or EnsemblGenomes release versions with the specified genome.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.search" title="genomepy.providers.ensembl.EnsemblProvider.search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></a>(term[, exact, size])</p></td>
+<td><p>Search for term in genome names and descriptions (if term contains text.</p></td>
 </tr>
 </tbody>
 </table>
@@ -350,6 +361,12 @@ The bacteria division is not yet supported.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.ensembl.EnsemblProvider.get_division">
+<span class="sig-name descname"><span class="pre">get_division</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider.get_division" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve the division of a genome.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.ensembl.EnsemblProvider.get_genome_download_link">
 <span class="sig-name descname"><span class="pre">get_genome_download_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'soft'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider.get_genome_download_link" title="Permalink to this definition"></a></dt>
 <dd><p>Return http link to the genome sequence</p>
@@ -368,9 +385,22 @@ name is not found.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.ensembl.EnsemblProvider.get_release">
+<span class="sig-name descname"><span class="pre">get_release</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">is_vertebrate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider.get_release" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve current Ensembl or EnsemblGenomes release version.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.ensembl.EnsemblProvider.get_releases">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_releases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">is_vertebrate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider.get_releases" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve all Ensembl or EnsemblGenomes release versions.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.ensembl.EnsemblProvider.get_version">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_version</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertebrates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://rest.ensembl.org/'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider.get_version" title="Permalink to this definition"></a></dt>
-<dd><p>Retrieve current version from Ensembl FTP.</p>
+<span class="sig-name descname"><span class="pre">get_version</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider.get_version" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve the latest Ensembl or EnsemblGenomes release version,
+or check if the requested release version exists.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -395,11 +425,11 @@ name is not found.</p></li>
 <span class="sig-name descname"><span class="pre">list_available_genomes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider.list_available_genomes" title="Permalink to this definition"></a></dt>
 <dd><p>List all available genomes.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Yields</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>genomes</strong> (<em>list of tuples</em>) – tuples with assembly name, accession, scientific_name, taxonomy id and description</p></li>
-<li><p><strong>size</strong> (<em>bool, optional</em>) – Show absolute genome size.</p></li>
-</ul>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>size</strong> (<em>bool</em><em>, </em><em>optional</em>) – Show absolute genome size.</p>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><p><strong>genomes</strong> (<em>list of tuples</em>) – tuples with assembly name, accession, scientific_name, taxonomy id and description</p>
 </dd>
 </dl>
 </dd></dl>
@@ -417,18 +447,27 @@ name is not found.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="genomepy.providers.ensembl.EnsemblProvider.releases_with_assembly">
+<span class="sig-name descname"><span class="pre">releases_with_assembly</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider.releases_with_assembly" title="Permalink to this definition"></a></dt>
+<dd><p>List all Ensembl or EnsemblGenomes release versions with the specified genome.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.ensembl.EnsemblProvider.search">
-<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider.search" title="Permalink to this definition"></a></dt>
-<dd><p>Search for term in genome names, descriptions and taxonomy ID.</p>
-<p>The search is case-insensitive.</p>
+<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider.search" title="Permalink to this definition"></a></dt>
+<dd><p>Search for term in genome names and descriptions (if term contains text. Case-insensitive),
+assembly accession IDs (if term starts with <a href="#id1"><span class="problematic" id="id2">GCA_</span></a> or <a href="#id3"><span class="problematic" id="id4">GCF_</span></a>),
+or taxonomy IDs (if term is a number).</p>
+<p>Note: exact accession ID search on UCSC may return different patch levels.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>term</strong> (<em>str</em><em>, </em><em>int</em>) – Search term, case-insensitive.
-Can be (part of) an assembly name (e.g. hg38),
-scientific name (Danio rerio) or assembly
-accession (<cite>GCA_000146045</cite>/<cite>GCF_</cite>),
-or a taxonomy id (7227).</p></li>
+Can be an assembly name (e.g. hg38),
+scientific name (Danio rerio),
+assembly accession ID (GCA_000146045),
+or taxonomy ID (7227).</p></li>
+<li><p><strong>exact</strong> (<em>bool</em><em>, </em><em>optional</em>) – term must be an exact match</p></li>
 <li><p><strong>size</strong> (<em>bool</em><em>, </em><em>optional</em>) – Show absolute genome size.</p></li>
 </ul>
 </dd>
@@ -460,7 +499,7 @@ or a taxonomy id (7227).</p></li>
 
   <div role="contentinfo">
     <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
-      <span class="lastupdated">Last updated on 2023-05-09, 08:49 (UTC).
+      <span class="lastupdated">Last updated on 2023-05-31, 11:40 (UTC).
       </span></p>
   </div>
 
