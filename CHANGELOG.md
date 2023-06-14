@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
-- no longer crashes if an assembly was uploaded with explicitly empty metadata fields
+- fix for NCBI's assembly report header "asm_submitter" instead of "submitter"
 
 ## [0.16.0] - 2023-05-31
 

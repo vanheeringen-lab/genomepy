@@ -72,7 +72,11 @@ def test__get_genomes(ncbi):
     genome = ncbi.genomes["ASM2732v1"]
     assert isinstance(genome, dict)
     for field in ncbi.accession_fields + ncbi.taxid_fields + ncbi.description_fields:
-        assert field in genome
+        if field.endswith("submitter"):
+            # "submitter" or "asm_submitter" must be present
+            assert sum([k.endswith("submitter") for k in genome.keys()]) == 1
+        else:
+            assert field in genome.keys()
     assert genome["species_taxid"] == "2097"
     assert genome["taxid"] == "243273"
 
