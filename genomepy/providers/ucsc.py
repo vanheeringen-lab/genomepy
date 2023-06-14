@@ -97,7 +97,7 @@ class UcscProvider(BaseProvider):
         term = term.upper() if exact else term[3:].split(".")[0]
         hits = False
         for name, metadata in self.genomes.items():
-            if any([term in str(metadata[f]) for f in self.accession_fields]):
+            if any([term in str(metadata.get(f, "")) for f in self.accession_fields]):
                 hits = True
                 yield name
 

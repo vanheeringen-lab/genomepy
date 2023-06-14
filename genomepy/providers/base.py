@@ -331,7 +331,7 @@ class BaseProvider:
 
         pattern = re.compile(term, re.I)  # case insensitive
         for name, metadata in self.genomes.items():
-            texts = [name] + [str(metadata[f]) for f in self.description_fields]
+            texts = [name] + [str(metadata.get(f, "")) for f in self.description_fields]
             if any(pattern.search(t) for t in texts):
                 yield name
 
@@ -340,7 +340,7 @@ class BaseProvider:
         # cut off prefix (GCA/GCF) and suffix (version numbers, e.g. '.3')
         term = term.upper() if exact else term[3:].split(".")[0]
         for name, metadata in self.genomes.items():
-            if any(term in str(metadata[f]) for f in self.accession_fields):
+            if any(term in str(metadata.get(f, "")) for f in self.accession_fields):
                 yield name
 
     def _search_taxonomy(self, term: str, exact=False) -> Iterator[str]:
@@ -354,7 +354,7 @@ class BaseProvider:
 
         func = exact_match if exact else fuzzy_match
         for name, metadata in self.genomes.items():
-            if any(func(metadata[f], term) for f in self.taxid_fields):
+            if any(func(metadata.get(f, ""), term) for f in self.taxid_fields):
                 yield name
 
     def search(self, term: str or int, exact=False, size=False):

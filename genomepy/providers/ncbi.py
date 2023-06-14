@@ -39,7 +39,8 @@ class NcbiProvider(BaseProvider):
     accession_fields = ["assembly_accession", "gbrs_paired_asm"]
     taxid_fields = ["species_taxid", "taxid"]
     description_fields = [
-        "submitter",
+        "submitter",  # replaced with "asm_submitter" in 2023
+        "asm_submitter",
         "organism_name",
         "assembly_accession",
         "gbrs_paired_asm",
@@ -65,7 +66,7 @@ class NcbiProvider(BaseProvider):
         taxid = self.genome_taxid(name)
         annotations = bool(self.annotation_links(name))
         species = self.genomes[name].get("organism_name")
-        other = self.genomes[name].get("submitter")
+        other = self.genomes[name].get("asm_submitter")
         if size:
             length = get_genome_size(accession)
             return name, accession, taxid, annotations, species, length, other
@@ -224,14 +225,14 @@ def get_genomes(assembly_url):
     ]
     # filter summaries to these keys (to reduce the size of the cached data)
     summary_keys_to_keep = [
-        0,  # 'assembly_accession',
-        5,  # 'taxid',
-        6,  # 'species_taxid',
-        7,  # 'organism_name',
-        16,  # 'submitter',
-        17,  # 'gbrs_paired_asm',
-        18,  # 'paired_asm_comp',
-        19,  # 'ftp_path',
+        0,  # "assembly_accession",
+        5,  # "taxid",
+        6,  # "species_taxid",
+        7,  # "organism_name",
+        16,  # "asm_submitter",
+        17,  # "gbrs_paired_asm",
+        18,  # "paired_asm_comp",
+        19,  # "ftp_path",
     ]
     for fname in names:
         lines = load_summary(f"{assembly_url}/{fname}")
