@@ -26,7 +26,7 @@ if not skip:
         toplevel = False if assembly == "primary_assembly" else True
         version = release_version
         assert ensembl.get_genome_download_link(
-            "GRCh38.p13", mask=mask, toplevel=toplevel, version=version
+            "GRCh38.p14", mask=mask, toplevel=toplevel, version=version
         )
 
     def test_ensemblgenomes_genome_download_links(masking, ensembl):
@@ -53,5 +53,5 @@ if not skip:
         Also test masking (should be ignored).
 
         These genomes are hosted on ftp://ftp.ncbi.nlm.nih.gov."""
-        for genome in ["Charlie1.0", "GRCh38.p13"]:
+        for genome in ["Charlie1.0", "GRCh38.p14"]:
             assert ncbi.get_genome_download_link(genome, mask=masking)

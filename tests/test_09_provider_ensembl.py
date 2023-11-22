@@ -57,7 +57,7 @@ def test_get_division(ensembl):
     assert division == "plants"
     assert is_vertebrate is False
 
-    division, is_vertebrate = ensembl.get_division("GRCh38.p13")
+    division, is_vertebrate = ensembl.get_division("GRCh38.p14")
     assert division == "vertebrates"
     assert is_vertebrate is True
 
