@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>genomepy.genome.Genome &mdash; genomepy  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -152,7 +154,7 @@ indexname: name of index file or fsspec.core.OpenFile instance</p>
 <td><p>Return random genomic sequences.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#genomepy.genome.Genome.get_seq" title="genomepy.genome.Genome.get_seq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_seq</span></code></a>(name, start, end[, rc])</p></td>
-<td><p>Return a sequence by record name and interval [start, end).</p></td>
+<td><p>Return a sequence by record name and interval [start, end].</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.genome.Genome.get_spliced_seq" title="genomepy.genome.Genome.get_spliced_seq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_spliced_seq</span></code></a>(name, intervals[, rc])</p></td>
 <td><p>Return a sequence by record name and list of intervals</p></td>
@@ -308,8 +310,8 @@ String with “chrom:start-end” genomic coordinates
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.genome.Genome.get_seq">
 <span class="sig-name descname"><span class="pre">get_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.genome.Genome.get_seq" title="Permalink to this definition"></a></dt>
-<dd><p>Return a sequence by record name and interval [start, end).</p>
-<p>Coordinates are 1-based, end-exclusive.
+<dd><p>Return a sequence by record name and interval [start, end].</p>
+<p>Coordinates are 1-based, closed interval.
 If rc is set, reverse complement will be returned.</p>
 </dd></dl>
 
@@ -404,7 +406,7 @@ Example input files can be found in genomepy/tests/data/regions.*</p></li>
 
   <div role="contentinfo">
     <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
-      <span class="lastupdated">Last updated on 2023-06-14, 13:37 (UTC).
+      <span class="lastupdated">Last updated on 2024-12-18, 13:21 (UTC).
       </span></p>
   </div>
 
