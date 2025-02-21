@@ -79,12 +79,14 @@ def test_get_genome_download_link(ensembl):
         + "fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.25.dna_sm.toplevel.fa.gz"
     )
 
-    # non vertebrate: entry not using url_name (see issue #205)
-    link = ensembl.get_genome_download_link("Aqu1", mask="soft", **{"version": 35})
+    # non-vertebrate: entry not using url_name (see issue #205)
+    link = ensembl.get_genome_download_link(
+        "Amel_HAv3.1", mask="soft", **{"version": 59}
+    )
     assert (
         link
-        == "http://ftp.ensemblgenomes.org/pub/release-35/metazoa/"
-        + "fasta/amphimedon_queenslandica/dna/Amphimedon_queenslandica.Aqu1.dna_sm.toplevel.fa.gz"
+        == "http://ftp.ensemblgenomes.org/pub/release-59/metazoa/"
+        + "fasta/apis_mellifera/dna/Apis_mellifera.Amel_HAv3.1.dna_sm.toplevel.fa.gz"
     )
 
     # vertebrate with primary assembly: unmasked

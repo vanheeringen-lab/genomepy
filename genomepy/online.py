@@ -1,4 +1,5 @@
 """Utility functions with internet connections"""
+
 import socket
 import urllib.error
 from ftplib import FTP, all_errors, error_temp

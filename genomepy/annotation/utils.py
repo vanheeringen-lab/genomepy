@@ -1,4 +1,5 @@
 """Utility functions with gene annotations"""
+
 import csv
 import os
 import shutil

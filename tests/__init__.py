@@ -1,6 +1,7 @@
 """
 Global variables for pytest
 """
+
 import os
 from platform import system
 

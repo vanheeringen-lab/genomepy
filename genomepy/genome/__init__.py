@@ -1,4 +1,5 @@
 """Genome class, modules & related functions"""
+
 import os.path
 import re
 from glob import glob

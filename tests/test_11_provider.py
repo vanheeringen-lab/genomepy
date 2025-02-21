@@ -44,11 +44,11 @@ def test_online_providers():
 
 def test_search():
     # unrecognized provider/genome will cause an exception or stopiteration respectively
-    # case insensitive description search
+    # case-insensitive description search
     search = list(genomepy.providers.search("xEnOpUs TrOpIcAlIs", "ensembl"))
     metadata = search[0]
 
-    # case insensitive assembly name search
+    # case-insensitive assembly name search
     search = list(genomepy.providers.search("UcB_xTrO_10.0", "ensembl"))
     metadata2 = search[0]
 

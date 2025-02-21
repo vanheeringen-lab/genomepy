@@ -1,4 +1,5 @@
 """Module-level functions"""
+
 import os
 import re
 import sys
@@ -299,7 +300,7 @@ def generate_env(fname: str = "exports.txt", genomes_dir: str = None):
     """
     Generate file with exports.
 
-    By default the export file generated is .config/genomepy/exports.txt.
+    By default, the export file generated is .config/genomepy/exports.txt.
     An alternative file name or file path is accepted too.
 
     Parameters
@@ -424,7 +425,7 @@ def _get_fasta_regex_func(
     """
     # define filter functions
     if keep_alt is False:
-        alt_pattern = re.compile("(alt)", re.I)  # case insensitive
+        alt_pattern = re.compile("(alt)", re.I)  # case-insensitive
 
         def alt_keep(header):
             return not bool(alt_pattern.search(header))

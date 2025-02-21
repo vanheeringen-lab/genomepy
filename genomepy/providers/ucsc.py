@@ -29,16 +29,16 @@ from genomepy.utils import (
 # for more info, see http://genome.ucsc.edu/FAQ/FAQgenes.html
 ANNOTATIONS = ["ncbiRefSeq", "refGene", "ensGene", "knownGene"]
 
-# web adresses per mirror
+# web addresses per mirror
 ADRESSES = {
     "us": {
         "api": "https://api.genome.ucsc.edu/list/ucscGenomes",
-        "ftp": "https://hgdownload.soe.ucsc.edu/goldenPath",
+        "ftp": "https://hgdownload.soe.ucsc.edu/goldenPath",  # "ftp://hgdownload.soe.ucsc.edu/goldenPath",
         "sql": "genome-mysql.soe.ucsc.edu",
     },
     "eu": {
         "api": "https://genome-euro.ucsc.edu/cgi-bin/hubApi/list/ucscGenomes",
-        "ftp": "https://hgdownload-euro.soe.ucsc.edu/goldenPath",
+        "ftp": "https://hgdownload.soe.ucsc.edu/goldenPath",  # "ftp://hgdownload.soe.ucsc.edu/goldenPath",
         "sql": "genome-euro-mysql.soe.ucsc.edu",
     },
 }[config.get("ucsc_mirror", "us").lower()]
@@ -74,7 +74,9 @@ class UcscProvider(BaseProvider):
     @staticmethod
     def ping():
         """Can the provider be reached?"""
-        url_online = bool(check_url(ADRESSES["ftp"]))
+        url_online = bool(
+            check_url(ADRESSES["ftp"].replace("goldenPath", "downloads.html"))
+        )
         api_online = bool(check_url(ADRESSES["api"]))
         return url_online and api_online
 
@@ -441,7 +443,7 @@ def add_accessions1(genomes: dict) -> dict:
 
     For NCBI, RefSeq and GenBank accession IDs are stored directly in this table.
 
-    Updates the the genome dict "assembly_accession" field for each genome found.
+    Updates the genome dict "assembly_accession" field for each genome found.
     """
     # MySQL query
     database = "hgFixed"
@@ -487,7 +489,7 @@ def add_accessions2(genomes: dict) -> dict:
     """
     Some genomes have their assembly accession in the 'sourceName' field.
 
-    Updates the the genome dict "assembly_accession" field for each genome found.
+    Updates the genome dict "assembly_accession" field for each genome found.
     """
     re_acc = re.compile(r"GC[AF]_\d{9}\.\d+")
     for name in genomes:

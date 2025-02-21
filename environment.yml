@@ -10,9 +10,10 @@ dependencies:
   - click
   - colorama
   - filelock >=3.5
+  - libsqlite <3.49  # v3.49.1: no column "size" (this is a diskcache requirement)
   - loguru
   - mygene
-  - mysql-connector-python
+  - mysql-connector-python <=8.4.0  # v9.0.0: 'mysql_native_password' cannot be loaded
   - norns >=0.1.6
   - numpy
   - pandas
@@ -39,18 +40,18 @@ dependencies:
   - minimap2
   - star
 
-  # Distribution
-  - python-build
-  - twine ==3.3.0
-  - keyring ==22.3.0
+#  # Distribution
+#  - python-build
+#  - twine ==3.3.0
+#  - keyring ==22.3.0
 
   # Testing
-  - autoflake ==1.4
-  - black ==22.6.0
-  - flake8 ==4.0.1
-  - flake8-bugbear ==22.7.1
-  - flakeheaven ==2.0.0
-  - isort ==5.10.1
+  - autoflake
+  - black
+  - flake8
+  - flake8-bugbear
+#  - flakeheaven  # v3.3.0 does not work with python 3.12
+  - isort
   - pytest
   - pytest-rerunfailures
   - pytest-cov

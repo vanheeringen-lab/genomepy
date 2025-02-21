@@ -19,8 +19,8 @@ def test_linting():
         stderr=sp.STDOUT,  # send errors to out
         shell=True,
     )
-    out = out.decode("utf-8").replace("\x1b[0m", "").replace("\nDone\n", "")
-    if out != "":
+    out = out.decode("utf-8").strip().replace("\x1b[0m", "").replace("\nDone\n", "")
+    if out != "No changes made!":
         pytest.fail(
             f"Linting failed. Messages: \n\n{out}\n"
             "Run `tests/format.sh` to format the repo.",

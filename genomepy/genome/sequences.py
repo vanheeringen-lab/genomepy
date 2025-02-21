@@ -1,4 +1,5 @@
 """Functions to extract or convert genomic sequences"""
+
 import os
 import re
 from bisect import bisect

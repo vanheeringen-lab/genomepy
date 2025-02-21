@@ -14,7 +14,7 @@ class EnsemblProvider(BaseProvider):
     """
     Ensembl genome provider.
 
-    Will search both ensembl.org as well as ensemblgenomes.org.
+    Will search both ensembl.org and ensemblgenomes.org.
     The bacteria division is not yet supported.
     """
 
@@ -227,7 +227,7 @@ class EnsemblProvider(BaseProvider):
         name : str
             genome name
         **kwargs: dict, optional:
-            version : Ensembl version to use. By default the latest version is used
+            version : Ensembl version to use. By default, the latest version is used
 
         Returns
         -------

@@ -1,4 +1,5 @@
 """BaseProvider class, the parent of the provider classes"""
+
 import gzip
 import os
 import re
@@ -285,7 +286,7 @@ class BaseProvider:
 
     def download_annotation(self, name, genomes_dir=None, localname=None, **kwargs):
         """
-        Download annotation file to to a specific directory
+        Download annotation file to a specific directory
 
         Parameters
         ----------

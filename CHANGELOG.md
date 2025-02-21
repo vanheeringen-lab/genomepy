@@ -270,7 +270,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `search` and `install` now consistently use safe search terms (no spaces)
 - `search` now uses UTF-8, no longer crashing for \u2019 (some quotation mark).
 - `search` case insensitivity fixed for assembly names.
-- Bucketcache now stores less data, increasing responsiveness.
+- Bucketcache now stores fewer data, increasing responsiveness.
 
 ## [0.8.4] - 2020-07-29
 
@@ -385,7 +385,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-- STAR is not longer enabled by default
+- STAR is no longer enabled by default
 
 ## [0.7.0] - 2019-11-18
 
@@ -464,7 +464,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - Fixed genomes_dir argument to `genomepy install`
 - Fixed msgpack dependency
-- Fixed issue with `config generate` where config directory does note exist.
+- Fixed issue with `config generate` where config directory does not exist.
 
 ## [0.3.1]
 

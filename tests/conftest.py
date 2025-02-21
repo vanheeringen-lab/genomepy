@@ -2,6 +2,7 @@
 Global fixtures and functions for pytest
 pytest can only share fixtures between modules if they are declared here.
 """
+
 import logging
 import os
 

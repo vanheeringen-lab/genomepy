@@ -20,8 +20,17 @@ def test_list_available_genomes():
     g = genomepy.functions.list_available_genomes("Ensembl")
     metadata = next(g)
     assert isinstance(metadata, list)
-    # this will give an error if ensembl adds a new assembly to the top of their list
-    assert metadata[0:2] == ["ENA_1", "Ensembl"]
+    expected = [
+        "iyAncNigr1.1",
+        "Ensembl",
+        "GCA_916049575.1",
+        76990,
+        True,
+        "Ancistrocerus nigricornis",
+        "2021-11-Ensembl/2021-11",
+    ]
+    warn = "this will give an error if ensembl adds a new assembly to the top of their list"
+    assert metadata == expected, warn
 
 
 def test_list_installed_genomes():
@@ -97,7 +106,7 @@ def test__get_fasta_regex_func():
     func = genomepy.functions._get_fasta_regex_func(regex=None, keep_alt=False)
     assert func("alt1") is False
     assert func("chr1") is True
-    assert func("ALT1") is False  # case insensitive
+    assert func("ALT1") is False  # case-insensitive
 
     # filter user specified regex
     func = genomepy.functions._get_fasta_regex_func(
