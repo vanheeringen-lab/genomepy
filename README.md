@@ -551,7 +551,7 @@ To test your changes locally, run the following command: `pytest -vvv`
 
 ## Citation
 
-If you use genomepy in your research, please cite it: [10.21105/joss.00320](http://dx.doi.org/10.21105/joss.00320).
+If you use genomepy in your research, please cite it: [10.1093/bioinformatics/btad119](https://doi.org/10.1093/bioinformatics/btad119).
 
 ## License
 
