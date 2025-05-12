@@ -21,13 +21,13 @@ def test_list_available_genomes():
     metadata = next(g)
     assert isinstance(metadata, list)
     expected = [
-        "iyAncNigr1.1",
+        "aptHaa1",
         "Ensembl",
-        "GCA_916049575.1",
-        76990,
+        "GCA_003342985.1",
+        8823,
         True,
-        "Ancistrocerus nigricornis",
-        "2021-11-Ensembl/2021-11",
+        "Apteryx haastii",
+        "2018-12-Ensembl/2018-12",
     ]
     warn = "this will give an error if ensembl adds a new assembly to the top of their list"
     assert metadata == expected, warn

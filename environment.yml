@@ -46,12 +46,12 @@ dependencies:
 #  - keyring ==22.3.0
 
   # Testing
-  - autoflake
-  - black
-  - flake8
-  - flake8-bugbear
+  - autoflake ==1.7
+  - black ==25
+  - flake8 ==4.0
+  - flake8-bugbear ==23.3
 #  - flakeheaven  # v3.3.0 does not work with python 3.12
-  - isort
+  - isort ==6.0
   - pytest
   - pytest-rerunfailures
   - pytest-cov

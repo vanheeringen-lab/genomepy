@@ -116,9 +116,8 @@ class EnsemblProvider(BaseProvider):
         ret = retry(request_json, 3, self._url, ext)
         return int(ret["releases"][0] if is_vertebrate else ret["version"])
 
-    @staticmethod
-    @disk_cache.memoize(expire=cache_exp_other)
-    def get_releases(is_vertebrate: bool):
+    @disk_cache.memoize(expire=cache_exp_other, ignore={"self"})
+    def get_releases(self, is_vertebrate: bool):
         """Retrieve all Ensembl or EnsemblGenomes release versions."""
         url = "http://ftp.ensemblgenomes.org/pub?"
         if is_vertebrate:
@@ -132,6 +131,10 @@ class EnsemblProvider(BaseProvider):
         if is_vertebrate:
             # ignore immature releases
             releases = [r for r in releases if r > 46]
+
+        # exclude pre-releases (returns 403: forbidden)
+        latest_release = self.get_release(is_vertebrate)
+        releases = [r for r in releases if r <= latest_release]
         return releases
 
     @lock

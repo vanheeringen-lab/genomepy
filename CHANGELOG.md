@@ -7,7 +7,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- Ensembl release versions included 115, which is forbidden (unreleased at the moment?) 
 - unit tests
+- upgraded formatters (and fixed the marked grammar & spelling errors)
 
 ## [0.16.1] - 2023-06-14
 
