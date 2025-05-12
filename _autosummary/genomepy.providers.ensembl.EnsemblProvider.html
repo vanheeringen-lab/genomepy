@@ -128,7 +128,7 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genomepy.providers.ensembl.</span></span><span class="sig-name descname"><span class="pre">EnsemblProvider</span></span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="genomepy.providers.base.BaseProvider.html#genomepy.providers.base.BaseProvider" title="genomepy.providers.base.BaseProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseProvider</span></code></a></p>
 <p>Ensembl genome provider.</p>
-<p>Will search both ensembl.org as well as ensemblgenomes.org.
+<p>Will search both ensembl.org and ensemblgenomes.org.
 The bacteria division is not yet supported.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.ensembl.EnsemblProvider.__init__">
@@ -152,7 +152,7 @@ The bacteria division is not yet supported.</p>
 <td><p>Return the assembly accession number (GCA* or GCF*) for a genome.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.download_annotation" title="genomepy.providers.ensembl.EnsemblProvider.download_annotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_annotation</span></code></a>(name[, genomes_dir, ...])</p></td>
-<td><p>Download annotation file to to a specific directory</p></td>
+<td><p>Download annotation file to a specific directory</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#genomepy.providers.ensembl.EnsemblProvider.download_genome" title="genomepy.providers.ensembl.EnsemblProvider.download_genome"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_genome</span></code></a>(name[, genomes_dir, ...])</p></td>
 <td><p>Download a (gzipped) genome file to a specific directory</p></td>
@@ -271,7 +271,7 @@ The bacteria division is not yet supported.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.ensembl.EnsemblProvider.download_annotation">
 <span class="sig-name descname"><span class="pre">download_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genomes_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">localname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider.download_annotation" title="Permalink to this definition"></a></dt>
-<dd><p>Download annotation file to to a specific directory</p>
+<dd><p>Download annotation file to a specific directory</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -350,7 +350,7 @@ The bacteria division is not yet supported.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<em>str</em>) – genome name</p></li>
-<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional:</em>) – version : Ensembl version to use. By default the latest version is used</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional:</em>) – version : Ensembl version to use. By default, the latest version is used</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -394,7 +394,7 @@ name is not found.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genomepy.providers.ensembl.EnsemblProvider.get_releases">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_releases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">is_vertebrate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider.get_releases" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_releases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">is_vertebrate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.providers.ensembl.EnsemblProvider.get_releases" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve all Ensembl or EnsemblGenomes release versions.</p>
 </dd></dl>
 
@@ -501,7 +501,7 @@ or taxonomy ID (7227).</p></li>
 
   <div role="contentinfo">
     <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
-      <span class="lastupdated">Last updated on 2024-12-18, 13:21 (UTC).
+      <span class="lastupdated">Last updated on 2025-05-12, 14:53 (UTC).
       </span></p>
   </div>
 

@@ -46,7 +46,7 @@
     genomepy clean
     genomepy search xenopus_tropicalis
     genomepy annotation hg38
-    genomepy annotation GRCh38.p13
+    genomepy annotation GRCh38.p14
     genomepy install -af -p gencode GRCm39
     genomepy install -af -p ensembl TAIR10
     genomepy install -af -p ucsc sacCer3 --UCSC-annotation ensGene
