@@ -140,7 +140,7 @@ def fuzzy_annotation_search(search_name, search_list):
     """Returns all files containing both name and an annotation extension"""
     hits = []
     for ext in ["gtf", "gff"]:
-        # .*? = non greedy filler. 3? = optional 3 (for gff3). (\.gz)? = optional .gz
+        # .*? = non-greedy filler. 3? = optional 3 (for gff3). (\.gz)? = optional .gz
         expr = rf"{search_name}.*?\.{ext}3?(\.gz)?"  # noqa: W605
         for line in search_list:
             hit = re.search(expr, line, flags=re.IGNORECASE)

@@ -23,5 +23,5 @@ def test_argparse_plugin():
         parser = argparse.ArgumentParser()
         parser.add_argument("-g", dest="genome", action=action())
         _ = parser.parse_args(["-g", "non_existing"])
-    assert pytest_wrapped_e.type == SystemExit
+    assert pytest_wrapped_e.type is SystemExit
     assert pytest_wrapped_e.value.code == 1

@@ -1,4 +1,5 @@
 """Annotation.sanitize method"""
+
 from itertools import compress
 
 from genomepy.annotation.utils import _check_property, write_annot

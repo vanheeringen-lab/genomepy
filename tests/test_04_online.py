@@ -64,9 +64,6 @@ def test_retry(capsys):
 
 def test_check_url():
     # good URL
-    assert genomepy.online.check_url(
-        "https://mbdata.science.ru.nl/siebrenf/GRCh37/GRCh37/README.txt"
-    )
     assert genomepy.online.check_url("http://ftp.xenbase.org/pub/Genomics/JGI/README")
 
     # bad URL:

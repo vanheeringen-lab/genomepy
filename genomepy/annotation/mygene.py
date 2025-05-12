@@ -1,4 +1,5 @@
 """Mygene.info functions and methods"""
+
 from typing import Iterable, Union
 
 import mygene

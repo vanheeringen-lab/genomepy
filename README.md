@@ -431,7 +431,7 @@ Check out our [Python API documentation here](https://vanheeringen-lab.github.io
 >>> for row in genomepy.search("GRCh38"):
 ...    print(row)
 ...    
-['GRCh38.p13', 'Ensembl', 'GCA_000001405.28', 9606, True, 'Homo sapiens', '2014-01-Ensembl/2021-03']
+['GRCh38.p14', 'Ensembl', 'GCA_000001405.28', 9606, True, 'Homo sapiens', '2014-01-Ensembl/2021-03']
 ['hg38', 'UCSC', 'GCA_000001405.15', 9606, [True, True, False, True], 'Homo sapiens', 'Dec. 2013 (GRCh38/hg38)']
 ['GRCh38', 'NCBI', 'GCF_000001405.26', 9606, True, 'Homo sapiens', 'Genome Reference Consortium']
 ['GRCh38.p1', 'NCBI', 'GCF_000001405.27', 9606, True, 'Homo sapiens', 'Genome Reference Consortium']

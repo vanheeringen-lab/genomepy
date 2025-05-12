@@ -1,4 +1,5 @@
 """Plugin class, modules & related functions"""
+
 import os
 import re
 

@@ -127,7 +127,7 @@ class GencodeProvider(BaseProvider):
 
     def download_annotation(self, name, genomes_dir=None, localname=None, **kwargs):
         """
-        Download annotation file to to a specific directory
+        Download annotation file to a specific directory
 
         Parameters
         ----------

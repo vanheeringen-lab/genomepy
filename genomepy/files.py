@@ -1,4 +1,5 @@
 """Utility functions with files"""
+
 import gzip
 import os
 import re
@@ -169,7 +170,7 @@ def extract_archive(
     -------
     tuple
         fname, str
-            up to date filename
+            up-to-date filename
     """
     if fname.endswith((".tgz", ".tar.gz")):
         return extract_tarball(fname, outfile=outfile)
@@ -223,7 +224,7 @@ def extract_gzip(fname: str, outfile: Optional[str] = None) -> Union[str, None]:
     -------
     tuple
         fname, str
-            up to date filename, or None if failed
+            up-to-date filename, or None if failed
     """
     if not outfile:
         outfile = fname[:-3]
@@ -256,7 +257,7 @@ def extract_zip(
     -------
     tuple
         fname, str
-            up to date filename
+            up-to-date filename
     """
     if not outfile:
         outfile = fname[:-4]
@@ -295,7 +296,7 @@ def gzip_and_name(fname, gzip_file=True) -> str:
     Returns
     -------
     str
-        up to date filename
+        up-to-date filename
     """
     if gzip_file:
         with open(fname, "rb") as f_in:
@@ -320,7 +321,7 @@ def bgzip_and_name(fname, bgzip_file=True) -> str:
     Returns
     -------
     str
-        up to date filename
+        up-to-date filename
     """
     if bgzip_file:
         ret = sp.check_call(f"bgzip {fname}", shell=True)

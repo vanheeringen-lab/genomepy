@@ -1,4 +1,5 @@
 """Utility functions"""
+
 import itertools
 import os
 import re

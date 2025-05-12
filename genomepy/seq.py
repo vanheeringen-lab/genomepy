@@ -1,4 +1,5 @@
 """as_seqdict function & overloads"""
+
 import os
 import re
 import sys

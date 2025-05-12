@@ -51,14 +51,15 @@ black \
   2>&1 \
   | grep 'would reformat'
 
-if $lint; then
-  flakeheaven lint \
-  $targets
-
-  echo ""
-  echo "Done"
-  exit 0
-fi
+# DISABLED: flakeheaven v3.3.0 does not work with python 3.12
+#if $lint; then
+#  flakeheaven lint \
+#  $targets
+#
+#  echo ""
+#  echo "Done"
+#  exit 0
+#fi
 
 
 # show formatted files

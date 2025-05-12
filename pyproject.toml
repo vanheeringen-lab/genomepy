@@ -95,12 +95,12 @@ profile = "black"
 conda_env = "environment.yml"
 overwrite_in_place = true
 
-[tool.flakeheaven]
-max_line_length = 88
-show_source = true
+# [tool.flakeheaven]
+# max_line_length = 88
+# show_source = true
 
-[tool.flakeheaven.plugins]
-flake8-bugbear = ["+*"]
-pycodestyle = ["+*", "-E501", "-W503"]
-pyflakes = ["+*"]
-pylint = ["+*"]
+# [tool.flakeheaven.plugins]
+# flake8-bugbear = ["+*"]
+# pycodestyle = ["+*", "-E501", "-W503"]
+# pyflakes = ["+*"]
+# pylint = ["+*"]

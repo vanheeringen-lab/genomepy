@@ -31,8 +31,8 @@ if not skip:
         specific sequence.
         """
         tmp = mkdtemp()
-        genomepy.install_genome("GRCh38.p13", "Ensembl", genomes_dir=tmp)
-        g = genomepy.Genome("GRCh38.p13", genomes_dir=tmp)
+        genomepy.install_genome("GRCh38.p14", "Ensembl", genomes_dir=tmp)
+        g = genomepy.Genome("GRCh38.p14", genomes_dir=tmp)
         seq = g["6"][166168664:166168679]
         assert str(seq) == "CCTCCTCGCTCTCTT"
         genomepy.utils.rm_rf(tmp)
@@ -45,8 +45,8 @@ if not skip:
         specific sequence.
         """
         tmp = mkdtemp()
-        genomepy.install_genome("GRCh38.p13", "NCBI", genomes_dir=tmp)
-        g = genomepy.Genome("GRCh38.p13", genomes_dir=tmp)
+        genomepy.install_genome("GRCh38.p14", "NCBI", genomes_dir=tmp)
+        g = genomepy.Genome("GRCh38.p14", genomes_dir=tmp)
         seq = g["6"][166168664:166168679]
         assert str(seq) == "CCTCCTCGCTCTCTT"
         genomepy.utils.rm_rf(tmp)
