@@ -10,7 +10,7 @@ dependencies:
   - click
   - colorama
   - filelock >=3.5
-  - libsqlite <3.49  # v3.49.1: no column "size" (this is a diskcache requirement)
+  # - libsqlite <3.49  # v3.49.1: no column "size" (this is a diskcache requirement)
   - loguru
   - mygene
   - mysql <=8.4  # 9.3: 'mysql_native_password' cannot be loaded
