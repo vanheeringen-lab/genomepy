@@ -13,7 +13,8 @@ dependencies:
   - libsqlite <3.49  # v3.49.1: no column "size" (this is a diskcache requirement)
   - loguru
   - mygene
-  - mysql-connector-python <=8.4.0  # v9.0.0: 'mysql_native_password' cannot be loaded
+  - mysql <=8.4  # 9.3: 'mysql_native_password' cannot be loaded
+  - mysql-connector-python <=8.4  # 9.3: 'mysql_native_password' cannot be loaded
   - norns >=0.1.6
   - numpy
   - pandas
