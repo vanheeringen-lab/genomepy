@@ -30,8 +30,6 @@ jobs:
 
     - name: Setup backend 🏗️
       run: |
-        python3 -m venv venv
-        source venv/bin/activate
         pip install uv hatch pytest pytest-rerunfailures autoflake==1.7 isort==6.0 black==25.1
 
     - name: Checkout 🛎️
@@ -39,8 +37,7 @@ jobs:
 
     # Builds a wheel needed for the CD
     - name: Build wheel 🎡
-      run: |
-        hatch build -t wheel
+      run: hatch build -t wheel
 
     # Store the wheel in GitHub Actions
     - name: Upload artifact ❄️
@@ -63,7 +60,6 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 #    # Only run this job on a tagged commit
 #    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-
 
     steps:
 
