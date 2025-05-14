@@ -31,7 +31,7 @@ jobs:
     - name: Setup backend 🏗️
       run: |
         pip install uv
-        uv pip install hatch pytest pytest-rerunfailures autoflake==1.7 isort==6.0 black==25.1
+        uv pip install --system hatch pytest pytest-rerunfailures autoflake==1.7 isort==6.0 black==25.1
 
     - name: Checkout 🛎️
       uses: actions/checkout@v4
