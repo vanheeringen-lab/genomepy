@@ -24,6 +24,7 @@ dependencies = [
     "mygene",
     "mysql-connector-python",
     "norns >=0.1.6",
+    "setuptools; python_version >= '3.12'",  # norns uses pkg_resources
     "numpy",
     "pandas",
     "pyfaidx >=0.7.2.1",
