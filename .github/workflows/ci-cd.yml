@@ -79,26 +79,17 @@ jobs:
     - name: Checkout 🛎️
       uses: actions/checkout@v4
 
-    - name: Install & Build 🏗️
-      run: |
-        # install conda
-        wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
-        bash Miniforge3.sh -b -p "${HOME}/conda" > /dev/null
-        source "${HOME}/conda/etc/profile.d/conda.sh"
-        source "${HOME}/conda/etc/profile.d/mamba.sh"
-        mamba activate
+    - name: Setup backend 🏗️
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        environment-file: environment.yml
+        miniforge-version: latest
 
-        # install requirements
-        mamba env create --file environment.yaml
-        
-        # install genomepy
-        mamba activate genomepy
-        pip install . --no-deps --ignore-installed
+    - name: Install 🛠️
+      run: pip install . --no-deps --ignore-installed
 
     - name: Unit tests 📜
-      run: |
-#        mamba activate genomepy
-        pytest -vvv --reruns 1 --reruns-delay 10 tests/test_01_basic.py
+      run: pytest -vvv --reruns 1 --reruns-delay 10 tests/test_01_basic.py
 
     - name: Integration tests 📚
       run: |
