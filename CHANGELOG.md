@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Ensembl release versions no longer includes unreleased versions 
 - unit tests
 - upgraded formatters (and fixed the marked grammar & spelling errors)
+- UCSC no longer has genomes on its european mirror
 
 ## [0.16.1] - 2023-06-14
 
