@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Removed
 - removed norns dependency (which was using the deprecated pkg_resources) 
 
+### Fixed
+- fix pandas FutureWarning
+
 ## [0.16.2] - 2025-05-12
 
 ### Fixed

@@ -5,7 +5,6 @@ import re
 from pathlib import Path
 from typing import Iterable, Optional, Union
 
-import numpy as np
 import pandas as pd
 from loguru import logger
 
@@ -242,7 +241,7 @@ class Annotation:
             # 1 row per gene
             df = (
                 df.groupby(["gene_name", "seqname", "strand"])
-                .agg({"start": np.min, "end": np.max})
+                .agg({"start": "min", "end": "max"})
                 .reset_index(level=["seqname", "strand"])
             )
             gene_info = df[["seqname", "start", "end", "strand"]]
