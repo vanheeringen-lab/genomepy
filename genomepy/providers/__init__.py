@@ -85,26 +85,33 @@ def list_online_providers():
     return [p.name for p in PROVIDERS.values() if p.ping()]
 
 
-def online_providers(provider: str = None):
+def online_providers(name: str = None):
     """
     Check if the provider can be reached, or any provider if none is specified.
 
     Parameters
     ----------
-    provider : str, optional
+    name : str, optional
         Only try to yield the specified provider.
 
     Yields
     ------
-    provider
+    generator
         Provider instances
     """
-    providers = [provider] if provider else list_providers()
+    providers = [name] if name else list_providers()
+    success = False
     for provider in providers:
         try:
             yield create(provider)
+            success = True
         except ConnectionError as e:
             logger.warning(str(e))
+
+    # If none of the requested provider(s) is online, raise the error
+    if not success:
+        who = ", ".join(providers)
+        raise ConnectionError(f"{who} appears to be offline")
 
 
 def search(term: str or int, provider: str = None, exact=False, size=False):

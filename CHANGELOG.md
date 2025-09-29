@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- if none of the requested providers are online, raise an error
+
 ### Removed
 - removed norns dependency (which was using the deprecated pkg_resources) 
 
