@@ -22,7 +22,7 @@ dependencies = [
     "filelock >=3.5",
     "loguru",
     "mygene",
-    "mysql-connector-python",
+    "mysql-connector-python <=8.4",
     "numpy",
     "pandas",
     "pyfaidx >=0.7.2.1",
