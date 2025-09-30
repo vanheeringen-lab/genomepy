@@ -29,15 +29,10 @@
 5. Check if release works on pypi:
 
     ```shell
-    python -m build
-
-    # twine must be up to date (3.3.0 works). System installed twine can interfere.
-    twine upload --repository-url https://test.pypi.org/legacy/ dist/genomepy-${new_version}*
-
-    pip uninstall genomepy
-
-    # the \ is to escape the ==, so the variable ${new_version} can be called
-    pip install --extra-index-url https://test.pypi.org/simple/ genomepy\==${new_version}
+    pip install uv
+    uv pip install hatch 
+    hatch build -t wheel
+    uv pip install --system dist/*.whl --force-reinstall
 
     # tests
     genomepy --version
@@ -68,27 +63,24 @@
     git push --follow-tags origin develop master
     ```
 
-8. Upload to pypi:
+8. Release on pypi:
 
-    ```shell
-    python -m build
-    twine upload dist/genomepy-${new_version}*
-    ```
+    Done automatically by github actions.
 
-9. Create release on github (if it not already exists)
+9. Release on github:
 
     * Update release with CHANGELOG information from the latest version
     * Download the tarball from the github release (`.tar.gz`).
     * Attach downloaded tarball to release as binary (this way the download count get tracked).
 
-10a. Update bioconda package
+10a. Release on bioconda
 
     * wait for the bioconda bot to create a PR
-    * update dependencies in the bioconda recipe.yaml if needed
+    * in the PR, update dependencies in the bioconda recipe.yaml
     * approve the PR
     * comment: @bioconda-bot please merge
 
-10b. Update bioconda package
+10b. Release on bioconda
 
     * fork bioconda/bioconda-recipes
     * follow the steps in the [docs](https://bioconda.github.io/contributor/workflow.html)

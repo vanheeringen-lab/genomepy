@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.16.3] - 2025-09-30
+
 ### Changed
 - if none of the requested providers are online, raise an error
 - added retry for gencode ping (flaky connection)
@@ -500,6 +502,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.16.3]: https://github.com/vanheeringen-lab/genomepy/compare/0.16.2...0.16.3
 [0.16.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.16.1...0.16.2
 [0.16.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.16.0...0.16.1
 [0.16.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.15.0...0.16.0
