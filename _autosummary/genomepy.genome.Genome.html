@@ -134,7 +134,8 @@
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genomes_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genomepy.genome.Genome.__init__" title="Permalink to this definition"></a></dt>
 <dd><p>An object that provides a pygr compatible interface.
 filename:  name of fasta file or fsspec.core.OpenFile instance
-indexname: name of index file or fsspec.core.OpenFile instance</p>
+indexname: name of index file or fsspec.core.OpenFile instance
+gzi_indexname: for BGZF/GZ FASTA, name of .gzi file or fsspec.core.OpenFile instance</p>
 </dd></dl>
 
 <p class="rubric">Methods</p>
@@ -406,7 +407,7 @@ Example input files can be found in genomepy/tests/data/regions.*</p></li>
 
   <div role="contentinfo">
     <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
-      <span class="lastupdated">Last updated on 2025-05-14, 13:24 (UTC).
+      <span class="lastupdated">Last updated on 2025-09-30, 12:32 (UTC).
       </span></p>
   </div>
 

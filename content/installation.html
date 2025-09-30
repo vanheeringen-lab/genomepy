@@ -48,9 +48,12 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">Bioconda</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pip">Pip</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#git">Git</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Bioconda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pip">Pip</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#git">Git</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="command_line.html">Command line documentation</a></li>
@@ -87,16 +90,18 @@
              
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
-<p>genomepy requires Python 3.7+</p>
-<p>You can install genomepy via <a class="reference external" href="https://bioconda.github.io/">bioconda</a>, pip or git.</p>
 <section id="id1">
-<h2>Bioconda<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>-c<span class="w"> </span>bioconda<span class="w"> </span><span class="s1">&#39;genomepy&gt;=0.15&#39;</span>
+<h2>Installation<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<p>genomepy requires Python 3.9+</p>
+<p>You can install genomepy via <a class="reference external" href="https://bioconda.github.io/">bioconda</a>, pip or git.</p>
+<section id="id2">
+<h3>Bioconda<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>-c<span class="w"> </span>bioconda<span class="w"> </span><span class="s1">&#39;genomepy&gt;=0.16&#39;</span>
 </pre></div>
 </div>
 </section>
 <section id="pip">
-<h2>Pip<a class="headerlink" href="#pip" title="Permalink to this heading"></a></h2>
+<h3>Pip<a class="headerlink" href="#pip" title="Permalink to this heading"></a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>genomepy
 </pre></div>
 </div>
@@ -113,13 +118,12 @@
 <p>You can find the binaries <a class="reference external" href="http://hgdownload.cse.ucsc.edu/admin/exe/">here</a>.</p>
 </section>
 <section id="git">
-<h2>Git<a class="headerlink" href="#git" title="Permalink to this heading"></a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/vanheeringen-lab/genomepy.git
-$<span class="w"> </span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>genomepy<span class="w"> </span>-f<span class="w"> </span>genomepy/environment.yml
-$<span class="w"> </span>conda<span class="w"> </span>activate<span class="w"> </span>genomepy
-$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>genomepy
-</pre></div>
-</div>
+<h3>Git<a class="headerlink" href="#git" title="Permalink to this heading"></a></h3>
+<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a>bash
+$ git clone <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy.git">https://github.com/vanheeringen-lab/genomepy.git</a>
+$ conda env create -n genomepy -f genomepy/environment.yml
+$ conda activate genomepy</p>
+</section>
 </section>
 </section>
 
@@ -135,7 +139,7 @@ $<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </sp
 
   <div role="contentinfo">
     <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
-      <span class="lastupdated">Last updated on 2025-05-14, 13:24 (UTC).
+      <span class="lastupdated">Last updated on 2025-09-30, 12:32 (UTC).
       </span></p>
   </div>
 

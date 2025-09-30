@@ -104,15 +104,10 @@ git<span class="w"> </span>flow<span class="w"> </span>release<span class="w"> <
 </ul>
 </li>
 <li><p>Check if release works on pypi:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>build
-
-<span class="c1"># twine must be up to date (3.3.0 works). System installed twine can interfere.</span>
-twine<span class="w"> </span>upload<span class="w"> </span>--repository-url<span class="w"> </span>https://test.pypi.org/legacy/<span class="w"> </span>dist/genomepy-<span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>*
-
-pip<span class="w"> </span>uninstall<span class="w"> </span>genomepy
-
-<span class="c1"># the is to escape the ==, so the variable ${new_version} can be called</span>
-pip<span class="w"> </span>install<span class="w"> </span>--extra-index-url<span class="w"> </span>https://test.pypi.org/simple/<span class="w"> </span>genomepy<span class="se">\=</span><span class="o">=</span><span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>uv
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>hatch
+hatch<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>wheel
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--system<span class="w"> </span>dist/*.whl<span class="w"> </span>--force-reinstall
 
 <span class="c1"># tests</span>
 genomepy<span class="w"> </span>--version
@@ -141,13 +136,12 @@ genomepy<span class="w"> </span>install<span class="w"> </span>-af<span class="w
 </pre></div>
 </div>
 </li>
-<li><p>Upload to pypi:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>build
-twine<span class="w"> </span>upload<span class="w"> </span>dist/genomepy-<span class="si">${</span><span class="nv">new_version</span><span class="si">}</span>*
-</pre></div>
-</div>
+<li><p>Release on pypi:</p>
+<blockquote>
+<div><p>Done automatically by github actions.</p>
+</div></blockquote>
 </li>
-<li><p>Create release on github (if it not already exists)</p>
+<li><p>Release on github:</p>
 <ul class="simple">
 <li><p>Update release with CHANGELOG information from the latest version</p></li>
 <li><p>Download the tarball from the github release (<code class="docutils literal notranslate"><span class="pre">.tar.gz</span></code>).</p></li>
@@ -155,14 +149,14 @@ twine<span class="w"> </span>upload<span class="w"> </span>dist/genomepy-<span c
 </ul>
 </li>
 </ol>
-<p>10a. Update bioconda package</p>
+<p>10a. Release on bioconda</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="n">wait</span> <span class="k">for</span> <span class="n">the</span> <span class="n">bioconda</span> <span class="n">bot</span> <span class="n">to</span> <span class="n">create</span> <span class="n">a</span> <span class="n">PR</span>
-<span class="o">*</span> <span class="n">update</span> <span class="n">dependencies</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">bioconda</span> <span class="n">recipe</span><span class="o">.</span><span class="n">yaml</span> <span class="k">if</span> <span class="n">needed</span>
+<span class="o">*</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">PR</span><span class="p">,</span> <span class="n">update</span> <span class="n">dependencies</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">bioconda</span> <span class="n">recipe</span><span class="o">.</span><span class="n">yaml</span>
 <span class="o">*</span> <span class="n">approve</span> <span class="n">the</span> <span class="n">PR</span>
 <span class="o">*</span> <span class="n">comment</span><span class="p">:</span> <span class="nd">@bioconda</span><span class="o">-</span><span class="n">bot</span> <span class="n">please</span> <span class="n">merge</span>
 </pre></div>
 </div>
-<p>10b. Update bioconda package</p>
+<p>10b. Release on bioconda</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>* fork bioconda/bioconda-recipes
 * follow the steps in the [docs](https://bioconda.github.io/contributor/workflow.html)
 * get the hash from the downloaded tarbal using `sha256sum *genomepy-${new_version}.tar.gz`
@@ -182,7 +176,7 @@ twine<span class="w"> </span>upload<span class="w"> </span>dist/genomepy-<span c
 
   <div role="contentinfo">
     <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
-      <span class="lastupdated">Last updated on 2025-05-14, 13:24 (UTC).
+      <span class="lastupdated">Last updated on 2025-09-30, 12:32 (UTC).
       </span></p>
   </div>
 

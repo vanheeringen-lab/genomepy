@@ -1,0 +1,44 @@
+genomepy.config.Config
+======================
+
+.. currentmodule:: genomepy.config
+
+.. autoclass:: Config
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Config.__init__
+      ~Config.clear
+      ~Config.get
+      ~Config.items
+      ~Config.keys
+      ~Config.load
+      ~Config.pop
+      ~Config.popitem
+      ~Config.save
+      ~Config.setdefault
+      ~Config.update
+      ~Config.values
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Config.config_dir
+      ~Config.config_file
+      ~Config.default_config_file
+   
+   
