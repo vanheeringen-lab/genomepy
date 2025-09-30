@@ -2,7 +2,6 @@ import os
 import subprocess as sp
 from shutil import rmtree
 
-import norns
 import pandas as pd
 import pytest
 from appdirs import user_cache_dir
@@ -83,7 +82,7 @@ def test_exceptions():
 
 
 def test_config():
-    config = norns.config("genomepy", default="config/default.yaml")
+    config = genomepy.config.config
     assert len(config.keys()) == 6
 
 

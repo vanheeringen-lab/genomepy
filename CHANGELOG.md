@@ -6,12 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.16.3] - 2025-09-30
+
+### Changed
+- if none of the requested providers are online, raise an error
+- added retry for gencode ping (flaky connection)
+- increased minimum Python version to 3.9 due to:
+  - importlib.resources.files()
+  - tar.extractall(..., filter="data")
+
+### Removed
+- removed norns dependency (which was using the deprecated pkg_resources) 
+
+### Fixed
+- pandas FutureWarning
+- unsafe tar.extractall
+
 ## [0.16.2] - 2025-05-12
 
 ### Fixed
 - Ensembl release versions no longer includes unreleased versions 
 - unit tests
 - upgraded formatters (and fixed the marked grammar & spelling errors)
+- UCSC no longer has genomes on its european mirror
 
 ## [0.16.1] - 2023-06-14
 
@@ -485,6 +502,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Added `-r` and `--match/--no-match` option to select sequences by regex.
 
 [Unreleased]: https://github.com/vanheeringen-lab/genomepy/compare/master...develop
+[0.16.3]: https://github.com/vanheeringen-lab/genomepy/compare/0.16.2...0.16.3
 [0.16.2]: https://github.com/vanheeringen-lab/genomepy/compare/0.16.1...0.16.2
 [0.16.1]: https://github.com/vanheeringen-lab/genomepy/compare/0.16.0...0.16.1
 [0.16.0]: https://github.com/vanheeringen-lab/genomepy/compare/0.15.0...0.16.0

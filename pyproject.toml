@@ -12,7 +12,7 @@ maintainers = [
     {name = "Simon van Heeringen", email = "simon.vanheeringen@gmail.com"},
 ]
 
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 dependencies = [
     "appdirs",
     "biopython >=1.73",
@@ -22,12 +22,11 @@ dependencies = [
     "filelock >=3.5",
     "loguru",
     "mygene",
-    "mysql-connector-python",
-    "norns >=0.1.6",
-    "setuptools; python_version >= '3.12'",  # norns uses pkg_resources
+    "mysql-connector-python <=8.4",
     "numpy",
     "pandas",
     "pyfaidx >=0.7.2.1",
+    "pyyaml",
     "requests",
     "tqdm >=4.51",
 ]

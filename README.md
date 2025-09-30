@@ -5,9 +5,11 @@
 [![PyPI version](https://badge.fury.io/py/genomepy.svg)](https://badge.fury.io/py/genomepy)
 [![GitHub stars](https://badgen.net/github/stars/vanheeringen-lab/genomepy)](https://GitHub.com/vanheeringen-lab/genomepy/stargazers/)
 
-[![Build Status](https://app.travis-ci.com/vanheeringen-lab/genomepy.svg?branch=master)](https://app.travis-ci.com/github/vanheeringen-lab/genomepy/branches)
 [![Maintainability](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/maintainability)](https://codeclimate.com/github/vanheeringen-lab/genomepy/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/test_coverage)](https://codeclimate.com/github/vanheeringen-lab/genomepy/test_coverage)
+[![CI/CD](https://github.com/vanheeringen-lab/genomepy/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/vanheeringen-lab/genomepy/actions/workflows/ci-cd.yml)
+
+[//]: # ([![Build Status]&#40;https://app.travis-ci.com/vanheeringen-lab/genomepy.svg?branch=master&#41;]&#40;https://app.travis-ci.com/github/vanheeringen-lab/genomepy/branches&#41;)
+[//]: # ([![Test Coverage]&#40;https://api.codeclimate.com/v1/badges/c4476820f1d21a3e0569/test_coverage&#41;]&#40;https://codeclimate.com/github/vanheeringen-lab/genomepy/test_coverage&#41;)
 
 [![bioinformatics](https://img.shields.io/badge/DOI-10.1093%2Fbioinformatics%2Fbtad119-%23167da4)](https://doi.org/10.1093/bioinformatics/btad119)
 [![zenodo](https://zenodo.org/badge/DOI/10.5281/zenodo.1010458.svg)](https://doi.org/10.5281/zenodo.1010458)
@@ -44,14 +46,14 @@ Don't be shy and [let us know](https://github.com/vanheeringen-lab/genomepy/issu
 
 ## Installation
 
-genomepy requires Python 3.7+
+genomepy requires Python 3.9+
 
 You can install genomepy via [bioconda](https://bioconda.github.io/), pip or git.
 
 #### Bioconda
 
 ```bash
-$ conda install -c conda-forge -c bioconda 'genomepy>=0.15'
+$ conda install -c conda-forge -c bioconda 'genomepy>=0.16'
 ``` 
 
 #### Pip

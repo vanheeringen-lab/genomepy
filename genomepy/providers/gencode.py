@@ -46,7 +46,7 @@ class GencodeProvider(BaseProvider):
     @staticmethod
     def ping():
         """Can the provider be reached?"""
-        ftp_online = bool(check_url("ftp.ebi.ac.uk/pub/databases/gencode"))
+        ftp_online = bool(check_url("ftp://ftp.ebi.ac.uk/pub/databases/gencode", 2))
         return ftp_online
 
     def _genome_info_tuple(self, name, size=False):
