@@ -8,12 +8,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 - if none of the requested providers are online, raise an error
+- added retry for gencode ping (flaky connection)
 
 ### Removed
 - removed norns dependency (which was using the deprecated pkg_resources) 
 
 ### Fixed
-- fix pandas FutureWarning
+- pandas FutureWarning
+- unsafe tar.extractall
 
 ## [0.16.2] - 2025-05-12
 
