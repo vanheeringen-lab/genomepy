@@ -205,7 +205,7 @@ def extract_tarball(fname, outfile=None, concat=True) -> Union[str, None]:
                 if not is_within_directory(path, member_path):
                     raise Exception("Attempted Path Traversal in Tar File")
 
-            tar.extractall(path, members, numeric_owner=numeric_owner)
+            tar.extractall(path, members, numeric_owner=numeric_owner, filter="data")
 
         safe_extract(tar, path=tmp_dir)
     for root, _, files in os.walk(tmp_dir):

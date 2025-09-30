@@ -12,7 +12,7 @@ maintainers = [
     {name = "Simon van Heeringen", email = "simon.vanheeringen@gmail.com"},
 ]
 
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 dependencies = [
     "appdirs",
     "biopython >=1.73",

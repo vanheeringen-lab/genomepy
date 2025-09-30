@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Changed
 - if none of the requested providers are online, raise an error
 - added retry for gencode ping (flaky connection)
+- increased minimum Python version to 3.9 due to:
+  - importlib.resources.files()
+  - tar.extractall(..., filter="data")
 
 ### Removed
 - removed norns dependency (which was using the deprecated pkg_resources) 

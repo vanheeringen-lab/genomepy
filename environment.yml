@@ -18,7 +18,7 @@ dependencies:
   - numpy
   - pandas
   - pyfaidx >=0.7.2.1
-  - python >=3.7
+  - python >=3.9
   - pyyaml
   - requests
   - tqdm >=4.51

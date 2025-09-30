@@ -44,7 +44,7 @@ Don't be shy and [let us know](https://github.com/vanheeringen-lab/genomepy/issu
 
 ## Installation
 
-genomepy requires Python 3.7+
+genomepy requires Python 3.9+
 
 You can install genomepy via [bioconda](https://bioconda.github.io/), pip or git.
 
