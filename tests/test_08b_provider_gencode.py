@@ -59,7 +59,7 @@ def test_get_annotation_download_links(gencode):
 
 @pytest.mark.skipif(travis and linux, reason="FTP does not work on Travis-Linux")
 def test_download_annotation(gencode):
-    gencode.download_annotation("GRCm39")  # smallest gencode annotation (0.8 GB)
+    gencode.download_annotation("GRCm38")  # smallest gencode annotation (27 MB)
 
 
 def test_get_gencode2ucsc():
