@@ -111,7 +111,7 @@ def test_named_gtf():
     df = a.named_gtf
     assert df.index.name == "gene_name"
     assert str(a.gtf.index.dtype) == "int64"
-    assert str(df.index.dtype) == "object"
+    assert str(df.index.dtype) in ["object", "str"]  # pandas v2 == object, v3 == str
     assert set(df.at["YDL248W", "seqname"]) == {"chrIV"}
 
 
