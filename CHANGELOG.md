@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- automatically remove old cache directories
+
+### Fixed
+- adapted to a change in NCBI metadata (`ftp_path` now has a trailing slash)
+
 ## [0.16.3] - 2025-09-30
 
 ### Changed

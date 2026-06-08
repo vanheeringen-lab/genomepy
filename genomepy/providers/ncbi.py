@@ -192,11 +192,13 @@ class NcbiProvider(BaseProvider):
         NCBI's files are accessible over FTP and HTTPS
         Try HTTPS first and return the first functioning link
         """
-        genome = self.genomes[safe(name)]
-        ftp_link = genome["ftp_path"]
+        ftp_link = self.genomes[safe(name)]["ftp_path"]
+        # add a trailing slash, if missing
+        if ftp_link[-1] != "/":
+            ftp_link += "/"
         html_link = ftp_link.replace("ftp://", "https://")
         for link in [html_link, ftp_link]:
-            link += "/" + link.split("/")[-1] + file_suffix
+            link += link.split("/")[-2] + file_suffix
 
             if skip_check or check_url(link, max_tries=2, timeout=10):
                 return link
