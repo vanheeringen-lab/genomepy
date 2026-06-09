@@ -25,6 +25,15 @@ def _cast(var):
 cache_exp_other = _cast(config.get("cache_exp_other", 3.6e3))
 cache_exp_genomes = _cast(config.get("cache_exp_genomes", 6.048e5))
 
+# remove old cache directories
+if os.path.exists(user_cache_dir("genomepy")):
+    for version in os.listdir(user_cache_dir("genomepy")):
+        genomepy_cache_dir = os.path.join(user_cache_dir("genomepy"), version)
+        cache_age = time() - os.stat(genomepy_cache_dir).st_mtime
+        if cache_age > cache_exp_genomes:
+            rm_rf(genomepy_cache_dir)
+
+# create a cache directory
 genomepy_cache_dir = os.path.join(user_cache_dir("genomepy"), __version__)
 os.makedirs(genomepy_cache_dir, exist_ok=True)
 
