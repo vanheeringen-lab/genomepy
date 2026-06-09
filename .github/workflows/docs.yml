@@ -16,25 +16,24 @@ jobs:
         run: |
           # for spinx autosummary feature, we need to install genomepy
         
-          # setup mambaforge
+          # setup miniforge
           wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
           bash Miniforge3.sh -b -p "${HOME}/conda" > /dev/null
           source "${HOME}/conda/etc/profile.d/conda.sh"
           source "${HOME}/conda/etc/profile.d/mamba.sh"
           mamba activate
           
-          # create a yaml with only docs requirements
+          # create docs_requirements.yaml
+          # - add minimal genomepy requirements
           n="$(( $(grep -n '# Plugins' environment.yml | cut -d ':' -f1) - 1 ))"
-          head environment.yml -n $n > requirements.yaml
-          
+          head environment.yml -n $n > docs_requirements.yaml
+          # - add docs requirements
           n="$(( $(wc -l docs/requirements.yaml | cut -d ' ' -f1) - $(grep -n 'dependencies:' environment.yml | cut -d ':' -f1) + 1 ))"
-          tail docs/requirements.yaml -n $n >> requirements.yaml
+          tail docs/requirements.yaml -n $n >> docs_requirements.yaml
           
-          # install requirements
-          mamba env create --name genomepy --file requirements.yaml
-          
-          # install genomepy
-          mamba activate genomepy
+          # install genomepy using docs_requirements.yaml
+          mamba env create --name genomepy_docs --file docs_requirements.yaml
+          mamba activate genomepy_docs
           pip install . --no-deps --ignore-installed
 
           # build docs
