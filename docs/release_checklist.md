@@ -31,6 +31,7 @@
     ```shell
     pip install uv
     uv pip install hatch 
+    rm -rf dist
     hatch build -t wheel
     uv pip install --system dist/*.whl --force-reinstall
 
