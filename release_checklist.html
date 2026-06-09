@@ -106,6 +106,7 @@ git<span class="w"> </span>flow<span class="w"> </span>release<span class="w"> <
 <li><p>Check if release works on pypi:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>uv
 uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>hatch
+rm<span class="w"> </span>-rf<span class="w"> </span>dist
 hatch<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>wheel
 uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--system<span class="w"> </span>dist/*.whl<span class="w"> </span>--force-reinstall
 
@@ -176,7 +177,7 @@ genomepy<span class="w"> </span>install<span class="w"> </span>-af<span class="w
 
   <div role="contentinfo">
     <p>&#169; Copyright Siebren Frölich, Maarten van der Sande, Tilman Schäfers and Simon van Heeringen.
-      <span class="lastupdated">Last updated on 2025-09-30, 12:32 (UTC).
+      <span class="lastupdated">Last updated on 2026-06-09, 06:58 (UTC).
       </span></p>
   </div>
 
