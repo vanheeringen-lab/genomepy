@@ -9,6 +9,7 @@ coverage.xml
 cc-test-reporter
 Log.out
 genomepy/config/default.yaml
+docs_requirements.yaml
 
 # Directories
 __pychache__/

@@ -2,7 +2,8 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - docutils =0.17.1  # 18 & 19 bugs: no bullet lists & sub-menus
-  - sphinx
-  - sphinx_rtd_theme  # read the docs theme
-  - m2r2 >=0.3.2      # include markdown files
+  - conda-forge::docutils =0.17.1  # 18 & 19 bugs: no bullet lists & sub-menus
+  - conda-forge::sphinx
+  - conda-forge::sphinx_rtd_theme  # read the docs theme
+  - conda-forge::m2r2 >=0.3.2      # include markdown files
+  - conda-forge::setuptools=80  # for the pkg_resources module
